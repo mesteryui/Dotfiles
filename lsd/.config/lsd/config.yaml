@@ -1,0 +1,25 @@
+# This has various color options. (Will be expanded in the future.)
+color:
+  # When to colorize the output.
+  # When "classic" is set, this is set to "never".
+  # Possible values: never, auto, always
+  when: auto
+  # How to colorize the output.
+  # When "classic" is set, this is set to "no-color".
+  # Possible values: default, custom
+  # When "custom" is set, lsd will look in the config directory for `colors.yaml`.
+  theme: default
+
+icons:
+  # When to use icons.
+  # When "classic" is set, this is set to "never".
+  # Possible values: always, auto, never
+  when: auto
+  # Which icon theme to use.
+  # Possible values: fancy, unicode
+  theme: fancy
+  # Separator between icon and the name
+  # Default to 1 space
+  separator: " "
+layout: grid
+symlink-arrow: -> 

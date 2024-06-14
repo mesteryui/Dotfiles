@@ -1,0 +1,9 @@
+#exec_always --no-startup-id autotiling
+exec_always --no-startup-id ~/.config/waybar/launch.sh
+#exec_always --no-startup-id dunst
+exec_always --no-startup-id nm-applet --indicator
+#exec_always --no-startup-id mako
+#exec_always --no-startup-id bash /home/oscar/.config/sway/scripts/emacs-server.sh
+exec_always swaync
+exec_always sway-plugins -c /home/oscar/.config/sway/sway-plugins.yml
+exec_always swtchrd

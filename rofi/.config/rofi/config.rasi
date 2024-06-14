@@ -1,0 +1,13 @@
+configuration{
+    modi: "run,window,combi,drun";
+    icon-theme: "Papirus-Dark";
+    show-icons: true;
+    terminal: "wezterm";
+    drun-display-format: "{icon} {name}";
+    location: 0;
+    disable-history: false;
+    hide-scrollbar: true;
+    sidebar-mode: false;
+}
+
+@theme "catppuccin-mocha"

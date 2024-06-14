@@ -1,0 +1,45 @@
+for_window [title="^.*"] border pixel 3, title_format "%class >> %title"
+# Fuente para sway
+font pango:Meslo LGM Nerd Font 14
+### Appearance
+# target                 title     bg    text   indicator  border
+client.focused           $lavender $base $text  $rosewater $mauve
+client.focused_inactive  $overlay0 $base $text  $rosewater $surface0
+client.unfocused         $overlay0 $base $text  $rosewater $overlay0
+client.urgent            $peach    $base $peach $overlay0  $red
+client.placeholder       $overlay0 $base $text  $overlay0  $overlay0
+client.background        $base
+# window corner radius in px
+corner_radius 15
+
+# Window background blur
+blur on
+blur_xray on
+blur_passes 2
+blur_radius 5
+
+shadows on
+shadows_on_csd on
+shadow_blur_radius 20
+shadow_color #0000007F
+
+# inactive window fade amount. 0.0 = no dimming, 1.0 = fully dimmed
+default_dim_inactive 0.5
+dim_inactive_colors.unfocused #000000FF
+dim_inactive_colors.urgent #900000FF
+
+# Move minimized windows into Scratchpad (enable|disable)
+scratchpad_minimize enable
+# Another Appearance settings
+gaps inner 15
+gaps outer 12
+#smart_gaps on
+default_border pixel 4
+default_floating_border pixel 5
+
+exec_always import-gsettings \
+    gtk-theme:gtk-theme-name \
+    icon-theme:gtk-icon-theme-name \
+    cursor-theme:gtk-cursor-theme-name
+
+#layer_effects 'waybar' blur true; corner_radius 10

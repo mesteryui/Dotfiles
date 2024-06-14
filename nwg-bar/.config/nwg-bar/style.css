@@ -1,0 +1,38 @@
+window {
+        background-color: #11111b;
+	border-radius: 10px;
+	border-width: 5px;
+}
+
+/* Outer bar container, takes all the window width/height */
+#outer-box {
+	margin: 0px
+}
+
+/* Inner bar container, surrounds buttons */
+#inner-box {
+	background-color: #1e1e2e;
+	border-radius: 4px;
+	border-style: solid;
+	border-width: 3px;
+	border-color: rgba(203, 166, 247, 0.7);
+	padding: 5px;
+	margin: 0px
+}
+
+button, image {
+	background: none;
+	border: none;
+	box-shadow: none
+}
+
+button {
+	padding-left: 10px;
+	padding-right: 10px;
+	margin: 5px
+}
+
+button:hover {
+	background-color: #cba6f7;
+	color: #11111b
+}

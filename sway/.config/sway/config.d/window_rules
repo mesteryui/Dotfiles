@@ -1,0 +1,14 @@
+for_window [title="^Open File$"] floating enable
+for_window [title="^Save File$"] floating enable
+for_window [app_id="galculator"] floating enable
+for_window [title="Acerca de*"] floating enable
+for_window [title="Entrada de parámetros"] floating enable
+for_window [title="Escribir:*"] floating enable
+for_window [title="Redacción*"] floating enable
+for_window [title="Send Later - Mozilla Thunderbird"] floating enable
+for_window [app_id="tlp-ui"] floating enable
+for_window [shell="xwayland"] title_format "<span>[X] %title</span>"
+for_window [window_type="dialog"] floating enable
+for_window [app_id="nm-connection-editor$"] floating enable
+for_window [window_role="GtkFileChooserDialog"] resize set 800 600
+for_window [window_role="GtkFiileChooserDialog"] move position center

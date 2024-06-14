@@ -1,0 +1,17 @@
+set $opacity 0.5
+set $mod Mod4
+set $alt Mod1
+set $left h
+set $down j
+set $up k
+set $right l
+# Your preferred terminal emulator
+set $term wezterm
+#set $menu /home/oscar/.config/rofi/launchers/type-2/launcher.sh
+set $menu onagre
+#set $powermenu /home/oscar/.config/rofi/powermenu/type-2/powermenu.sh
+set $powermenu nwg-bar -x
+set $browser firefox
+#
+include catppuccin-mocha
+include ~/.config/sway/config.d/*

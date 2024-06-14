@@ -1,0 +1,40 @@
+window {
+  background-color: transparent;
+}
+
+#overlay {
+  background-color: #1e1e2eee; /* Catppuccin Mocha Crust */
+  padding: 25px 25px;
+  border-radius: 20px;
+}
+
+.app-icon {
+  padding: 10px;
+  min-width: 80px;
+  background: transparent;
+  border-radius: 10px;
+  border: none;
+}
+
+.app-icon:hover,
+.app-icon:focus {
+  /*
+   * Adapted from the default Adwaita style sheet to mimic the focus ring that
+   * elements get when they're focused with the keyboard.
+   *
+   * https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gtk/theme/Default/_drawing.scss
+   */
+  transition-property: outline, outline-width, outline-offset, outline-color;
+  transition-duration: 300ms;
+  animation-timing-function: ease-in-out;
+  outline-width: 2px;
+  outline-offset: -2px;
+
+  outline-color: #cdd6f490; /* Catppuccin Mocha Text */
+  background-color: #cdd6f414; /* Catppuccin Mocha Text */
+}
+
+#window-title {
+  font-size: 13pt;
+  color: #cdd6f4; /* Catppuccin Mocha Text */
+}

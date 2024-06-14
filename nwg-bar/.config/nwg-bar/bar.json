@@ -1,0 +1,27 @@
+[
+  {
+    "label": "Lock",
+    "exec": "swaylock --screenshots --effect-blur 20x4 --clock --indicator --indicator-thickness 7 --ring-color fab387 --key-hl-color a6e3a --indicator-radius 99 --effect-vignette 1:1 --text-color cdd6f4",
+    "icon": "system-lock-screen"
+  },
+  {
+	  "label": "Suspend",
+	  "exec": "systemctl suspend",
+	  "icon": "system-suspend"
+  },
+  {
+    "label": "Logout",
+    "exec": "swaymsg exit",
+    "icon": "system-log-out"
+  },
+  {
+    "label": "Reboot",
+    "exec": "systemctl reboot",
+    "icon": "system-reboot"
+  },
+  {
+    "label": "Shutdown",
+    "exec": "systemctl poweroff",
+    "icon": "system-shutdown"
+  }
+]
