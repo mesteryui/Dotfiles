@@ -16,6 +16,8 @@ window#waybar {
     text-shadow: none;
     transition-duration: 0s;
     box-shadow: none;
+    border-radius: 15px;
+    margin-top: 6px;
 }
 
 window#waybar.hidden {
@@ -75,6 +77,7 @@ button:hover {
     /*color: shade(@mantle, 0.9) */
     background-color: @mauve;
     color: shade(@base, 0.9);
+    border-radius: 10px;
 }
 #workspaces button.focused:hover {
         color: shade(@base, 0.9);
@@ -122,7 +125,7 @@ button:hover {
 
 /* If workspaces is the rightmost module, omit right margin */
 .modules-right > widget:last-child > #workspaces {
-    margin-right: 10;
+    margin-right: 10px;
 }
 
 #clock {

@@ -12,7 +12,7 @@ bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOU
 # Atajos de teclado personalizados
 bindsym $mod+b exec $browser
 bindsym $mod+e exec emacs
-bindsym $mod+f exec $term start yazi
+bindsym $mod+f exec thunar
 bindsym $mod+p exec passmenu
 bindsym $mod+t exec telegram-desktop
 bindsym Print exec grim "$(xdg-user-dir PICTURES)/$(date +%Y-%m-%dT%H-%M-%S).png"

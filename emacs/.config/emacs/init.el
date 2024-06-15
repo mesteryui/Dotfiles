@@ -295,7 +295,11 @@
   (company-selection-wrap-around t)
   :init
   (global-company-mode))
-
+(use-package company-box
+  :ensure t
+  :defer t
+  :after company
+  :hook 'company-mode-hook 'company-box-mode)
 (use-package company-posframe
   :config
   (company-posframe-mode 1))
@@ -321,10 +325,10 @@
   (("<f9>" . ews-distraction-free)))
 
 (use-package yasnippet
-  :config
-  (yas-global-mode 1))
+         :config
+ (yas-global-mode 1))
 (use-package yasnippet-snippets
-  :ensure t)
+       :ensure t)
 
 ;; use-package with package.el:
 (use-package dashboard
@@ -467,17 +471,21 @@
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
 
 (use-package lsp-mode
-:ensure t
-:hook (typescript-mode . lsp)
-:commands lsp)
-(use-package consult-lsp
-  :ensure t)
-(use-package lsp-ui)
-(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  :ensure t
+  :commands lsp)
+  (use-package consult-lsp
+    :ensure t)
+  (use-package lsp-ui)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  (add-hook 'python-mode-hook #'lsp)
+(add-hook 'typescript-mode-hook #'lsp)
+;; optional if you want which-key integration
+(use-package which-key
+    :config
+    (which-key-mode))
 
 (use-package typescript-mode
 :ensure t)
-(add-hook 'typescript-mode-hook #'lsp-deferred)
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
@@ -508,6 +516,6 @@
 (use-package gdscript-mode
   :ensure t )
 
-;;(tree-sitter-require 'python)
+(tree-sitter-require 'python)
 ;;(tree-sitter-require 'typst)
-;;(add-hook 'python-mode-hook #'tree-sitter-mode)
+(add-hook 'python-mode-hook #'tree-sitter-mode)

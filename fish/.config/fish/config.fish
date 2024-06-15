@@ -25,6 +25,7 @@ set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x MOZ_ENABLE_WAYLAND '1'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
+set fzf_preview_file_cmd bat --color=always
 alias "imgcat" 'wezterm imgcat'
 #alias "cd" "z"
 set -x EDITOR "nvim"
