@@ -89,7 +89,6 @@
   (warning-minimum-level :error))
 
 (use-package catppuccin-theme
-  :ensure t
   :config
   (setq catppuccin-flavor 'mocha)
   (catppuccin-reload)
@@ -124,36 +123,29 @@
 ;; Soporte de autocompletado para LaTeX
 
 (require 'org-tempo)
-  (setq-default org-startup-indented t
-                org-pretty-entities t
-                org-use-sub-superscripts "{}"
-                org-hide-emphasis-markers t
-                org-startup-with-inline-images t
-                org-image-actual-width '(300))
-(add-hook 'org-mode-hook 'org-indent-mode)
+    (setq-default org-startup-indented t
+                  org-pretty-entities t
+                  org-use-sub-superscripts "{}"
+                  org-hide-emphasis-markers t
+                  org-startup-with-inline-images t
+                  org-image-actual-width '(300))
+  (add-hook 'org-mode-hook 'org-indent-mode)
 
-;; Mostrar marcadores de énfasis ocultos
-  (use-package org
-     :config
-      (setq org-directory "~/org/")
-      (setq org-agenda-files '("~/org/agenda.org"))
-      (setq org-archive-location "~/org/%s_archivo.org::datetree/")
-      (setq org-todo-keywords
-   '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
-      :bind
-      (("C-c c" . org-capture)
-       ("C-c a" . org-agenda)))
-
-
-    ;; Org Export Settings
-    (use-package org
-      :custom
-      (org-export-with-drawers nil)
-      (org-export-with-todo-keywords nil)
-      (org-export-with-broken-links t)
-      (org-export-with-toc nil)
-      (org-export-with-smart-quotes t)
-      (org-export-date-timestamp-format "%d %B %Y"))
+  ;; Mostrar marcadores de énfasis ocultos
+(setq org-directory "~/org/")
+(setq org-agenda-files '("~/org/agenda.org"))
+(setq org-archive-location "~/org/%s_archivo.org::datetree/")
+(setq org-todo-keywords
+     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+      (global-set-key (kbd "C-c c") 'org-capture)
+      (global-set-key (kbd "C-c a") 'org-agenda)
+        (setq org-export-with-drawers nil
+              org-export-with-todo-keywords nil
+              org-export-with-broken-links t
+              org-export-with-toc nil
+              org-export-with-smart-quotes t
+              org-export-date-timestamp-format "%d %B %Y"
+              org-list-allow-alphabetical t)
 
 (use-package org-auto-tangle
 :defer t
@@ -172,10 +164,6 @@
 (use-package org-appear
   :hook
   (org-mode . org-appear-mode))
-
-  (use-package org
-    :custom
-    (org-list-allow-alphabetical t))
 
 ;; Modernise Org mode interface
 (use-package org-modern
@@ -217,9 +205,10 @@
                          "blg" "brf" "fls" "entoc" "ps" "spl" "bbl"
                          "tex" "bcf"))))
 
-;;(add-to-list 'load-path "~/.config/emacs/plugins")
+(add-to-list 'load-path "~/.config/emacs/plugins")
 (global-set-key (kbd "C-c o") 'org-agenda-open-link)
-  (load-file "~/.config/emacs/plugins/organizer.el")
+(require 'organizer)
+  ;;(load-file "~/.config/emacs/plugins/organizer.el")
 (global-set-key (kbd "<f12>")  'organizer-index)
 
 (use-package nerd-icons
@@ -228,7 +217,6 @@
   ;; "Symbols Nerd Font Mono" is the default and is recommended
   ;; but you can use any other Nerd Font if you want
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-
   )
 (use-package nerd-icons-dired
   :hook
@@ -357,7 +345,7 @@
                                      (bookmarks . "book")))
  :config
  (dashboard-setup-startup-hook))
-      (global-set-key (kbd "<f10>") 'open-dashboard)
+(global-set-key (kbd "<f10>") 'open-dashboard)
 
     (defun open-dashboard ()
       "Abre el buffer *dashboard* y salta al primer widget."
@@ -517,6 +505,9 @@
       :defer t
       :after flycheck)
 
-(tree-sitter-require 'python)
-(tree-sitter-require 'typst)
-(add-hook 'python-mode-hook #'tree-sitter-mode)
+(use-package gdscript-mode
+  :ensure t )
+
+;;(tree-sitter-require 'python)
+;;(tree-sitter-require 'typst)
+;;(add-hook 'python-mode-hook #'tree-sitter-mode)

@@ -1,0 +1,2 @@
+return {{'kaarmu/typst.vim'}}
+

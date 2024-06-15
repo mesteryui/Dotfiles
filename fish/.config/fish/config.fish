@@ -15,7 +15,7 @@ if status is-interactive
     #syncthing
     syncthing install-completions | source
 end
-alias "configure" 'cd ~/.config && nvim $(fzf --preview="cat {}") && cd'
+alias "configure" 'cd ~/.config && nvim $(fzf --preview="bat --color=always {}") && cd'
 alias "ls" 'lsd'
 alias "unimatrix" "unimatrix -n -s 96"
 alias "vetero" 'curl wttr.in/Vigo'

@@ -79,34 +79,33 @@
 #+END_SRC
 * Gestión de paquetes
 #+begin_src emacs-lisp
-    ;; Emacs 29?
-    (unless (>= emacs-major-version 29)
-      (error "Emacs Writing Studio requires Emacs version 29 or later"))
-    
-    ;; Ajustes personalizados en un archivo separado y cargar la configuración personalizada
-    (setq-default custom-file
-                  (expand-file-name "custom.el" user-emacs-directory))
-    (when (file-exists-p custom-file)
-      (load custom-file))
-    
-    ;; Establecer archivos de paquetes
-    (use-package package
-      :config
-      (add-to-list 'package-archives
-                   '("melpa" . "https://melpa.org/packages/"))
-      (package-initialize))
-    
-    ;; Gestión de paquetes
-    (use-package use-package
-      :custom
-      (use-package-always-ensure t)
-      (package-native-compile t)
-      (warning-minimum-level :error))
+;; Emacs 29?
+(unless (>= emacs-major-version 29)
+  (error "Emacs Writing Studio requires Emacs version 29 or later"))
+
+;; Ajustes personalizados en un archivo separado y cargar la configuración personalizada
+(setq-default custom-file
+              (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
+;; Establecer archivos de paquetes
+(use-package package
+  :config
+  (add-to-list 'package-archives
+               '("melpa" . "https://melpa.org/packages/"))
+  (package-initialize))
+
+;; Gestión de paquetes
+(use-package use-package
+  :custom
+  (use-package-always-ensure t)
+  (package-native-compile t)
+  (warning-minimum-level :error))
 #+end_src
 * Tema visual
 #+begin_src emacs-lisp
   (use-package catppuccin-theme
-    :ensure t
     :config
     (setq catppuccin-flavor 'mocha)
     (catppuccin-reload)
@@ -144,39 +143,30 @@
 #+end_src
 * Org Mode
 #+begin_src emacs-lisp
-  (require 'org-tempo)
-    (setq-default org-startup-indented t
-                  org-pretty-entities t
-                  org-use-sub-superscripts "{}"
-                  org-hide-emphasis-markers t
-                  org-startup-with-inline-images t
-                  org-image-actual-width '(300))
-  (add-hook 'org-mode-hook 'org-indent-mode)
+    (require 'org-tempo)
+      (setq-default org-startup-indented t
+                    org-pretty-entities t
+                    org-use-sub-superscripts "{}"
+                    org-hide-emphasis-markers t
+                    org-startup-with-inline-images t
+                    org-image-actual-width '(300))
+    (add-hook 'org-mode-hook 'org-indent-mode)
 
-  ;; Mostrar marcadores de énfasis ocultos
-    (use-package org
-       :config
-        (setq org-directory "~/org/")
-        (setq org-agenda-files '("~/org/agenda.org"))
-        (setq org-archive-location "~/org/%s_archivo.org::datetree/")
-        (setq org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
-        :bind
-        (("C-c c" . org-capture)
-         ("C-c a" . org-agenda)))
-
-
-      ;; Org Export Settings
-      (use-package org
-        :custom
-        (org-export-with-drawers nil)
-        (org-export-with-todo-keywords nil)
-        (org-export-with-broken-links t)
-        (org-export-with-toc nil)
-        (org-export-with-smart-quotes t)
-        (org-export-date-timestamp-format "%d %B %Y"))
-
-
+    ;; Mostrar marcadores de énfasis ocultos
+  (setq org-directory "~/org/")
+  (setq org-agenda-files '("~/org/agenda.org"))
+  (setq org-archive-location "~/org/%s_archivo.org::datetree/")
+  (setq org-todo-keywords
+       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+        (global-set-key (kbd "C-c c") 'org-capture)
+        (global-set-key (kbd "C-c a") 'org-agenda)
+          (setq org-export-with-drawers nil
+                org-export-with-todo-keywords nil
+                org-export-with-broken-links t
+                org-export-with-toc nil
+                org-export-with-smart-quotes t
+                org-export-date-timestamp-format "%d %B %Y"
+                org-list-allow-alphabetical t)
 #+end_src
 
 ** Org auto-tangle
@@ -202,10 +192,6 @@
     (use-package org-appear
     :hook
     (org-mode . org-appear-mode))
-
-    (use-package org
-      :custom
-      (org-list-allow-alphabetical t))
 
   ;; Modernise Org mode interface
   (use-package org-modern
@@ -253,9 +239,10 @@
 ** Organizer
 Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
 #+BEGIN_SRC emacs-lisp
-    ;;(add-to-list 'load-path "~/.config/emacs/plugins")
+    (add-to-list 'load-path "~/.config/emacs/plugins")
   (global-set-key (kbd "C-c o") 'org-agenda-open-link)
-    (load-file "~/.config/emacs/plugins/organizer.el")
+  (require 'organizer)
+    ;;(load-file "~/.config/emacs/plugins/organizer.el")
   (global-set-key (kbd "<f12>")  'organizer-index)
 #+end_src
 ** Nerd Icons
@@ -267,7 +254,6 @@ Soporte de iconos usando interfaz gráfica y terminal
     ;; "Symbols Nerd Font Mono" is the default and is recommended
     ;; but you can use any other Nerd Font if you want
     ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-    
     )
   (use-package nerd-icons-dired
     :hook
@@ -276,6 +262,7 @@ Soporte de iconos usando interfaz gráfica y terminal
     :config
     (nerd-icons-completion-mode)
     (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
 #+end_src
 ** Doom modeline
 Mejorar la linea inferior de Emacs usando la que utiliza el framework de configuración [[https://github.com/doomemacs/doomemacs][Doom]]
@@ -417,7 +404,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
                                        (bookmarks . "book")))
    :config
    (dashboard-setup-startup-hook))
-        (global-set-key (kbd "<f10>") 'open-dashboard)
+  (global-set-key (kbd "<f10>") 'open-dashboard)
 
       (defun open-dashboard ()
         "Abre el buffer *dashboard* y salta al primer widget."
@@ -625,9 +612,14 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
       :defer t
       :after flycheck)
 #+END_SRC
+** GDScript
+#+begin_src emacs-lisp
+        (use-package gdscript-mode
+          :ensure t )
+#+end_src
 * Configuraciones de Tresitter
 #+BEGIN_SRC emacs-lisp
-  (tree-sitter-require 'python)
-  (tree-sitter-require 'typst)
-  (add-hook 'python-mode-hook #'tree-sitter-mode)
+  ;;(tree-sitter-require 'python)
+  ;;(tree-sitter-require 'typst)
+  ;;(add-hook 'python-mode-hook #'tree-sitter-mode)
 #+end_SRC
