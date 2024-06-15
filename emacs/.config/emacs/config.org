@@ -79,29 +79,29 @@
 #+END_SRC
 * Gestión de paquetes
 #+begin_src emacs-lisp
-;; Emacs 29?
-(unless (>= emacs-major-version 29)
-  (error "Emacs Writing Studio requires Emacs version 29 or later"))
-
-;; Ajustes personalizados en un archivo separado y cargar la configuración personalizada
-(setq-default custom-file
-              (expand-file-name "custom.el" user-emacs-directory))
-(when (file-exists-p custom-file)
-  (load custom-file))
-
-;; Establecer archivos de paquetes
-(use-package package
-  :config
-  (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/"))
-  (package-initialize))
-
-;; Gestión de paquetes
-(use-package use-package
-  :custom
-  (use-package-always-ensure t)
-  (package-native-compile t)
-  (warning-minimum-level :error))
+    ;; Emacs 29?
+    (unless (>= emacs-major-version 29)
+      (error "Emacs Writing Studio requires Emacs version 29 or later"))
+    
+    ;; Ajustes personalizados en un archivo separado y cargar la configuración personalizada
+    (setq-default custom-file
+                  (expand-file-name "custom.el" user-emacs-directory))
+    (when (file-exists-p custom-file)
+      (load custom-file))
+    
+    ;; Establecer archivos de paquetes
+    (use-package package
+      :config
+      (add-to-list 'package-archives
+                   '("melpa" . "https://melpa.org/packages/"))
+      (package-initialize))
+    
+    ;; Gestión de paquetes
+    (use-package use-package
+      :custom
+      (use-package-always-ensure t)
+      (package-native-compile t)
+      (warning-minimum-level :error))
 #+end_src
 * Tema visual
 #+begin_src emacs-lisp
@@ -286,14 +286,14 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
-  (use-package vertico
-  :init
-  (vertico-mode)
-  :custom
-  (vertico-count 13)                    ; Número de candidatos a mostrar
-  (vertico-resize t)
-  (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha))
+   (use-package vertico
+   :init
+   (vertico-mode)
+   :custom
+   (vertico-count 13)                    ; Número de candidatos a mostrar
+   (vertico-resize t)
+   (vertico-cycle t)
+   (vertico-sort-function 'vertico-sort-history-alpha))
 #+end_src
 ** Consult
 #+begin_src emacs-lisp
@@ -625,4 +625,9 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
       :defer t
       :after flycheck)
 #+END_SRC
-
+* Configuraciones de Tresitter
+#+BEGIN_SRC emacs-lisp
+  (tree-sitter-require 'python)
+  (tree-sitter-require 'typst)
+  (add-hook 'python-mode-hook #'tree-sitter-mode)
+#+end_SRC

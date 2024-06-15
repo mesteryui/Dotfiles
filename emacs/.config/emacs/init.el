@@ -516,3 +516,7 @@
       :ensure t
       :defer t
       :after flycheck)
+
+(tree-sitter-require 'python)
+(tree-sitter-require 'typst)
+(add-hook 'python-mode-hook #'tree-sitter-mode)
