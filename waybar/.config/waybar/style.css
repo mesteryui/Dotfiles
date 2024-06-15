@@ -77,7 +77,7 @@ button:hover {
     /*color: shade(@mantle, 0.9) */
     background-color: @mauve;
     color: shade(@base, 0.9);
-    border-radius: 10px;
+    border-radius: 15px;
 }
 #workspaces button.focused:hover {
         color: shade(@base, 0.9);
