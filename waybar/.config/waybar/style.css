@@ -69,6 +69,7 @@ button:hover {
 
 #workspaces button:hover { 
     color: @mauve;
+    border-radius: 15px;
 }
 
 #workspaces button.focused { 
@@ -86,6 +87,7 @@ button:hover {
 #workspaces button.urgent {
     background-color: shade(@red , 0.9);
     color: shade(@base, 0.9);
+    border-radius: 15px;
 }
 
 #mode {

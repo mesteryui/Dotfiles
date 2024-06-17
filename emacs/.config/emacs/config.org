@@ -627,7 +627,7 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
 #+end_src
 * Configuraciones de Tresitter
 #+BEGIN_SRC emacs-lisp
-  (tree-sitter-require 'python)
+  ;(tree-sitter-require 'python)
   ;;(tree-sitter-require 'typst)
-  (add-hook 'python-mode-hook #'tree-sitter-mode)
+  ;(add-hook 'python-mode-hook #'tree-sitter-mode)
 #+end_SRC

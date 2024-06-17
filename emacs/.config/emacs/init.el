@@ -516,6 +516,6 @@
 (use-package gdscript-mode
   :ensure t )
 
-(tree-sitter-require 'python)
+;(tree-sitter-require 'python)
 ;;(tree-sitter-require 'typst)
-(add-hook 'python-mode-hook #'tree-sitter-mode)
+;(add-hook 'python-mode-hook #'tree-sitter-mode)

@@ -2,13 +2,13 @@
      "layer": "top", // Waybar at top layer
      "position": "top", // Waybar position (top|bottom|left|right)
      "height": 30, // Waybar height (to be removed for auto height)
-     "margin-top": 2,
+     "margin-top": 3,
      "width": 1432,
     // Choose the order of the modules
     //sway/Scratchpad
     "modules-left": ["sway/workspaces", "sway/scratchpad", "sway/mode"],
     "modules-center": ["sway/window"],
-    "modules-right": ["privacy", "idle_inhibitor", "pulseaudio", "cpu", "memory", "temperature", "backlight", "keyboard-state", "battery", "clock", "custom/notifications", "tray"],
+    "modules-right": ["privacy", "custom/updater", "idle_inhibitor", "pulseaudio", "cpu", "memory", "temperature", "backlight", "keyboard-state", "battery", "clock", "custom/notifications", "tray"],
     // Modules configuration
      "sway/workspaces": {
          "disable-scroll": true,
@@ -28,12 +28,22 @@
 	           "9": "9",
 	          "10": "0",
          }
-    }, 
-    "sway/window": {
+    },
+       "sway/window": {
         "max-length": 60,
         "tooltip": false
         // "format": "( {} )"
     },
+       "custom/updater": {
+       "format": " {} {icon}",
+       "return-type": "json",
+       "format-icons": {
+           "has-updates": "󱍷 ",
+           "updated": "󰂪 "
+       },
+       "exec-if": "which waybar-module-pacman-updates",
+       "exec": "waybar-module-pacman-updates  --interval-seconds 5 --network-interval-seconds 300"
+   },
 "custom/notifications": {
     "tooltip": false,
     "format": "{icon} ",
