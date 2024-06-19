@@ -13,4 +13,4 @@ autotiling:
   enable: true
 autotransparency:
   enable: true
-  transparency: 0.7
+  transparency: 0.77

@@ -1,8 +1,8 @@
 @import "mocha.css";
 #waybar {
     /* `otf-font-awesome` is required to be installed for icons */
-    font-family: "MesloLGS Nerd Font", FontAwesome, feather;
-    font-size: 12px;
+    font-family: "Iosevka Nerd Font", FontAwesome, feather;
+    font-size: 13px;
    /* color: @text; */
 }
 #window {
@@ -17,7 +17,7 @@ window#waybar {
     transition-duration: 0s;
     box-shadow: none;
     border-radius: 15px;
-    margin-top: 6px;
+    margin-top: 9px;
 }
 
 window#waybar.hidden {

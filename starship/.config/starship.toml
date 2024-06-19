@@ -113,7 +113,7 @@ truncation_symbol = "…/"
 "Trash" = ""
 ".config" = " "
 ".cache" = " "
-"home" = " "
+"home" = " "
 
 [git_branch]
 symbol = ""
