@@ -10,6 +10,7 @@ color:
   # When "custom" is set, lsd will look in the config directory for `colors.yaml`.
   theme: default
 
+
 icons:
   # When to use icons.
   # When "classic" is set, this is set to "never".
