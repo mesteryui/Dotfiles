@@ -2,7 +2,6 @@ for_window [title="^Open File$"] floating enable
 for_window [title="^Save File$"] floating enable
 for_window [app_id="galculator"] floating enable
 for_window [title="Acerca de*"] floating enable
-for_window [title="Entrada de parámetros"] floating enable
 for_window [title="Escribir:*"] floating enable
 for_window [title="Redacción*"] floating enable
 for_window [title="Send Later - Mozilla Thunderbird"] floating enable

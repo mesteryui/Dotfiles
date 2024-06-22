@@ -8,7 +8,8 @@ set $right l
 # Your preferred terminal emulator
 set $term wezterm
 #set $menu /home/oscar/.config/rofi/launchers/type-2/launcher.sh
-set $menu onagre
+set $menu rofi -show drun -fuzzy
+#set $menu wofi --show drun --allow-images --prompt="Buscar..." --hide-scroll --insensitive --matching fuzzy
 #set $powermenu /home/oscar/.config/rofi/powermenu/type-2/powermenu.sh
 set $powermenu nwg-bar -x
 set $browser firefox

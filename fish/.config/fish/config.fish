@@ -14,6 +14,7 @@ if status is-interactive
     zoxide init fish | source
     #syncthing
     syncthing install-completions | source
+    fzf --fish | source
 end
 alias "configure" 'cd ~/.config && nvim $(fzf --preview="bat --color=always {}") && cd'
 alias "ls" 'lsd'
@@ -25,8 +26,7 @@ set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x MOZ_ENABLE_WAYLAND '1'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
-set fzf_preview_file_cmd bat --color=always
-alias "imgcat" 'wezterm imgcat'
+
 #alias "cd" "z"
 set -x EDITOR "nvim"
 set -Ux FZF_DEFAULT_OPTS "\

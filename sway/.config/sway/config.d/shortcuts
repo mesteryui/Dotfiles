@@ -17,7 +17,7 @@ bindsym $mod+p exec passmenu
 bindsym $mod+t exec telegram-desktop
 bindsym Print exec grim "$(xdg-user-dir PICTURES)/$(date +%Y-%m-%dT%H-%M-%S).png"
 bindsym $mod+Print exec grim -g "$(slurp)" "$(xdg-user-dir PICTURES)/$(date +%Y-%m-%dT%H-%M-%S).jpg"  
-bindsym $alt+e exec ~/.config/sway/scripts/rofimoji.sh
+bindsym $alt+e exec ~/.config/sway/scripts/rofimoji.fish
 bindsym $mod+n exec swaync-client -t -sw
 # Workspaces:
 #
