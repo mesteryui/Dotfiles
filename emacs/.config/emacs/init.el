@@ -104,12 +104,13 @@
 ;; Ajustes para AUCTeX
 (setq TeX-view-program-selection
       '(((output-dvi has-no-display-manager)
-	 "dvi2tty")
-	((output-dvi style-pstricks)
-	 "dvips and gv")
-	(output-dvi "xdvi")
-	(output-pdf "xdg-open")
-	(output-html "xdg-open")))
+         "dvi2tty")
+        ((output-dvi style-pstricks)
+         "dvips and gv")
+        (output-dvi "xdvi")
+        (output-pdf "xdg-open")
+        (output-html "xdg-open")))
+
 (add-hook 'LaTeX-mode-hook (lambda ()(TeX-electric-math t)))
 (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)               ;Activar CDLaTeX
 (add-hook 'LaTeX-mode-hook (lambda ()(company-mode 1)))    ;Activar Autocompletado
@@ -151,15 +152,15 @@
 :defer t
 :hook (org-mode . org-auto-tangle-mode))
 
-(use-package org-superstar
-     :ensure t
-     :config
-     (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-
-     (setq org-ellipsis "▼")
-
-    ;(setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
-    (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
+;  (use-package org-superstar
+;       :ensure t
+;       :config
+;       (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+;
+;       (setq org-ellipsis "▼")
+;
+      ;(setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
+;      (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
 
 (use-package org-appear
   :hook
@@ -224,7 +225,8 @@
 (use-package nerd-icons-completion
   :config
   (nerd-icons-completion-mode)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+  :hook
+  (marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package doom-modeline
 :init (doom-modeline-mode 1)
@@ -372,7 +374,8 @@
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
 
 (use-package fish-mode
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package magit
   :bind
@@ -439,7 +442,8 @@
   (setq cfw:org-overwrite-default-keybinding t)
   :bind ([f8] . cfw:open-org-calendar))
 
-(use-package mastodon)
+(use-package mastodon
+    :defer t)
 (setq mastodon-instance-url "https://im-in.space"
       mastodon-active-user "@mester@im-in.space")
 (setq mastodon-tl--highlight-current-toot 1)
@@ -485,6 +489,7 @@
     (which-key-mode))
 
 (use-package typescript-mode
+:defer t
 :ensure t)
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
@@ -497,7 +502,8 @@
             ledger-default-date-format "%Y-%m-%d"))
     (autoload 'ledger-mode "ledger-mode" "Modo mayor para Ledger" t)
     (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-    (add-hook 'ledger-mode-hook
+:hook
+(ledger-mode-hook
               (lambda ()
                 (setq-local tab-always-indent 'complete)
                 (setq-local completion-cycle-threshold t)
@@ -513,8 +519,9 @@
       :defer t
       :after flycheck)
 
-(use-package gdscript-mode
-  :ensure t )
+;(use-package gdscript-mode
+;  :defer t
+;  :ensure t)
 
 ;(tree-sitter-require 'python)
 ;;(tree-sitter-require 'typst)

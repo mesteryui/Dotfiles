@@ -113,33 +113,34 @@
 #+end_src
 * LaTeX
 #+begin_src emacs-lisp
-      (use-package auctex
-	:defer t)
-	(use-package company-auctex
-	  :ensure t
-	  :after auctex
-	  :config
-	   (company-auctex-init))
-      ;; Ajustes para AUCTeX
-      (setq TeX-view-program-selection
-	    '(((output-dvi has-no-display-manager)
-	       "dvi2tty")
-	      ((output-dvi style-pstricks)
-	       "dvips and gv")
-	      (output-dvi "xdvi")
-	      (output-pdf "xdg-open")
-	      (output-html "xdg-open")))
-      (add-hook 'LaTeX-mode-hook (lambda ()(TeX-electric-math t)))
-      (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)               ;Activar CDLaTeX
-      (add-hook 'LaTeX-mode-hook (lambda ()(company-mode 1)))    ;Activar Autocompletado
-      (add-hook 'LaTeX-mode-hook (lambda ()(TeX-fold-mode 1)))   ;Activar el plegado
-      (add-hook 'LaTeX-mode-hook 'latex-extra-mode)
-      (add-hook 'LaTeX-mode-hook 'display-line-numbers-mode)
+  (use-package auctex
+    :defer t)
+    (use-package company-auctex
+      :ensure t
+      :after auctex
+      :config
+       (company-auctex-init))
+  ;; Ajustes para AUCTeX
+  (setq TeX-view-program-selection
+        '(((output-dvi has-no-display-manager)
+           "dvi2tty")
+          ((output-dvi style-pstricks)
+           "dvips and gv")
+          (output-dvi "xdvi")
+          (output-pdf "xdg-open")
+          (output-html "xdg-open")))
+  
+  (add-hook 'LaTeX-mode-hook (lambda ()(TeX-electric-math t)))
+  (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)               ;Activar CDLaTeX
+  (add-hook 'LaTeX-mode-hook (lambda ()(company-mode 1)))    ;Activar Autocompletado
+  (add-hook 'LaTeX-mode-hook (lambda ()(TeX-fold-mode 1)))   ;Activar el plegado
+  (add-hook 'LaTeX-mode-hook 'latex-extra-mode)
+  (add-hook 'LaTeX-mode-hook 'display-line-numbers-mode)
 
-      ;; (use-package ox-tufte
-      ;;   :defer t)
+  ;; (use-package ox-tufte
+  ;;   :defer t)
 
-      ;; Soporte de autocompletado para LaTeX
+  ;; Soporte de autocompletado para LaTeX
 #+end_src
 * Org Mode
 #+begin_src emacs-lisp
@@ -177,15 +178,15 @@
 #+END_SRC
 ** Org Superstar
 #+begin_src emacs-lisp
-  (use-package org-superstar
-       :ensure t
-       :config
-       (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-
-       (setq org-ellipsis "▼")
-
+;  (use-package org-superstar
+;       :ensure t
+;       :config
+;       (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+;
+;       (setq org-ellipsis "▼")
+;
       ;(setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
-      (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
+;      (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
 #+end_src
 ** Utilidades para org mode
 #+begin_src emacs-lisp
@@ -261,7 +262,8 @@ Soporte de iconos usando interfaz gráfica y terminal
   (use-package nerd-icons-completion
     :config
     (nerd-icons-completion-mode)
-    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+    :hook
+    (marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 #+end_src
 ** Doom modeline
@@ -437,8 +439,9 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
 ** Fish mode
 Modo para habilitar el resaltado de sintaxis en el archivo de configuración de la [[https://fishshell.com][shell fish]] 
 #+begin_src emacs-lisp
-  (use-package fish-mode
-    :ensure t)
+    (use-package fish-mode
+      :ensure t
+      :defer t)
 #+end_src
 ** Magit
 #+begin_src emacs-lisp
@@ -528,10 +531,11 @@ Para configurar un calendario
 
 ** Mastodon
 #+BEGIN_SRC emacs-lisp
-  (use-package mastodon)
-(setq mastodon-instance-url "https://im-in.space"
-      mastodon-active-user "@mester@im-in.space")
-(setq mastodon-tl--highlight-current-toot 1)
+    (use-package mastodon
+      :defer t)
+  (setq mastodon-instance-url "https://im-in.space"
+        mastodon-active-user "@mester@im-in.space")
+  (setq mastodon-tl--highlight-current-toot 1)
 #+END_SRC
 ** Mu4e
 ** Eshell
@@ -587,6 +591,7 @@ Sirve para configurar el servidor lsp en emacs
 *** Typescript
 #+BEGIN_SRC emacs-lisp
   (use-package typescript-mode
+  :defer t
   :ensure t)
   (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
   (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
@@ -596,34 +601,36 @@ Sirve para configurar el servidor lsp en emacs
 ** Ledger
 Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personales
 #+BEGIN_SRC emacs-lisp
-(use-package ledger-mode
-      :ensure t
-      :defer t
-      :config
-      (setq ledger-reconcile-default-commodity "€"
-            ledger-default-date-format "%Y-%m-%d"))
-    (autoload 'ledger-mode "ledger-mode" "Modo mayor para Ledger" t)
-    (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-    (add-hook 'ledger-mode-hook
-              (lambda ()
-                (setq-local tab-always-indent 'complete)
-                (setq-local completion-cycle-threshold t)
-                (setq-local ledger-complete-in-steps t)))
+  (use-package ledger-mode
+        :ensure t
+        :defer t
+        :config
+        (setq ledger-reconcile-default-commodity "€"
+              ledger-default-date-format "%Y-%m-%d"))
+      (autoload 'ledger-mode "ledger-mode" "Modo mayor para Ledger" t)
+      (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
+  :hook
+  (ledger-mode-hook
+                (lambda ()
+                  (setq-local tab-always-indent 'complete)
+                  (setq-local completion-cycle-threshold t)
+                  (setq-local ledger-complete-in-steps t)))
 
-    (use-package company-ledger
-       :ensure t
-       :defer t
-       :after company)
+      (use-package company-ledger
+         :ensure t
+         :defer t
+         :after company)
 
-    (use-package flycheck-ledger
-      :ensure t
-      :defer t
-      :after flycheck)
+      (use-package flycheck-ledger
+        :ensure t
+        :defer t
+        :after flycheck)
 #+END_SRC
 ** GDScript
 #+begin_src emacs-lisp
-        (use-package gdscript-mode
-          :ensure t )
+  ;(use-package gdscript-mode
+  ;  :defer t
+  ;  :ensure t)
 #+end_src
 * Configuraciones de Tresitter
 #+BEGIN_SRC emacs-lisp

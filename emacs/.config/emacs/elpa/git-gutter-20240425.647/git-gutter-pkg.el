@@ -3,7 +3,8 @@
   :commit "9afe45b41a82a332606d3e70ef85d323d27b9e4f" :authors
   '(("Syohei YOSHIDA" . "syohex@gmail.com"))
   :maintainers
-  '(("Neil Okamoto" . "neil.okamoto+melpa@gmail.com"))
+  '(("Neil Okamoto" . "neil.okamoto+melpa@gmail.com")
+    ("Jen-Chieh" . "jcs090218@gmail.com"))
   :maintainer
   '("Neil Okamoto" . "neil.okamoto+melpa@gmail.com")
   :url "https://github.com/emacsorphanage/git-gutter")

@@ -1,4 +1,4 @@
-set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin
+set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs
 
 if status is-interactive
     # Commands to run in interactive sessions can go here
@@ -13,12 +13,12 @@ if status is-interactive
     # zoxide
     zoxide init fish | source
     #syncthing
-    syncthing install-completions | source
+    #syncthing install-completions | source
     fzf --fish | source
 end
 alias "configure" 'cd ~/.config && nvim $(fzf --preview="bat --color=always {}") && cd'
 alias "ls" 'lsd'
-alias "unimatrix" "unimatrix -n -s 96"
+#alias "unimatrix" "unimatrix -n -s 96"
 alias "vetero" 'curl wttr.in/Vigo'
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'

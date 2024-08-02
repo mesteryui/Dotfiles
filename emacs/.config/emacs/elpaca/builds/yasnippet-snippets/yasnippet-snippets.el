@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/yasnippet-snippets/yasnippet-snippets.el

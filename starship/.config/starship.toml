@@ -88,7 +88,7 @@ CentOS = ""
 Debian = "󰣚 "
 Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
-
+EndeavourOS = " "
 [username]
 show_always = true
 style_user = "bg:surface0 fg:text"

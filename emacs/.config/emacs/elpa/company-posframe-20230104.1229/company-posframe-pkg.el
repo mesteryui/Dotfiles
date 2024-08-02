@@ -3,7 +3,7 @@
     (company "0.9.0")
     (posframe "0.9.0"))
   :commit "18d6641bba72cba3c00018cee737ea8b454f64a8" :authors
-  '(("Clément Pit-Claudel, Feng Shu, Lars Andersen" . "expez@expez.com"))
+  '(("Lars Andersen" . "expez@expez.com"))
   :maintainers
   '(("Feng Shu" . "tumashu@163.com"))
   :maintainer
