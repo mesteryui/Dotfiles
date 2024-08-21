@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/consult/consult-compile.el

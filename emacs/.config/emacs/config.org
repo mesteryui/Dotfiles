@@ -1,9 +1,22 @@
-#+title: Configuración
+#+title: Configuraciones
 #+author: Mester
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+#+description: Configuracion de Emacs
+#+STARTUP: showeverything
+* Advertencia
+Esta configuracion esta inspirada en la configuracion de Derek Taylor conocido en Youtube como distrotube y en las configuraciones de otras personas
+* Programas importantes
+To keep this =config.org= a reasonable length, I have moved a lot of code to individual scripts that will be sourced by this config.  These scripts are found in "~/.config/emacs/scripts" and do not contain any code that most people are likely to need to edit.
 
-* Configuración básica
-** Correcciones de aspecto básicas
+** Adding the scripts directory to path
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.config/emacs/scripts/")
+#+end_src
+
+** Sourcing the scripts
+#+begin_src emacs-lisp
+(require 'elpaca-setup)  ;; The Elpaca Package Manager
+#+end_src
+* Correcciones de aspecto básicas
 #+begin_src emacs-lisp
   (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
@@ -77,32 +90,6 @@
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
 (setq european-calendar-style t) ;; estilo europeo
 #+END_SRC
-* Gestión de paquetes
-#+begin_src emacs-lisp
-;; Emacs 29?
-(unless (>= emacs-major-version 29)
-  (error "Emacs Writing Studio requires Emacs version 29 or later"))
-
-;; Ajustes personalizados en un archivo separado y cargar la configuración personalizada
-(setq-default custom-file
-              (expand-file-name "custom.el" user-emacs-directory))
-(when (file-exists-p custom-file)
-  (load custom-file))
-
-;; Establecer archivos de paquetes
-(use-package package
-  :config
-  (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/"))
-  (package-initialize))
-
-;; Gestión de paquetes
-(use-package use-package
-  :custom
-  (use-package-always-ensure t)
-  (package-native-compile t)
-  (warning-minimum-level :error))
-#+end_src
 * Tema visual
 #+begin_src emacs-lisp
   (use-package catppuccin-theme
@@ -110,37 +97,6 @@
     (setq catppuccin-flavor 'mocha)
     (catppuccin-reload)
     (load-theme 'catppuccin :no-confirm))
-#+end_src
-* LaTeX
-#+begin_src emacs-lisp
-  (use-package auctex
-    :defer t)
-    (use-package company-auctex
-      :ensure t
-      :after auctex
-      :config
-       (company-auctex-init))
-  ;; Ajustes para AUCTeX
-  (setq TeX-view-program-selection
-        '(((output-dvi has-no-display-manager)
-           "dvi2tty")
-          ((output-dvi style-pstricks)
-           "dvips and gv")
-          (output-dvi "xdvi")
-          (output-pdf "xdg-open")
-          (output-html "xdg-open")))
-  
-  (add-hook 'LaTeX-mode-hook (lambda ()(TeX-electric-math t)))
-  (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)               ;Activar CDLaTeX
-  (add-hook 'LaTeX-mode-hook (lambda ()(company-mode 1)))    ;Activar Autocompletado
-  (add-hook 'LaTeX-mode-hook (lambda ()(TeX-fold-mode 1)))   ;Activar el plegado
-  (add-hook 'LaTeX-mode-hook 'latex-extra-mode)
-  (add-hook 'LaTeX-mode-hook 'display-line-numbers-mode)
-
-  ;; (use-package ox-tufte
-  ;;   :defer t)
-
-  ;; Soporte de autocompletado para LaTeX
 #+end_src
 * Org Mode
 #+begin_src emacs-lisp
@@ -168,25 +124,6 @@
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
-#+end_src
-
-** Org auto-tangle
-#+BEGIN_SRC emacs-lisp
-      (use-package org-auto-tangle
-      :defer t
-      :hook (org-mode . org-auto-tangle-mode))
-#+END_SRC
-** Org Superstar
-#+begin_src emacs-lisp
-;  (use-package org-superstar
-;       :ensure t
-;       :config
-;       (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-;
-;       (setq org-ellipsis "▼")
-;
-      ;(setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
-;      (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
 #+end_src
 ** Utilidades para org mode
 #+begin_src emacs-lisp
@@ -216,28 +153,8 @@
     (use-package ox-epub
     :demand t)
   (use-package ox-reveal)
-     #+end_src
-** Ajustes exportacion LaTeX
-#+begin_src emacs-lisp
-  (use-package ox-latex
-                  :ensure nil
-                  :demand t
-                  :custom
-                  ;; Multiple LaTeX passes for bibliographies
-                  (org-latex-pdf-process
-                   '("pdflatex -interaction nonstopmode -output-directory %o %f"
-                     "bibtex %b"
-                     "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-                     "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-                  ;; Clean temporary files after export
-                  (org-latex-logfiles-extensions
-                   (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out"
-                           "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk"
-                           "blg" "brf" "fls" "entoc" "ps" "spl" "bbl"
-                           "tex" "bcf"))))
-  #+end_src
-* Paquetes
-** Organizer
+#+end_src
+* Organizer
 Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
 #+BEGIN_SRC emacs-lisp
     (add-to-list 'load-path "~/.config/emacs/plugins")
@@ -246,7 +163,7 @@ Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el
     ;;(load-file "~/.config/emacs/plugins/organizer.el")
   (global-set-key (kbd "<f12>")  'organizer-index)
 #+end_src
-** Nerd Icons
+* Nerd Icons
 Soporte de iconos usando interfaz gráfica y terminal
 #+begin_src emacs-lisp
   (use-package nerd-icons
@@ -262,18 +179,17 @@ Soporte de iconos usando interfaz gráfica y terminal
   (use-package nerd-icons-completion
     :config
     (nerd-icons-completion-mode)
-    :hook
-    (marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 #+end_src
-** Doom modeline
+* Doom modeline
 Mejorar la linea inferior de Emacs usando la que utiliza el framework de configuración [[https://github.com/doomemacs/doomemacs][Doom]]
 #+begin_src emacs-lisp
    (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 #+end_src
-** Vertico
+* Vertico
 #+begin_src emacs-lisp
    (use-package vertico
    :init
@@ -284,7 +200,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
    (vertico-cycle t)
    (vertico-sort-function 'vertico-sort-history-alpha))
 #+end_src
-** Consult
+* Consult
 #+begin_src emacs-lisp
   (use-package consult
   :bind (
@@ -300,13 +216,13 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
          ("M-s g" . consult-grep)
          ("C-s" . consult-line)))
 #+end_src
-** Marginalia
+* Marginalia
 #+begin_src emacs-lisp
 (use-package marginalia
       :init
       (marginalia-mode))
 #+end_src
-** Orderless
+* Orderless
 #+begin_src emacs-lisp
   (use-package orderless
   :custom
@@ -315,41 +231,16 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
   (completion-category-overrides
    '((file (styles partial-completion)))))
 #+end_src
-** Flyspell
-#+begin_src emacs-lisp
-(use-package flyspell
-    :init
-      (setq ispell-silently-savep t
-        flyspell-case-fold-duplications t
-        flyspell-issue-message-flag nil
-        flyspell-default-dictionary "es_ES"
-        ispell-program-name "hunspell")   
-    :hook (text-mode . flyspell-mode)
-    :bind (("M-<f7>" . flyspell-buffer)
-           ("<f7>" . flyspell-word)))
-(defun pp-switch-dictionary()
-  "Switch between Dutch and Australian dictionaries."
-  (interactive)
-  (let* ((dic ispell-current-dictionary)
-         (change (if (string= dic "es_ES") "eo" "es_ES")))
-    (ispell-change-dictionary change)
-    (message "Dictionary switched from %s to %s" dic change)))
-
-(global-set-key (kbd "C-<f7>") 'pp-switch-dictionary)
-  (use-package flyspell-correct
-    :after (flyspell)
-    :bind (("C-;" . flyspell-auto-correct-previous-word)
-           ("<f7>" . flyspell-correct-wrapper)))
-#+end_src
-** Company
+* Company
 #+begin_src emacs-lisp
     (use-package company
+    :ensure t
     :custom
     (company-idle-delay 0)
     (company-minimum-prefix-length 4)
     (company-selection-wrap-around t)
-    :init
-    (global-company-mode))
+    :config
+    (global-company-mode t))
   (use-package company-box
     :ensure t
     :defer t
@@ -359,7 +250,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
     :config
     (company-posframe-mode 1))
 #+end_src
-** Modo sin distracciones
+* Modo sin distracciones
 #+begin_src emacs-lisp
   (defun ews-distraction-free ()
     "Distraction-free writing environment using Olivetti package."
@@ -381,7 +272,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
     :bind
     (("<f9>" . ews-distraction-free)))
 #+end_src
-** Yasnippet
+* Yasnippet
 #+begin_src emacs-lisp
 (use-package yasnippet
          :config
@@ -389,7 +280,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
 (use-package yasnippet-snippets
        :ensure t)
 #+end_src
-** Dashboard
+* Dashboard
 #+begin_src emacs-lisp
           ;; use-package with package.el:
   (use-package dashboard
@@ -422,13 +313,14 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
         (dashboard-insert-startupify-lists)
         (switch-to-buffer dashboard-buffer-name))
 #+end_src
-** Which key
+* Which key
 #+begin_src emacs-lisp
-    (use-package which-key
-      :config
-      (which-key-mode))
+      (use-package which-key
+        :config
+        (which-key-mode)
+        (setq which-key-idle-delay 0.3))
 #+end_src
-** I3wm mode
+* I3wm mode
 #+BEGIN_SRC emacs-lisp
   (use-package i3wm-config-mode
     :ensure t
@@ -436,13 +328,43 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
     (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
   (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
 #+END_SRC
-** Fish mode
+* Fish mode
 Modo para habilitar el resaltado de sintaxis en el archivo de configuración de la [[https://fishshell.com][shell fish]] 
 #+begin_src emacs-lisp
     (use-package fish-mode
       :ensure t
       :defer t)
 #+end_src
+* Flyspell
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell
+        :ensure nil
+        :init
+        :config
+        (setq ispell-silently-savep t
+          flyspell-case-fold-duplications t
+          flyspell-issue-message-flag nil
+          flyspell-default-dictionary "es_ES"
+          ispell-program-name "hunspell")   
+       :hook (text-mode . flyspell-mode)
+       :bind(("M-<f7>" . flyspell-buffer)
+             ("<f7>" . flyspell-word)))
+  (defun pp-switch-dictionary()
+    "Switch between Dutch and Australian dictionaries."
+    (interactive)
+    (let* ((dic ispell-current-dictionary)
+           (change (if (string= dic "es_ES") "eo" "es_ES")))
+      (ispell-change-dictionary change)
+      (message "Dictionary switched from %s to %s" dic change)))
+
+  (global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
+    (use-package flyspell-correct
+      :after (flyspell)
+      :bind (("C-;" . flyspell-auto-correct-previous-word)
+             ("<f7>" . flyspell-correct-wrapper)))
+
+#+END_SRC
+* Paquetes diversos
 ** Magit
 #+begin_src emacs-lisp
   (use-package magit
@@ -460,11 +382,12 @@ Modo para habilitar el resaltado de sintaxis en el archivo de configuración de 
 #+end_src
 ** Doc view
 #+BEGIN_SRC emacs-lisp
-  (use-package doc-view
-  :custom
-  (doc-view-resolution 300)
-  (doc-view-mupdf-use-svg t)
-  (large-file-warning-threshold (* 50 (expt 2 20))))
+    (use-package doc-view
+     :ensure nil
+     :custom
+    (doc-view-resolution 300)
+    (doc-view-mupdf-use-svg t)
+    (large-file-warning-threshold (* 50 (expt 2 20))))
 #+END_SRC
 ** Nov
 #+BEGIN_SRC emacs-lisp
@@ -498,9 +421,10 @@ Modo para habilitar el resaltado de sintaxis en el archivo de configuración de 
 #+END_SRC
 ** Savehist
 #+BEGIN_SRC emacs-lisp
-(use-package savehist
-  :init
-  (savehist-mode))
+  (use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
 #+END_SRC
 ** Vterm
 #+BEGIN_SRC emacs-lisp
@@ -540,18 +464,18 @@ Para configurar un calendario
 ** Mu4e
 ** Eshell
 #+begin_src emacs-lisp
-    (use-package eshell
-      :ensure t)
-    (use-package eshell-toggle
-    :ensure t
-    :custom
-  (eshell-toggle-size-fraction 3))
+      (use-package eshell
+        :ensure nil)
+      (use-package eshell-toggle
+      :ensure t
+      :custom
+    (eshell-toggle-size-fraction 3))
 
-    (use-package eshell-syntax-highlighting
-      :after esh-mode
-      :config
-      (eshell-syntax-highlighting-global-mode +1))
-    (global-set-key (kbd "C-c t") 'eshell-toggle)
+      (use-package eshell-syntax-highlighting
+        :after esh-mode
+        :config
+        (eshell-syntax-highlighting-global-mode +1))
+      (global-set-key (kbd "C-c t") 'eshell-toggle)
 #+end_src
 ** Dired Sidebar
 #+begin_src emacs-lisp
@@ -569,7 +493,7 @@ Para configurar un calendario
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
 #+end_src
 
-** Configuracion para lenguajes de programación
+** Configuración para lenguajes de programación
 *** LSP
 Sirve para configurar el servidor lsp en emacs
 #+BEGIN_SRC emacs-lisp
@@ -582,10 +506,6 @@ Sirve para configurar el servidor lsp en emacs
     (add-hook 'lsp-mode-hook 'lsp-ui-mode)
     (add-hook 'python-mode-hook #'lsp)
   (add-hook 'typescript-mode-hook #'lsp)
-  ;; optional if you want which-key integration
-  (use-package which-key
-      :config
-      (which-key-mode))
 
 #+END_SRC
 *** Typescript
@@ -606,16 +526,12 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
         :defer t
         :config
         (setq ledger-reconcile-default-commodity "€"
-              ledger-default-date-format "%Y-%m-%d"))
+              ledger-default-date-format "%Y-%m-%d")
       (autoload 'ledger-mode "ledger-mode" "Modo mayor para Ledger" t)
       (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-  :hook
-  (ledger-mode-hook
-                (lambda ()
-                  (setq-local tab-always-indent 'complete)
-                  (setq-local completion-cycle-threshold t)
-                  (setq-local ledger-complete-in-steps t)))
-
+      (setq tab-always-indent 'complete)
+      (setq completion-cycle-threshold t)
+      (setq ledger-complete-in-steps t))
       (use-package company-ledger
          :ensure t
          :defer t
@@ -626,15 +542,3 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
         :defer t
         :after flycheck)
 #+END_SRC
-** GDScript
-#+begin_src emacs-lisp
-  ;(use-package gdscript-mode
-  ;  :defer t
-  ;  :ensure t)
-#+end_src
-* Configuraciones de Tresitter
-#+BEGIN_SRC emacs-lisp
-  ;(tree-sitter-require 'python)
-  ;;(tree-sitter-require 'typst)
-  ;(add-hook 'python-mode-hook #'tree-sitter-mode)
-#+end_SRC

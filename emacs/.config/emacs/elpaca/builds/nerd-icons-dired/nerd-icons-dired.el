@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/nerd-icons-dired/nerd-icons-dired.el

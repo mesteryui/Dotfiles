@@ -26,7 +26,7 @@ set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x MOZ_ENABLE_WAYLAND '1'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
-
+alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #alias "cd" "z"
 set -x EDITOR "nvim"
 set -Ux FZF_DEFAULT_OPTS "\

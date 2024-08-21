@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/flycheck-ledger/flycheck-ledger.el
