@@ -1,6 +1,23 @@
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
+(require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
+
+(use-package no-littering
+  :init
+  ;; set paths for no-littering etc and var directories
+  ;; instead of this paths, you could use
+  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
+ ;; (setq no-littering-etc-directory (expand-file-name "~/.cache/emacs/etc")
+ ;;       no-littering-var-directory (expand-file-name "~/.cache/emacs/var")
+  ;;    )
+  :config
+  ;; set sensible defaults for backups
+  (no-littering-theme-backups)
+  ;; set paths for url-history-file and custom-file
+  (setq url-history-file (no-littering-expand-etc-file-name "url/history")
+        custom-file (no-littering-expand-etc-file-name "custom.el"))
+  )
 
 (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
@@ -22,6 +39,13 @@
  kill-ring-max 128                       ; Longitud máxima del anillo de matar
  create-lockfiles nil                    ; Impido la creación de ficheros .#
  )
+
+(defun os/reload-config ()
+  "Recargar configuracion Emacs"
+  (interactive)
+  (load-file "~/.config/emacs/init.el")
+  (ignore (elpaca-process-queues)))
+(global-set-key (kbd "C-c r") 'os/reload-config)
 
 (set-face-attribute 'default nil
   :font "JetBrains Mono NerdFont"
@@ -69,10 +93,10 @@
 (setq european-calendar-style t) ;; estilo europeo
 
 (use-package catppuccin-theme
-  :config
-  (setq catppuccin-flavor 'mocha)
-  (catppuccin-reload)
-  (load-theme 'catppuccin :no-confirm))
+    :config
+    (setq catppuccin-flavor 'mocha)
+    (catppuccin-reload)
+    (load-theme 'catppuccin :no-confirm))
 
 (require 'org-tempo)
     (setq-default org-startup-indented t
@@ -99,7 +123,25 @@
               org-export-date-timestamp-format "%d %B %Y"
               org-list-allow-alphabetical t)
 
-(use-package org-appear
+(use-package ox-latex
+               :ensure nil
+               :demand t
+                :custom
+                ;; Multiple LaTeX passes for bibliographies
+                (org-latex-pdf-process
+                 '("pdflatex -interaction nonstopmode -output-directory %o %f"
+                   "bibtex %b"
+                   "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                   "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+                ;; Clean temporary files after export
+                (org-latex-logfiles-extensions
+                 (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out"
+                         "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk"
+                         "blg" "brf" "fls" "entoc" "ps" "spl" "bbl"
+                         "tex" "bcf"))))
+
+(require 'org-tempo)
+  (use-package org-appear
   :hook
   (org-mode . org-appear-mode))
 
@@ -126,6 +168,56 @@
   :demand t)
 (use-package ox-reveal)
 
+(use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+
+(use-package flyspell
+      :ensure nil
+      :init
+      :config
+      (setq ispell-silently-savep t
+        flyspell-case-fold-duplications t
+        flyspell-issue-message-flag nil
+        flyspell-default-dictionary "es_ES"
+        ispell-program-name "hunspell")   
+     :hook (text-mode . flyspell-mode)
+     :bind(("M-<f7>" . flyspell-buffer)
+           ("<f7>" . flyspell-word)))
+(defun pp-switch-dictionary()
+  "Switch between Dutch and Australian dictionaries."
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+         (change (if (string= dic "es_ES") "eo" "es_ES")))
+    (ispell-change-dictionary change)
+    (message "Dictionary switched from %s to %s" dic change)))
+
+(global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
+  (use-package flyspell-correct
+    :after (flyspell)
+    :bind (("C-;" . flyspell-auto-correct-previous-word)
+           ("<f7>" . flyspell-correct-wrapper)))
+
+(defun ews-distraction-free ()
+  "Distraction-free writing environment using Olivetti package."
+  (interactive)
+  (if (equal olivetti-mode nil)
+      (progn
+        (window-configuration-to-register 1)
+        (delete-other-windows)
+        (text-scale-set 2)
+        (olivetti-mode t))
+    (progn
+      (if (eq (length (window-list)) 1)
+          (jump-to-register 1))
+      (olivetti-mode 0)
+      (text-scale-set 0))))
+
+(use-package olivetti
+  :demand t
+  :bind
+  (("<f9>" . ews-distraction-free)))
+
 (add-to-list 'load-path "~/.config/emacs/plugins")
 (global-set-key (kbd "C-c o") 'org-agenda-open-link)
 (require 'organizer)
@@ -148,17 +240,23 @@
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package doom-modeline
-:init (doom-modeline-mode 1)
-:custom ((doom-modeline-height 15)))
+    :init (doom-modeline-mode 1)
+    :config
+    (setq doom-modeline-height 29      ;; sets modeline height
+          doom-modeline-bar-width 5    ;; sets right bar width
+          doom-modeline-persp-name t   ;; adds perspective name to modeline
+          doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 
 (use-package vertico
-:init
-(vertico-mode)
-:custom
-(vertico-count 13)                    ; Número de candidatos a mostrar
-(vertico-resize t)
-(vertico-cycle t)
-(vertico-sort-function 'vertico-sort-history-alpha))
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-count 13)                    ; Número de candidatos a mostrar
+  (vertico-resize t)
+  (vertico-cycle t)
+  (vertico-sort-function 'vertico-sort-history-alpha))
+;; Use vertico posframe cuando use EXWM, o cuando use un tiling window manager a pantalla completa
+;;(use-package vertico-posframe)
 
 (use-package consult
 :bind (
@@ -202,31 +300,14 @@
   :config
   (company-posframe-mode 1))
 
-(defun ews-distraction-free ()
-  "Distraction-free writing environment using Olivetti package."
-  (interactive)
-  (if (equal olivetti-mode nil)
-      (progn
-        (window-configuration-to-register 1)
-        (delete-other-windows)
-        (text-scale-set 2)
-        (olivetti-mode t))
-    (progn
-      (if (eq (length (window-list)) 1)
-          (jump-to-register 1))
-      (olivetti-mode 0)
-      (text-scale-set 0))))
-
-(use-package olivetti
-  :demand t
-  :bind
-  (("<f9>" . ews-distraction-free)))
-
 (use-package yasnippet
-         :config
- (yas-global-mode 1))
-(use-package yasnippet-snippets
-       :ensure t)
+           :config
+   (yas-global-mode 1))
+ (use-package yasnippet-snippets
+    :ensure t
+    :defer t)
+(use-package consult-yasnippet)
+(global-set-key (kbd "C-c y") 'consult-yasnippet)
 
 ;; use-package with package.el:
 (use-package dashboard
@@ -274,32 +355,6 @@
   :ensure t
   :defer t)
 
-(use-package flyspell
-      :ensure nil
-      :init
-      :config
-      (setq ispell-silently-savep t
-        flyspell-case-fold-duplications t
-        flyspell-issue-message-flag nil
-        flyspell-default-dictionary "es_ES"
-        ispell-program-name "hunspell")   
-     :hook (text-mode . flyspell-mode)
-     :bind(("M-<f7>" . flyspell-buffer)
-           ("<f7>" . flyspell-word)))
-(defun pp-switch-dictionary()
-  "Switch between Dutch and Australian dictionaries."
-  (interactive)
-  (let* ((dic ispell-current-dictionary)
-         (change (if (string= dic "es_ES") "eo" "es_ES")))
-    (ispell-change-dictionary change)
-    (message "Dictionary switched from %s to %s" dic change)))
-
-(global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
-  (use-package flyspell-correct
-    :after (flyspell)
-    :bind (("C-;" . flyspell-auto-correct-previous-word)
-           ("<f7>" . flyspell-correct-wrapper)))
-
 (use-package magit
   :bind
   ("C-x g" . magit-status))
@@ -341,6 +396,11 @@
 :ensure t
 :defer t
 :init (global-flycheck-mode))
+(use-package flycheck-pos-tip
+  :ensure t
+  :defer t
+  :hook
+  (flycheck-mode . flycheck-pos-tip-mode))
 
 (use-package savehist
   :ensure nil
@@ -367,11 +427,15 @@
   (setq cfw:org-overwrite-default-keybinding t)
   :bind ([f8] . cfw:open-org-calendar))
 
-(use-package mastodon
-    :defer t)
-(setq mastodon-instance-url "https://im-in.space"
-      mastodon-active-user "@mester@im-in.space")
-(setq mastodon-tl--highlight-current-toot 1)
+(use-package embark
+    :bind
+    (("C-." . embark-act)
+     ("C-:" . embark-dwim)
+     ("C-h B" . embark-bindings)))
+
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package eshell
     :ensure nil)
@@ -399,21 +463,29 @@
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
 
-(use-package lsp-mode
+(require 'eldoc)
+(global-eldoc-mode t)
+(use-package eldoc-box
   :ensure t
-  :commands lsp)
-  (use-package consult-lsp
-    :ensure t)
-  (use-package lsp-ui)
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-  (add-hook 'python-mode-hook #'lsp)
-(add-hook 'typescript-mode-hook #'lsp)
+  :defer t
+  :init (setq eldoc-box-hover-mode t))
 
 (use-package typescript-mode
 :defer t
 :ensure t)
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
+
+(use-package elpy
+   :ensure t
+   :defer t
+   :config
+   (setq python-shell-interpreter "python3")
+   (setq elpy-rpc-python-command "python3")
+   :init
+   (advice-add 'python-mode :before 'elpy-enable))
+
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 (use-package ledger-mode
       :ensure t
@@ -435,3 +507,35 @@
       :ensure t
       :defer t
       :after flycheck)
+
+(use-package rainbow-delimiters
+  :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
+         (clojure-mode . rainbow-delimiters-mode)))
+
+(use-package rainbow-mode
+:diminish
+:hook org-mode prog-mode)
+
+(use-package sudo-edit)
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+(use-package eradio
+:init
+(setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+:config
+(setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv")
+                        ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+)))
+
+(use-package typst-ts-mode
+:ensure (:type git :host codeberg :repo "meow_king/typst-ts-mode" :branch "develop"
+                 :files (:defaults "*.el"))
+  :custom
+  (typst-ts-watch-options "--open")
+  (typst-ts-mode-grammar-location (expand-file-name "tree-sitter/libtree-sitter-typst.so" user-emacs-directory))
+  (typst-ts-mode-enable-raw-blocks-highlight t)
+  :config
+  (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu))
+
+(use-package tldr)

@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/typescript/typescript-mode-test-utilities.el

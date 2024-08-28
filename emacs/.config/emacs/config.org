@@ -2,8 +2,63 @@
 #+author: Mester
 #+description: Configuracion de Emacs
 #+STARTUP: showeverything
+
+* Indice :toc:
+- [[#advertencia][Advertencia]]
+- [[#programas-importantes][Programas importantes]]
+  - [[#adding-the-scripts-directory-to-path][Adding the scripts directory to path]]
+  - [[#sourcing-the-scripts][Sourcing the scripts]]
+  - [[#no-littering][No littering]]
+- [[#correcciones-de-aspecto-básicas][Correcciones de aspecto básicas]]
+  - [[#recargar-configuracion][Recargar configuracion]]
+  - [[#cambio-de-fuente][Cambio de fuente]]
+  - [[#abrir-configuración][Abrir configuración]]
+  - [[#ajustes-horarios][Ajustes horarios]]
+- [[#tema-visual][Tema visual]]
+- [[#org-mode][Org Mode]]
+  - [[#ajustes-exportacion-latex][Ajustes exportacion LaTeX]]
+  - [[#utilidades-para-org-mode][Utilidades para org mode]]
+  - [[#toc-org][Toc-Org]]
+- [[#flyspell][Flyspell]]
+- [[#modo-sin-distracciones][Modo sin distracciones]]
+- [[#paquetes-diversos][Paquetes diversos]]
+  - [[#organizer][Organizer]]
+  - [[#nerd-icons][Nerd Icons]]
+  - [[#doom-modeline][Doom modeline]]
+  - [[#vertico][Vertico]]
+  - [[#consult][Consult]]
+  - [[#marginalia][Marginalia]]
+  - [[#orderless][Orderless]]
+  - [[#company][Company]]
+  - [[#yasnippet][Yasnippet]]
+  - [[#dashboard][Dashboard]]
+  - [[#which-key][Which key]]
+  - [[#i3wm-mode][I3wm mode]]
+  - [[#fish-mode][Fish mode]]
+  - [[#magit][Magit]]
+  - [[#doc-view][Doc view]]
+  - [[#nov][Nov]]
+  - [[#undo-tree][Undo-tree]]
+  - [[#autorevert][Autorevert]]
+  - [[#flycheck][Flycheck]]
+  - [[#savehist][Savehist]]
+  - [[#vterm][Vterm]]
+  - [[#calfw][Calfw]]
+  - [[#embark][Embark]]
+  - [[#eshell][Eshell]]
+  - [[#dired-sidebar][Dired Sidebar]]
+  - [[#configuración-para-lenguajes-de-programación][Configuración para lenguajes de programación]]
+  - [[#ledger][Ledger]]
+  - [[#rainbow-delimiters][Rainbow delimiters]]
+  - [[#rainbow-mode][Rainbow mode]]
+  - [[#sudo-edit][Sudo edit]]
+- [[#escape-minibuffer][Escape minibuffer]]
+- [[#eradio][Eradio]]
+- [[#typst][Typst]]
+- [[#tldr][TLDR]]
+
 * Advertencia
-Esta configuracion esta inspirada en la configuracion de Derek Taylor conocido en Youtube como distrotube y en las configuraciones de otras personas
+Esta configuracion esta inspirada en la configuracion de Derek Taylor conocido en Youtube como distrotube y en las configuraciones de otras personas, siendo esta la configuracion personal de {{{author}}}
 * Programas importantes
 To keep this =config.org= a reasonable length, I have moved a lot of code to individual scripts that will be sourced by this config.  These scripts are found in "~/.config/emacs/scripts" and do not contain any code that most people are likely to need to edit.
 
@@ -14,7 +69,26 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
 
 ** Sourcing the scripts
 #+begin_src emacs-lisp
-(require 'elpaca-setup)  ;; The Elpaca Package Manager
+  (require 'no-littering-setup) ;; No littering
+  (require 'elpaca-setup)  ;; The Elpaca Package Manager
+#+end_src
+** No littering
+#+begin_src emacs-lisp
+(use-package no-littering
+  :init
+  ;; set paths for no-littering etc and var directories
+  ;; instead of this paths, you could use
+  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
+ ;; (setq no-littering-etc-directory (expand-file-name "~/.cache/emacs/etc")
+ ;;       no-littering-var-directory (expand-file-name "~/.cache/emacs/var")
+  ;;    )
+  :config
+  ;; set sensible defaults for backups
+  (no-littering-theme-backups)
+  ;; set paths for url-history-file and custom-file
+  (setq url-history-file (no-littering-expand-etc-file-name "url/history")
+        custom-file (no-littering-expand-etc-file-name "custom.el"))
+  )
 #+end_src
 * Correcciones de aspecto básicas
 #+begin_src emacs-lisp
@@ -38,6 +112,15 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
  kill-ring-max 128                       ; Longitud máxima del anillo de matar
  create-lockfiles nil                    ; Impido la creación de ficheros .#
  )
+#+end_src
+** Recargar configuracion
+#+begin_src emacs-lisp
+  (defun os/reload-config ()
+    "Recargar configuracion Emacs"
+    (interactive)
+    (load-file "~/.config/emacs/init.el")
+    (ignore (elpaca-process-queues)))
+  (global-set-key (kbd "C-c r") 'os/reload-config)
 #+end_src
 ** Cambio de fuente
 #+begin_SRC emacs-lisp
@@ -76,7 +159,7 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
     (interactive)
     (find-file "~/.config/emacs/config.org"))
   (global-set-key (kbd "C-x c") 'os/open-config)
-#+END_SRC
+#+END_SRC 
 ** Ajustes horarios
 #+BEGIN_SRC emacs-lisp
   (setq calendar-month-name-array
@@ -92,7 +175,7 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
 #+END_SRC
 * Tema visual
 #+begin_src emacs-lisp
-  (use-package catppuccin-theme
+(use-package catppuccin-theme
     :config
     (setq catppuccin-flavor 'mocha)
     (catppuccin-reload)
@@ -124,9 +207,30 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
+ 
 #+end_src
+** Ajustes exportacion LaTeX
+#+begin_src emacs-lisp
+  (use-package ox-latex
+                 :ensure nil
+                 :demand t
+                  :custom
+                  ;; Multiple LaTeX passes for bibliographies
+                  (org-latex-pdf-process
+                   '("pdflatex -interaction nonstopmode -output-directory %o %f"
+                     "bibtex %b"
+                     "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                     "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+                  ;; Clean temporary files after export
+                  (org-latex-logfiles-extensions
+                   (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out"
+                           "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk"
+                           "blg" "brf" "fls" "entoc" "ps" "spl" "bbl"
+                           "tex" "bcf"))))
+  #+end_src
 ** Utilidades para org mode
 #+begin_src emacs-lisp
+  (require 'org-tempo)
     (use-package org-appear
     :hook
     (org-mode . org-appear-mode))
@@ -154,102 +258,43 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
     :demand t)
   (use-package ox-reveal)
 #+end_src
-* Organizer
-Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
-#+BEGIN_SRC emacs-lisp
-    (add-to-list 'load-path "~/.config/emacs/plugins")
-  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
-  (require 'organizer)
-    ;;(load-file "~/.config/emacs/plugins/organizer.el")
-  (global-set-key (kbd "<f12>")  'organizer-index)
-#+end_src
-* Nerd Icons
-Soporte de iconos usando interfaz gráfica y terminal
-#+begin_src emacs-lisp
-  (use-package nerd-icons
-    ;; :custom
-    ;; The Nerd Font you want to use in GUI
-    ;; "Symbols Nerd Font Mono" is the default and is recommended
-    ;; but you can use any other Nerd Font if you want
-    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-    )
-  (use-package nerd-icons-dired
-    :hook
-    (dired-mode . nerd-icons-dired-mode))
-  (use-package nerd-icons-completion
-    :config
-    (nerd-icons-completion-mode)
-    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
-#+end_src
-* Doom modeline
-Mejorar la linea inferior de Emacs usando la que utiliza el framework de configuración [[https://github.com/doomemacs/doomemacs][Doom]]
+** Toc-Org
+Allows us to create a Table of Contents in our Org docs.
 #+begin_src emacs-lisp
-   (use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+(use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
-* Vertico
-#+begin_src emacs-lisp
-   (use-package vertico
-   :init
-   (vertico-mode)
-   :custom
-   (vertico-count 13)                    ; Número de candidatos a mostrar
-   (vertico-resize t)
-   (vertico-cycle t)
-   (vertico-sort-function 'vertico-sort-history-alpha))
-#+end_src
-* Consult
-#+begin_src emacs-lisp
-  (use-package consult
-  :bind (
-         ("C-c M-x" . consult-mode-command)
-         ;; ("C-c k" . consult-kmacro)
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ("M-g o" . consult-outline)               ;; Alternativa: consult-org-heading
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
-         ("M-s d" . consult-find)                  ;; Alternativa: consult-fd
-         ("M-s g" . consult-grep)
-         ("C-s" . consult-line)))
-#+end_src
-* Marginalia
-#+begin_src emacs-lisp
-(use-package marginalia
-      :init
-      (marginalia-mode))
-#+end_src
-* Orderless
-#+begin_src emacs-lisp
-  (use-package orderless
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides
-   '((file (styles partial-completion)))))
-#+end_src
-* Company
-#+begin_src emacs-lisp
-    (use-package company
-    :ensure t
-    :custom
-    (company-idle-delay 0)
-    (company-minimum-prefix-length 4)
-    (company-selection-wrap-around t)
-    :config
-    (global-company-mode t))
-  (use-package company-box
-    :ensure t
-    :defer t
-    :after company
-    :hook 'company-mode-hook 'company-box-mode)
-  (use-package company-posframe
-    :config
-    (company-posframe-mode 1))
-#+end_src
+* Flyspell
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell
+        :ensure nil
+        :init
+        :config
+        (setq ispell-silently-savep t
+          flyspell-case-fold-duplications t
+          flyspell-issue-message-flag nil
+          flyspell-default-dictionary "es_ES"
+          ispell-program-name "hunspell")   
+       :hook (text-mode . flyspell-mode)
+       :bind(("M-<f7>" . flyspell-buffer)
+             ("<f7>" . flyspell-word)))
+  (defun pp-switch-dictionary()
+    "Switch between Dutch and Australian dictionaries."
+    (interactive)
+    (let* ((dic ispell-current-dictionary)
+           (change (if (string= dic "es_ES") "eo" "es_ES")))
+      (ispell-change-dictionary change)
+      (message "Dictionary switched from %s to %s" dic change)))
+
+  (global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
+    (use-package flyspell-correct
+      :after (flyspell)
+      :bind (("C-;" . flyspell-auto-correct-previous-word)
+             ("<f7>" . flyspell-correct-wrapper)))
+
+#+END_SRC
 * Modo sin distracciones
 #+begin_src emacs-lisp
   (defun ews-distraction-free ()
@@ -272,15 +317,120 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
     :bind
     (("<f9>" . ews-distraction-free)))
 #+end_src
-* Yasnippet
-#+begin_src emacs-lisp
-(use-package yasnippet
-         :config
- (yas-global-mode 1))
-(use-package yasnippet-snippets
-       :ensure t)
+* Paquetes diversos
+** Organizer
+Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
+#+BEGIN_SRC emacs-lisp
+    (add-to-list 'load-path "~/.config/emacs/plugins")
+  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
+  (require 'organizer)
+    ;;(load-file "~/.config/emacs/plugins/organizer.el")
+  (global-set-key (kbd "<f12>")  'organizer-index)
 #+end_src
-* Dashboard
+** Nerd Icons
+Soporte de iconos usando interfaz gráfica y terminal
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    ;; :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+  (use-package nerd-icons-dired
+    :hook
+    (dired-mode . nerd-icons-dired-mode))
+  (use-package nerd-icons-completion
+    :config
+    (nerd-icons-completion-mode)
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+#+end_src
+** Doom modeline
+Mejorar la linea inferior de Emacs usando la que utiliza el framework de configuración [[https://github.com/doomemacs/doomemacs][Doom]]
+#+begin_src emacs-lisp
+(use-package doom-modeline
+    :init (doom-modeline-mode 1)
+    :config
+    (setq doom-modeline-height 29      ;; sets modeline height
+          doom-modeline-bar-width 5    ;; sets right bar width
+          doom-modeline-persp-name t   ;; adds perspective name to modeline
+          doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+#+end_src
+** Vertico
+#+begin_src emacs-lisp
+    (use-package vertico
+    :init
+    (vertico-mode)
+    :custom
+    (vertico-count 13)                    ; Número de candidatos a mostrar
+    (vertico-resize t)
+    (vertico-cycle t)
+    (vertico-sort-function 'vertico-sort-history-alpha))
+  ;; Use vertico posframe cuando use EXWM, o cuando use un tiling window manager a pantalla completa
+  ;;(use-package vertico-posframe)
+#+end_src
+** Consult
+#+begin_src emacs-lisp
+  (use-package consult
+  :bind (
+         ("C-c M-x" . consult-mode-command)
+         ;; ("C-c k" . consult-kmacro)
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ("M-g o" . consult-outline)               ;; Alternativa: consult-org-heading
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ("M-s d" . consult-find)                  ;; Alternativa: consult-fd
+         ("M-s g" . consult-grep)
+         ("C-s" . consult-line)))
+#+end_src
+** Marginalia
+#+begin_src emacs-lisp
+(use-package marginalia
+      :init
+      (marginalia-mode))
+#+end_src
+** Orderless
+#+begin_src emacs-lisp
+  (use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles partial-completion)))))
+#+end_src
+** Company
+#+begin_src emacs-lisp
+    (use-package company
+    :ensure t
+    :custom
+    (company-idle-delay 0)
+    (company-minimum-prefix-length 4)
+    (company-selection-wrap-around t)
+    :config
+    (global-company-mode t))
+  (use-package company-box
+    :ensure t
+    :defer t
+    :after company
+    :hook 'company-mode-hook 'company-box-mode)
+  (use-package company-posframe
+    :config
+    (company-posframe-mode 1))
+#+end_src
+** Yasnippet
+#+begin_src emacs-lisp
+      (use-package yasnippet
+               :config
+       (yas-global-mode 1))
+     (use-package yasnippet-snippets
+        :ensure t
+        :defer t)
+    (use-package consult-yasnippet)
+    (global-set-key (kbd "C-c y") 'consult-yasnippet)
+#+end_src
+** Dashboard
 #+begin_src emacs-lisp
           ;; use-package with package.el:
   (use-package dashboard
@@ -313,14 +463,14 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
         (dashboard-insert-startupify-lists)
         (switch-to-buffer dashboard-buffer-name))
 #+end_src
-* Which key
+** Which key
 #+begin_src emacs-lisp
       (use-package which-key
         :config
         (which-key-mode)
         (setq which-key-idle-delay 0.3))
 #+end_src
-* I3wm mode
+** I3wm mode
 #+BEGIN_SRC emacs-lisp
   (use-package i3wm-config-mode
     :ensure t
@@ -328,43 +478,13 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
     (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
   (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
 #+END_SRC
-* Fish mode
+** Fish mode
 Modo para habilitar el resaltado de sintaxis en el archivo de configuración de la [[https://fishshell.com][shell fish]] 
 #+begin_src emacs-lisp
     (use-package fish-mode
       :ensure t
       :defer t)
 #+end_src
-* Flyspell
-#+BEGIN_SRC emacs-lisp
-  (use-package flyspell
-        :ensure nil
-        :init
-        :config
-        (setq ispell-silently-savep t
-          flyspell-case-fold-duplications t
-          flyspell-issue-message-flag nil
-          flyspell-default-dictionary "es_ES"
-          ispell-program-name "hunspell")   
-       :hook (text-mode . flyspell-mode)
-       :bind(("M-<f7>" . flyspell-buffer)
-             ("<f7>" . flyspell-word)))
-  (defun pp-switch-dictionary()
-    "Switch between Dutch and Australian dictionaries."
-    (interactive)
-    (let* ((dic ispell-current-dictionary)
-           (change (if (string= dic "es_ES") "eo" "es_ES")))
-      (ispell-change-dictionary change)
-      (message "Dictionary switched from %s to %s" dic change)))
-
-  (global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
-    (use-package flyspell-correct
-      :after (flyspell)
-      :bind (("C-;" . flyspell-auto-correct-previous-word)
-             ("<f7>" . flyspell-correct-wrapper)))
-
-#+END_SRC
-* Paquetes diversos
 ** Magit
 #+begin_src emacs-lisp
   (use-package magit
@@ -418,6 +538,11 @@ Modo para habilitar el resaltado de sintaxis en el archivo de configuración de 
   :ensure t
   :defer t
   :init (global-flycheck-mode))
+  (use-package flycheck-pos-tip
+    :ensure t
+    :defer t
+    :hook
+    (flycheck-mode . flycheck-pos-tip-mode))
 #+END_SRC
 ** Savehist
 #+BEGIN_SRC emacs-lisp
@@ -452,16 +577,22 @@ Para configurar un calendario
   (setq cfw:org-overwrite-default-keybinding t)
   :bind ([f8] . cfw:open-org-calendar))
 #+END_SRC
+** Embark
+#+begin_src emacs-lisp
+(use-package embark
+    :bind
+    (("C-." . embark-act)
+     ("C-:" . embark-dwim)
+     ("C-h B" . embark-bindings)))
+#+end_src
+*** Embrak consult
+#+begin_src emacs-lisp
+  (use-package embark-consult
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 
-** Mastodon
-#+BEGIN_SRC emacs-lisp
-    (use-package mastodon
-      :defer t)
-  (setq mastodon-instance-url "https://im-in.space"
-        mastodon-active-user "@mester@im-in.space")
-  (setq mastodon-tl--highlight-current-toot 1)
-#+END_SRC
-** Mu4e
+
+#+end_src
 ** Eshell
 #+begin_src emacs-lisp
       (use-package eshell
@@ -479,35 +610,30 @@ Para configurar un calendario
 #+end_src
 ** Dired Sidebar
 #+begin_src emacs-lisp
-  (use-package dired-sidebar
-    :ensure t
-    :defer t
-    :commands (dired-sidebar-toggle-sidebar)
-    :init
-    (setq dired-sidebar-theme 'nerd)
-    (setq dired-sidebar-use-term-integration t)
-    (setq dired-sidebar-use-custom-font t))
+    (use-package dired-sidebar
+      :ensure t
+      :defer t
+      :commands (dired-sidebar-toggle-sidebar)
+      :init
+      (setq dired-sidebar-theme 'nerd)
+      (setq dired-sidebar-use-term-integration t)
+      (setq dired-sidebar-use-custom-font t))
 
-  (use-package dired-git
-    :ensure t)
-(global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
+    (use-package dired-git
+      :ensure t)
+  (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
 #+end_src
 
 ** Configuración para lenguajes de programación
-*** LSP
-Sirve para configurar el servidor lsp en emacs
-#+BEGIN_SRC emacs-lisp
-    (use-package lsp-mode
+*** Eldoc
+#+begin_src emacs-lisp
+  (require 'eldoc)
+  (global-eldoc-mode t)
+  (use-package eldoc-box
     :ensure t
-    :commands lsp)
-    (use-package consult-lsp
-      :ensure t)
-    (use-package lsp-ui)
-    (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-    (add-hook 'python-mode-hook #'lsp)
-  (add-hook 'typescript-mode-hook #'lsp)
-
-#+END_SRC
+    :defer t
+    :init (setq eldoc-box-hover-mode t))
+#+end_src
 *** Typescript
 #+BEGIN_SRC emacs-lisp
   (use-package typescript-mode
@@ -517,7 +643,21 @@ Sirve para configurar el servidor lsp en emacs
   (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
 #+END_SRC
-
+*** Python
+#+begin_src emacs-lisp
+  (use-package elpy
+     :ensure t
+     :defer t
+     :config
+     (setq python-shell-interpreter "python3")
+     (setq elpy-rpc-python-command "python3")
+     :init
+     (advice-add 'python-mode :before 'elpy-enable))
+#+end_src
+*** Ajustes diversos programacion
+#+begin_src emacs-lisp
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
 ** Ledger
 Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personales
 #+BEGIN_SRC emacs-lisp
@@ -542,3 +682,49 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
         :defer t
         :after flycheck)
 #+END_SRC
+** Rainbow delimiters
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters
+  :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
+         (clojure-mode . rainbow-delimiters-mode)))
+#+end_src
+** Rainbow mode
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+  :diminish
+  :hook org-mode prog-mode)
+#+end_src
+** Sudo edit
+#+begin_src emacs-lisp
+(use-package sudo-edit)
+#+end_src
+* Escape minibuffer
+#+begin_src emacs-lisp
+  (global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+* Eradio
+#+begin_src emacs-lisp
+    (use-package eradio
+    :init
+    (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+    :config
+    (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv")
+                            ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+    )))
+#+end_src
+* Typst
+#+begin_src emacs-lisp
+  (use-package typst-ts-mode
+  :ensure (:type git :host codeberg :repo "meow_king/typst-ts-mode" :branch "develop"
+                   :files (:defaults "*.el"))
+    :custom
+    (typst-ts-watch-options "--open")
+    (typst-ts-mode-grammar-location (expand-file-name "tree-sitter/libtree-sitter-typst.so" user-emacs-directory))
+    (typst-ts-mode-enable-raw-blocks-highlight t)
+    :config
+    (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu))
+#+end_src
+* TLDR
+#+begin_src emacs-lisp
+(use-package tldr)
+#+end_src

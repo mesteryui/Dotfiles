@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/company-ledger/company-ledger.el

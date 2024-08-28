@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/lsp-mode/lsp-ido.el
