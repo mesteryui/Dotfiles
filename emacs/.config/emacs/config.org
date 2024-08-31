@@ -56,6 +56,7 @@
 - [[#eradio][Eradio]]
 - [[#typst][Typst]]
 - [[#tldr][TLDR]]
+- [[#transparecia][Transparecia]]
 
 * Advertencia
 Esta configuracion esta inspirada en la configuracion de Derek Taylor conocido en Youtube como distrotube y en las configuraciones de otras personas, siendo esta la configuracion personal de {{{author}}}
@@ -71,6 +72,7 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
 #+begin_src emacs-lisp
   (require 'no-littering-setup) ;; No littering
   (require 'elpaca-setup)  ;; The Elpaca Package Manager
+  (require 'app-launchers)
 #+end_src
 ** No littering
 #+begin_src emacs-lisp
@@ -727,4 +729,8 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
 * TLDR
 #+begin_src emacs-lisp
 (use-package tldr)
+#+end_src
+* Transparecia
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(alpha-background . 95)) ; For all new frames henceforth
 #+end_src

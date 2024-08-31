@@ -2,7 +2,7 @@
 local wezterm = require 'wezterm'
 local act = wezterm.action
 return {
-enable_wayland = true,
+--enable_wayland = true,
 front_end = "OpenGL",
 automatically_reload_config = true,
     window_background_opacity = 0.90,

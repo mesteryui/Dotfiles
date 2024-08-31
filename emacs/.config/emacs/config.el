@@ -2,6 +2,7 @@
 
 (require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
+(require 'app-launchers)
 
 (use-package no-littering
   :init
@@ -539,3 +540,5 @@
   (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu))
 
 (use-package tldr)
+
+(add-to-list 'default-frame-alist '(alpha-background . 95)) ; For all new frames henceforth

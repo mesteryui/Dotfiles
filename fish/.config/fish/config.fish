@@ -22,15 +22,11 @@ alias "ls" 'lsd'
 alias "vetero" 'curl wttr.in/Vigo'
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
-set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
-set -x MOZ_ENABLE_WAYLAND '1'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.sunsite.dk'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #alias "cd" "z"
 set -x EDITOR "nvim"
 set -Ux FZF_DEFAULT_OPTS "\
---color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
---color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
 --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
