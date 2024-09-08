@@ -489,18 +489,19 @@ Modo para habilitar el resaltado de sintaxis en el archivo de configuración de 
 #+end_src
 ** Magit
 #+begin_src emacs-lisp
+(use-package transient)
   (use-package magit
-  :bind
-  ("C-x g" . magit-status))
+    :bind
+    ("C-x g" . magit-status))
 
-(use-package git-gutter
-  :defer 0.3
-  :delight
-  :init (global-git-gutter-mode))
+  (use-package git-gutter
+    :defer 0.3
+    :delight
+    :init (global-git-gutter-mode))
 
-(use-package git-timemachine
-  :defer 1
-  :delight)
+  (use-package git-timemachine
+    :defer 1
+    :delight)
 #+end_src
 ** Doc view
 #+BEGIN_SRC emacs-lisp

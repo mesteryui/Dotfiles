@@ -356,18 +356,19 @@
   :ensure t
   :defer t)
 
-(use-package magit
-  :bind
-  ("C-x g" . magit-status))
+(use-package transient)
+  (use-package magit
+    :bind
+    ("C-x g" . magit-status))
 
-(use-package git-gutter
-  :defer 0.3
-  :delight
-  :init (global-git-gutter-mode))
+  (use-package git-gutter
+    :defer 0.3
+    :delight
+    :init (global-git-gutter-mode))
 
-(use-package git-timemachine
-  :defer 1
-  :delight)
+  (use-package git-timemachine
+    :defer 1
+    :delight)
 
 (use-package doc-view
  :ensure nil
