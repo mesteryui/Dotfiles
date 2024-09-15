@@ -209,7 +209,7 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
- 
+
 #+end_src
 ** Ajustes exportacion LaTeX
 #+begin_src emacs-lisp
@@ -323,10 +323,10 @@ Allows us to create a Table of Contents in our Org docs.
 ** Organizer
 Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
 #+BEGIN_SRC emacs-lisp
-    (add-to-list 'load-path "~/.config/emacs/plugins")
-  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
+  (add-to-list 'load-path "~/.config/emacs/plugins")
   (require 'organizer)
-    ;;(load-file "~/.config/emacs/plugins/organizer.el")
+  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
+  ;;(load-file "~/.config/emacs/plugins/organizer.el")
   (global-set-key (kbd "<f12>")  'organizer-index)
 #+end_src
 ** Nerd Icons
@@ -648,14 +648,43 @@ Para configurar un calendario
 #+END_SRC
 *** Python
 #+begin_src emacs-lisp
-  (use-package elpy
-     :ensure t
-     :defer t
-     :config
-     (setq python-shell-interpreter "python3")
-     (setq elpy-rpc-python-command "python3")
-     :init
-     (advice-add 'python-mode :before 'elpy-enable))
+ ; (use-package elpy
+ ;    :ensure t
+  ;   :defer t
+  ;   :config
+  ;   (setq python-shell-interpreter "python3")
+  ;   (setq elpy-rpc-python-command "python3")
+  ;   :init
+  ;   (advice-add 'python-mode :before 'elpy-enable))
+#+end_src
+*** Java
+#+begin_src emacs-lisp
+  (use-package eglot
+    :ensure nil)
+
+  (use-package eglot-java
+    :defer t
+    :after eglot)
+
+  (add-hook 'java-mode-hook 'eglot-ensure)
+  (add-hook 'java-mode-hook 'eglot-java-mode)
+  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+  (with-eval-after-load 'eglot-java
+    (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+    (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+    (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+    (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+    (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+    (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+
+  (with-eval-after-load 'flymake-mode
+    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+  (use-package flymake-gradle
+    :defer t)
+
+  (use-package java-snippets
+    :defer t)
 #+end_src
 *** Ajustes diversos programacion
 #+begin_src emacs-lisp

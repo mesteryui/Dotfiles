@@ -1,16 +1,23 @@
-;;; Package --- organizer
+;;; Package --- orgnaizer
 ;;; Commentary:
-;; Este es un sistema de organizacion que se complementa con el orgmode se pueden usar los directorios de org-directory que emacs setea lo recomendable o cualquier otro que decida para tener dos organizaciones independientes
+
 ;;; Code:
 (defgroup organizer nil
-    "Sistema de organizacion organzier.org."
+    "Sistema de organizacion organzier."
      :version "1.0.0"
      :group 'applications)
 
+
 (defvar organizer-directory "~/org")
 
+(defun organizer-item (writed_object)
+  "Creacion de un item checkbox, concepto almacenado en WRITED_OBJECT."
+  (interactive
+    (read-string "Introduce objeto al que se refiere el checkbox:"))
+   (insert "- [ ] %s" writed_object))
+
 (defun organizer-index ()
-  "Indice para organizer.org."
+  "Indice para organizer."
   (interactive)
   (find-file (format "%s/index.org" organizer-directory))
   (read-only-mode))
@@ -19,17 +26,18 @@
   "Buscar tareas para hacer en agenda."
   (interactive)
   (find-file (format "%s/agenda.org" organizer-directory))
-  (search-forward "TODO"))
+  (re-search-forward "TODO"))
 
 (defun organizer-agenda ()
   "Acceso a la agenda."
   (interactive)
-  (find-file (format "%s/agenda.org" organizer-directory)))
+   (find-file (format "%s/agenda.org" organizer-directory)))
+
 
 (defun organizer-version ()
-  "Version de organizer.org."
+  "Version de organizer."
   (interactive)
   (message "Version: 1.0.0 organizer.org"))
 
-;;; organizer.el ends here
+;;; organizer.el ends here.
 (provide 'organizer)

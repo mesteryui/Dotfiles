@@ -11,7 +11,7 @@ window > box {
 }
 
 * {
-	font-family: SpaceMono Nerd Font;
+	font-family: "JetBrainsMono Nerd Font", IPAMincho;
 	font-weight: 600;
 	font-size: 10px;
 	padding: 0;

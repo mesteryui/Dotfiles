@@ -220,9 +220,9 @@
   (("<f9>" . ews-distraction-free)))
 
 (add-to-list 'load-path "~/.config/emacs/plugins")
-(global-set-key (kbd "C-c o") 'org-agenda-open-link)
 (require 'organizer)
-  ;;(load-file "~/.config/emacs/plugins/organizer.el")
+(global-set-key (kbd "C-c o") 'org-agenda-open-link)
+;;(load-file "~/.config/emacs/plugins/organizer.el")
 (global-set-key (kbd "<f12>")  'organizer-index)
 
 (use-package nerd-icons
@@ -478,14 +478,41 @@
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
-(use-package elpy
-   :ensure t
-   :defer t
-   :config
-   (setq python-shell-interpreter "python3")
-   (setq elpy-rpc-python-command "python3")
-   :init
-   (advice-add 'python-mode :before 'elpy-enable))
+; (use-package elpy
+;    :ensure t
+ ;   :defer t
+ ;   :config
+ ;   (setq python-shell-interpreter "python3")
+ ;   (setq elpy-rpc-python-command "python3")
+ ;   :init
+ ;   (advice-add 'python-mode :before 'elpy-enable))
+
+(use-package eglot
+  :ensure nil)
+
+(use-package eglot-java
+  :defer t
+  :after eglot)
+
+(add-hook 'java-mode-hook 'eglot-ensure)
+(add-hook 'java-mode-hook 'eglot-java-mode)
+(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+(with-eval-after-load 'eglot-java
+  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+
+(with-eval-after-load 'flymake-mode
+  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+(use-package flymake-gradle
+  :defer t)
+
+(use-package java-snippets
+  :defer t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
