@@ -5,7 +5,7 @@ if status is-interactive
     set -g fish_greeting
     set -x MANPAGER "nvim +Man!"
     fish_config theme choose "Catppuccin Mocha"
-    set -g TERM wezterm
+    set -g TERM kitty
     # starship
     starship init fish | source
     # atuin
@@ -24,7 +24,7 @@ alias "vetero" 'curl wttr.in/Vigo'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
-set -x NNTPSERVER 'snews://news.sunsite.dk'
+set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #alias "cd" "z"
 set -x EDITOR "nvim"

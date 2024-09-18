@@ -114,6 +114,13 @@
 (setq org-archive-location "~/org/%s_archivo.org::datetree/")
 (setq org-todo-keywords
      '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+ (setq org-todo-keyword-faces
+        '(("TODO" . "coral")
+          ("NEXT" . "cyan")
+          ("PROJ" . "orange")
+          ("DONE" . "green")
+          ("PAUSED" . "IndianRed1")
+          ("CANCELLED" . "grey")))
       (global-set-key (kbd "C-c c") 'org-capture)
       (global-set-key (kbd "C-c a") 'org-agenda)
         (setq org-export-with-drawers nil
@@ -142,32 +149,42 @@
                          "tex" "bcf"))))
 
 (require 'org-tempo)
-  (use-package org-appear
-  :hook
-  (org-mode . org-appear-mode))
+    (use-package org-appear
+    :hook
+    (org-mode . org-appear-mode))
 
-;; Modernise Org mode interface
-(use-package org-modern
-  :hook
-  (org-mode . global-org-modern-mode)
-  :custom
-  (org-modern-keyword nil)
-  (org-modern-checkbox nil)
-  (org-modern-table nil))
-  (use-package org-fragtog
-  :after org
-  :custom
-  (org-startup-with-latex-preview t)
-  :hook
-  (org-mode . org-fragtog-mode)
-  :custom
-  (org-format-latex-options
-   (plist-put org-format-latex-options :scale 2)
-   (plist-put org-format-latex-options :foreground 'auto)
-   (plist-put org-format-latex-options :background 'auto)))
-  (use-package ox-epub
-  :demand t)
-(use-package ox-reveal)
+  ;; Modernise Org mode interface
+;  (use-package org-modern
+;    :hook
+;    (org-mode . global-org-modern-mode)
+;    :custom
+;    (org-modern-keyword nil)
+;    (org-modern-checkbox nil)
+;    (org-modern-table nil))
+ (use-package org-superstar
+ :ensure t
+ :config
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+
+   (setq org-ellipsis "▼")
+
+(setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
+(setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
+
+    (use-package org-fragtog
+    :after org
+    :custom
+    (org-startup-with-latex-preview t)
+    :hook
+    (org-mode . org-fragtog-mode)
+    :custom
+    (org-format-latex-options
+     (plist-put org-format-latex-options :scale 2)
+     (plist-put org-format-latex-options :foreground 'auto)
+     (plist-put org-format-latex-options :background 'auto)))
+    (use-package ox-epub
+    :demand t)
+  (use-package ox-reveal)
 
 (use-package toc-org
     :commands toc-org-enable
@@ -464,6 +481,17 @@
   (use-package dired-git
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
+
+(use-package markdown-mode
+:commands (markdown-mode gfm-mode)
+:mode (("README\\.md\\'" . gfm-mode)
+       ("\\.md\\'" . gfm-mode)
+       ("\\.markdown\\'" . markdown-mode))
+:init (setq markdown-command "markdown2")
+:config
+(setq visual-line-column 80)
+(setq markdown-fontify-code-blocks-natively t)
+(setq markdown-enable-math t))
 
 (require 'eldoc)
 (global-eldoc-mode t)
