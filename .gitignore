@@ -1,5 +1,4 @@
-emacs/.config/emacs/eglot-java-eclipse-jdt-cache/*
-emacs/.config/emacs/share/*
-emacs/.config/emacs/elpy/*
-
-
+elpy/
+eglot-java-eclipse-jdt-cache/
+elpa
+fish_variables
