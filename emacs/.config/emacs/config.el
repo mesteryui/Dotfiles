@@ -398,13 +398,13 @@
 :init
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
-(use-package undo-tree
-:init
-(global-undo-tree-mode 1)
-:custom
-(undo-tree-visualizer-timestamps t)
-(undo-tree-visualizer-diff t)
-(undo-tree-auto-save-history nil))
+;  (use-package undo-tree
+;  :init
+;  (global-undo-tree-mode 1)
+;  :custom
+;  (undo-tree-visualizer-timestamps t)
+;  (undo-tree-visualizer-diff t)
+;  (undo-tree-auto-save-history nil))
 
 (use-package autorevert
 :ensure nil
@@ -506,14 +506,14 @@
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
-; (use-package elpy
-;    :ensure t
- ;   :defer t
- ;   :config
- ;   (setq python-shell-interpreter "python3")
- ;   (setq elpy-rpc-python-command "python3")
- ;   :init
- ;   (advice-add 'python-mode :before 'elpy-enable))
+(use-package elpy
+   :ensure t
+   :defer t
+   :config
+   (setq python-shell-interpreter "python3")
+   (setq elpy-rpc-python-command "python3")
+   :init
+   (advice-add 'python-mode :before 'elpy-enable))
 
 (use-package eglot
   :ensure nil)

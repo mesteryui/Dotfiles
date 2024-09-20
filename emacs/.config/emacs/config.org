@@ -537,13 +537,13 @@ Modo para habilitar el resaltado de sintaxis en el archivo de configuración de 
 #+end_SRC
 ** Undo-tree
 #+BEGIN_SRC emacs-lisp
-  (use-package undo-tree
-  :init
-  (global-undo-tree-mode 1)
-  :custom
-  (undo-tree-visualizer-timestamps t)
-  (undo-tree-visualizer-diff t)
-  (undo-tree-auto-save-history nil))
+  ;  (use-package undo-tree
+  ;  :init
+  ;  (global-undo-tree-mode 1)
+  ;  :custom
+  ;  (undo-tree-visualizer-timestamps t)
+  ;  (undo-tree-visualizer-diff t)
+  ;  (undo-tree-auto-save-history nil))
 #+end_SRC
 ** Autorevert
 #+BEGIN_SRC emacs-lisp
@@ -678,14 +678,14 @@ Para configurar un calendario
 #+END_SRC
 *** Python
 #+begin_src emacs-lisp
- ; (use-package elpy
- ;    :ensure t
-  ;   :defer t
-  ;   :config
-  ;   (setq python-shell-interpreter "python3")
-  ;   (setq elpy-rpc-python-command "python3")
-  ;   :init
-  ;   (advice-add 'python-mode :before 'elpy-enable))
+  (use-package elpy
+     :ensure t
+     :defer t
+     :config
+     (setq python-shell-interpreter "python3")
+     (setq elpy-rpc-python-command "python3")
+     :init
+     (advice-add 'python-mode :before 'elpy-enable))
 #+end_src
 *** Java
 #+begin_src emacs-lisp
