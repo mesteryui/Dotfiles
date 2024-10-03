@@ -6,6 +6,7 @@ elpaca/
 eln-cache/
 tramp/
 elpy
+emacs/.config/emacs/share/
 transient
 tree-sitter
 emacs/.config/emacs/plugins/organizer.el
