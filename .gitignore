@@ -1,7 +1,10 @@
 elpy/
 eglot-java-eclipse-jdt-cache/
-elpa
+elpa/
 fish_variables
-elpaca
-eln-cache
+elpaca/
+eln-cache/
+tramp/
 elpy
+transient
+tree-sitter

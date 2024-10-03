@@ -1,10 +1,5 @@
-# Hello
+# Mis dotfiles
 
-These are my personal dotfiles, includes neovim, sway, etc...
+Estas son mis configuraciones para mi sistema GNU/Linux
 
-## Plugins of neovim
-
-The plugins of my neovim config are in the file
-
-These are my dotfiles, I think that is some strange but for me is good I think.
-
+Aqui tengo la configuracion de mi editor de referencia [GNU/Emacs](https://www.gnu.org/software/emacs/) y mi editor secundario [GNU Nano](https://nano-editor.org)
