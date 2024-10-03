@@ -8,6 +8,7 @@ tramp/
 elpy
 transient
 tree-sitter
+emacs/.config/emacs/plugins/organizer.el
 emacs/.config/emacs/auto-save-list/
 emacs/.config/emacs/eshell/
 emacs/.config/emacs/games/

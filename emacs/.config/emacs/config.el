@@ -1,24 +1,8 @@
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
-(require 'no-littering-setup) ;; No littering
+;;(require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
 (require 'app-launchers)
-
-(use-package no-littering
-  :init
-  ;; set paths for no-littering etc and var directories
-  ;; instead of this paths, you could use
-  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
- ;; (setq no-littering-etc-directory (expand-file-name "~/.cache/emacs/etc")
- ;;       no-littering-var-directory (expand-file-name "~/.cache/emacs/var")
-  ;;    )
-  :config
-  ;; set sensible defaults for backups
-  (no-littering-theme-backups)
-  ;; set paths for url-history-file and custom-file
-  (setq url-history-file (no-littering-expand-etc-file-name "url/history")
-        custom-file (no-littering-expand-etc-file-name "custom.el"))
-  )
 
 (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
@@ -304,8 +288,8 @@
 (use-package company
   :ensure t
   :custom
-  (company-idle-delay 0)
-  (company-minimum-prefix-length 4)
+  (company-idle-delay 0.0)
+  (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
   :config
   (global-company-mode t))
@@ -313,7 +297,7 @@
   :ensure t
   :defer t
   :after company
-  :hook 'company-mode-hook 'company-box-mode)
+  :hook (company-mode-hook . company-box-mode))
 (use-package company-posframe
   :config
   (company-posframe-mode 1))
@@ -326,6 +310,20 @@
     :defer t)
 (use-package consult-yasnippet)
 (global-set-key (kbd "C-c y") 'consult-yasnippet)
+
+;; Configuración para projectile
+(use-package projectile
+  :ensure t
+  :bind (("C-c p" . projectile-command-map))
+  :init
+  (setq projectile-project-search-path '("~/Proyectos_Emacs/"))
+  (setq projectile-completion-system 'consult)
+  (projectile-mode t))
+;; comprobación de sintaxis para `projectile'
+(use-package consult-projectile)
+(use-package flycheck-projectile
+  :ensure t
+  :defer t)
 
 ;; use-package with package.el:
 (use-package dashboard
@@ -493,12 +491,21 @@
 (setq markdown-fontify-code-blocks-natively t)
 (setq markdown-enable-math t))
 
-(require 'eldoc)
-(global-eldoc-mode t)
-(use-package eldoc-box
-  :ensure t
-  :defer t
-  :init (setq eldoc-box-hover-mode t))
+;; (use-package jsonrpc)
+;; (use-package flymake
+;;   :defer t 
+;;   :config
+;;   (add-hook 'prog-mode-hook #'flymake-mode))
+
+;(use-package eglot)
+;(add-hook 'prog-mode-hook #'eglot-ensure)
+;(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+
+;; (use-package eldoc)
+ (use-package eldoc-box
+   :ensure t
+   :defer
+   :init (setq eldoc-box-hover-mode t))
 
 (use-package typescript-mode
 :defer t
@@ -506,41 +513,21 @@
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
-(use-package elpy
-   :ensure t
-   :defer t
-   :config
-   (setq python-shell-interpreter "python3")
-   (setq elpy-rpc-python-command "python3")
-   :init
-   (advice-add 'python-mode :before 'elpy-enable))
+;(add-hook 'python-mode 'eglot-python-mode)
 
-(use-package eglot
-  :ensure nil)
+;;   (use-package eglot-java
+;;     :ensure t)
+;; (add-hook 'java-mode-hook 'eglot-java-mode)
+;;     (with-eval-after-load 'eglot-java
+;;       (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+;;       (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+;;       (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+;;       (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+;;       (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+;;       (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
-(use-package eglot-java
-  :defer t
-  :after eglot)
-
-(add-hook 'java-mode-hook 'eglot-ensure)
-(add-hook 'java-mode-hook 'eglot-java-mode)
-(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-(with-eval-after-load 'eglot-java
-  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
-
-(with-eval-after-load 'flymake-mode
-  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
-
-(use-package flymake-gradle
-  :defer t)
-
-(use-package java-snippets
-  :defer t)
+;; (use-package dape
+;;   :defer t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
@@ -575,7 +562,13 @@
 
 (use-package sudo-edit)
 
+;    (use-package adaptative-wrap
+;      :config
+;      (adaptative-wrap-prefix-mode))
+
 (global-set-key [escape] 'keyboard-escape-quit)
+
+(electric-pair-mode t)
 
 (use-package eradio
 :init

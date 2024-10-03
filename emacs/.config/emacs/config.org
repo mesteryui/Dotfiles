@@ -8,7 +8,6 @@
 - [[#programas-importantes][Programas importantes]]
   - [[#adding-the-scripts-directory-to-path][Adding the scripts directory to path]]
   - [[#sourcing-the-scripts][Sourcing the scripts]]
-  - [[#no-littering][No littering]]
 - [[#correcciones-de-aspecto-básicas][Correcciones de aspecto básicas]]
   - [[#recargar-configuracion][Recargar configuracion]]
   - [[#cambio-de-fuente][Cambio de fuente]]
@@ -31,6 +30,7 @@
   - [[#orderless][Orderless]]
   - [[#company][Company]]
   - [[#yasnippet][Yasnippet]]
+  - [[#projectile][Projectile]]
   - [[#dashboard][Dashboard]]
   - [[#which-key][Which key]]
   - [[#i3wm-mode][I3wm mode]]
@@ -52,7 +52,9 @@
   - [[#rainbow-delimiters][Rainbow delimiters]]
   - [[#rainbow-mode][Rainbow mode]]
   - [[#sudo-edit][Sudo edit]]
+  - [[#adaptative-wrap][Adaptative wrap]]
 - [[#escape-minibuffer][Escape minibuffer]]
+- [[#electric-pair-mode][Electric pair mode]]
 - [[#eradio][Eradio]]
 - [[#typst][Typst]]
 - [[#tldr][TLDR]]
@@ -70,28 +72,11 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
 
 ** Sourcing the scripts
 #+begin_src emacs-lisp
-  (require 'no-littering-setup) ;; No littering
+  ;;(require 'no-littering-setup) ;; No littering
   (require 'elpaca-setup)  ;; The Elpaca Package Manager
   (require 'app-launchers)
 #+end_src
-** No littering
-#+begin_src emacs-lisp
-(use-package no-littering
-  :init
-  ;; set paths for no-littering etc and var directories
-  ;; instead of this paths, you could use
-  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
- ;; (setq no-littering-etc-directory (expand-file-name "~/.cache/emacs/etc")
- ;;       no-littering-var-directory (expand-file-name "~/.cache/emacs/var")
-  ;;    )
-  :config
-  ;; set sensible defaults for backups
-  (no-littering-theme-backups)
-  ;; set paths for url-history-file and custom-file
-  (setq url-history-file (no-littering-expand-etc-file-name "url/history")
-        custom-file (no-littering-expand-etc-file-name "custom.el"))
-  )
-#+end_src
+
 * Correcciones de aspecto básicas
 #+begin_src emacs-lisp
   (setq user-full-name "Oscar")
@@ -421,22 +406,22 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
 #+end_src
 ** Company
 #+begin_src emacs-lisp
-    (use-package company
-    :ensure t
-    :custom
-    (company-idle-delay 0)
-    (company-minimum-prefix-length 4)
-    (company-selection-wrap-around t)
-    :config
-    (global-company-mode t))
-  (use-package company-box
-    :ensure t
-    :defer t
-    :after company
-    :hook 'company-mode-hook 'company-box-mode)
-  (use-package company-posframe
-    :config
-    (company-posframe-mode 1))
+      (use-package company
+      :ensure t
+      :custom
+      (company-idle-delay 0.0)
+      (company-minimum-prefix-length 1)
+      (company-selection-wrap-around t)
+      :config
+      (global-company-mode t))
+    (use-package company-box
+      :ensure t
+      :defer t
+      :after company
+      :hook (company-mode-hook . company-box-mode))
+    (use-package company-posframe
+      :config
+      (company-posframe-mode 1))
 #+end_src
 ** Yasnippet
 #+begin_src emacs-lisp
@@ -448,6 +433,24 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
         :defer t)
     (use-package consult-yasnippet)
     (global-set-key (kbd "C-c y") 'consult-yasnippet)
+#+end_src
+
+** Projectile
+#+begin_src emacs-lisp
+       ;; Configuración para projectile
+  (use-package projectile
+    :ensure t
+    :bind (("C-c p" . projectile-command-map))
+    :init
+    (setq projectile-project-search-path '("~/Proyectos_Emacs/"))
+    (setq projectile-completion-system 'consult)
+    (projectile-mode t))
+  ;; comprobación de sintaxis para `projectile'
+  (use-package consult-projectile)
+  (use-package flycheck-projectile
+    :ensure t
+    :defer t)
+
 #+end_src
 ** Dashboard
 #+begin_src emacs-lisp
@@ -658,14 +661,27 @@ Para configurar un calendario
 
 #+end_src
 ** Configuración para lenguajes de programación
+*** Flymake
+#+begin_src emacs-lisp
+  ;; (use-package jsonrpc)
+  ;; (use-package flymake
+  ;;   :defer t 
+  ;;   :config
+  ;;   (add-hook 'prog-mode-hook #'flymake-mode))
+#+end_src
+*** Eglot
+#+begin_src emacs-lisp
+  ;(use-package eglot)
+  ;(add-hook 'prog-mode-hook #'eglot-ensure)
+  ;(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+#+end_src
 *** Eldoc
 #+begin_src emacs-lisp
-  (require 'eldoc)
-  (global-eldoc-mode t)
-  (use-package eldoc-box
-    :ensure t
-    :defer t
-    :init (setq eldoc-box-hover-mode t))
+  ;; (use-package eldoc)
+   (use-package eldoc-box
+     :ensure t
+     :defer
+     :init (setq eldoc-box-hover-mode t))
 #+end_src
 *** Typescript
 #+BEGIN_SRC emacs-lisp
@@ -678,43 +694,26 @@ Para configurar un calendario
 #+END_SRC
 *** Python
 #+begin_src emacs-lisp
-  (use-package elpy
-     :ensure t
-     :defer t
-     :config
-     (setq python-shell-interpreter "python3")
-     (setq elpy-rpc-python-command "python3")
-     :init
-     (advice-add 'python-mode :before 'elpy-enable))
+  ;(add-hook 'python-mode 'eglot-python-mode)
 #+end_src
 *** Java
 #+begin_src emacs-lisp
-  (use-package eglot
-    :ensure nil)
-
-  (use-package eglot-java
-    :defer t
-    :after eglot)
-
-  (add-hook 'java-mode-hook 'eglot-ensure)
-  (add-hook 'java-mode-hook 'eglot-java-mode)
-  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-  (with-eval-after-load 'eglot-java
-    (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-    (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-    (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-    (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-    (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-    (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
-
-  (with-eval-after-load 'flymake-mode
-    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
-
-  (use-package flymake-gradle
-    :defer t)
-
-  (use-package java-snippets
-    :defer t)
+  ;;   (use-package eglot-java
+  ;;     :ensure t)
+  ;; (add-hook 'java-mode-hook 'eglot-java-mode)
+  ;;     (with-eval-after-load 'eglot-java
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+  ;;       (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+#+end_src
+*** Dape
+Esto nos permitira tener un depurador
+#+begin_src emacs-lisp
+  ;; (use-package dape
+  ;;   :defer t)
 #+end_src
 *** Ajustes diversos programacion
 #+begin_src emacs-lisp
@@ -760,9 +759,20 @@ Sistema de contabilidad basado en texto plano, lo uso para mis finanzas personal
 #+begin_src emacs-lisp
 (use-package sudo-edit)
 #+end_src
+** Adaptative wrap
+Hace que la sangria sea igual cuando es demasiado larga para mostrarse en pantalla
+#+begin_src emacs-lisp
+;    (use-package adaptative-wrap
+;      :config
+;      (adaptative-wrap-prefix-mode))
+#+end_src
 * Escape minibuffer
 #+begin_src emacs-lisp
   (global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+* Electric pair mode
+#+begin_src emacs-lisp
+(electric-pair-mode t)
 #+end_src
 * Eradio
 #+begin_src emacs-lisp
