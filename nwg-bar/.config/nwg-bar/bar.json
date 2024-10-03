@@ -1,26 +1,26 @@
 [
   {
-    "label": "Lock",
-    "exec": "swaylock --screenshots --effect-blur 20x4 --clock --indicator --indicator-thickness 7 --ring-color fab387 --key-hl-color a6e3a --indicator-radius 99 --effect-vignette 1:1 --text-color cdd6f4",
+    "label": "Bloquear",
+    "exec": "hyprlock",
     "icon": "system-lock-screen"
   },
   {
-	  "label": "Suspend",
+	  "label": "Suspender",
 	  "exec": "systemctl suspend",
 	  "icon": "system-suspend"
   },
   {
-    "label": "Logout",
+    "label": "Cerrar sesion",
     "exec": "hyprctl dispatch exit",
     "icon": "system-log-out"
   },
   {
-    "label": "Reboot",
+    "label": "Reinciar",
     "exec": "systemctl reboot",
     "icon": "system-reboot"
   },
   {
-    "label": "Shutdown",
+    "label": "Apagar",
     "exec": "systemctl poweroff",
     "icon": "system-shutdown"
   }

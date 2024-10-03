@@ -68,7 +68,7 @@ button:hover {
    }
 
 #workspaces button:hover { 
-    color: @mauve;
+    color: @theme_selected_bg_color;
     border-radius: 15px;
 }
 
@@ -253,10 +253,9 @@ label:focus {
     color: shade(@red, 0.9);
 }
 
-#tray {
-    color: shade(@mantle ,0.9);
-}
-
+/*#tray > menu {
+    padding: 4;
+}*/
 #tray > .passive {
     -gtk-icon-effect: dim;
 }

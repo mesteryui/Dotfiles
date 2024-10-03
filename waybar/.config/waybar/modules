@@ -2,7 +2,7 @@
 // ██╗    ██╗ █████╗ ██╗   ██╗██████╗  █████╗ ██████╗     
 // ██║    ██║██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗██╔══██╗    - Author: NotMugil
 // ██║ █╗ ██║███████║ ╚████╔╝ ██████╔╝███████║██████╔╝    - Repo: https://github.com/NotMugil/dotfiles
-// ██║███╗██║██╔══██║  ╚██╔╝  ██╔══██╗██╔══██║██╔══██╗    - Last Updated: 
+// ██║███╗██║██╔══██║  ╚██╔╝  ██╔══██╗██╔══██║██╔══██╗    - Last pdated: 
 // ╚███╔███╔╝██║  ██║   ██║   ██████╔╝██║  ██║██║  ██║
 //  ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 //                                        ███╗   ███╗ ██████╗ ██████╗ ██╗   ██╗██╗     ███████╗███████╗
@@ -15,7 +15,6 @@
 //   List of all the waybar modules used
 
 {
-
 	// ┌┐ ┌─┐┌┬┐┌┬┐┌─┐┬─┐┬ ┬
 	// ├┴┐├─┤ │  │ ├┤ ├┬┘└┬┘
 	// └─┘┴ ┴ ┴  ┴ └─┘┴└─ ┴ 
@@ -147,7 +146,7 @@
 		"interval": 60,
 		// "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
 		"tooltip-format": "<span color='#cdd6f4' font='SpaceMonoNerdFont 9'><small>{calendar}</small></span>",
-		"locale": "eo",
+		//"locale": "es_ES",
 		
 		
 	},
@@ -409,7 +408,7 @@
 	"pulseaudio#icon": {
 	    "format": "<span color=\"#c6a0f6\">{icon}</span> {volume}%",
 	    "format-bluetooth": "<span color=\"#c6a0f6\"> </span>{volume}%",
-	    "format-muted": " ",
+	    "format-muted": " ",
 	    "format-icons": {
 		"bluetooth": "",
 	        "headphone": " ",
@@ -460,14 +459,14 @@
 	},
 
 	"custom/updates": {
-		"format": "{icon}  {}",
+		"format": "{} {icon}",
 		"return-type": "json",
 		"format-icons": {
 		   "has-updates": "<span color=\"#a6e3a1\"> </span>",
 		   "updated": " "
 		},
 		"exec-if": "which waybar-module-pacman-updates",
-		"exec": "waybar-module-pacman-updates",
+		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
 		"on-click": "kitty -e ~/.config/hypr/scripts/update.sh",
 	},
 
@@ -558,7 +557,7 @@
 	
 	"tray": {
 		"icon-size": 14,
-		"spacing": 8
+		"spacing": 10
 	},
 
 	// ┬ ┬┬ ┬┌─┐┬─┐
