@@ -11,7 +11,7 @@ window > box {
 }
 
 * {
-	font-family: "JetBrainsMono Nerd Font", IPAMincho;
+	font-family: "JetBrainsMono Nerd Font", FontAwesome, Roboto, IPAMincho;
 	font-weight: 600;
 	font-size: 10px;
 	padding: 0;
@@ -182,14 +182,20 @@ window > box {
 
 #tray {
 	margin: 6px 2px;
-	padding: 0px 10px;
+	padding: 5px 10px;
+}
+#tray > .passive {
+    -gtk-icon-effect: dim;
 }
 
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
 tooltip {
     padding: 25px;
     background-color: @base;
     color: @overlay0;
-    font-family: CartographCF Nerd Font;
+    font-family: JetbrainsMono Nerd Font;
 }
 
 tooltip label {
@@ -200,3 +206,4 @@ tooltip label {
 label:focus {
     background-color: @background;
 }
+

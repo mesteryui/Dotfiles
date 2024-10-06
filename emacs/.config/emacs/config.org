@@ -665,25 +665,27 @@ Para configurar un calendario
 ** Configuración para lenguajes de programación
 *** Flymake
 #+begin_src emacs-lisp
-  ;; (use-package jsonrpc)
-  ;; (use-package flymake
-  ;;   :defer t 
-  ;;   :config
-  ;;   (add-hook 'prog-mode-hook #'flymake-mode))
+     (use-package jsonrpc
+       )
+    ;; (use-package flymake
+    ;;   :defer t 
+    ;;   :config
+    ;;   (add-hook 'prog-mode-hook #'flymake-mode))
 #+end_src
 *** Eglot
 #+begin_src emacs-lisp
-  ;(use-package eglot)
-  ;(add-hook 'prog-mode-hook #'eglot-ensure)
-  ;(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+  (use-package eglot)
+  (add-hook 'prog-mode-hook #'eglot-ensure)
+  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
 #+end_src
 *** Eldoc
 #+begin_src emacs-lisp
-  ;; (use-package eldoc)
-   (use-package eldoc-box
-     :ensure t
-     :defer
-     :init (setq eldoc-box-hover-mode t))
+     (use-package eldoc
+       :defer t)
+     (use-package eldoc-box
+       :ensure t
+       :defer
+       :init (setq eldoc-box-hover-mode t))
 #+end_src
 *** Typescript
 #+BEGIN_SRC emacs-lisp
@@ -696,20 +698,20 @@ Para configurar un calendario
 #+END_SRC
 *** Python
 #+begin_src emacs-lisp
-  ;(add-hook 'python-mode 'eglot-python-mode)
+  (add-hook 'python-mode 'eglot-python-mode)
 #+end_src
 *** Java
 #+begin_src emacs-lisp
-  ;;   (use-package eglot-java
-  ;;     :ensure t)
-  ;; (add-hook 'java-mode-hook 'eglot-java-mode)
-  ;;     (with-eval-after-load 'eglot-java
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-  ;;       (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+     (use-package eglot-java
+       :ensure t)
+   (add-hook 'java-mode-hook 'eglot-java-mode)
+       (with-eval-after-load 'eglot-java
+             (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+             (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+             (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+             (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+             (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+             (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 #+end_src
 *** Dape
 Esto nos permitira tener un depurador

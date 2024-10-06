@@ -40,38 +40,6 @@
 		"format-charging": "<span color=\"#a6e3a1\">{icon}</span> {capacity}%",
 	},
 
-	"battery#hearts": {
-		"bat": "BATT",
-		"format": "{icon}<span size='10pt'><b>{capacity}</b></span>",
-		"format-critical": "<span font_family='JetBrainsMono Nerd Font' color='#f38ba8'>{icon}</span><small><b>{capacity}</b></small>",
-		"format-charging": "<span font_family='JetBrainsMono Nerd Font' color='#eed49f'>{icon}</span><small><b>{capacity}</b></small>",
-		"format-good": "<span font_family='JetBrainsMono Nerd Font' color='#a6e3a1'>{icon}</span><small><b>{capacity}</b></small>",
-		"format-icons": [
-			"󰛞 󱢠 󱢠 󱢠 󱢠 ",
-			"󰣐 󱢠 󱢠 󱢠 󱢠 ",
-			"󰣐 󰛞 󱢠 󱢠 󱢠 ",
-			"󰣐 󰣐 󱢠 󱢠 󱢠 ",
-			"󰣐 󰣐 󰛞 󱢠 󱢠 ",
-			"󰣐 󰣐 󰣐 󱢠 󱢠 ",
-			"󰣐 󰣐 󰣐 󰛞 󱢠 ",
-			"󰣐 󰣐 󰣐 󰣐 󱢠 ",
-			"󰣐 󰣐 󰣐 󰣐 󰛞 ",
-			"󰣐 󰣐 󰣐 󰣐 󰣐 "
-		],
-		"format-time": "{H}hr & {m}min",
-		"format-warning": "<span font_family='JetBrainsMono Nerd Font' color='#f9e2af'>{icon}</span><small><b>{capacity}</b></small>",
-		"interval": 15,
-		"max-length": 25,
-		"states": {
-			"critical": 15,
-			"good": 100,
-			"warning": 30
-		},
-		"tooltip-format": "{time} (󰚥 plugged), at {capacity}%",
-		"tooltip-format-charging": "{time} (󰢟 charging), at {capacity}%",
-		"tooltip-format-discharging": "{time} (󱧦 discharging), at {capacity}%"
-	},
-
 	"battery#text": {
 		"interval": 60,
 		"states": {
@@ -144,6 +112,8 @@
 		"format": "{:%H:%M}",
 		"format-alt": "{:L%Y-%m-%d, %a}",
 		"interval": 60,
+		//"tooltip": false,
+		//"on-click": "ags -t calendar",	
 		// "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
 		"tooltip-format": "<span color='#cdd6f4' font='SpaceMonoNerdFont 9'><small>{calendar}</small></span>",
 		//"locale": "es_ES",
@@ -208,79 +178,6 @@
 	// ┬ ┬┌─┐┬─┐┬┌─┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
 	// ││││ │├┬┘├┴┐└─┐├─┘├─┤│  ├┤ └─┐
 	// └┴┘└─┘┴└─┴ ┴└─┘┴  ┴ ┴└─┘└─┘└─┘
-
-	"hyprland/workspaces": {
-		"all-outputs": true,
-		"on-click": "activate",
-		"format": "{icon}",
-		"on-scroll-up": "hyprctl dispatch workspace e+1",
-		"on-scroll-down": "hyprctl dispatch workspace e-1",
-		"format-icons": {
-			"1": "I",
-			"2": "II",
-			"3": "III",
-			"4": "IV",
-			"5": "V",
-			"6": "VI",
-			"7": "VII",
-			"8": "VIII",
-			"9": "IX",
-			"10": "X",
-			"11": "XI",
-			"12": "XII",
-			"13": "XIII",
-			"14": "XIV",
-			"15": "XV",
-			"16": "XVI",
-			"17": "XVII",
-			"18": "XVIII",
-			"19": "XIX",
-			"21": "XXI",
-			"22": "XXII",
-			"23": "XXIII",
-			"24": "XXIV",
-			"25": "XXV",
-			"26": "XXVI",
-			"27": "XXVII",
-			"28": "XXVIII",
-			"29": "XXIX",
-			"30": "XXX",
-
-			"urgent": "",
-			"default": ""
-		},
-	},
-
-	// Numbers Style workspace 
-	"hyprland/workspaces#number": {
-		"all-outputs": true,
-		"on-click": "activate",
-		"format": "{icon}",
-		"on-scroll-up": "hyprctl dispatch workspace e+1",
-		"on-scroll-down": "hyprctl dispatch workspace e-1",
-		"persistent-workspaces": {
-			"1": [],
-			"2": [],
-			"3": [],
-			"4": [],
-			"5": [],
-		},
-		"format-icons": {
-			"1": "1",
-			"2": "2",
-			"3": "3",
-			"4": "4",
-			"5": "5",
-			"6": "6",
-			"7": "7",
-			"8": "8",
-			"9": "9",
-			"10": "10",
-
-			"urgent": "",
-			"default": ""
-		},
-	},
 
 
 
@@ -474,7 +371,7 @@
 		"escape": true,
 		"exec": "swaync-client -swb",
 		"exec-if": "which swaync-client",
-		"format": "{icon} ",
+		"format": " {icon} ",
 		"format-icons": {
 		        "notification": " <span foreground='#f38ba8'><sup> </sup></span>",
 			"dnd-inhibited-none": " <sup> </sup>",
@@ -525,16 +422,6 @@
 	      
 	},
 
-	"group/sys-info": {
-		"modules": [
-			"network",
-			"bluetooth",
-			"group/volume",
-			"group/brightness"
-		],
-		"orientation": "horizontal"
-	},
-
 	"group/sys-settings": {
         	"modules": [
             		"network#icon",
@@ -576,7 +463,7 @@
 
 	"image": {
 		"tooltip": false,
-		"path": "/home/rei/.face.icon",
+		"path": "/home/oscar/.face.icon",
 		"size": 47
 	},
 
@@ -621,6 +508,16 @@
 		"format-paused": "<span color=\"#ee99a0\"> </span>",
 	},
 
+	"custom/hypridle": {
+	    "format": " ",
+	    "return-type": "json",
+	    "escape": true,
+	    "exec-on-event": true,
+	    "interval": 60,
+	    "exec": "~/.config/hypr/scripts/hypridle.sh status",
+	    "on-click": "~/.config/hypr/scripts/hypridle.sh toggle",
+	    "on-click-right": "hyprlock",
+	  },
 	"mpd": {
 	    "format": "{stateIcon} {consumeIcon}{randomIcon}{repeatIcon}{singleIcon}{artist} - {album} - {title} ({elapsedTime:%M:%S}/{totalTime:%M:%S}) ",
 	    "format-disconnected": "Disconnected ",
@@ -646,5 +543,6 @@
 	    "tooltip-format": "MPD (connected)",
 	    "tooltip-format-disconnected": "MPD (disconnected)"
 	},
+ 
  }
 

@@ -3,7 +3,7 @@ set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/s
 if status is-interactive
     # Commands to run in interactive sessions can go here
     set -g fish_greeting
-    set -x MANPAGER "nvim +Man!"
+    #set -x MANPAGER "nvim +Man!"
     fish_config theme choose "Catppuccin Mocha"
     set -g TERM kitty
     # starship
