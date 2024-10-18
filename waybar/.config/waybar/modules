@@ -105,7 +105,7 @@
 		},
 		"format": "{:%A, %b %e}",
 		"interval": 43200,
-		"tooltip-format": "<span color='#cdd6f4' font='SpaceMonoNerdFont 9'><small>{{calendar}}</small></span>",
+		"tooltip-format": "<span color='#cdd6f4' font='JetBrainsMonoNerd 9'><small>{{calendar}}</small></span>",
 	},
 
 	"clock#time": {
@@ -289,7 +289,7 @@
 			"󰕾 "
 			]
 		},
-		"format-muted": "󰖁",
+		"format-muted": " ",
 		"on-click": "pavucontrol",
 		"on-click-right": "pactl set-sink-mute 0 toggle",
 		"scroll-step": 1,
@@ -443,8 +443,8 @@
 
 	
 	"tray": {
-		"icon-size": 14,
-		"spacing": 10
+		"icon-size": 15,
+		"spacing": 8
 	},
 
 	// ┬ ┬┬ ┬┌─┐┬─┐

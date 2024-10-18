@@ -16,9 +16,9 @@ if status is-interactive
     #syncthing install-completions | source
     fzf --fish | source
 end
-alias "configure" 'cd ~/.config && nvim $(fzf --preview="bat --color=always {}") && cd'
 alias "ls" 'lsd'
-#alias "unimatrix" "unimatrix -n -s 96"
+alias unlock='sudo rm /var/lib/pacman/db.lck'
+alias "unimatrix" "unimatrix -n -s 96"
 alias "vetero" 'curl wttr.in/Vigo'
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'

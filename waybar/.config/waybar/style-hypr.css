@@ -7,13 +7,12 @@ window#waybar {
 window > box {
 	background-color: rgb(24, 24, 37);
 	margin: 8px 8px 0px 8px;
-	padding: 0px 5px;
+	padding: 0px 10px;
 }
-
 * {
 	font-family: "JetBrainsMono Nerd Font", FontAwesome, Roboto, IPAMincho;
 	font-weight: 600;
-	font-size: 10px;
+	font-size: 11px;
 	padding: 0;
 	border-radius: 8px;
 }
@@ -30,6 +29,7 @@ window > box {
 #workspaces,
 #clock,
 #pownet,
+#tray,
 #custom-updates
 #bluetooth.connected,
 #custom-spotify,
@@ -181,16 +181,19 @@ window > box {
 }
 
 #tray {
-	margin: 6px 2px;
+	margin: 10px 6px;
 	padding: 5px 10px;
 }
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
-
+/*#tray menu {*/
+/*	margin: 10px 10px;*/
+/*}*/
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
 }
+
 tooltip {
     padding: 25px;
     background-color: @base;

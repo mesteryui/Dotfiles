@@ -5,7 +5,7 @@
 	"position": "top",
 	 "height": 48,
 	 "margin-top": 2,
-	//"width": 1240,
+	"width": 1429,
 	"output": ["eDP-1"],
         "include": "~/.config/waybar/modules",
 	"modules-left": ["custom/launcher#arch","custom/three-dots-seperator","cpu#icon","memory#icon","disk#icon", "hyprland/window"],
