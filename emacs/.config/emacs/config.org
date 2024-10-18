@@ -325,13 +325,15 @@ Allows us to create a Table of Contents in our Org docs.
 ** Organizer
 Es un sistema de organización propio desarrollado en *Elisp* razonablemente, el cual utiliza org mode
 #+BEGIN_SRC emacs-lisp
-    ;  (add-to-list 'load-path "~/.config/emacs/plugins")
-    ;  (require 'organizer)
-    ;  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
-      ;;(load-file "~/.config/emacs/plugins/organizer.el")
-    ;  (global-set-key (kbd "<f12>")  'organizer-index)
-  (use-package organizer
-    :ensure (:host codeberg :repo "mester/Organizer"))
+        ;  (add-to-list 'load-path "~/.config/emacs/plugins")
+        ;  (require 'organizer)
+        ;  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
+          ;;(load-file "~/.config/emacs/plugins/organizer.el")
+        ; 
+      (use-package organizer
+        :ensure (:host codeberg :repo "mester/Organizer")
+        :config
+         (global-set-key (kbd "<f12>")  'organizer-index))
 #+end_src
 ** Nerd Icons
 Soporte de iconos usando interfaz gráfica y terminal
@@ -667,10 +669,10 @@ Para configurar un calendario
 #+begin_src emacs-lisp
      (use-package jsonrpc
        )
-    ;; (use-package flymake
-    ;;   :defer t 
-    ;;   :config
-    ;;   (add-hook 'prog-mode-hook #'flymake-mode))
+     (use-package flymake
+       :defer t 
+       :config
+       (add-hook 'prog-mode-hook #'flymake-mode))
 #+end_src
 *** Eglot
 #+begin_src emacs-lisp
