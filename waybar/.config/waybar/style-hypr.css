@@ -10,9 +10,9 @@ window > box {
 	padding: 0px 10px;
 }
 * {
-	font-family: "JetBrainsMono Nerd Font", FontAwesome, Roboto, IPAMincho;
+	font-family: "Gabarito Regular", FontAwesome, Roboto, IPAMincho;
 	font-weight: 600;
-	font-size: 11px;
+	font-size: 12px;
 	padding: 0;
 	border-radius: 8px;
 }
@@ -181,15 +181,12 @@ window > box {
 }
 
 #tray {
-	margin: 10px 6px;
-	padding: 5px 10px;
+	margin: 5px 6px;
+	padding: 5px 9px;
 }
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
-/*#tray menu {*/
-/*	margin: 10px 10px;*/
-/*}*/
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
 }

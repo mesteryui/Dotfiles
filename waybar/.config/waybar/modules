@@ -29,13 +29,13 @@
 		"format": "{icon} {capacity}%",
 		"format-icons": {
 			"default": [
-				"<span color=\"#f7768e\"> </span>",
-				"<span color=\"#fab387\"> </span>",
-				"<span color=\"#7aa2f7\"> </span>",
-				"<span color=\"#7aa2f7\"> </span>",
-				"<span color=\"#7aa2f7\"> </span>",
+				"<span color=\"#f7768e\">   </span>",
+				"<span color=\"#fab387\">   </span>",
+				"<span color=\"#7aa2f7\">   </span>",
+				"<span color=\"#7aa2f7\">   </span>",
+				"<span color=\"#7aa2f7\">   </span>",
 			],
-			"charging": [ " "," "," "," ",],
+			"charging": [ "  ","  ","  ","  ",],
 		},
 		"format-charging": "<span color=\"#a6e3a1\">{icon}</span> {capacity}%",
 	},
@@ -132,7 +132,7 @@
 
 	"cpu#icon": {
 	    "interval": 10,
-	    "format": "<span color=\"#f38ba8\"></span>  {}%",
+	    "format": "<span color=\"#f38ba8\"> </span>  {}%",
 	    "max-length": 10
 	},
 
@@ -148,7 +148,7 @@
 
 	"memory#icon": {
 	    "interval": 30,
-	    "format": "<span color=\"#89b4fa\"> </span> {used} GiB",
+	    "format": "<span color=\"#89b4fa\">  </span> {used} GiB",
 	},
 
 
@@ -158,7 +158,7 @@
 
 	"disk#icon": {
 	    "interval": 30,
-	    "format": "<span color=\"#f9e2af\"> </span> {used}",
+	    "format": "<span color=\"#f9e2af\">  </span> {used}",
 	    //"path": "/",
 	    "unit": "GB"
 	},
@@ -255,7 +255,7 @@
 		"format-linked": "󰖩",
 		"format-wifi": "{icon}",
 		"interval": 30,
-		"on-click": "kitty -e 'nmtui'",
+		"on-click": "wezterm start 'nmtui'",
 		"on-click-right": "rfkill toggle wifi",
 		"tooltip": true,
 		"tooltip-format": "interface:\t{ifname}\n\nconnected to {essid} at {signalStrength}% strength",
@@ -280,7 +280,7 @@
 	//  └┘ └─┘┴─┘└─┘┴ ┴└─┘
 
 	"pulseaudio": {
-		"format": "{icon} ",
+		"format": "{icon}  ",
 		"format-bluetooth": "{icon}",
 		"format-icons": {
 		"default": [
@@ -289,11 +289,11 @@
 			"󰕾 "
 			]
 		},
-		"format-muted": " ",
+		"format-muted": "  ",
 		"on-click": "pavucontrol",
 		"on-click-right": "pactl set-sink-mute 0 toggle",
 		"scroll-step": 1,
-		"tooltip-format": "{desc}\t{icon}{volume}%"
+		"tooltip-format": "{desc}\t{icon}{svolume}%"
 	},
 
 	"pulseaudio/slider": {
@@ -303,9 +303,9 @@
 	},
 
 	"pulseaudio#icon": {
-	    "format": "<span color=\"#c6a0f6\">{icon}</span> {volume}%",
+	    "format": "<span color=\"#c6a0f6\">{icon}</span>  {volume}%",
 	    "format-bluetooth": "<span color=\"#c6a0f6\"> </span>{volume}%",
-	    "format-muted": " ",
+	    "format-muted": "  ",
 	    "format-icons": {
 		"bluetooth": "",
 	        "headphone": " ",
@@ -330,7 +330,7 @@
 		"device": "intel_backlight",
 		"format": "{icon}{percent}%",
 		"tooltip-format": "{percent}%",
-		"format-icons": ["󰃞 ","󰃝 ","󰃟 ","󰃠 "]
+		"format-icons": ["󰃞  ","󰃝  ","󰃟  ","󰃠  "]
 	},
 
 	"backlight/slider": {
@@ -359,12 +359,12 @@
 		"format": "{} {icon}",
 		"return-type": "json",
 		"format-icons": {
-		   "has-updates": "<span color=\"#a6e3a1\"> </span>",
-		   "updated": " "
+		   "has-updates": "<span color=\"#a6e3a1\">  </span>",
+		   "updated": "  "
 		},
 		"exec-if": "which waybar-module-pacman-updates",
 		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
-		"on-click": "kitty -e ~/.config/hypr/scripts/update.sh",
+		"on-click": "wezterm start ~/.config/hypr/scripts/update.sh",
 	},
 
 	"custom/notification": {

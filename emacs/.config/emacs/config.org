@@ -718,8 +718,8 @@ Para configurar un calendario
 *** Dape
 Esto nos permitira tener un depurador
 #+begin_src emacs-lisp
-  ;; (use-package dape
-  ;;   :defer t)
+   (use-package dape
+     :defer t)
 #+end_src
 *** Ajustes diversos programacion
 #+begin_src emacs-lisp
@@ -808,5 +808,5 @@ Hace que la sangria sea igual cuando es demasiado larga para mostrarse en pantal
 #+end_src
 * Transparecia
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 95)) ; For all new frames henceforth
+(add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 #+end_src
