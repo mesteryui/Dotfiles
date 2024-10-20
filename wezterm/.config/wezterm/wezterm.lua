@@ -7,14 +7,14 @@ front_end = "OpenGL",
 automatically_reload_config = true,
     window_background_opacity = 0.90,
     font = wezterm.font_with_fallback({ 
-    {family="JetBrainsMono Nerd Font", harfbuzz_features={"calt=1", "clig=1", "liga=1"}},
+    {family="JetBrains Mono", harfbuzz_features={"calt=1", "clig=1", "liga=1"}},
     "Noto Color Emoji",
     "Symbols Nerd Font Mono"
     }),
     font_size = 10.5,
     line_height = 1.2,
-    initial_rows = 23,
-    initial_cols = 106,
+    --initial_rows = 20,
+    --initial_cols = 90,
     color_scheme = "Catppuccin Mocha", 
     use_fancy_tab_bar = false,
     enable_tab_bar = true,
@@ -43,7 +43,7 @@ automatically_reload_config = true,
         	    {
             	    name = "server",
             	    remote_address = "192.168.0.84",
-           	     username = "oscar"
-       		   }
+           	    username = "oscar",
+       		   },
     }
 }

@@ -5,7 +5,7 @@ if status is-interactive
     set -g fish_greeting
     #set -x MANPAGER "nvim +Man!"
     fish_config theme choose "Catppuccin Mocha"
-    set -g TERM kitty
+    set -g TERM wezterm
     # starship
     starship init fish | source
     # atuin
@@ -27,6 +27,8 @@ set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #alias "cd" "z"
+#set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
+set VISUAL "emacsclient -c -a emacs"
 set -Ux EDITOR "nano"
 set -Ux LOCALE "es_ES.UTF-8"
 set -Ux FZF_DEFAULT_OPTS "\

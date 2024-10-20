@@ -16,12 +16,13 @@ emacs/.config/emacs/auto-save-list/
 emacs/.config/emacs/eshell/
 emacs/.config/emacs/games/
 emacs/.config/emacs/projectile-bookmarks.eld
-emacs/.config/emacs/share/eclipse.jdt.ls/config_linux/org.eclipse.core.runtime/
-emacs/.config/emacs/share/eclipse.jdt.ls/config_linux/org.eclipse.equinox.app/
-emacs/.config/emacs/share/eclipse.jdt.ls/config_linux/org.eclipse.equinox.launcher/
-emacs/.config/emacs/share/eclipse.jdt.ls/config_linux/org.eclipse.osgi/
 emacs/.config/emacs/share/junit-platform-console-standalone/
 emacs/.config/emacs/tramp
 emacs/.config/emacs/config.el
 emacs/.config/emacs/history
 emacs/.config/emacs/.lsp-session-v1
+emacs/.config/emacs/.cache/
+emacs/.config/emacs/.dap-breakpoints
+emacs/.config/emacs/eclipse.jdt.ls/
+emacs/.config/emacs/workspace/
+emacs/.config/emacs/projects
