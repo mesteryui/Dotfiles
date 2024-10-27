@@ -64,4 +64,5 @@
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 ;;; elpaca-setup ends here
+
 (provide 'elpaca-setup)
