@@ -18,6 +18,7 @@ if status is-interactive
 end
 alias "ls" 'lsd'
 alias unlock='sudo rm /var/lib/pacman/db.lck'
+alias ssh='wezterm ssh'
 alias "unimatrix" "unimatrix -n -s 96"
 alias "vetero" 'curl wttr.in/Vigo'
 #alias "tree" 'eza --tree'
