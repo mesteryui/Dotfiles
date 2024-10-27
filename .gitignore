@@ -27,3 +27,5 @@ emacs/.config/emacs/eclipse.jdt.ls/
 emacs/.config/emacs/workspace/
 emacs/.config/emacs/projects
 snippets/
+emacs/.config/emacs/tldr/
+yazi/.config/yazi/package.toml
