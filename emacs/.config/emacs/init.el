@@ -134,6 +134,7 @@
 :hook (org-mode . org-auto-tangle-mode))
 
 (use-package toc-org
+    :demand t
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 
@@ -306,6 +307,7 @@
       (switch-to-buffer dashboard-buffer-name))
 
 (use-package which-key
+  :defer t
   :config
   (which-key-mode)
   (setq which-key-idle-delay 0.3))
@@ -454,7 +456,30 @@
   (add-hook 'prog-mode-hook #'flymake-mode))
 (use-package flymake-gradle)
 
-(require 'eglot-setup)
+(use-package eldoc
+    :defer t
+    :after elpaca)
+  (use-package eldoc-box
+    :ensure t
+    :defer t
+    :after eldoc
+    :init (setq eldoc-box-hover-mode t))
+
+;(require 'eglot-setup)
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (python-mode . lsp)
+         (java-mode . lsp)
+         (nxml-mode . lsp)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
 
 (use-package yasnippet
   :defer t
@@ -471,9 +496,22 @@
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 (add-hook 'typescript-mode 'eglot-typescript-mode)
 
-(add-hook 'python-mode 'eglot-python-mode)
+; (add-hook 'python-mode 'eglot-python-mode)
 
+;(use-package eglot-java
+;            :defer t
+;            :after eglot)
+  
+;        (add-hook 'java-mode-hook 'eglot-java-mode)
+;            (with-eval-after-load 'eglot-java
+;                  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+;                  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+;                  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+;                  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+;                  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+;                  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
+(add-hook 'nxml-mode 'eglot-nxml-mode)
 
 (use-package dape
   :defer t)

@@ -1,6 +1,6 @@
 #+title: Configuraciones
 #+author: Mester
-#+description: Configuracion de Emacs
+#+description: Configuración de Emacs
 #+STARTUP: showeverything
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
@@ -17,6 +17,7 @@ To keep this =config.org= a reasonable length, I have moved a lot of code to ind
 #+end_src
 
 ** Sourcing the scripts
+Aqui cargaremos algunos scripts básicos como el usado para elpaca
 #+begin_src emacs-lisp
   ;;(require 'no-littering-setup) ;; No littering
   (require 'elpaca-setup)  ;; The Elpaca Package Manager
@@ -176,9 +177,10 @@ Aqui cargamos algunas utilidades más para org-mode(se hace en un script diferen
 ** Toc-Org
 Allows us to create a Table of Contents in our Org docs.
 #+begin_src emacs-lisp
-(use-package toc-org
-    :commands toc-org-enable
-    :init (add-hook 'org-mode-hook 'toc-org-enable))
+  (use-package toc-org
+      :demand t
+      :commands toc-org-enable
+      :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
 * Flyspell
 #+BEGIN_SRC emacs-lisp
@@ -379,10 +381,11 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
 #+end_src
 ** Which key
 #+begin_src emacs-lisp
-      (use-package which-key
-        :config
-        (which-key-mode)
-        (setq which-key-idle-delay 0.3))
+  (use-package which-key
+    :defer t
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 0.3))
 #+end_src
 ** I3wm mode
 #+BEGIN_SRC emacs-lisp
@@ -569,10 +572,37 @@ Para configurar un calendario
 #+end_src
 *** Eldoc
 Como es necesario para usar bien LSP se cargara a traves de eglot-setup
-*** LSP
 #+begin_src emacs-lisp
-(require 'eglot-setup)
- #+end_src
+(use-package eldoc
+    :defer t
+    :after elpaca)
+  (use-package eldoc-box
+    :ensure t
+    :defer t
+    :after eldoc
+    :init (setq eldoc-box-hover-mode t))
+
+          
+#+end_src
+*** LSP
+Pasandolo a [[file:scripts/eglot-setup.el][Eglot setup]], planteandome usar LSP Server
+#+begin_src emacs-lisp
+    ;(require 'eglot-setup)
+  (use-package lsp-mode
+    :init
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setq lsp-keymap-prefix "C-c l")
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (python-mode . lsp)
+           (java-mode . lsp)
+           (nxml-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration))
+    :commands lsp)
+
+  ;; optionally
+  (use-package lsp-ui :commands lsp-ui-mode)
+#+end_src
 *** Yasnippet
 #+begin_src emacs-lisp
   (use-package yasnippet
@@ -596,14 +626,27 @@ Como es necesario para usar bien LSP se cargara a traves de eglot-setup
 #+END_SRC
 *** Python
 #+begin_src emacs-lisp
-  (add-hook 'python-mode 'eglot-python-mode)
+ ; (add-hook 'python-mode 'eglot-python-mode)
 #+end_src
 *** Java
-Movido a [[file:scripts/eglot-setup.el][Eglot setup]]
+#+begin_src emacs-lisp
+;(use-package eglot-java
+;            :defer t
+;            :after eglot)
+  
+;        (add-hook 'java-mode-hook 'eglot-java-mode)
+;            (with-eval-after-load 'eglot-java
+;                  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+;                  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+;                  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+;                  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+;                  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+;                  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+#+end_src
 *** XML
 Aquí irán algunas configuraciones para usar el lenguaje xml
 #+BEGIN_SRC emacs-lisp
-  
+  (add-hook 'nxml-mode 'eglot-nxml-mode)
 #+END_SRC
 *** Dape
 Esto nos permitira tener un depurador
