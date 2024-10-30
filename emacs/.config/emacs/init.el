@@ -465,28 +465,44 @@
     :after eldoc
     :init (setq eldoc-box-hover-mode t))
 
-;(require 'eglot-setup)
-(use-package lsp-mode
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (python-mode . lsp)
-         (java-mode . lsp)
-         (nxml-mode . lsp)
-         ;; if you want which-key integration
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp)
+(use-package lua-mode)
 
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
+;(require 'eglot-setup)
+    (use-package lsp-mode
+      :init
+      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+      (setq lsp-keymap-prefix "C-c l")
+
+      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+             (python-mode . lsp)
+             (java-mode . lsp)
+             (nxml-mode . lsp)
+             (lua-mode . lsp)
+             ;; if you want which-key integration
+             (lsp-mode . lsp-enable-which-key-integration))
+      :custom
+       (lsp-completion-enable t)
+      :commands lsp)
+
+(use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+  (use-package lsp-java
+    :after lsp
+  :ensure t
+  :init
+  (setq lsp-java-args '("-Dlsp.server.hover.content=ALL")))
+    ;; optionally
+    (use-package lsp-ui :commands lsp-ui-mode)
 
 (use-package yasnippet
   :defer t
   :config
-  (add-hook 'prog-mode-hook #'yas-minor-mode)
-  (add-hook 'nxml-mode #'yas-minor-mode)
-  (add-hook 'sgml-mode #'yas-minor-mode))
+  ;(add-hook 'lsp-mode #'yas-minor-mode)
+  (yas-global-mode t))
 (use-package yasnippet-snippets)
 
 (use-package typescript-mode

@@ -343,6 +343,7 @@ Mejorar la linea inferior de Emacs usando la que utiliza el framework de configu
   (use-package company-posframe
     :config
     (company-posframe-mode 1))
+
 #+end_src
 
 ** Dashboard
@@ -571,7 +572,7 @@ Para configurar un calendario
   (use-package flymake-gradle)
 #+end_src
 *** Eldoc
-Como es necesario para usar bien LSP se cargara a traves de eglot-setup
+
 #+begin_src emacs-lisp
 (use-package eldoc
     :defer t
@@ -580,38 +581,54 @@ Como es necesario para usar bien LSP se cargara a traves de eglot-setup
     :ensure t
     :defer t
     :after eldoc
-    :init (setq eldoc-box-hover-mode t))
-
-          
+    :init (setq eldoc-box-hover-mode t))          
+#+end_src
+*** Lua mode
+#+begin_src emacs-lisp
+(use-package lua-mode)
 #+end_src
 *** LSP
-Pasandolo a [[file:scripts/eglot-setup.el][Eglot setup]], planteandome usar LSP Server
+Usando ~lsp server~
 #+begin_src emacs-lisp
-    ;(require 'eglot-setup)
-  (use-package lsp-mode
-    :init
-    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-    (setq lsp-keymap-prefix "C-c l")
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (python-mode . lsp)
-           (java-mode . lsp)
-           (nxml-mode . lsp)
-           ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration))
-    :commands lsp)
+        ;(require 'eglot-setup)
+      (use-package lsp-mode
+        :init
+        ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+        (setq lsp-keymap-prefix "C-c l")
 
-  ;; optionally
-  (use-package lsp-ui :commands lsp-ui-mode)
+        :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+               (python-mode . lsp)
+               (java-mode . lsp)
+               (nxml-mode . lsp)
+               (lua-mode . lsp)
+               ;; if you want which-key integration
+               (lsp-mode . lsp-enable-which-key-integration))
+        :custom
+         (lsp-completion-enable t)
+        :commands lsp)
+  
+  (use-package lsp-pyright
+    :ensure t
+    :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+    :hook (python-mode . (lambda ()
+                            (require 'lsp-pyright)
+                            (lsp))))  ; or lsp-deferred
+    (use-package lsp-java
+      :after lsp
+    :ensure t
+    :init
+    (setq lsp-java-args '("-Dlsp.server.hover.content=ALL")))
+      ;; optionally
+      (use-package lsp-ui :commands lsp-ui-mode)
 #+end_src
 *** Yasnippet
 #+begin_src emacs-lisp
-  (use-package yasnippet
-    :defer t
-    :config
-    (add-hook 'prog-mode-hook #'yas-minor-mode)
-    (add-hook 'nxml-mode #'yas-minor-mode)
-    (add-hook 'sgml-mode #'yas-minor-mode))
-  (use-package yasnippet-snippets)
+    (use-package yasnippet
+      :defer t
+      :config
+      ;(add-hook 'lsp-mode #'yas-minor-mode)
+      (yas-global-mode t))
+    (use-package yasnippet-snippets)
 #+end_src
 
 *** Typescript
