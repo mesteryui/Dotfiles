@@ -5,14 +5,15 @@ return {
 enable_wayland = true,
 front_end = "OpenGL",
 automatically_reload_config = true,
-    window_background_opacity = 0.90,
-    font = wezterm.font_with_fallback({ 
-    {family="JetBrains Mono", harfbuzz_features={"calt=1", "clig=1", "liga=1"}},
-    "Noto Color Emoji",
-    "Symbols Nerd Font Mono"
+    window_background_opacity = 0.9,
+--      font = wezterm.font "CaskaydiaCove NF",
+    font = wezterm.font_with_fallback({{
+	     family="JetBrains Mono", harfbuzz_features={"calt=1", "clig=1", "liga=1"}},
+	  "Noto Color Emoji",
+	  "Symbols Nerd Font Mono"
     }),
-    font_size = 10.5,
-    line_height = 1.2,
+    font_size = 11.3,
+    --line_height = 1.1,
     --initial_rows = 20,
     --initial_cols = 90,
     color_scheme = "Catppuccin Mocha", 
