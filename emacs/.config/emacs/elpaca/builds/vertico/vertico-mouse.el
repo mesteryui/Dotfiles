@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/vertico/extensions/vertico-mouse.el

@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/treemacs/src/scripts/treemacs-dirs-to-collapse.py

@@ -1,0 +1,13 @@
+# Target labels
+ libvterm
+# Source files and their labels
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/CMakeFiles/libvterm
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/CMakeFiles/libvterm.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/CMakeFiles/libvterm-complete.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-build.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-configure.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-download.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-install.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-mkdir.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-patch.rule
+/home/oscar/.config/emacs/elpaca/builds/vterm/build/libvterm-prefix/src/libvterm-stamp/libvterm-update.rule

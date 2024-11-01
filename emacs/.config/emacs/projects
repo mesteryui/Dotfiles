@@ -1,0 +1,5 @@
+;;; -*- lisp-data -*-
+(("~/Proyectos_Emacs/PruebasPROG/app/")
+ ("~/Proyectos_Emacs/Cosas/app/")
+ ("~/Proyectos_Emacs/Prueba/app/")
+ ("/home/oscar/.dotfiles/"))

@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/consult-lsp/consult-lsp.el

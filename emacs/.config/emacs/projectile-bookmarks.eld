@@ -1,0 +1,1 @@
+("~/.dotfiles/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/jsonrpc/" "~/Proyectos_Emacs/Prueba_Java/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/eglot-java/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/elpaca/")

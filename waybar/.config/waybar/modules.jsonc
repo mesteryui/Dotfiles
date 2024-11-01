@@ -253,7 +253,7 @@
 		"format-linked": "󰖩",
 		"format-wifi": "{icon}",
 		"interval": 30,
-		"on-click": "wezterm start --class float_wezterm 'nmtui'",
+		"on-click": "kitty --class float_kitty -e 'nmtui'",
 		"on-click-right": "rfkill toggle wifi",
 		"tooltip": true,
 		"tooltip-format": "interface:\t{ifname}\n\nconnected to {essid} at {signalStrength}% strength",
@@ -362,7 +362,7 @@
 		},
 		"exec-if": "which waybar-module-pacman-updates",
 		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
-		"on-click": "wezterm start --class float_wezterm ~/.config/hypr/scripts/update.sh",
+		"on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",
 	},
 
 	"custom/notification": {

@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/i3wm-Config-Mode/i3wm-config-mode.el

@@ -1,0 +1,6 @@
+INDEX VERSION 1.133+/home/oscar/.dotfiles/emacs/.config/emacs/workspace/.metadata/.plugins/org.eclipse.jdt.core
+1865797976.index
+4013607337.index
+3842426239.index
+4272998097.index
+3672224818.index

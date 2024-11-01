@@ -1,0 +1,1 @@
+/home/oscar/.config/emacs/elpaca/repos/company-mode/company-tempo.el
