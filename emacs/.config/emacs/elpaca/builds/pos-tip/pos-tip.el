@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/pos-tip/pos-tip.el

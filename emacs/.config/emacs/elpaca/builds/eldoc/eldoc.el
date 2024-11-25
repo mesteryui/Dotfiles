@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/eldoc/lisp/emacs-lisp/eldoc.el

@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/treemacs/src/scripts/treemacs-git-commit-diff.py

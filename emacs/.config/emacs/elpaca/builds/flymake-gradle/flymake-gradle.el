@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/flymake-gradle/flymake-gradle.el

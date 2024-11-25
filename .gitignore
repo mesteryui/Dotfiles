@@ -4,6 +4,7 @@ elpa/
 fish_variables/
 emacs/.config/emacs/elpaca/
 eln-cache/
+.cache/
 tramp/
 elpy
 emacs/.config/emacs/share/

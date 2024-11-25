@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/org-superstar-mode/org-superstar.el

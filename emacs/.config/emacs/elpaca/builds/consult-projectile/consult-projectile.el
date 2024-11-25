@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/consult-projectile/consult-projectile.el

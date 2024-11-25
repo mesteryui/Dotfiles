@@ -1,1 +1,0 @@
-/home/oscar/.config/emacs/elpaca/repos/typst-ts-mode/typst-ts-faces.el
