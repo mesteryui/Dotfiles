@@ -47,7 +47,9 @@
       "button-text": "Limpiar todo"
     },
     "dnd": {
-      "text": "No molestar"
+      "text": "No molestar",
+      "no_disturbance_sounds": true
+
     },
     "label": {
       "max-lines": 5,

@@ -198,7 +198,13 @@ tooltip {
     color: @overlay0;
     font-family: JetbrainsMono Nerd Font;
 }
-
+#backlight,
+#custom-weather {
+	background-color: @base;
+	border-radius: 100px;
+        padding: 0px 10px;
+        margin: 6px 2px;
+}
 tooltip label {
     padding: 15px;
     color: @text;

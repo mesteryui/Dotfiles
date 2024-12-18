@@ -50,7 +50,6 @@
 		"max-length": 25,
 		"tooltip": false
 	},
-
 	// ┌┐ ┬  ┬ ┬┌─┐┌┬┐┌─┐┌─┐┌┬┐┬ ┬
 	// ├┴┐│  │ │├┤  │ │ ││ │ │ ├─┤
 	// └─┘┴─┘└─┘└─┘ ┴ └─┘└─┘ ┴ ┴ ┴
@@ -541,6 +540,9 @@
 	    "tooltip-format": "MPD (connected)",
 	    "tooltip-format-disconnected": "MPD (disconnected)"
 	},
- 
- }
-
+	"custom/weather": {
+ 	   "return-type": "text",
+           "exec": "python ~/.config/waybar/scripts/weather.py",
+           "interval": 30,
+  },
+}

@@ -163,7 +163,7 @@ Estas son configuraciones básicas para el org-mode cargamos algunas cosas para 
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
-
+(global-set-key (kbd "C-c o") 'consult-org-agenda)
 #+end_src
 ** Utilidades para org mode
 Aqui cargamos algunas utilidades más para org-mode(se hace en un script diferente ya que son bastantes y asi mejoramos en eficiencia) y hacemos la instalacion de auto-tangle
@@ -588,7 +588,7 @@ Para configurar un calendario
 (use-package lua-mode)
 #+end_src
 *** LSP
-Usando ~lsp server~
+Volviendo a eglot
 #+begin_src emacs-lisp
         ;(require 'eglot-setup)
       (use-package lsp-mode
@@ -606,7 +606,7 @@ Usando ~lsp server~
         :custom
          (lsp-completion-enable t)
         :commands lsp)
-  
+
   (use-package lsp-pyright
     :ensure t
     :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
@@ -617,9 +617,11 @@ Usando ~lsp server~
       :after lsp
     :ensure t
     :init
-    (setq lsp-java-args '("-Dlsp.server.hover.content=ALL")))
+    (setq lsp-java-args '("-Dlsp.server.hover.content=ALL"
+          lsp-java-jdk "/usr/lib/jvm/java-21-openjdk")))
       ;; optionally
       (use-package lsp-ui :commands lsp-ui-mode)
+  (add-hook 'java-mode-hook #'lsp)
 #+end_src
 *** Yasnippet
 #+begin_src emacs-lisp
@@ -663,7 +665,7 @@ Usando ~lsp server~
 *** XML
 Aquí irán algunas configuraciones para usar el lenguaje xml
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'nxml-mode 'eglot-nxml-mode)
+  ;(add-hook 'nxml-mode 'eglot-nxml-mode)
 #+END_SRC
 *** Dape
 Esto nos permitira tener un depurador
@@ -675,7 +677,18 @@ Esto nos permitira tener un depurador
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
+** Treemacs
+#+BEGIN_SRC emacs-lisp
+  (use-package treemacs)
+ (global-set-key (kbd "C-c f") 'treemacs)
+#+END_SRC
+** Projectile
+Es un sistema para gestionar proyectos desde *Emacs*
+#+begin_src emacs-lisp
+  (use-package projectile)
+ 
 
+#+end_src
 ** Rainbow delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
@@ -692,6 +705,12 @@ Esto nos permitira tener un depurador
 ** Sudo edit
 #+begin_src emacs-lisp
 (use-package sudo-edit)
+#+end_src
+** Typst
+Es un sustituto de LaTeX con una sintaxis más simple
+#+begin_src emacs-lisp
+(use-package typst-mode
+  :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
 #+end_src
 ** Adaptative wrap
 Hace que la sangria sea igual cuando es demasiado larga para mostrarse en pantalla

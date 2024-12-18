@@ -5,7 +5,7 @@ if status is-interactive
     set -g fish_greeting
     #set -x MANPAGER "nvim +Man!"
     fish_config theme choose "Catppuccin Mocha"
-    set -g TERM wezterm
+    set -g TERM kitty
     # starship
     starship init fish | source
     # atuin
@@ -13,24 +13,26 @@ if status is-interactive
     # zoxide
     zoxide init fish | source
     #syncthing
-    #syncthing install-completions | source
+    syncthing install-completions | source
     fzf --fish | source
 end
 alias "ls" 'lsd'
 alias unlock='sudo rm /var/lib/pacman/db.lck'
-alias ssh='wezterm ssh'
+alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
+#alias ssh='wezterm ssh'
 alias "unimatrix" "unimatrix -n -s 96"
-alias "vetero" 'curl wttr.in/Vigo'
+alias "tiempo" 'curl wttr.in/Vigo'
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
-#alias "cd" "z"
+alias "cd" "z"
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set VISUAL "emacsclient -c -a emacs"
 set -Ux EDITOR "nano"
+set -x FONT "Roboto Regular"
 set -Ux LOCALE "es_ES.UTF-8"
 set -Ux FZF_DEFAULT_OPTS "\
 --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
