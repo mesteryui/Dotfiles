@@ -94,39 +94,40 @@
     (load-theme 'catppuccin :no-confirm))
 
 (use-package org
-  :ensure nil
-  :defer t)
-  (require 'org-tempo)
-    (setq-default org-startup-indented t
-                  org-pretty-entities t
-                  org-use-sub-superscripts "{}"
-                  org-hide-emphasis-markers t
-                  org-startup-with-inline-images t
-                  image-actual-width '(300))
-  (add-hook 'org-mode-hook 'org-indent-mode)
+    :ensure nil
+    :defer t)
+    (require 'org-tempo)
+      (setq-default org-startup-indented t
+                    org-pretty-entities t
+                    org-use-sub-superscripts "{}"
+                    org-hide-emphasis-markers t
+                    org-startup-with-inline-images t
+                    image-actual-width '(300))
+    (add-hook 'org-mode-hook 'org-indent-mode)
 
-  ;; Mostrar marcadores de énfasis ocultos
-(setq org-directory "~/org/")
-(setq org-agenda-files '("~/org/agenda.org"))
-(setq org-archive-location "~/org/%s_archivo.org::datetree/")
-(setq org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
- (setq org-todo-keyword-faces
-        '(("TODO" . "coral")
-          ("NEXT" . "cyan")
-          ("PROJ" . "orange")
-          ("DONE" . "green")
-          ("PAUSED" . "IndianRed1")
-          ("CANCELLED" . "grey")))
-      (global-set-key (kbd "C-c c") 'org-capture)
-      (global-set-key (kbd "C-c a") 'org-agenda)
-        (setq org-export-with-drawers nil
-              org-export-with-todo-keywords nil
-              org-export-with-broken-links t
-              org-export-with-toc nil
-              org-export-with-smart-quotes t
-              org-export-date-timestamp-format "%d %B %Y"
-              org-list-allow-alphabetical t)
+    ;; Mostrar marcadores de énfasis ocultos
+  (setq org-directory "~/org/")
+  (setq org-agenda-files '("~/org/agenda.org"))
+  (setq org-archive-location "~/org/%s_archivo.org::datetree/")
+  (setq org-todo-keywords
+       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+   (setq org-todo-keyword-faces
+          '(("TODO" . "coral")
+            ("NEXT" . "cyan")
+            ("PROJ" . "orange")
+            ("DONE" . "green")
+            ("PAUSED" . "IndianRed1")
+            ("CANCELLED" . "grey")))
+        (global-set-key (kbd "C-c c") 'org-capture)
+        (global-set-key (kbd "C-c a") 'org-agenda)
+          (setq org-export-with-drawers nil
+                org-export-with-todo-keywords nil
+                org-export-with-broken-links t
+                org-export-with-toc nil
+                org-export-with-smart-quotes t
+                org-export-date-timestamp-format "%d %B %Y"
+                org-list-allow-alphabetical t)
+(global-set-key (kbd "C-c o") 'consult-org-agenda)
 
 (require 'org-utilities)
   (use-package org-auto-tangle
@@ -468,35 +469,58 @@
 (use-package lua-mode)
 
 ;(require 'eglot-setup)
-    (use-package lsp-mode
-      :init
-      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-      (setq lsp-keymap-prefix "C-c l")
+      (use-package lsp-mode
+        :init
+        ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+        (setq lsp-keymap-prefix "C-c l")
 
-      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-             (python-mode . lsp)
-             (java-mode . lsp)
-             (nxml-mode . lsp)
-             (lua-mode . lsp)
-             ;; if you want which-key integration
-             (lsp-mode . lsp-enable-which-key-integration))
-      :custom
-       (lsp-completion-enable t)
-      :commands lsp)
+        :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+               (python-mode . lsp)
+               (java-mode . lsp)
+               (nxml-mode . lsp)
+               (lua-mode . lsp)
+               ;; if you want which-key integration
+               (lsp-mode . lsp-enable-which-key-integration))
+        :custom
+         (lsp-completion-enable t)
+        :commands lsp)
 
-(use-package lsp-pyright
+  (use-package lsp-pyright
+    :ensure t
+    :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+    :hook (python-mode . (lambda ()
+                            (require 'lsp-pyright)
+                            (lsp))))  ; or lsp-deferred
+(use-package lsp-java
   :ensure t
-  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
-  (use-package lsp-java
-    :after lsp
+  :after lsp-mode
+  :config
+  (add-hook 'java-mode-hook #'lsp)
+  (setq lsp-java-vmargs '("-Xmx2G" "-XX:+UseG1GC" "-XX:+UseStringDeduplication")
+      lsp-java-java-path "/usr/lib/jvm/java-21-openjdk/bin/java"
+      lsp-java-import-gradle-enabled t
+      lsp-java-import-maven-enabled t
+      lsp-java-save-action-organize-imports t))
+(use-package dap-java
   :ensure t
-  :init
-  (setq lsp-java-args '("-Dlsp.server.hover.content=ALL")))
-    ;; optionally
-    (use-package lsp-ui :commands lsp-ui-mode)
+  :after (lsp-java))
+(use-package dap-mode
+  :ensure t
+  :config
+  (dap-auto-configure-mode t))
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-show-with-cursor t
+        lsp-ui-sideline-enable t))
+
+(use-package pyvenv
+  :ensure t
+  :config
+  (setenv "WORKON_HOME" "~/Proyectos/envs")
+  (pyvenv-mode 1))
 
 (use-package yasnippet
   :defer t
@@ -527,12 +551,62 @@
 ;                  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
 ;                  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
-(add-hook 'nxml-mode 'eglot-nxml-mode)
+;(add-hook 'nxml-mode 'eglot-nxml-mode)
 
 (use-package dape
   :defer t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+(use-package treemacs)
+(global-set-key (kbd "C-c f") 'treemacs)
+
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode +1)
+  :config
+  (setq projectile-project-search-path '("~/Proyectos"))
+  :bind (:map projectile-mode-map
+              ("C-c p" . projectile-command-map)))
+(defun crear-proyecto-gradle (nombre)
+  "Crea un nuevo proyecto Gradle con el NOMBRE dado."
+  (interactive "sNombre del proyecto: ")
+  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
+    (make-directory directorio t)
+    (shell-command (format "gradle init --type java-application -p %s" directorio))
+    (find-file (concat directorio "/build.gradle"))
+    (message "Proyecto Gradle creado en %s" directorio)))
+(defun crear-proyecto-maven (nombre)
+  "Crea un nuevo proyecto Maven con el NOMBRE dado."
+  (interactive "sNombre del proyecto: ")
+  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
+    (make-directory directorio t)
+    (shell-command (format "mvn archetype:generate -DgroupId=com.example -DartifactId=%s -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DoutputDirectory=%s" nombre directorio))
+    (find-file (concat directorio "/" nombre "/pom.xml"))
+    (message "Proyecto Maven creado en %s" directorio)))
+
+(defun crear-proyecto-python (nombre)
+  "Crea un nuevo proyecto Python con un entorno virtual venv."
+  (interactive "sNombre del proyecto: ")
+  (let* ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre))
+         (venv-path (concat directorio "/venv")))
+    ;; Crear el directorio del proyecto
+    (make-directory directorio t)
+    ;; Crear el entorno virtual
+    (shell-command (format "python3 -m venv %s" venv-path))
+    ;; Crear un archivo main.py por defecto
+    (with-temp-file (concat directorio "/main.py")
+      (insert "#!/usr/bin/env python3\n\n"
+              "def main():\n"
+              "    print('Hello, World!')\n\n"
+              "if __name__ == '__main__':\n"
+              "    main()"))
+    ;; Abrir el proyecto en Emacs
+    (find-file (concat directorio "/main.py"))
+    ;; Activar el entorno virtual automáticamente
+    (pyvenv-activate venv-path)
+    (message "Proyecto Python creado en %s con entorno virtual en %s" directorio venv-path)))
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
@@ -544,6 +618,9 @@
 :hook org-mode prog-mode)
 
 (use-package sudo-edit)
+
+(use-package typst-mode
+  :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
 
 (use-package adaptive-wrap
   :config
