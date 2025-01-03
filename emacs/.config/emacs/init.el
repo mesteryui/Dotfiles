@@ -479,6 +479,7 @@
                (java-mode . lsp)
                (nxml-mode . lsp)
                (lua-mode . lsp)
+               (typescript-mode . lsp)
                ;; if you want which-key integration
                (lsp-mode . lsp-enable-which-key-integration))
         :custom
@@ -516,12 +517,6 @@
         lsp-ui-doc-show-with-cursor t
         lsp-ui-sideline-enable t))
 
-(use-package pyvenv
-  :ensure t
-  :config
-  (setenv "WORKON_HOME" "~/Proyectos/envs")
-  (pyvenv-mode 1))
-
 (use-package yasnippet
   :defer t
   :config
@@ -534,7 +529,6 @@
 :ensure t)
 (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
-(add-hook 'typescript-mode 'eglot-typescript-mode)
 
 ; (add-hook 'python-mode 'eglot-python-mode)
 

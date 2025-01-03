@@ -25,15 +25,16 @@ Aqui cargaremos algunos scripts básicos como el usado para elpaca
   #+end_src
 ** Gcmh
 #+begin_src emacs-lisp
-(use-package gcmh
-  :config
-  (setopt gcmh-high-cons-threshold (* 256 1000 1000))
-  (setopt gcmh-low-cons-threshold (* 16 1000 1000))
-  (setopt gcmh-idle-delay 3)
-  ;; (setopt gcmh-verbose t)  
- ; Para ver mensajes de depuración
-  (setopt gc-cons-percentage 0.2)
-  (add-hook 'elpaca-after-init-hook #'gcmh-mode))
+  (use-package gcmh
+    :config
+    (setopt gcmh-high-cons-threshold (* 256 1000 1000))
+    (setopt gcmh-low-cons-threshold (* 16 1000 1000))
+    (setopt gcmh-idle-delay 3)
+    ;; (setopt gcmh-verbose t)  
+   ; Para ver mensajes de depuración
+    (setopt gc-cons-percentage 0.2)
+    (add-hook 'elpaca-after-init-hook #'gcmh-mode))
+  (setq read-process-output-max (* 4 1024))  ; Establece el valor a 4k
 #+end_src
 * Correcciones de aspecto básicas
 #+begin_src emacs-lisp
@@ -601,6 +602,7 @@ Volviendo a eglot
                  (java-mode . lsp)
                  (nxml-mode . lsp)
                  (lua-mode . lsp)
+                 (typescript-mode . lsp)
                  ;; if you want which-key integration
                  (lsp-mode . lsp-enable-which-key-integration))
           :custom
@@ -639,15 +641,6 @@ Volviendo a eglot
           lsp-ui-sideline-enable t))
 
 #+end_src
-*** Pyenv
-#+begin_src emacs-lisp
-  (use-package pyvenv
-    :ensure t
-    :config
-    (setenv "WORKON_HOME" "~/Proyectos/envs")
-    (pyvenv-mode 1))
-
-#+end_src
 *** Yasnippet
 #+begin_src emacs-lisp
     (use-package yasnippet
@@ -665,7 +658,6 @@ Volviendo a eglot
   :ensure t)
   (add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
   (add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
-  (add-hook 'typescript-mode 'eglot-typescript-mode)
 
 #+END_SRC
 *** Python
@@ -718,46 +710,6 @@ Es un sistema para gestionar proyectos desde *Emacs*
   (setq projectile-project-search-path '("~/Proyectos"))
   :bind (:map projectile-mode-map
               ("C-c p" . projectile-command-map)))
-(defun crear-proyecto-gradle (nombre)
-  "Crea un nuevo proyecto Gradle con el NOMBRE dado."
-  (interactive "sNombre del proyecto: ")
-  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
-    (make-directory directorio t)
-    (shell-command (format "gradle init --type java-application -p %s" directorio))
-    (find-file (concat directorio "/build.gradle"))
-    (message "Proyecto Gradle creado en %s" directorio)))
-(defun crear-proyecto-maven (nombre)
-  "Crea un nuevo proyecto Maven con el NOMBRE dado."
-  (interactive "sNombre del proyecto: ")
-  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
-    (make-directory directorio t)
-    (shell-command (format "mvn archetype:generate -DgroupId=com.example -DartifactId=%s -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DoutputDirectory=%s" nombre directorio))
-    (find-file (concat directorio "/" nombre "/pom.xml"))
-    (message "Proyecto Maven creado en %s" directorio)))
-
-(defun crear-proyecto-python (nombre)
-  "Crea un nuevo proyecto Python con un entorno virtual venv."
-  (interactive "sNombre del proyecto: ")
-  (let* ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre))
-         (venv-path (concat directorio "/venv")))
-    ;; Crear el directorio del proyecto
-    (make-directory directorio t)
-    ;; Crear el entorno virtual
-    (shell-command (format "python3 -m venv %s" venv-path))
-    ;; Crear un archivo main.py por defecto
-    (with-temp-file (concat directorio "/main.py")
-      (insert "#!/usr/bin/env python3\n\n"
-              "def main():\n"
-              "    print('Hello, World!')\n\n"
-              "if __name__ == '__main__':\n"
-              "    main()"))
-    ;; Abrir el proyecto en Emacs
-    (find-file (concat directorio "/main.py"))
-    ;; Activar el entorno virtual automáticamente
-    (pyvenv-activate venv-path)
-    (message "Proyecto Python creado en %s con entorno virtual en %s" directorio venv-path)))
-
-#+end_src
 ** Rainbow delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
