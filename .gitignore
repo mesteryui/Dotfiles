@@ -32,3 +32,4 @@ emacs/.config/emacs/elpaca/
 yazi/.config/yazi/package.toml
 emacs/.lsp-session-*
 emacs/tramp
+ emacs/.config/emacs/projectile-bookmarks.eld
