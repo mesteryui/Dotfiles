@@ -492,23 +492,6 @@
     :hook (python-mode . (lambda ()
                             (require 'lsp-pyright)
                             (lsp))))  ; or lsp-deferred
-(use-package lsp-java
-  :ensure t
-  :after lsp-mode
-  :config
-  (add-hook 'java-mode-hook #'lsp)
-  (setq lsp-java-vmargs '("-Xmx2G" "-XX:+UseG1GC" "-XX:+UseStringDeduplication")
-      lsp-java-java-path "/usr/lib/jvm/java-21-openjdk/bin/java"
-      lsp-java-import-gradle-enabled t
-      lsp-java-import-maven-enabled t
-      lsp-java-save-action-organize-imports t))
-(use-package dap-java
-  :ensure t
-  :after (lsp-java))
-(use-package dap-mode
-  :ensure t
-  :config
-  (dap-auto-configure-mode t))
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode
@@ -547,8 +530,6 @@
 
 ;(add-hook 'nxml-mode 'eglot-nxml-mode)
 
-(use-package dape
-  :defer t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
@@ -584,7 +565,7 @@
   "Crea un nuevo proyecto Python con un entorno virtual venv."
   (interactive "sNombre del proyecto: ")
   (let* ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre))
-         (venv-path (concat directorio "/venv")))
+         (venv-path (concat directorio ".venv")))
     ;; Crear el directorio del proyecto
     (make-directory directorio t)
     ;; Crear el entorno virtual

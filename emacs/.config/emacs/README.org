@@ -599,7 +599,6 @@ Volviendo a eglot
 
           :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
                  (python-mode . lsp)
-                 (java-mode . lsp)
                  (nxml-mode . lsp)
                  (lua-mode . lsp)
                  (typescript-mode . lsp)
@@ -615,31 +614,6 @@ Volviendo a eglot
       :hook (python-mode . (lambda ()
                               (require 'lsp-pyright)
                               (lsp))))  ; or lsp-deferred
-  (use-package lsp-java
-    :ensure t
-    :after lsp-mode
-    :config
-    (add-hook 'java-mode-hook #'lsp)
-    (setq lsp-java-vmargs '("-Xmx2G" "-XX:+UseG1GC" "-XX:+UseStringDeduplication")
-        lsp-java-java-path "/usr/lib/jvm/java-21-openjdk/bin/java"
-        lsp-java-import-gradle-enabled t
-        lsp-java-import-maven-enabled t
-        lsp-java-save-action-organize-imports t))
-  (use-package dap-java
-    :ensure t
-    :after (lsp-java))
-  (use-package dap-mode
-    :ensure t
-    :config
-    (dap-auto-configure-mode t))
-  (use-package lsp-ui
-    :ensure t
-    :commands lsp-ui-mode
-    :config
-    (setq lsp-ui-doc-enable t
-          lsp-ui-doc-show-with-cursor t
-          lsp-ui-sideline-enable t))
-
 #+end_src
 *** Yasnippet
 #+begin_src emacs-lisp
