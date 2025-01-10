@@ -1,1 +1,0 @@
-("~/.dotfiles/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/jsonrpc/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/eglot-java/" "~/.dotfiles/emacs/.config/emacs/elpaca/repos/elpaca/" "~/Proyectos/Navidad/")
