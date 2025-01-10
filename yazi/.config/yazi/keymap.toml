@@ -1,2 +1,6 @@
 [manager]
+keymap = [
+	{on = ["y", "y"], run='yank', desc="Copy files"},
+	{on = ["y", "c"], run='yank --cut', desc="Copy files"},
 
+]
