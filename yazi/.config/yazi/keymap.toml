@@ -1,15 +1,2 @@
 [manager]
-prepend_keymap = [
-    # simple-mtpfs plugin
-    { on = [ "M", "m" ], run = "plugin simple-mtpfs --args=select-then-mount", desc = "Select device then mount" },
-    # or this if you want to jump to mountpoint after mounted
-    { on = [ "M", "m" ], run = "plugin simple-mtpfs --args='select-then-mount --jump'", desc = "Select device to mount and jump to its mount point" },
-    # This will remount device under cwd (e.g. cwd = $HOME/Media/1_ZTEV5/Downloads/, device mountpoint = $HOME/Media/1_ZTEV5/)
-    { on = [ "M", "r" ], run = "plugin simple-mtpfs --args=remount-current-cwd-device", desc = "Remount device under cwd" },
-    { on = [ "M", "u" ], run = "plugin simple-mtpfs --args=select-then-unmount", desc = "Select device then unmount" },
-    { on = [ "g", "m" ], run = "plugin simple-mtpfs --args=jump-to-device", desc = "Select device then jump to its mount point" },
-    { on = [ "`", "`" ], run = "plugin simple-mtpfs --args=jump-back-prev-cwd", desc = "Jump back to the position before jumped to device"},
-    { on = [ "y","c"], run = "yank --cut", desc = "Cut files"},
-    {on = [ "y","y"], run = "yank", desc = "Copy files"}
- 
-]
+

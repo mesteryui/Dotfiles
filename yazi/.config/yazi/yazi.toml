@@ -2,6 +2,7 @@
 prepend_previewers = [
   { name = "*.md", run = "mdcat" },
 ]
+
 [opener]
 play = [
 	{ run = 'mpv "$@"', orphan = true, for = "unix" },

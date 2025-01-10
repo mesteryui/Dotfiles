@@ -1,5 +1,5 @@
 [plugin]
-deps = [{ use = "atareao/mdcat", rev = "d82f690" }, { use = "Ape/mediainfo", rev = "df17c4f" }, { use = "Rolv-Apneseth/starship", rev = "9c37d37" }, { use = "boydaihungst/simple-mtpfs", rev = "4941d8f" }]
+deps = [{ use = "atareao/mdcat", rev = "d82f690" }, { use = "Ape/mediainfo", rev = "df17c4f" }, { use = "Rolv-Apneseth/starship", rev = "9c37d37" }]
 
 [flavor]
 deps = [{ use = "yazi-rs/flavors:catppuccin-mocha", rev = "fc8eeaa" }]
