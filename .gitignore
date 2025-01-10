@@ -1,4 +1,5 @@
 emacs/.config/emacs/share/eclipse.jdt.ls/*
+emacs/.config/emacs/share/
 emacs/*/elpy/
 eglot-java-eclipse-jdt-cache/
 emacs/*/elpa/
