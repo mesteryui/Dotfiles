@@ -15,6 +15,8 @@ if status is-interactive
     #syncthing
     syncthing install-completions | source
     fzf --fish | source
+    # Television
+    tv init fish | source
 end
 alias "ls" 'lsd'
 alias unlock='sudo rm /var/lib/pacman/db.lck'
@@ -31,8 +33,7 @@ alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --spon
 alias "cd" "z"
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set VISUAL "emacsclient -c -a emacs"
-set -Ux EDITOR "nano"
-set -x FONT "Roboto Regular"
+set -Ux EDITOR "nvim"
 set -Ux LOCALE "es_ES.UTF-8"
 set -Ux FZF_DEFAULT_OPTS "\
 --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \

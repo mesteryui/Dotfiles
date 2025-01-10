@@ -5,7 +5,6 @@ fish_variables/
 emacs/.config/emacs/elpaca/
 eln-cache/
 .cache/
-tramp/
 elpy
 emacs/.config/emacs/share/
 transient
@@ -31,3 +30,5 @@ snippets/
 emacs/.config/emacs/tldr/
 emacs/.config/emacs/elpaca/
 yazi/.config/yazi/package.toml
+emacs/.lsp-session-*
+emacs/tramp
