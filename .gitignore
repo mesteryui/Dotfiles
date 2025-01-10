@@ -1,6 +1,7 @@
-elpy/
+emacs/.config/emacs/share/eclipse.jdt.ls/*
+emacs/*/elpy/
 eglot-java-eclipse-jdt-cache/
-elpa/
+emacs/*/elpa/
 fish_variables/
 emacs/.config/emacs/elpaca/
 eln-cache/
@@ -30,8 +31,9 @@ snippets/
 emacs/.config/emacs/tldr/
 emacs/.config/emacs/elpaca/
 yazi/.config/yazi/package.toml
-emacs/.lsp-session-*
+emacs/*/emacs/.lsp-session-*
 emacs/tramp
 emacs/.config/emacs/projectile-bookmarks.eld
 emacs/.config/emacs/.lsp-session-*
 emacs/.config/emacs/url/
+emacs
