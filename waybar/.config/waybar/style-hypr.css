@@ -18,10 +18,14 @@ window > box {
 	border-radius: 8px;
 }
 
-.modules-left, .modules-center, .modules-right {
+#waybar .modules-left {
+	padding-left: 10px;
+        justify-content: flex-start;
+} 
+
+.modules-center, .modules-right {
 	
 }
-
 #cpu,
 #memory,
 #disk,
