@@ -15,7 +15,7 @@ window > box {
 	font-weight: 600;
 	font-size: 11px;
 	padding: 0;
-	border-radius: 11.7px;
+	border-radius: 11px;
 }
 
  
@@ -92,7 +92,7 @@ window > box {
 #workspaces {
 	border-radius: 100px;
 	margin: 6px 2px;
-	padding: 0px 10px;
+	padding: 0px 9px;
 }
 
 #workspaces button {
