@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import requests
-
-def obtenerClima(ciudad):
+import sys
+def obtenerClima():
     """
     Obtiene el clima de una ciudad usando la API de OpenWeatherMap.
     """
@@ -10,7 +10,7 @@ def obtenerClima(ciudad):
 
     # Parámetros para la solicitud
     params = {
-        "q": ciudad,
+        "q": sys.argv[1],
         "appid": api_key,
         "units": "metric",  # Cambia a "imperial" para Fahrenheit
         "lang": "es"        # Idioma de respuesta en español
@@ -57,4 +57,4 @@ def obtenerClima(ciudad):
         return "Error al procesar los datos de clima."
 
 # Prueba del código
-print(obtenerClima("Vigo, España"))
+print(obtenerClima())
