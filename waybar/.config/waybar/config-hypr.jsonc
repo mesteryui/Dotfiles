@@ -1,7 +1,7 @@
 [
  {
 
-//	"layer": "bottom",
+	"layer": "top",
 	"position": "top",
 	 "height": 48,
 	 "margin-top": 2,
@@ -10,7 +10,7 @@
         "include": "~/.config/waybar/modules.jsonc",
 	"modules-left": ["custom/launcher#arch","custom/three-dots-seperator","cpu#icon","memory#icon","disk#icon", "hyprland/window"],
 	"modules-center": ["hyprland/workspaces#pacman"],
-	"modules-right": ["custom/notification", "custom/hypridle", "custom/weather", "group/pownet","backlight","pulseaudio#icon","custom/updates","group/clock","tray","custom/power-button"] 
+	"modules-right": ["custom/notification", "custom/hypridle", "custom/weather", "group/pownet","backlight","pulseaudio#icon","custom/updates","group/clock","tray",] 
  }
 ]
 // "mpris","mpris#close"

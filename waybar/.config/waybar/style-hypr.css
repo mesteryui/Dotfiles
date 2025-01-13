@@ -13,17 +13,14 @@ window > box {
 * {
 	font-family: "Gabarito Regular", FontAwesome, Roboto, IPAMincho;
 	font-weight: 600;
-	font-size: 12px;
+	font-size: 11px;
 	padding: 0;
-	border-radius: 8px;
+	border-radius: 11.7px;
 }
 
-#waybar .modules-left {
-	padding-left: 10px;
-        justify-content: flex-start;
-} 
+ 
 
-.modules-center, .modules-right {
+.modules-left, .modules-center, .modules-right {
 	
 }
 #cpu,
