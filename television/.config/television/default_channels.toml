@@ -53,3 +53,4 @@ source_command = "fish -c 'history'"
 [[cable_channel]]
 name="pdf"
 source_command = "fd -t f .pdf"
+
