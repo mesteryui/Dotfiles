@@ -543,7 +543,7 @@
 	},
 	"custom/weather": {
  	   "return-type": "text",
-           "exec": "python ~/.config/waybar/scripts/weather.py",
+           "exec": "python ~/.config/waybar/scripts/weather.py 'Vigo, España'",
            "interval": 30,
   },
 }
