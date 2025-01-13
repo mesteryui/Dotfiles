@@ -449,6 +449,7 @@
 	// ┴ ┴ ┴ ┴  ┴└─
 
 	"hyprland/window": {
+		"icon": true,
 		"max-length": 40,
 		"seperate-outputs": true,
   		"on-click": "dunstify \"$(hyprctl activewindow -j | jq -r .title)\""
