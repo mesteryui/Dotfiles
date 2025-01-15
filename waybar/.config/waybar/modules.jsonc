@@ -507,7 +507,7 @@
 	},
 
 	"custom/hypridle": {
-	    "format": " ",
+	    "format": "{}",
 	    "return-type": "json",
 	    "escape": true,
 	    "exec-on-event": true,
@@ -542,8 +542,9 @@
 	    "tooltip-format-disconnected": "MPD (disconnected)"
 	},
 	"custom/weather": {
- 	   "return-type": "text",
-           "exec": "python ~/.config/waybar/scripts/weather.py 'Vigo, España'",
-           "interval": 30,
-  },
+	   "format": "{}",
+ 	   "return-type": "json",
+           "exec": "python ~/.config/waybar/scripts/weather.py Vigo",
+           "interval": 10,
+}
 }
