@@ -7,12 +7,12 @@ def obtenerClima():
     """
     Obtiene el clima de una ciudad usando la API de OpenWeatherMap.
     """
-    api_key = "081b4110041636a59d7c14ed73f54b59"  # Reemplaza con tu clave de API de OpenWeatherMap
+    api_key = "081b4110041636a59d7c14ed73f54b59"
     base_url = "http://api.openweathermap.org/data/2.5/weather"
 
     # Parámetros para la solicitud
     params = {
-        "q": ciudad, 
+        "q": ciudad,
         "appid": api_key,
         "units": "metric",  # Cambia a "imperial" para Fahrenheit
         "lang": "es"        # Idioma de respuesta en español
