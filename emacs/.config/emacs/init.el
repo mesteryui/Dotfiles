@@ -2,6 +2,7 @@
 
 ;;(require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
+(require 'various-settings)
 ;(require 'app-launchers)
 
 (use-package gcmh
@@ -13,27 +14,6 @@
  ; Para ver mensajes de depuración
   (setopt gc-cons-percentage 0.2)
   (add-hook 'elpaca-after-init-hook #'gcmh-mode))
-
-(setq user-full-name "Oscar")
-  (setq inhibit-startup-message t
-        use-short-answers t)
-    (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
-    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
-    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(setq
- display-time-24hr-format t              ; Muestra el reloj en formato 24 hrs
- display-time-format "%H:%M"             ; Le da formato a la hora
- load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
- select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
- vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
- make-backup-files nil                   ; No realiza backups de ficheros
- auto-save-default nil                   ; Deshabilita #file#
-;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
- ;; global-hl-line-mode t                ; Highlight current line
- kill-ring-max 128                       ; Longitud máxima del anillo de matar
- create-lockfiles nil                    ; Impido la creación de ficheros .#
- )
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
@@ -75,17 +55,6 @@
   (interactive)
   (find-file "~/.config/emacs/README.org"))
 (global-set-key (kbd "C-x r c") 'os/open-config)
-
-(setq calendar-month-name-array
-      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-       "Julio"    "Agosto"   "Septiembre" "Octubre" "Noviembre" "Diciembre"])
-
-(setq calendar-day-name-array
-      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
-
-(setq org-icalendar-timezone "Europe/Madrid") ;; timezone
-(setq calendar-week-start-day 1) ;; la semana empieza el lunes
-(setq european-calendar-style t) ;; estilo europeo
 
 (use-package catppuccin-theme
     :config
@@ -479,7 +448,8 @@
                (java-mode . lsp)
                (nxml-mode . lsp)
                (lua-mode . lsp)
-               (typescript-mode . lsp)
+               (typescript-modeº . lsp)
+	       (html-mode . lsp)
                ;; if you want which-key integration
                (lsp-mode . lsp-enable-which-key-integration))
         :custom
