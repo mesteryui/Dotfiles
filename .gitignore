@@ -1,8 +1,7 @@
 emacs/.config/emacs/share/eclipse.jdt.ls/*
-emacs/.config/emacs/tldr/*
 emacs/.config/emacs/share/
 lazy-lock.json
-emacs/*/elpy/
+emacs/.config/emacs/elpy/*
 eglot-java-eclipse-jdt-cache/
 emacs/*/elpa/
 fish_variables/
@@ -31,7 +30,7 @@ emacs/.config/emacs/eclipse.jdt.ls/*
 emacs/.config/emacs/workspace/*
 emacs/.config/emacs/projects/*
 snippets/
-emacs/.config/emacs/tldr/
+emacs/.config/emacs/tldr/*
 emacs/.config/emacs/elpaca/
 yazi/.config/yazi/package.toml
 emacs/*/emacs/.lsp-session-*
@@ -39,4 +38,3 @@ emacs/tramp
 emacs/.config/emacs/projectile-bookmarks.eld
 emacs/.config/emacs/.lsp-session-*
 emacs/.config/emacs/url/
-emacs
