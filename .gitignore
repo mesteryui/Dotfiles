@@ -20,7 +20,7 @@ emacs/.config/emacs/eshell/*
 emacs/.config/emacs/games/*
 emacs/.config/emacs/projectile-bookmarks.eld
 emacs/.config/emacs/share/junit-platform-console-standalone/
-emacs/.config/emacs/tramp/*
+emacs/.config/emacs/tramp
 emacs/.config/emacs/config.el
 emacs/.config/emacs/history
 emacs/.config/emacs/.lsp-session-v1/
