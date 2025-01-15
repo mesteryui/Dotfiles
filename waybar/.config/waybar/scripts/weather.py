@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import requests
 import sys
+import datetime
+ciudad = str(sys.argv[1])
 def obtenerClima():
     """
     Obtiene el clima de una ciudad usando la API de OpenWeatherMap.
@@ -10,7 +12,7 @@ def obtenerClima():
 
     # Parámetros para la solicitud
     params = {
-        "q": sys.argv[1],
+        "q": ciudad, 
         "appid": api_key,
         "units": "metric",  # Cambia a "imperial" para Fahrenheit
         "lang": "es"        # Idioma de respuesta en español
@@ -28,7 +30,7 @@ def obtenerClima():
         # Extrae temperatura y código de clima
         temperatura = datos["main"]["temp"]
         codigo_clima = datos["weather"][0]["id"]
-
+        descripcion = datos["weather"][0]["description"]
         # Diccionario de códigos de clima a emojis
         emojis_clima = {
             800: "☀️", 801: "🌤️", 802: "🌥️", 803: "☁️", 804: "☁️",
@@ -49,12 +51,14 @@ def obtenerClima():
 
         # Salida final formateada
         output = f"{clima} {temperatura}"
-        return output
+        return output,descripcion,temperatura
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         return f"Error de conexión"
     except KeyError:
         return "Error al procesar los datos de clima."
 
 # Prueba del código
-print(obtenerClima())
+clima_datos = obtenerClima()
+
+print(f'{{"text": "{clima_datos[0]}", "tooltip": "Clima: {clima_datos[1].title()}\\nCiudad: {ciudad.title()}\\nTemperatura: {clima_datos[2]}"}}')
