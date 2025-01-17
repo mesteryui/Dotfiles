@@ -96,6 +96,22 @@
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
+
+ (setq org-capture-templates
+        `(("t" "Tarea" entry
+           (file+headline "~/org/agenda.org" "Tareas")
+           "* TODO %?\n  Creado: %U\n  %i\n  %a")
+          ("n" "Nota" entry
+           (file+headline "~/org/notes.org" "Notas")
+           "* %? :nota:\n  Creado: %U\n  %i\n  %a")
+	  ("e" "Evento" entry
+	   (file+headline "~/org/agenda.org" "Evento")
+	   "* WAITING %?\n"
+	   )
+          ("j" "Diario" entry
+           (file+datetree "~/org/diario.org")
+           "* %?\nCreado: %U\n")))
+
 (global-set-key (kbd "C-c o") 'consult-org-agenda)
 
 (require 'org-utilities)
@@ -230,8 +246,9 @@
 (use-package company
   :defer t
   :ensure t
+  :hook (lsp-mode . company-mode)
   :custom
-  (company-idle-delay 0.0)
+  (company-idle-delay 0.1)
   (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
   :config
@@ -333,10 +350,7 @@
 :diminish
 :hook (after-init . global-auto-revert-mode))
 
-(use-package flycheck
-:ensure t
-:defer t
-:init (global-flycheck-mode))
+
 (use-package flycheck-pos-tip
   :ensure t
   :defer t
@@ -435,41 +449,59 @@
     :after eldoc
     :init (setq eldoc-box-hover-mode t))
 
+;; Configuracion de programacion
 (use-package lua-mode)
 
-;(require 'eglot-setup)
-      (use-package lsp-mode
-        :init
-        ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-        (setq lsp-keymap-prefix "C-c l")
+(use-package lsp-mode
+  :ensure t
+  :hook
+  ;; Activar automáticamente para lenguajes soportados
+  ((java-mode python-mode xml-mode) . lsp)
+  :config
+  ;; Configuración general
+  (setq lsp-keymap-prefix "C-c l"          ;; Prefijo para atajos de lsp-mode
+        lsp-enable-snippet t              ;; Activar snippets
+        lsp-enable-on-type-formatting t   ;; Formatear mientras escribes
+        lsp-headerline-breadcrumb-enable t)) ;; Mostrar ruta de archivo en el encabezado
 
-        :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-               (python-mode . lsp)
-               (java-mode . lsp)
-               (nxml-mode . lsp)
-               (lua-mode . lsp)
-               (typescript-modeº . lsp)
-	       (html-mode . lsp)
-               ;; if you want which-key integration
-               (lsp-mode . lsp-enable-which-key-integration))
-        :custom
-         (lsp-completion-enable t)
-        :commands lsp)
-
-  (use-package lsp-pyright
-    :ensure t
-    :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-    :hook (python-mode . (lambda ()
-                            (require 'lsp-pyright)
-                            (lsp))))  ; or lsp-deferred
+;; Soporte adicional para UI (opcional)
 (use-package lsp-ui
   :ensure t
-  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-doc-enable t
-        lsp-ui-doc-show-with-cursor t
-        lsp-ui-sideline-enable t))
+  ;; Configuración de pop-ups y documentos flotantes
+  (setq lsp-ui-doc-enable t               ;; Mostrar documentación flotante
+        lsp-ui-doc-position 'at-point     ;; Mostrar cerca del cursor
+        lsp-ui-sideline-enable t          ;; Información en la línea lateral
+        lsp-ui-sideline-show-code-actions t))
+;; Flycheck para errores en tiempo real
+(use-package flycheck
+  :ensure t
+  :hook (lsp-mode . flycheck-mode))
 
+;; Instalación de iconos opcionales para breadcrumbs
+(use-package lsp-treemacs
+  :ensure t
+  :config
+  (lsp-treemacs-sync-mode 1)) ;; Sincronizar la vista de proyectos con Treemacs
+
+;; Soporte para formateo de código con lsp
+(use-package lsp-format
+  :after lsp-mode
+  :hook (before-save . lsp-format-buffer)) ;; Formatear al guardar
+
+(use-package lsp-java
+  :ensure t
+  :after lsp
+  :config
+  (add-hook 'java-mode-hook #'lsp-java-lens-mode)) ;; Añade soporte para LSP en Java
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp)))) ;; Inicia LSP para Python
+
+;; Configuracion
 (use-package yasnippet
   :defer t
   :config
