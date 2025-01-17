@@ -1,23 +1,77 @@
 #!/usr/bin/python
 import requests
 import sys
-import datetime
-ciudad = str(sys.argv[1])
+import locale
+def leer_fichero_api()-> str:
+    with open("clave.txt","r") as archivo:
+        return archivo.read()
+
+def escribir_fichero_api(api_key:str):
+    with open("clave.txt","w") as archivo:
+        archivo.write(api_key)
+
+def obtener_parametro():
+    """
+    Funcion que nos permite sacar el parametro y si el parametro cumple unas condiciones hacer otra cosa
+    """
+    if len(sys.argv)>1:
+        ciudad = str(sys.argv[1])
+        if ciudad == "--help":
+            print("Ayuda de weather.py\n")
+            print("Obtiene informacion del clima en un json que waybar puede interpretar para mostrarlo en la barra con toda la info\n")
+            print("--help: Muestra la ayuda\n")
+            print("--add-apikey: Nos permite añadir una llave api para poder usar esto. SE BORRARA SI YA HAY UNA\n")
+            print("current: Muestra datos en referencia a ubicacion actual lo mismo que no poner nada o eso se busca")
+            exit(0)
+        elif ciudad == "--add-apikey":
+            if len(sys.argv)>2:
+                escribir_fichero_api(str(sys.argv[2]))
+                exit(0)
+            else:
+                print("Para guardar una clave api use la siguiente sintaxis:")
+                print("weather.py --add-apikey CLAVEAÑADIR")
+                exit(0)
+        else:
+            return ciudad
+
+    else: 
+        return '' 
+    
+def obtener_ubicacion():
+    url = "http://ip-api.com/json"
+    try:
+        respuesta = requests.get(url)
+        datos = respuesta.json()
+        ciudad = datos.get("city","Vigo")
+        return ciudad
+    except Exception:
+        return "Error al obtener la ubicacion de forma automatica"
+
+
+def obtener_ciudad(ciudad):
+    if ciudad == "current" or ciudad == '':
+        ciudad = obtener_ubicacion()
+    return ciudad
+
+ciudad = obtener_ciudad(obtener_parametro())
+
 def obtenerClima():
     """
     Obtiene el clima de una ciudad usando la API de OpenWeatherMap.
     """
     api_key = "081b4110041636a59d7c14ed73f54b59"
+    if api_key is None:
+        print("No tienes clave api")
+        exit(1)
     base_url = "http://api.openweathermap.org/data/2.5/weather"
-
-    # Parámetros para la solicitud
+        # Parámetros para la solicitud"
+    language = locale.getlocale()[0][0:2]
     params = {
         "q": ciudad,
         "appid": api_key,
         "units": "metric",  # Cambia a "imperial" para Fahrenheit
-        "lang": "es"        # Idioma de respuesta en español
+        "lang": language,       # Idioma de respuesta en español
     }
-
     try:
         respuesta = requests.get(base_url, params=params)
         respuesta.raise_for_status()  # Verifica si la solicitud fue exitosa

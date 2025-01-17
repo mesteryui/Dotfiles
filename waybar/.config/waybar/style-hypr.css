@@ -38,6 +38,7 @@ window > box {
 #network,
 #network.linked,
 #network.ethernet,
+#custom-hypridle,
 #network.wifi{
 	background-color: @base;
 }
@@ -48,7 +49,12 @@ window > box {
 	color: @sapphire;
 	padding: 0px 5px 0px 10px;
 }
-
+#custom-hypridle {
+	background-color: @base;
+	border-radius: 100px;
+        padding: 0px 10px;
+        margin: 6px 2px;
+}
 #custom-three-dots-seperator {
 	color: @text;
 	margin: 6px 2px;
@@ -175,7 +181,6 @@ window > box {
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
-
 #custom-power-button {
 	color: @red;
 	padding: 0px 10px;
@@ -196,7 +201,7 @@ window > box {
 tooltip {
     padding: 25px;
     background-color: @base;
-    color: @overlay0;
+    color: @text;
     font-family: JetbrainsMono Nerd Font;
 }
 #backlight,
