@@ -40,42 +40,21 @@
 		"format-charging": "<span color=\"#a6e3a1\">{icon}</span> {capacity}%",
 	},
 
-	"battery#text": {
-		"interval": 60,
-		"states": {
-		    "warning": 20,
-		    "critical": 15
-		},
-		"format": "<b>{capacity}</b>",
-		"max-length": 25,
-		"tooltip": false
-	},
+
 	// ┌┐ ┬  ┬ ┬┌─┐┌┬┐┌─┐┌─┐┌┬┐┬ ┬
 	// ├┴┐│  │ │├┤  │ │ ││ │ │ ├─┤
 	// └─┘┴─┘└─┘└─┘ ┴ └─┘└─┘ ┴ ┴ ┴
 
-	"bluetooth": {
-		"format-disabled": "off",
-		"format": " {device_alias}",
-		"on-click": "blueberry",
-		"max-length": 10,
-		"on-click-right": "rfkill toggle bluetooth",
-	},
-
-	"bluetooth#icon": {
-		"format": "",
-		"format-connected": "",
-		"format-disabled": "󰂲",
-		"format-off": "󰂲",
-		"format-on": "",
-		"on-click": "blueberry",
-		"on-click-right": "rfkill toggle bluetooth",
-		"max-length": 10,
-		"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-		"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-		"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-		"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t󰥉{device_battery_percentage}%"
-	},
+    "bluetooth": {
+	"format": " {status}",
+	"format-connected": " {device_alias}",
+	"format-connected-battery": " {device_alias} {device_battery_percentage}%",
+	// "format-device-preference": [ "device1", "device2" ], // preference list deciding the displayed device
+	"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+	"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+	"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+	"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%"
+    },
 
 	// ┌─┐┬  ┌─┐┌─┐┬┌─
 	// │  │  │ ││  ├┴┐
@@ -86,27 +65,8 @@
 		"actions": {
 		"on-scroll-down": "shift_down",
 		"on-scroll-up": "shift_up"
+		}
 	},
-
-	"calendar": {
-		"format": {
-			"days": "<span weight='normal'>{}</span>",
-			"months": "<span color='#cdd6f4'><b>{}</b></span>",
-			"today": "<span color='#f38ba8'><u>{}</u></span>",
-			"weekdays": "<span color='#f9e2af'><b>{}</b></span>",
-			"weeks": "<span color='#a6e3a1'><b>W{}</b></span>"
-			},
-
-			"mode": "month",
-			"mode-mon-col": 1,
-			"on-scroll": 1,
-			"weeks-pos": "right"
-		},
-		"format": "{:%A, %b %e}",
-		"interval": 43200,
-		"tooltip-format": "<span color='#cdd6f4' font='JetBrainsMonoNerd 9'><small>{{calendar}}</small></span>",
-	},
-
 	"clock#time": {
 		"format": "{:%H:%M}",
 		"format-alt": "{:L%Y-%m-%d, %a}",
@@ -188,50 +148,40 @@
 		"on-scroll-down": "hyprctl dispatch workspace e-1",
 		"show-special": false,
 		"persistent-workspaces":{
-			"1": [],
-			"2": [],
-			"3": [],
-			"4": [],
-			"5": [],
-			"6": [],
-			"7": [],
-			"8": [],
-			"9": [],
-			"10": []
+		    "*": 10,
 		},
 		"format": "{icon}",
 		"format-icons": {
-			"active": " 󰮯 ",
-			"default": "󰊠",
-			"persistent":"󰊠",
-			"empty": "",
+			"active": "󰮯 ",
+			"default": "󰊠 ",
+			"persistent":"󰊠 ",
+			"empty": " ",
 		},
 	},
 
-	// KANJI Workspace Style
+	"privacy": {
+	"icon-spacing": 4,
+	"icon-size": 18,
+	"transition-duration": 250,
+	"modules": [
+		{
+			"type": "screenshare",
+			"tooltip": true,
+			"tooltip-icon-size": 24
+		},
+		{
+			"type": "audio-out",
+			"tooltip": true,
+			"tooltip-icon-size": 24
+		},
+		{
+			"type": "audio-in",
+			"tooltip": true,
+			"tooltip-icon-size": 24
+		}
+	]
+},
 
-	 "hyprland/workspaces#kanji": {
-	        "disable-scroll": true,
-	        "format": "{icon}",
-	        "persistent-workspaces": {
-	            "*": 5,
-	        },
-	        "format-icons": {
-	            "1": "一",
-	            "2": "二",
-	            "3": "三",
-	            "4": "四",
-	            "5": "五",
-	            "6": "六",
-	            "7": "七",
-	            "8": "八",
-	            "9": "九",
-	            "10": "十",
-	            "urgent": "",
-	            "focused": "",
-	            "default": ""
-	        },
-	    },
 
 	// ┌┐┌┌─┐┌┬┐┬ ┬┌─┐┬─┐┬┌─
 	// │││├┤  │ ││││ │├┬┘├┴┐
@@ -249,7 +199,7 @@
 			"󰤥",
 			"󰤨"
 		],
-		"format-linked": "󰖩",
+		"format-linked": "󰖩 ",
 		"format-wifi": "{icon}",
 		"interval": 30,
 		"on-click": "kitty --class float_kitty -e 'nmtui'",
@@ -419,15 +369,6 @@
 	      
 	},
 
-	"group/sys-settings": {
-        	"modules": [
-            		"network#icon",
-            		"bluetooth#icon",
-            		"custom/wallpaper",
-                ],
-                "orientation": "horizontal"
-	},
-
 	"group/volume": {
 		"drawer": {
 			"children-class": "volume",
@@ -440,7 +381,7 @@
 
 	
 	"tray": {
-		"icon-size": 15,
+		"icon-size": 16,
 		"icon-theme": "Papirus-Dark",
 		"spacing": 8
 	},
@@ -453,7 +394,6 @@
 		"icon": true,
 		"max-length": 40,
 		"seperate-outputs": true,
-  		"on-click": "dunstify \"$(hyprctl activewindow -j | jq -r .title)\""
 	},
 
 	// ┌┬┐┬┌─┐┌─┐

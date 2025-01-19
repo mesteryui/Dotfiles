@@ -486,9 +486,9 @@
   (lsp-treemacs-sync-mode 1)) ;; Sincronizar la vista de proyectos con Treemacs
 
 ;; Soporte para formateo de código con lsp
-(use-package lsp-format
-  :after lsp-mode
-  :hook (before-save . lsp-format-buffer)) ;; Formatear al guardar
+;(use-package lsp-format
+;  :after lsp-mode
+;  :hook (before-save . lsp-format-buffer)) ;; Formatear al guardar
 
 (use-package lsp-java
   :ensure t
