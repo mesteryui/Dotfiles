@@ -418,7 +418,23 @@
   (use-package dired-git
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
-
+;; (use-package auto-save
+;;   :config
+;;   (auto-save-enable)
+;;   (setq auto-save-idle 0.3)   ; Guarda tras 0.3 segundos sin teclear
+;;   (setq auto-save-silent t)   ; Sin mensajes molestos
+;;   (setq auto-save-delete-trailing-whitespace t) ; Limpia espacios al guardar
+;; )
+(use-package super-save
+  :config
+  (setq super-save-triggers
+  '(other-window  ; Al cambiar de ventana
+    switch-to-buffer  ; Al cambiar de buffer
+   ; ace-window  ; Si usas ace-window
+    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
+  (super-save-mode 1)
+  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
+  (setq super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
 (use-package markdown-mode
   :demand t
 :commands (markdown-mode gfm-mode)
