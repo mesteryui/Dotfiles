@@ -468,11 +468,12 @@
 ;; Configuracion de programacion
 (use-package lua-mode)
 
+
 (use-package lsp-mode
   :ensure t
   :hook
   ;; Activar automáticamente para lenguajes soportados
-  ((java-mode python-mode xml-mode) . lsp)
+  ((java-mode python-mode xml-mode html-mode) . lsp)
   :config
   ;; Configuración general
   (setq lsp-keymap-prefix "C-c l"          ;; Prefijo para atajos de lsp-mode
@@ -490,6 +491,7 @@
         lsp-ui-doc-position 'at-point     ;; Mostrar cerca del cursor
         lsp-ui-sideline-enable t          ;; Información en la línea lateral
         lsp-ui-sideline-show-code-actions t))
+
 ;; Flycheck para errores en tiempo real
 (use-package flycheck
   :ensure t
