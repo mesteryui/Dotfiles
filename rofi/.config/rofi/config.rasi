@@ -7,7 +7,7 @@ configuration {
     drun-display-format: "{icon} {name}";
     location: 0;
     disable-history: false;
-    display-drun: "  Aplicaciones:";
+    display-drun: " Aplicaciones:";
     hide-scrollbar: true;
     sidebar-mode: false;
 }
