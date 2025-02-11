@@ -31,6 +31,7 @@ set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 alias "cd" "z"
+set EDITOR "nano"
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set VISUAL "emacsclient -c -a emacs"
 set -Ux EDITOR "nvim"
