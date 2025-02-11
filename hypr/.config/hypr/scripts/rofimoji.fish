@@ -4,7 +4,8 @@ if test -f $ROFIPID
     kill "$ROFIPID"
 end
 
-rofimoji --selector-args "-monitor $MONITOR" \
+rofimoji \
     --selector rofi \
-    --clipboarder wl-copy \
     --skin-tone neutral \
+
+# --clipboarder wl-clipboard 
