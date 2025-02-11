@@ -42,7 +42,7 @@
   ],
   "widget-config": {
     "title": {
-      "text": "Notificationes",
+      "text": "Notificaciones",
       "clear-all-button": true,
       "button-text": "Limpiar todo"
     },
