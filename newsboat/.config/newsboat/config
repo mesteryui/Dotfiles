@@ -1,2 +1,6 @@
 include ~/.config/newsboat/dark
 browser "xdg-open %u"
+urls-source "freshrss"
+freshrss-url "https://rss.hostux.net/api/greader.php"
+freshrss-login "Mester"
+freshrss-passwordeval "pass show freshrss"
