@@ -1,10 +1,12 @@
 #!/usr/bin/python
 import requests
+import subprocess
 import sys
 import locale
-def leer_fichero_api()-> str:
-    with open("clave.txt","r") as archivo:
-        return archivo.read()
+
+def obtener_api() -> str:
+    result = subprocess.run(["pass show weatherpy"],shell=True,capture_output=True,text=True)
+    return result.stdout
 
 def escribir_fichero_api(api_key:str):
     with open("clave.txt","w") as archivo:
@@ -38,7 +40,7 @@ def obtener_parametro():
         return '' 
     
 def obtener_ubicacion():
-    url = "http://ip-api.com/json"
+    url = "https://ip.hostux.net/json"
     try:
         respuesta = requests.get(url)
         datos = respuesta.json()
