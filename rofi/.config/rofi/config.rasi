@@ -2,7 +2,7 @@ configuration {
     modi: "run,window,combi,drun";
     icon-theme: "Papirus-Dark";
     show-icons: true;
-    font: "Gabarito Regular 15";
+    font: "Rubik Nerd Font 13";
     terminal: "kitty";
     drun-display-format: "{icon} {name}";
     location: 0;
