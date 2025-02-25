@@ -12,5 +12,6 @@
 	"modules-center": ["hyprland/workspaces#pacman"],
 	"modules-right": ["custom/notification", "custom/hypridle", "custom/weather", "group/pownet","backlight","pulseaudio#icon","custom/updates","group/clock","tray"] 
  }
+
 ]
 // "mpris","mpris#close"
