@@ -2,7 +2,7 @@
   all: unset;
   font-size: 15px;
   font-weight: 500;
-  font-family: "Gabarito Regular", Ubuntu Nerd Font;
+  font-family: "Ubuntu Nerd Font";
   transition: 200ms;
 }
 
