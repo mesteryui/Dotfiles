@@ -23,7 +23,7 @@
 (global-set-key (kbd "C-c r") 'os/reload-config)
 
 (set-face-attribute 'default nil
-  :font "JetBrains Mono NerdFont"
+  :font "Jetbrains Mono"
   :height 102
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
@@ -31,7 +31,7 @@
   :height 105
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
-  :font "JetBrains Mono NerdFont"
+  :font "Jetbrains Mono"
   :height 102
   :weight 'medium)
 ;; Makes commented text and keywords italics.
@@ -53,7 +53,7 @@
 (defun os/open-config ()
   "Abrir configuracion de emacs"
   (interactive)
-  (find-file "~/.config/emacs/README.org"))
+  (find-file "~/.config/emacs/init.el"))
 (global-set-key (kbd "C-x r c") 'os/open-config)
 
 (use-package catppuccin-theme
@@ -79,11 +79,12 @@
   (setq org-agenda-files '("~/org/agenda.org"))
   (setq org-archive-location "~/org/%s_archivo.org::datetree/")
   (setq org-todo-keywords
-       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(p)" "|" "DONE(d)" "CANCELLED(c)")))
    (setq org-todo-keyword-faces
           '(("TODO" . "coral")
             ("NEXT" . "cyan")
             ("PROJ" . "orange")
+	    ("WAITING" . "yellow")
             ("DONE" . "green")
             ("PAUSED" . "IndianRed1")
             ("CANCELLED" . "grey")))
@@ -110,7 +111,12 @@
 	   )
           ("j" "Diario" entry
            (file+datetree "~/org/diario.org")
-           "* %?\nCreado: %U\n")))
+           "* %?\nCreado: %U\n")
+	   ("p" "Project" entry
+           (file+headline "~/org/agenda.org" "Proyectos")
+           "* PROJ %?\n")
+	  )
+	  )
 
 (global-set-key (kbd "C-c o") 'consult-org-agenda)
 
@@ -269,7 +275,7 @@
  (setq initial-buffer-choice 'dashboard-open)
  (setq dashboard-set-heading-icons t)
  (setq dashboard-set-file-icons t)
- (setq dashboard-banner-logo-title "Bienvenido a Emacs")
+ (setq dashboard-banner-logo-title (format "Bienvenido a Emacs, %s" (capitalize (user-login-name))))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
  (setq dashboard-startup-banner "~/.config/emacs/image.png")  ;; use custom image as banner
  (setq dashboard-center-content nil) ;; set to 't' for centered content
@@ -456,9 +462,9 @@
   (add-hook 'prog-mode-hook #'flymake-mode))
 (use-package flymake-gradle)
 
-(use-package eldoc
-    :defer t
-    :after elpaca)
+;; (use-package eldoc
+;;     :defer t
+;;     :after elpaca)
   (use-package eldoc-box
     :ensure t
     :defer t
@@ -527,11 +533,6 @@
   (yas-global-mode t))
 (use-package yasnippet-snippets)
 
-(use-package typescript-mode
-:demand t
-:ensure t)
-(add-to-list 'auto-mode-alist '("\.ts\'" . typescript-mode))
-(add-to-list 'auto-mode-alist '("\.tsx\'" . typescript-mode))
 
 ; (add-hook 'python-mode 'eglot-python-mode)
 
@@ -564,44 +565,8 @@
   (setq projectile-project-search-path '("~/Proyectos"))
   :bind (:map projectile-mode-map
               ("C-c p" . projectile-command-map)))
-(defun crear-proyecto-gradle (nombre)
-  "Crea un nuevo proyecto Gradle con el NOMBRE dado."
-  (interactive "sNombre del proyecto: ")
-  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
-    (make-directory directorio t)
-    (shell-command (format "gradle init --type java-application -p %s" directorio))
-    (find-file (concat directorio "/build.gradle"))
-    (message "Proyecto Gradle creado en %s" directorio)))
-(defun crear-proyecto-maven (nombre)
-  "Crea un nuevo proyecto Maven con el NOMBRE dado."
-  (interactive "sNombre del proyecto: ")
-  (let ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre)))
-    (make-directory directorio t)
-    (shell-command (format "mvn archetype:generate -DgroupId=com.example -DartifactId=%s -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DoutputDirectory=%s" nombre directorio))
-    (find-file (concat directorio "/" nombre "/pom.xml"))
-    (message "Proyecto Maven creado en %s" directorio)))
 
-(defun crear-proyecto-python (nombre)
-  "Crea un nuevo proyecto Python con un entorno virtual venv."
-  (interactive "sNombre del proyecto: ")
-  (let* ((directorio (concat (file-name-as-directory "~/Proyectos/") nombre))
-         (venv-path (concat directorio ".venv")))
-    ;; Crear el directorio del proyecto
-    (make-directory directorio t)
-    ;; Crear el entorno virtual
-    (shell-command (format "python3 -m venv %s" venv-path))
-    ;; Crear un archivo main.py por defecto
-    (with-temp-file (concat directorio "/main.py")
-      (insert "#!/usr/bin/env python3\n\n"
-              "def main():\n"
-              "    print('Hello, World!')\n\n"
-              "if __name__ == '__main__':\n"
-              "    main()"))
-    ;; Abrir el proyecto en Emacs
-    (find-file (concat directorio "/main.py"))
-    ;; Activar el entorno virtual automáticamente
-    (pyvenv-activate venv-path)
-    (message "Proyecto Python creado en %s con entorno virtual en %s" directorio venv-path)))
+
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
