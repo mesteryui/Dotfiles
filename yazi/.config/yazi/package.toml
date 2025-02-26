@@ -1,5 +1,24 @@
-[plugin]
-deps = [{ use = "atareao/mdcat", rev = "d82f690" }, { use = "Ape/mediainfo", rev = "df17c4f" }, { use = "Rolv-Apneseth/starship", rev = "9c37d37" }]
+[[plugin.deps]]
+use = "atareao/mdcat"
+rev = "d82f690"
+hash = "794667b1e3e57e8d308e24dee9fa988d"
 
-[flavor]
-deps = [{ use = "yazi-rs/flavors:catppuccin-mocha", rev = "fc8eeaa" }]
+[[plugin.deps]]
+use = "Ape/mediainfo"
+rev = "df17c4f"
+hash = "74c2b0063f30c6b4e4ede533f9ca03f2"
+
+[[plugin.deps]]
+use = "Rolv-Apneseth/starship"
+rev = "9c37d37"
+hash = "63522f9e5675f0f14835297af16b9462"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:chmod"
+rev = "5186af7"
+hash = "f28138c2e11e87962b66d583fef724c3"
+
+[[flavor.deps]]
+use = "yazi-rs/flavors:catppuccin-mocha"
+rev = "fc8eeaa"
+hash = "407710c2af9621a8351453e637d6c870"

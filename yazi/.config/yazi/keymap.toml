@@ -2,5 +2,6 @@
 prepend_keymap = [
 	{on = ["y", "y"], run='yank', desc="Copy files"},
 	{on = ["y", "c"], run='yank --cut', desc="Cut files"},
+        {on = [ "c", "m" ],run  = "plugin chmod",desc = "Chmod on selected files"},
 
 ]
