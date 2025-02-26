@@ -590,6 +590,25 @@
 
 (electric-pair-mode t)
 
+(use-package elfeed
+    :bind
+    ("C-x w" . elfeed))
+
+(use-package elfeed-protocol
+    :ensure t
+    :demand t
+    :after elfeed
+    :config
+    (elfeed-protocol-enable)
+    :custom
+    (elfeed-use-curl t)
+    (elfeed-set-timeout 36000)
+    (elfeed-log-level 'debug)
+    (elfeed-protocol-feeds (list
+                   (list "fever+https://Mester@rss.hostux.net"
+                         :api-url "https://Mester@rss.hostux.net/api/fever.php"
+                         :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+
 (use-package eradio
   :defer t
 :init
