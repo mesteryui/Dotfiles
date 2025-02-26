@@ -1,6 +1,6 @@
 [[plugin.deps]]
 use = "atareao/mdcat"
-rev = "d82f690"
+rev = "c4d6f8b"
 hash = "794667b1e3e57e8d308e24dee9fa988d"
 
 [[plugin.deps]]
@@ -10,8 +10,8 @@ hash = "74c2b0063f30c6b4e4ede533f9ca03f2"
 
 [[plugin.deps]]
 use = "Rolv-Apneseth/starship"
-rev = "9c37d37"
-hash = "63522f9e5675f0f14835297af16b9462"
+rev = "6c639b4"
+hash = "5614c46d5de76623c283d415bfac8025"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:chmod"
@@ -20,5 +20,5 @@ hash = "f28138c2e11e87962b66d583fef724c3"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "fc8eeaa"
-hash = "407710c2af9621a8351453e637d6c870"
+rev = "df95930"
+hash = "c40e434318a8ceffd01842f8dfb2390e"
