@@ -1,4 +1,6 @@
 emacs/.config/emacs/share/eclipse.jdt.ls/*
+yazi/.config/yazi/flavors/
+yazi/.config/yazi/plugins
 emacs/.config/emacs/share/
 lazy-lock.json
 emacs/.config/emacs/elpy/*
