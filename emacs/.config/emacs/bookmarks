@@ -4,8 +4,8 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
  (filename . "~/org/agenda.org")
- (front-context-string . "** PROJ Amigos e")
- (rear-context-string . "00]\n* Proyectos\n")
- (position . 150)
- (last-modified 26557 37794 864590 393000))
+ (front-context-string . "** TODO Aprender")
+ (rear-context-string . "2-20 jue 00:00]\n")
+ (position . 138)
+ (last-modified 26560 5738 293299 518000))
 )

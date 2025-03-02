@@ -1,0 +1,18 @@
+[config]
+theme = "dark"
+hooks = true
+
+[config.wallpaper]
+command = "swww"
+arguments = ["img"]
+set = true
+
+[templates.waybar]
+input_path = '~/.config/matugen/templates/css_template.conf'
+output_path = '~/.config/waybar/colors.css'
+post_hook = 'pkill -SIGUSR2 waybar'
+
+[templates.hyprland]
+input_path = "~/.config/matugen/templates/hyprland_template.conf"
+output_path = "~/.config/hypr/colors.conf"
+post_hook = "hyprctl reload"
