@@ -1,11 +1,10 @@
-
-@import "mocha.css";
+@import "colors.css";
 window#waybar {
 	background-color: transparent;
 }
 
 window > box {
-	background-color: @mantle;
+	background-color: @primary_container;
 	margin: 8px 8px 0px 8px;
 	padding: 0px 10px;
 	color: @text
@@ -40,7 +39,7 @@ window > box {
 #network.ethernet,
 #custom-hypridle,
 #network.wifi{
-	background-color: @base;
+	background-color: @surface;
 }
 
 #custom-launcher {
@@ -50,40 +49,40 @@ window > box {
 	padding: 0px 5px 0px 10px;
 }
 #custom-hypridle {
-	background-color: @base;
+	background-color: @surface;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;
 }
 #custom-three-dots-seperator {
-	color: @text;
+	color: @inverse_background;
 	margin: 6px 2px;
 	padding: 0px 5px;
 }
 
 #cpu {
-	color: @text;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #memory {
-	color: @text;
+	color: @inverse_background;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #disk {
-	color: @text;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #mpris {
-	color: @text;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 0px;
@@ -102,16 +101,16 @@ window > box {
 }
 
 #workspaces button {
-	color: @sapphire;
+	color: @secondary;
 	padding: 0px 4px;
 }
 
 #workspaces button.active {
-	color: @peach;
+	color: @primary;
 }
 
 #workspaces button.urgent {
-	color: @maroon;
+	color: @error_container;
 }
 
 #workspaces button.empty {
@@ -120,7 +119,6 @@ window > box {
 
 #workspaces button:hover {
 	color: @theme_selected_bg_color;
-	background-color: @mantle;
 }
 
 #pownet {
@@ -176,7 +174,7 @@ window > box {
 }
 
 #clock {
-	color: @text;
+	color: @inverse_background;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
@@ -201,13 +199,13 @@ window > box {
 
 tooltip {
     padding: 25px;
-    background-color: @base;
+    background-color: @secondary_container;
     color: @text;
     font-family: JetbrainsMono Nerd Font;
 }
 #backlight,
 #custom-weather {
-	background-color: @base;
+	background-color: @surface;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;

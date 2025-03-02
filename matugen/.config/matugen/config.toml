@@ -7,6 +7,10 @@ command = "swww"
 arguments = ["img"]
 set = true
 
+[templates.kitty]
+input_path = '~/.config/matugen/templates/kitty-kolors.conf'
+output_path = '~/.config/kitty/colors.conf'
+
 [templates.waybar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/waybar/colors.css'
