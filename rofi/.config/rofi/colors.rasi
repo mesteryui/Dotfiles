@@ -109,7 +109,7 @@ button selected {
 }
 
 message {
-    background-color: @urgent;
+    background-color: @background;
     margin: 2px;
     padding: 2px;
     border-radius: 5px;

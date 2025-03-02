@@ -1,19 +1,18 @@
 [config]
+version_checck = true
 theme = "dark"
 hooks = true
-
 [config.wallpaper]
 command = "swww"
-arguments = ["img"]
+arguments = ["img", "--transition-type", "center"]
 set = true
-
 [templates.gtk3]
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
 
-[templates.gtk4]
-input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
-output_path = '~/.config/gtk-4.0/gtk.css'
+#[templates.gtk4]
+#input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
+#output_path = '~/.config/gtk-4.0/gtk.css'
 
 [templates.kitty]
 input_path = '~/.config/matugen/templates/kitty-kolors.conf'
@@ -38,6 +37,10 @@ post_hook = "hyprctl reload"
 input_path = '~/.config/matugen/templates/qtct-colors.conf'
 output_path = '~/.config/qt5ct/colors/matugen-qt5ct.conf'
 
+[templates.starship]
+input_path = "~/.config/matugen/templates/matugen-starship.toml"
+output_path = "~/.config/starship.toml"
+
 # Qt6
 [templates.qt6]
 input_path = '~/.config/matugen/templates/qtct-colors.conf'
@@ -48,3 +51,7 @@ output_path = '~/.config/Kvantum/matugen/matugen.kvconfig'
 [templates.rofi]
 input_path = '~/.config/matugen/templates/matugen-rofi.rasi'
 output_path = '~/.config/rofi/matugen/matugen-rofi.rasi'
+
+[templates.fish]
+input_path = '~/.config/matugen/templates/fish_theme.fish'
+output_path = '~/.config/fish/themes/Matugen.theme'
