@@ -1,0 +1,123 @@
+/***
+ *    ┏┓┏┓┓ ┏┓┳┓┏┓
+ *    ┃ ┃┃┃ ┃┃┣┫┗┓
+ *    ┗┛┗┛┗┛┗┛┛┗┗┛
+ *                
+ */
+
+
+/*--------Importing matugen colors-----*/
+@import '~/.config/rofi/matugen/matugen-rofi.rasi'
+
+
+/*--------Color definitions------------*/
+
+* {
+       background:       @surface;
+       background-alt:   @surface-container-highest;
+       background-alpha: @surface-alpha;
+       foreground:       @on-surface;
+       border-color:     @tertiary;
+       selected:         @tertiary;
+       selected-text:    @surface;
+       active:           @primary;
+       urgent:           @error;
+       width: 600;
+}
+element-text, element-icon , mode-switcher {
+    background-color: inherit;
+    text-color:       inherit;
+}
+
+window {
+    height: 360px;
+    border: 3px;
+    border-color: @selected;
+    background-color: @background;
+}
+
+mainbox {
+    background-color: @background;
+}
+
+inputbar {
+    children: [prompt,entry];
+    background-color: @background;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+prompt {
+    background-color: @primary;
+    padding: 6px;
+    text-color: @selected-text;
+    border-radius: 3px;
+    margin: 20px 0px 0px 20px;
+}
+
+textbox-prompt-colon {
+    expand: false;
+    str: ":";
+}
+
+entry {
+    padding: 6px;
+    margin: 20px 0px 0px 10px;
+    text-color: @foreground;
+    background-color: @background;
+}
+
+listview {
+    border: 0px 0px 0px;
+    padding: 6px 0px 0px;
+    margin: 10px 0px 0px 20px;
+    columns: 1;
+    lines: 5;
+    background-color: @background;
+}
+
+element {
+    padding: 5px;
+    background-color: @background;
+    text-color: @foreground;
+}
+
+element-icon {
+    size: 25px;
+}
+
+element selected {
+    background-color: @background;
+    text-color: @active;
+}
+
+mode-switcher {
+    spacing: 0;
+  }
+
+button {
+    padding: 10px;
+    background-color: @active;
+    text-color: @foreground;
+    vertical-align: 0.5; 
+    horizontal-align: 0.5;
+}
+
+button selected {
+  background-color: @background;
+  text-color: @active;
+}
+
+message {
+    background-color: @urgent;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 5px;
+}
+
+textbox {
+    padding: 6px;
+    margin: 20px 0px 0px 20px;
+    text-color: @active;
+    background-color: @background;
+}
