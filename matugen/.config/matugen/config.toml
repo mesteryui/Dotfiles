@@ -52,6 +52,27 @@ output_path = '~/.config/Kvantum/matugen/matugen.kvconfig'
 input_path = '~/.config/matugen/templates/matugen-rofi.rasi'
 output_path = '~/.config/rofi/matugen/matugen-rofi.rasi'
 
+[templates.cava]
+input_path = '~/.config/matugen/templates/matugen-cava'
+output_path = '~/.config/cava/config'
+
 [templates.fish]
 input_path = '~/.config/matugen/templates/fish_theme.fish'
 output_path = '~/.config/fish/themes/Matugen.theme'
+
+[templates.pywalfox]
+input_path = '~/.config/matugen/templates/pywalfox-colors.json'
+output_path = '~/.cache/wal/colors.json'
+post_hook = 'pywalfox update'
+
+[templates.zenUserChrome]
+input_path = '~/.config/matugen/templates/zen-userChrome.css'
+output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userChrome.css'
+
+[templates.zenLogo]
+input_path = '~/.config/matugen/templates/zen-logo.svg'
+output_path = '~/.zen/g2nrrthb.Default (release)/chrome/zen-logo-mocha.svg'
+
+[templates.zenUserContent]
+input_path = '~/.config/matugen/templates/zen-userContent.css'
+output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userContent.css'

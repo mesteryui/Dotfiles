@@ -23,7 +23,7 @@ slider {
 }
 
 .floating-notifications.background .notification-row .notification-background {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px #313244;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
   margin: 18px;
   background-color: @surface;
@@ -75,7 +75,7 @@ slider {
 }
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px #45475a;
+  box-shadow: inset 0 0 0 1px @shadow;
   background-color: @primary;
   color: #cdd6f4;
 }
@@ -99,7 +99,7 @@ slider {
 }
 
 .control-center {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px #313244;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
   margin: 18px;
   background-color: @surface;
@@ -115,8 +115,8 @@ slider {
 .control-center .widget-title button {
   border-radius: 7px;
   color: @on_surface;
-  background-color: @surface;
-  box-shadow: inset 0 0 0 1px #45475a;
+  background-color: @surface_variant;
+  box-shadow: inset 0 0 0 1px @shadow;
   padding: 8px;
 }
 
@@ -136,7 +136,7 @@ slider {
   border-radius: 7px;
   color: #cdd6f4;
   background-color: @surface_container;
-  box-shadow: inset 0 0 0 1px #45475a;
+  box-shadow: inset 0 0 0 1px @surface_container_highest;
   margin-top: 14px;
 }
 
@@ -172,8 +172,8 @@ slider {
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action {
   border-radius: 7px;
   color: #cdd6f4;
-  background-color: ;
-  box-shadow: inset 0 0 0 1px #45475a;
+  background-color: @background;
+  box-shadow: inset 0 0 0 1px @surface_container;
   margin: 7px;
 }
 
@@ -184,7 +184,7 @@ slider {
 }
 
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px #45475a;
+  box-shadow: inset 0 0 0 1px @shadow;
   background-color: @primary;
   color: @on_surface;
 }
@@ -218,7 +218,7 @@ slider {
 }
 
 .control-center .notification-row .notification-background:active {
-  box-shadow: inset 0 0 0 1px #45475a;
+  box-shadow: inset 0 0 0 1px @shadow;
   background-color: #cba6f7;
   color: #cdd6f4;
 }
@@ -236,7 +236,7 @@ slider {
   margin-top: 5px;
   border-radius: 8px;
   background: @surface_bright;
-  border: 1px solid #45475a;
+  border: 1px solid @shadow;
   box-shadow: none;
 }
 
@@ -257,19 +257,19 @@ slider {
 .widget-dnd > switch {
   font-size: initial;
   border-radius: 8px;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: @surface_variant;
+  border: 1px solid @shadow;
   box-shadow: none;
 }
 
 .widget-dnd > switch:checked {
-  background: #313244;
+  background: @surface_variant;
 }
 
 .widget-dnd > switch slider {
-  background: #45475a;
+  background: @surface_variant;
   border-radius: 8px;
-  border: 1px solid #6c7086;
+  border: 1px solid @surface_container;
 }
 
 .widget-mpris .widget-mpris-player {
