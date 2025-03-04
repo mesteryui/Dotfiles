@@ -32,7 +32,7 @@ element-text, element-icon , mode-switcher {
 window {
     height: 360px;
     border: 3px;
-    border-color: @selected;
+    border-color: @border-color;
     background-color: @background;
 }
 
@@ -48,7 +48,7 @@ inputbar {
 }
 
 prompt {
-    background-color: @primary;
+    background-color: @active;
     padding: 6px;
     text-color: @selected-text;
     border-radius: 3px;

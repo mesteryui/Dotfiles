@@ -72,7 +72,7 @@
 		"format-alt": "{:L%Y-%m-%d, %a}",
 		"interval": 60,
 		//"tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-		"tooltip-format": "<span color='#cdd6f4' font='JetBrains Mono 11'><small>{calendar}</small></span>",
+		"tooltip-format": "<span font='JetBrains Mono 11'><small>{calendar}</small></span>",
 		//"locale": "es_ES",
 		
 		
@@ -89,7 +89,7 @@
 
 	"cpu#icon": {
 	    "interval": 10,
-	    "format": "<span color=\"#f38ba8\"> </span>  {}%",
+	    "format": "  {}%",
 	    "max-length": 10
 	},
 
@@ -99,13 +99,13 @@
 	// ┴ ┴└─┘┴ ┴└─┘┴└─ ┴ 
 
 	"memory": {
-		"format": "<span color=\"#7aa2f7\">     </span>{used}GiB",
+		"format": "     {used}GiB",
 		"interval": 4,
 	},
 
 	"memory#icon": {
 	    "interval": 30,
-	    "format": "<span color=\"#89b4fa\">  </span> {used} GiB",
+	    "format": "   {used} GiB",
 	},
 
 
@@ -115,7 +115,7 @@
 
 	"disk#icon": {
 	    "interval": 30,
-	    "format": "<span color=\"#f9e2af\">  </span> {used}",
+	    "format": "   {used}",
 	    //"path": "/",
 	    "unit": "GB"
 	},

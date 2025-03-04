@@ -7,7 +7,6 @@ window > box {
 	background-color: @background;
 	margin: 8px 8px 0px 8px;
 	padding: 0px 10px;
-	color: @text
 }
 * {
 	font-family: "Gabarito Medium", FontAwesome, Roboto, IPAMincho;
@@ -39,7 +38,7 @@ window > box {
 #network.ethernet,
 #custom-hypridle,
 #network.wifi{
-	background-color: @surface_container;
+    background-color: @surface_container;
 }
 
 #custom-launcher {
@@ -61,28 +60,28 @@ window > box {
 }
 
 #cpu {
-	color: @invert_surface;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #memory {
-	color: @inverse_background;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #disk {
-	color: @invert_surface;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #mpris {
-	color: @invert_surface;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 0px;
@@ -98,6 +97,7 @@ window > box {
 	border-radius: 100px;
 	margin: 6px 2px;
 	padding: 0px 9px;
+	color: @on_surface
 }
 
 #workspaces button {
@@ -114,7 +114,7 @@ window > box {
 }
 
 #workspaces button.empty {
-	color: @text;
+	color: @on_surface;
 }
 
 #workspaces button:hover {
@@ -122,7 +122,7 @@ window > box {
 }
 
 #pownet {
-	color: @text;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
@@ -135,7 +135,7 @@ window > box {
 
 #network {
 	font-size: 11px;
-	color: #ffffff;
+	color: @on_surface;
 	margin-right: 5px;
 }
 
@@ -158,23 +158,21 @@ window > box {
     animation-iteration-count: infinite;
     animation-direction: alternate;
 }
-
 #pulseaudio {
-	color: @text;
+	color: @on_surface;
 	border-radius: 100px;
-	padding: 0px 10px;
+	padding: 0px 13px;
 	margin: 6px 2px;
 }
-
 #custom-updates {
-	color: @text;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #clock {
-	color: @inverse_background;
+	color: @on_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
@@ -200,7 +198,8 @@ window > box {
 tooltip {
     padding: 25px;
     background-color: @surface;
-    color: @text;
+    color: @on_surface;
+    border: 2px solid @tertiary;
     font-family: JetbrainsMono Nerd Font;
 }
 #backlight,
@@ -212,10 +211,10 @@ tooltip {
 }
 tooltip label {
     padding: 15px;
-    color: @text;
+    color: @on_surface;
 }
 
 label:focus {
-    background-color: @inverse_background;
+    background-color: @surface;
 }
 
