@@ -22,7 +22,7 @@
 # Set some variables
 wall_dir="${HOME}/Imágenes/Wallpapers"
 cacheDir="${HOME}/.cache/jp/${theme}"
-rofi_command="rofi -x11 -dmenu -theme ${HOME}/.config/rofi/wallConfig.rasi"
+rofi_command="rofi -dmenu -theme ~/.config/rofi/wallConfig.rasi -normal-window"
 
 # Create cache dir if not exists
 if [ ! -d "${cacheDir}" ] ; then
