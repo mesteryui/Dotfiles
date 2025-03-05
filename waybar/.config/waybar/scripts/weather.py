@@ -63,7 +63,7 @@ def obtener_clima():
     """
     Obtiene el clima de una ciudad usando la API de OpenWeatherMap.
     """
-    api_key = obtener_api()
+    api_key = "081b4110041636a59d7c14ed73f54b59"
     if api_key is None:
         print("No tienes clave API")
         exit(1)

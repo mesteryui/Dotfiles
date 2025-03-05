@@ -62,22 +62,22 @@ slider {
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action {
   border-radius: 7px;
-  color: #cdd6f4;
-  background-color: #313244;
+  color: @on_surface;
+  background-color: @surface;
   box-shadow: inset 0 0 0 1px #45475a;
   margin: 7px;
 }
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: @primary;
+  color: @on_primary;
 }
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
   box-shadow: inset 0 0 0 1px @shadow;
   background-color: @primary;
-  color: #cdd6f4;
+  color: @on_primary;
 }
 
 .floating-notifications.background .notification-row .notification-background .close-button {
@@ -179,13 +179,13 @@ slider {
 
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #313244;
+  background-color: @background;
   color: #cdd6f4;
 }
 
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
   box-shadow: inset 0 0 0 1px @shadow;
-  background-color: @primary;
+  background-color: @background;
   color: @on_surface;
 }
 
@@ -213,7 +213,7 @@ slider {
 
 .control-center .notification-row .notification-background:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #7f849c;
+  background-color: @background;
   color: #cdd6f4;
 }
 
