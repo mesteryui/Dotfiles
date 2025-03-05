@@ -20,7 +20,7 @@ output_path = '~/.config/kitty/colors.conf'
 [templates.waybar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/waybar/colors.css'
-post_hook = 'pkill -SIGUSR2 waybar'
+post_hook = '/home/oscar/.config/hypr/scripts/waybar_reload.sh'
 [templates.nwgbar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/nwg-bar/colors.css'
