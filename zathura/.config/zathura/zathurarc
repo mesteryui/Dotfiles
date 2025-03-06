@@ -1,3 +1,3 @@
-include catppuccin-mocha
+include matugen-zathurarc
 set recolor false
 set selection-clipboard clipboard

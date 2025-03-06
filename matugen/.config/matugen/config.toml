@@ -66,6 +66,10 @@ input_path = '~/.config/matugen/templates/pywalfox-colors.json'
 output_path = '~/.cache/wal/colors.json'
 post_hook = 'pywalfox update'
 
+[templates.zathura]
+input_path = '~/.config/matugen/templates/matugen-zathurarc'
+output_path = '~/.config/zathura/matugen-zathurarc'
+
 [templates.zenUserChrome]
 input_path = '~/.config/matugen/templates/zen-userChrome.css'
 output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userChrome.css'
