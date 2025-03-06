@@ -73,7 +73,13 @@
 		"interval": 60,
 		//"tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
 		"tooltip-format": "<span font='JetBrains Mono 11'><small>{calendar}</small></span>",
+		"calendar": {
+			"format": {
+				"today": "<b>{}</b>"
+			}
+		},
 		//"locale": "es_ES",
+		
 		
 		
 	},

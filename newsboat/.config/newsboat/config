@@ -4,3 +4,15 @@ urls-source "freshrss"
 freshrss-url "https://rss.hostux.net/api/greader.php"
 freshrss-login "Mester"
 freshrss-passwordeval "pass show freshrss"
+auto-reload yes
+reload-time 120
+reload-threads 4
+download-retries 4
+download-timeout 10
+prepopulate-query-feeds yes
+
+
+# -- display -------------------------------------------------------------------
+
+show-read-feeds no
+feed-sort-order unreadarticlecount-asc

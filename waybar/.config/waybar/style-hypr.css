@@ -11,7 +11,7 @@ window > box {
 * {
 	font-family: "Gabarito Medium", FontAwesome, Roboto, IPAMincho;
 	/*font-weight: 400;*/
-	font-size: 11.5px;
+	font-size: 12px;
 	padding: 0;
 	border-radius: 20px;
 }
@@ -187,6 +187,10 @@ window > box {
     margin: 5px 6px;
     padding: 5;
 	
+}
+#tray menu * {
+    padding: 0px 5px;
+    transition: all .3s ease; 
 }
 #tray > .passive {
     -gtk-icon-effect: dim;
