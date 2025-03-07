@@ -28,7 +28,10 @@ output_path = '~/.config/nwg-bar/colors.css'
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swaync/matugen/matugen-swaync.css'
 post_hook = 'swaync-client -rs'
-
+[templates.swayosd]
+input_path = '~/.config/matugen/templates/css_template.conf'
+output_path = '~/.config/swayosd/colors.css'
+post_hook = 'swaync-client -rs'
 [templates.hyprland]
 input_path = "~/.config/matugen/templates/hyprland_template.conf"
 output_path = "~/.config/hypr/colors.conf"

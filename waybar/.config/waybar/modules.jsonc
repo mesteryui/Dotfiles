@@ -69,13 +69,13 @@
 	},
 	"clock#time": {
 		"format": "{:%H:%M}",
-		"format-alt": "{:L%Y-%m-%d, %a}",
-		"interval": 60,
+		"format-alt": "{:%H:%M:%S}",
+		"interval": 1,
 		//"tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
 		"tooltip-format": "<span font='JetBrains Mono 11'><small>{calendar}</small></span>",
 		"calendar": {
 			"format": {
-				"today": "<b>{}</b>"
+				"today": "<b><i>{}</i></b>"
 			}
 		},
 		//"locale": "es_ES",
@@ -492,6 +492,6 @@
 	   "format": "{}",
  	   "return-type": "json",
            "exec": "python ~/.config/waybar/scripts/weather.py Vigo",
-           "interval": 10,
+           "interval": 240,
 }
 }
