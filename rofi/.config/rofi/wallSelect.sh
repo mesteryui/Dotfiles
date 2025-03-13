@@ -32,7 +32,7 @@ if [ ! -d "${cacheDir}" ] ; then
 
 
 # Convert images in directory and save to cache dir
-for imagen in "$wall_dir"/*.{jpg,jpeg,png,webp}; do
+for imagen in "$wall_dir"/*.{jpg,jpeg,png,webp,gif}; do
 	if [ -f "$imagen" ]; then
 		nombre_archivo=$(basename "$imagen")
 			if [ ! -f "${cacheDir}/${nombre_archivo}" ] ; then

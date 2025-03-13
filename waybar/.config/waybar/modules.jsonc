@@ -299,7 +299,7 @@
 
 	"custom/launcher#arch": {
 		"format": "󰣇",
-		"on-click": "",
+		"on-click": "rofi -show drun",
 	},
 
 	"custom/power-button": {

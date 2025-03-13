@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
-sudo pacman -S pipewire-pulse pipewire-alsa kitty thunar sddm yazi atuin zoxide fish lsd hyprland firefox television
+install_paru() {
+    sudo pacman -S base-devel git
+    cd /opt/
+    sudo git clone https://aur.archlinux.org/paru.git
+    sudo chown -R $USER:$USER paru-git/
+    cd paru
+    makepkg -si
+}
 
-# Segunda fase
-
-sudo pacman -S syncthing pavucontrol ttf-jetbrains-mono ttf-ubuntu-font-family waybar nwg-bar ttf-font-awesome pass  
+add_configs() {
+    
+}

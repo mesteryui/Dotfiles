@@ -31,7 +31,7 @@ post_hook = 'swaync-client -rs'
 [templates.swayosd]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swayosd/colors.css'
-post_hook = 'swaync-client -rs'
+post_hook = '~/.config/hypr/scripts/restart_osd.fish'
 [templates.hyprland]
 input_path = "~/.config/matugen/templates/hyprland_template.conf"
 output_path = "~/.config/hypr/colors.conf"
