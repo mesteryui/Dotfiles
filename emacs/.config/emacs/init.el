@@ -56,6 +56,11 @@
   (find-file "~/.config/emacs/init.el"))
 (global-set-key (kbd "C-x r c") 'os/open-config)
 
+(use-package catppuccin-theme
+    :config
+    (setq catppuccin-flavor 'mocha)
+    (catppuccin-reload)
+    (load-theme 'catppuccin :no-confirm))
 (use-package evil
     :init      ;; tweak evil's configuration before loading it
     (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
@@ -64,7 +69,7 @@
           evil-split-window-below t
           evil-undo-system 'undo-redo)  ;; Adds vim-like C-r redo functionality
     (evil-mode))
-
+ (setq org-return-follows-link  t)
 (use-package evil-collection
   :after evil
   :config
@@ -76,13 +81,10 @@
   (evil-collection-init))
 
 (use-package evil-tutor)
-
-
-(use-package catppuccin-theme
-    :config
-    (setq catppuccin-flavor 'mocha)
-    (catppuccin-reload)
-    (load-theme 'catppuccin :no-confirm))
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map (kbd "RET") nil)
+  (define-key evil-motion-state-map (kbd "TAB") nil))
 
 (use-package org
     :ensure nil
@@ -140,6 +142,8 @@
 	  )
 
 (global-set-key (kbd "C-c o") 'consult-org-agenda)
+
+
 
 (require 'org-utilities)
   (use-package org-auto-tangle
@@ -534,10 +538,6 @@
   :config
   (lsp-treemacs-sync-mode 1)) ;; Sincronizar la vista de proyectos con Treemacs
 
-;; Soporte para formateo de código con lsp
-(use-package lsp-format
-  :after lsp-mode
-  :hook (before-save . lsp-format-buffer)) ;; Formatear al guardar
 
 (use-package lsp-java
   :ensure t

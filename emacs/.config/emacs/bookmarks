@@ -5,7 +5,7 @@
 (("org-capture-last-stored"
  (filename . "~/org/notes.org")
  (front-context-string . "** Nanatsu no Ta")
- (rear-context-string . "alesce\n\n* Notas\n")
- (position . 1652)
- (last-modified 26575 20920 951855 291000))
+ (rear-context-string . "3-10 lun 21:54]\n")
+ (position . 1738)
+ (last-modified 26579 17008 944884 343000))
 )
