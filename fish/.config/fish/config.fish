@@ -23,6 +23,7 @@ alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
 #alias ssh='wezterm ssh'
 alias "unimatrix" "unimatrix -n -s 96"
 alias "tiempo" 'curl wttr.in/Vigo'
+alias rem="killall emacs || echo 'Emacs server not running'; /usr/bin/emacs --daemon" # Kill Emacs and restart daemon..
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
