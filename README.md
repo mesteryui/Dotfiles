@@ -1,5 +1,3 @@
-# Mis dotfiles
+# HyprSphere
 
-Estas son mis configuraciones para mi sistema GNU/Linux
-
-Aqui tengo la configuracion de mi editor de referencia [GNU/Emacs](https://www.gnu.org/software/emacs/) y mi editor secundario [GNU Nano](https://nano-editor.org)
+This is a Material You Ricing created using [Matugen](https://github.com/InioX/matugen) this rice use GNU Stow to work correctly but there is an installation script called `post-install.sh` that install certain programs and will do that directories

@@ -1,9 +1,0 @@
-#seat * hide_cursor 6000
-floating_modifier Mod4 normal
-focus_follows_mouse yes
-input * {
-    xkb_layout "es"
-    tap enabled
-    natural_scroll disabled
-    accel_profile "flat"
-}

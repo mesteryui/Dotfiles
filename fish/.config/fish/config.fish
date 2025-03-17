@@ -17,7 +17,6 @@ if status is-interactive
     # Television
     tv init fish | source
 end
-alias "ls" 'lsd'
 alias unlock='sudo rm /var/lib/pacman/db.lck'
 alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
 #alias ssh='wezterm ssh'
@@ -29,8 +28,6 @@ set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
-alias "cd" "z"
-set EDITOR "nano"
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set VISUAL "emacsclient -c -a emacs"
 set -Ux EDITOR "nvim"
