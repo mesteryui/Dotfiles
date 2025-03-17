@@ -1,8 +1,8 @@
+
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
 ;;(require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
-(require 'various-settings)
 ;(require 'app-launchers)
 
 (use-package gcmh
@@ -15,12 +15,61 @@
   (setopt gc-cons-percentage 0.2)
   (add-hook 'elpaca-after-init-hook #'gcmh-mode))
 
+(setq erc-nick "mester"
+      erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
+
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
   (load-file "~/.config/emacs/init.el")
   (ignore (elpaca-process-queues)))
 (global-set-key (kbd "C-c r") 'os/reload-config)
+
+(setq user-full-name "Oscar")
+  (setq inhibit-startup-message t
+        use-short-answers t)
+    (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
+    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
+    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq
+ display-time-24hr-format t              ; Muestra el reloj en formato 24 hrs
+ display-time-format "%H:%M"             ; Le da formato a la hora
+ load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+ select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+ vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+ make-backup-files nil                   ; No realiza backups de ficheros
+ auto-save-default nil                   ; Deshabilita #file#
+;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
+ ;; global-hl-line-mode t                ; Highlight current line
+ kill-ring-max 128                       ; Longitud máxima del anillo de matar
+ create-lockfiles nil                    ; Impido la creación de ficheros .#
+ )
+
+
+(setq calendar-month-name-array
+      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+       "Julio"    "Agosto"   "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+
+(setq calendar-day-name-array
+      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
+
+(setq org-icalendar-timezone "Europe/Madrid") ;; timezone
+(setq calendar-week-start-day 1) ;; la semana empieza el lunes
+(setq european-calendar-style t) ;; estilo europeo
+
+(setq calendar-holidays '(
+			  (holiday-fixed 1 1 "Año nuevo")
+			  (holiday-fixed 5 17 "Dia de las letras gallegas")
+			  (holiday-fixed 10 12 "Día de la Hispanidad")
+                          (holiday-fixed 11 01 "Todos los Santos")
+			  (holiday-fixed 12 06 "Constitución")
+			  (holiday-fixed 3 28 "Reconquista de Vigo")
+			  (holiday-fixed 5 1 "Dia del Trabajo")
+			  (holiday-fixed 12 24 "Nochebuena")
+			  (holiday-fixed 12 25 "Navidad")
+			  ))
+
 
 (set-face-attribute 'default nil
   :font "Jetbrains Mono"
@@ -54,37 +103,55 @@
   "Abrir configuracion de emacs"
   (interactive)
   (find-file "~/.config/emacs/init.el"))
-(global-set-key (kbd "C-x r c") 'os/open-config)
+(global-set-key (kbd "C-x c") 'os/open-config)
 
 (use-package catppuccin-theme
     :config
     (setq catppuccin-flavor 'mocha)
     (catppuccin-reload)
     (load-theme 'catppuccin :no-confirm))
-(use-package evil
-    :init      ;; tweak evil's configuration before loading it
-    (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
-          evil-want-keybinding nil
-          evil-vsplit-window-right t
-          evil-split-window-below t
-          evil-undo-system 'undo-redo)  ;; Adds vim-like C-r redo functionality
-    (evil-mode))
+;; (use-package evil
+;;     :init      ;; tweak evil's configuration before loading it
+;;     (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
+;;           evil-want-keybinding nil
+;;           evil-vsplit-window-right t
+;;           evil-split-window-below t
+;;           evil-undo-system 'undo-redo)  ;; Adds vim-like C-r redo functionality
+;;     (evil-mode))
  (setq org-return-follows-link  t)
-(use-package evil-collection
-  :after evil
-  :config
-  ;; Do not uncomment this unless you want to specify each and every mode
-  ;; that evil-collection should works with.  The following line is here 
-  ;; for documentation purposes in case you need it.  
-  ;; (setq evil-collection-mode-list '(calendar dashboard dired ediff info magit ibuffer))
-  (add-to-list 'evil-collection-mode-list 'help) ;; evilify help mode
-  (evil-collection-init))
+;; (use-package evil-collection
+;;   :after evil
+;;   :config
+;;   ;; Do not uncomment this unless you want to specify each and every mode
+;;   ;; that evil-collection should works with.  The following line is here 
+;;   ;; for documentation purposes in case you need it.  
+;;   ;; (setq evil-collection-mode-list '(calendar dashboard dired ediff info magit ibuffer))
+;;   (add-to-list 'evil-collection-mode-list 'help) ;; evilify help mode
+;;   (evil-collection-init))
+;; (use-package evil-tutor)
+;; (with-eval-after-load 'evil-maps
+;;   (define-key evil-motion-state-map (kbd "SPC") nil)
+;;   (define-key evil-motion-state-map (kbd "RET") nil)
+;;   (define-key evil-motion-state-map (kbd "TAB") nil))
 
-(use-package evil-tutor)
-(with-eval-after-load 'evil-maps
-  (define-key evil-motion-state-map (kbd "SPC") nil)
-  (define-key evil-motion-state-map (kbd "RET") nil)
-  (define-key evil-motion-state-map (kbd "TAB") nil))
+;; (use-package general
+;;   :config
+;;   (general-evil-setup)
+  
+;;   ;; set up 'SPC' as the global leader key
+;;   (general-create-definer os/leader-keys
+;;     :states '(normal insert visual emacs)
+;;     :keymaps 'override
+;;     :prefix "SPC" ;; set leader
+;;     :global-prefix "M-SPC")
+
+;;   (os/leader-keys
+;;     "." '(find-file :wk "Find File")
+;;     "c" '(os/open-config :wk "Open Config")
+;;     "r" '(os/reload-config :wk "Reload config"))
+  
+;;   ) ;; access leader in insert mode
+
 
 (use-package org
     :ensure nil
@@ -278,24 +345,6 @@
 (completion-category-overrides
  '((file (styles partial-completion)))))
 
-(use-package company
-  :defer t
-  :ensure t
-  :hook (lsp-mode . company-mode)
-  :custom
-  (company-idle-delay 0.1)
-  (company-minimum-prefix-length 1)
-  (company-selection-wrap-around t)
-  :config
-  (global-company-mode t))
-(use-package company-box
-  :ensure t
-  :defer t
-  :after company
-  :hook (company-mode-hook . company-box-mode))
-(use-package company-posframe
-  :config
-  (company-posframe-mode 1))
 
 ;; use-package with package.el:
 (use-package dashboard
@@ -410,7 +459,7 @@
 (use-package calfw
   :config
   (setq cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
-;; (setq cfw:display-calendar-holidays nil) ;; para esconder fiestas calendario emacs
+  (setq cfw:display-calendar-holidays t) ;; para esconder fiestas calendario emacs
 
 (use-package calfw-org
   :ensure t
@@ -428,18 +477,38 @@
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
-;       (use-package eshell
-;         :ensure nil)
-;       (use-package eshell-toggle
-;       :ensure t
-;       :custom
-;     (eshell-toggle-size-fraction 3))
+(setq eshell-prompt-function
+      (lambda ()
+        (let ((status (if (= eshell-last-command-status 0)
+                          (propertize "✔" 'face '(:foreground "green"))
+                        (propertize "✘" 'face '(:foreground "red")))))
+          (concat
+	   (propertize " " 'face '(:foreground "cyan"))
+           (propertize (user-login-name))
+           "@"
+           (propertize (system-name) 'face '(:foreground "green"))
+           " "
+           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
+           " " status "\n"
+           " "))))
 
-;       (use-package eshell-syntax-highlighting
-;         :after esh-mode
-;         :config
-;         (eshell-syntax-highlighting-global-mode +1))
-;       (global-set-key (kbd "C-c t") 'eshell-toggle)
+(defun eshell/clear ()
+  "Borrar completamente el historial de eshell usando `clear-scrollback`."
+  (interactive)
+  (eshell-clear-scrollback))
+
+      (use-package eshell
+        :ensure nil)
+      (use-package eshell-toggle
+      :ensure t
+      :custom
+    (eshell-toggle-size-fraction 3))
+
+      (use-package eshell-syntax-highlighting
+        :after esh-mode
+        :config
+        (eshell-syntax-highlighting-global-mode +1))
+      (global-set-key (kbd "C-c t") 'eshell-toggle)
 
 (use-package dired-sidebar
     :ensure t
@@ -503,54 +572,43 @@
 ;; Configuracion de programacion
 (use-package lua-mode)
 
-
-(use-package lsp-mode
-  :ensure t
-  :hook
-  ;; Activar automáticamente para lenguajes soportados
-  ((java-mode python-mode xml-mode html-mode) . lsp)
+(use-package company
+  :init
+  (global-company-mode)
   :config
-  ;; Configuración general
-  (setq lsp-keymap-prefix "C-c l"          ;; Prefijo para atajos de lsp-mode
-        lsp-enable-snippet t              ;; Activar snippets
-        lsp-enable-on-type-formatting t   ;; Formatear mientras escribes
-        lsp-headerline-breadcrumb-enable t)) ;; Mostrar ruta de archivo en el encabezado
+  (setq company-minimum-prefix-length 1
+        company-idle-delay 0.0))
 
-;; Soporte adicional para UI (opcional)
-(use-package lsp-ui
-  :ensure t
-  :hook (lsp-mode . lsp-ui-mode)
+(use-package eglot
+  :hook ((python-mode . eglot-ensure)
+         (js-mode . eglot-ensure)
+         (rust-mode . eglot-ensure))
+         (html-mode . eglot-ensure))
+
+;; Soporte para Tree-sitter (requiere Emacs 29+)
+(use-package treesit-auto
   :config
-  ;; Configuración de pop-ups y documentos flotantes
-  (setq lsp-ui-doc-enable t               ;; Mostrar documentación flotante
-        lsp-ui-doc-position 'at-point     ;; Mostrar cerca del cursor
-        lsp-ui-sideline-enable t          ;; Información en la línea lateral
-        lsp-ui-sideline-show-code-actions t))
+  (global-treesit-auto-mode))
 
-;; Flycheck para errores en tiempo real
-(use-package flycheck
-  :ensure t
-  :hook (lsp-mode . flycheck-mode))
-
-;; Instalación de iconos opcionales para breadcrumbs
-(use-package lsp-treemacs
-  :ensure t
-  :config
-  (lsp-treemacs-sync-mode 1)) ;; Sincronizar la vista de proyectos con Treemacs
-
-
-(use-package lsp-java
-  :ensure t
-  :after lsp
-  :config
-  (add-hook 'java-mode-hook #'lsp-java-lens-mode)) ;; Añade soporte para LSP en Java
-(use-package lsp-pyright
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp)))) ;; Inicia LSP para Python
+;; Formateo de código
+(use-package reformatter)
+(use-package blacken  ;; Python
+  :hook (python-mode . blacken-mode))
+;; (use-package prettier  ;; JavaScript
+;;   :hook ((js-mode . prettier-mode)
+;;          (typescript-mode . prettier-mode)))
+(use-package rust-mode  ;; Rust
+  :hook (rust-mode . eglot-ensure))
+(use-package projectile
+  :init (projectile-mode +1)
+  :bind-keymap ("C-c p" . projectile-command-map))
 
 ;; Configuracion
+(use-package company-yasnippet
+    :after (company yasnippet)
+    :config
+    (add-to-list 'company-backends 'company-yasnippet))
+
 (use-package yasnippet
   :defer t
   :config
@@ -561,18 +619,18 @@
 
 ; (add-hook 'python-mode 'eglot-python-mode)
 
-;(use-package eglot-java
-;            :defer t
-;            :after eglot)
+(use-package eglot-java
+           :defer t
+           :after eglot)
   
-;        (add-hook 'java-mode-hook 'eglot-java-mode)
-;            (with-eval-after-load 'eglot-java
-;                  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-;                  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-;                  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-;                  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-;                  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-;                  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+       (add-hook 'java-mode-hook 'eglot-java-mode)
+           (with-eval-after-load 'eglot-java
+                 (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+                 (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+                 (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+                 (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+                 (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+                 (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
 ;(add-hook 'nxml-mode 'eglot-nxml-mode)
 
@@ -581,17 +639,6 @@
 
 (use-package treemacs)
 (global-set-key (kbd "C-c f") 'treemacs)
-
-(use-package projectile
-  :ensure t
-  :init
-  (projectile-mode +1)
-  :config
-  (setq projectile-project-search-path '("~/Proyectos"))
-  :bind (:map projectile-mode-map
-              ("C-c p" . projectile-command-map)))
-
-
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
@@ -639,9 +686,12 @@
 :init
 (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
 :config
-(setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv")
+(setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                         ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
-)))
+			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
+			)))
+(global-set-key (kbd "C-x r e") 'eradio-toggle)
+(global-set-key (kbd "C-x r p") 'eradio-play)
 
 (use-package tldr
   :demand t)
