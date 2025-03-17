@@ -17,6 +17,7 @@ if status is-interactive
     # Television
     tv init fish | source
 end
+set TERM "xterm-256color"                         # Sets the terminal type
 alias unlock='sudo rm /var/lib/pacman/db.lck'
 alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
 #alias ssh='wezterm ssh'
@@ -30,7 +31,7 @@ set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set VISUAL "emacsclient -c -a emacs"
-set -Ux EDITOR "nvim"
+set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
 set -Ux LOCALE "es_ES.UTF-8"
 set -Ux FZF_DEFAULT_OPTS "\
 --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
