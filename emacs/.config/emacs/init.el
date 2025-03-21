@@ -1,22 +1,13 @@
 
-(add-to-list 'load-path "~/.config/emacs/scripts/")
+(add-to-list 'load-path (expand-file-name "scripts/" user-emacs-directory))
 
 ;;(require 'no-littering-setup) ;; No littering
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
 ;(require 'app-launchers)
 
-(use-package gcmh
-  :config
-  (setopt gcmh-high-cons-threshold (* 256 1000 1000))
-  (setopt gcmh-low-cons-threshold (* 16 1000 1000))
-  (setopt gcmh-idle-delay 3)
-  ;; (setopt gcmh-verbose t)  
- ; Para ver mensajes de depuración
-  (setopt gc-cons-percentage 0.2)
-  (add-hook 'elpaca-after-init-hook #'gcmh-mode))
+(setq erc-nick "mester")
+(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
 
-(setq erc-nick "mester"
-      erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
@@ -110,48 +101,7 @@
     (setq catppuccin-flavor 'mocha)
     (catppuccin-reload)
     (load-theme 'catppuccin :no-confirm))
-;; (use-package evil
-;;     :init      ;; tweak evil's configuration before loading it
-;;     (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
-;;           evil-want-keybinding nil
-;;           evil-vsplit-window-right t
-;;           evil-split-window-below t
-;;           evil-undo-system 'undo-redo)  ;; Adds vim-like C-r redo functionality
-;;     (evil-mode))
  (setq org-return-follows-link  t)
-;; (use-package evil-collection
-;;   :after evil
-;;   :config
-;;   ;; Do not uncomment this unless you want to specify each and every mode
-;;   ;; that evil-collection should works with.  The following line is here 
-;;   ;; for documentation purposes in case you need it.  
-;;   ;; (setq evil-collection-mode-list '(calendar dashboard dired ediff info magit ibuffer))
-;;   (add-to-list 'evil-collection-mode-list 'help) ;; evilify help mode
-;;   (evil-collection-init))
-;; (use-package evil-tutor)
-;; (with-eval-after-load 'evil-maps
-;;   (define-key evil-motion-state-map (kbd "SPC") nil)
-;;   (define-key evil-motion-state-map (kbd "RET") nil)
-;;   (define-key evil-motion-state-map (kbd "TAB") nil))
-
-;; (use-package general
-;;   :config
-;;   (general-evil-setup)
-  
-;;   ;; set up 'SPC' as the global leader key
-;;   (general-create-definer os/leader-keys
-;;     :states '(normal insert visual emacs)
-;;     :keymaps 'override
-;;     :prefix "SPC" ;; set leader
-;;     :global-prefix "M-SPC")
-
-;;   (os/leader-keys
-;;     "." '(find-file :wk "Find File")
-;;     "c" '(os/open-config :wk "Open Config")
-;;     "r" '(os/reload-config :wk "Reload config"))
-  
-;;   ) ;; access leader in insert mode
-
 
 (use-package org
     :ensure nil
@@ -231,23 +181,22 @@
         flyspell-case-fold-duplications t
         flyspell-issue-message-flag nil
         flyspell-default-dictionary "es_ES"
-        ispell-program-name "hunspell")   
+        ispell-program-name "hunspell")
      :hook (text-mode . flyspell-mode)
      :bind(("M-<f7>" . flyspell-buffer)
            ("<f7>" . flyspell-word)))
-(defun pp-switch-dictionary()
-  "Switch between Dutch and Australian dictionaries."
+(defun dictionary-switcher()
+  "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
   (interactive)
   (let* ((dic ispell-current-dictionary)
          (change
-	  (if
-	      (string= dic "es_ES")
-	      "eo"
-	      "es_ES")))
-    (ispell-change-dictionary change)
-    (message "Dictionary switched from %s to %s" dic change)))
-
-(global-set-key (kbd "M-<f7>") 'pp-switch-dictionary)
+	  (completing-read "Seleccione el diccionario a usar: " '("eo" "es_ES" "en_US") nil t)))
+    (unless (string= dic change)
+      (ispell-change-dictionary change)
+      (message "Diccionario cambiado desde %s a %s" dic change))
+    )
+  )
+(global-set-key (kbd "M-<f7>") 'dictionary-switcher)
   (use-package flyspell-correct
     :after (flyspell)
     :bind (("C-;" . flyspell-auto-correct-previous-word)
@@ -272,18 +221,14 @@
   :demand t
   :bind
   (("<f9>" . ews-distraction-free)))
-
-;  (add-to-list 'load-path "~/.config/emacs/plugins")
-  ;  (require 'organizer)
-  ;  (global-set-key (kbd "C-c o") 'org-agenda-open-link)
-    ;;(load-file "~/.config/emacs/plugins/organizer.el")
-  ; 
+ 
 (use-package organizer
   :demand t
   :ensure (:host codeberg :repo "mester/Organizer")
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
   (add-to-list 'organizer-files '("Libros" . "~/Documentos/Libros.org")))
+
 (use-package nerd-icons
   ;; :custom
   ;; The Nerd Font you want to use in GUI
@@ -302,8 +247,8 @@
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 29      ;; sets modeline height
-          doom-modeline-bar-width 5    ;; sets right bar width
+    (setq doom-modeline-height 27      ;; sets modeline height
+          doom-modeline-bar-width 8    ;; sets right bar width
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 
@@ -355,7 +300,7 @@
  (setq dashboard-set-file-icons t)
  (setq dashboard-banner-logo-title (format "Bienvenido a Emacs, %s" (capitalize (user-login-name))))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
- (setq dashboard-startup-banner "~/.config/emacs/image.png")  ;; use custom image as banner
+ (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
  (setq dashboard-center-content nil) ;; set to 't' for centered content
  (setq dashboard-items '((recents . 5)
                          (agenda . 5 )
@@ -434,6 +379,7 @@
 :diminish
 :hook (after-init . global-auto-revert-mode))
 
+(use-package flycheck-pycheckers)
 
 (use-package flycheck-pos-tip
   :ensure t
@@ -476,7 +422,12 @@
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
-
+;; Aun no soportado en la shell de comandos que uso
+;; (use-package eat
+;;     :ensure t
+;;     :defer t
+;;     :config
+;;     (eat-eshell-mode t))
 (setq eshell-prompt-function
       (lambda ()
         (let ((status (if (= eshell-last-command-status 0)
@@ -534,11 +485,12 @@
   (setq super-save-triggers
   '(other-window  ; Al cambiar de ventana
     switch-to-buffer  ; Al cambiar de buffer
-   ; ace-window  ; Si usas ace-window
     mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
   (super-save-mode 1)
   (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
   (setq super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+
+
 (use-package markdown-mode
   :demand t
 :commands (markdown-mode gfm-mode)
@@ -554,11 +506,17 @@
 (use-package jsonrpc
   :defer t
   )
-(use-package flymake
-  :defer t 
-  :config
-  (add-hook 'prog-mode-hook #'flymake-mode))
-(use-package flymake-gradle)
+  (use-package flymake
+    :ensure t
+    :defer t
+    :hook
+    (prog-mode . flymake-mode))
+
+  (use-package flymake-flycheck
+    :ensure t
+    :defer t
+    :hook
+    (flymake-mode-hook . flymake-flycheck-auto))
 
 ;; (use-package eldoc
 ;;     :defer t
@@ -568,7 +526,6 @@
     :defer t
     :after eldoc
     :init (setq eldoc-box-hover-mode t))
-
 ;; Configuracion de programacion
 (use-package lua-mode)
 
@@ -578,59 +535,95 @@
   :config
   (setq company-minimum-prefix-length 1
         company-idle-delay 0.0))
-
-(use-package eglot
-  :hook ((python-mode . eglot-ensure)
-         (js-mode . eglot-ensure)
-         (rust-mode . eglot-ensure))
-         (html-mode . eglot-ensure))
-
+(use-package company-posframe
+    :after company
+    :config
+    (company-posframe-mode t)
+    :delight " C-PF")
+  (use-package company-box
+    :ensure t
+    :defer t
+    :after company
+    :delight " CBox"
+    :hook (company-mode-hook . company-box-mode))
 ;; Soporte para Tree-sitter (requiere Emacs 29+)
 (use-package treesit-auto
   :config
   (global-treesit-auto-mode))
 
 ;; Formateo de código
-(use-package reformatter)
-(use-package blacken  ;; Python
-  :hook (python-mode . blacken-mode))
+  (use-package elpy
+    :ensure t
+    :defer t
+    :config
+    (setq python-shell-interpreter "python3")
+    (setq elpy-rpc-python-command "python3")
+    :init
+    (advice-add 'python-mode :before 'elpy-enable))
+  (add-hook 'python-mode-hook 'eglot-ensure)
 ;; (use-package prettier  ;; JavaScript
 ;;   :hook ((js-mode . prettier-mode)
 ;;          (typescript-mode . prettier-mode)))
-(use-package rust-mode  ;; Rust
-  :hook (rust-mode . eglot-ensure))
+(use-package rust-mode) ;; Rust
+(add-hook 'rust-mode-hook 'eglot-ensure)
+(use-package cargo-mode
+    :defer t
+    :hook
+    (rust-mode . cargo-minor-mode)
+    :config
+    (setq compilation-scroll-output t))
 (use-package projectile
   :init (projectile-mode +1)
   :bind-keymap ("C-c p" . projectile-command-map))
 
-;; Configuracion
-(use-package company-yasnippet
-    :after (company yasnippet)
-    :config
-    (add-to-list 'company-backends 'company-yasnippet))
 
 (use-package yasnippet
-  :defer t
-  :config
-  ;(add-hook 'lsp-mode #'yas-minor-mode)
-  (yas-global-mode t))
+  :defer t)
+(add-hook 'org-mode-hook 'yas-minor-mode)
+(add-hook 'prog-mode-hook 'yas-minor-mode)
 (use-package yasnippet-snippets)
 
+  (use-package eglot
+    :defer t)
+
+  (use-package eglot-java
+    :defer t
+    :after eglot)
+
+  (add-hook 'java-mode-hook 'eglot-ensure)
+  (add-hook 'java-mode-hook 'eglot-java-mode)
+  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+  (with-eval-after-load 'eglot-java
+    (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+    (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+    (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+    (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+    (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+    (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+
+  (with-eval-after-load 'flymake-mode
+    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+  (use-package flymake-gradle
+    :defer t)
+
+  (use-package java-snippets
+    :defer t)
 
 ; (add-hook 'python-mode 'eglot-python-mode)
 
-(use-package eglot-java
-           :defer t
-           :after eglot)
+;; (use-package eglot-java
+;;            :defer t
+;;            :after eglot)
   
-       (add-hook 'java-mode-hook 'eglot-java-mode)
-           (with-eval-after-load 'eglot-java
-                 (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-                 (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-                 (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-                 (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-                 (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-                 (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+;;        (add-hook 'java-mode-hook 'eglot-java-mode)
+;;            (with-eval-after-load 'eglot-java
+;;                  (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+;;                  (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+;;                  (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+;;                  (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+;;                  (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+;;                  (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
 ;(add-hook 'nxml-mode 'eglot-nxml-mode)
 
@@ -639,6 +632,7 @@
 
 (use-package treemacs)
 (global-set-key (kbd "C-c f") 'treemacs)
+
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
@@ -695,17 +689,6 @@
 
 (use-package tldr
   :demand t)
+  
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages '(eglot)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
