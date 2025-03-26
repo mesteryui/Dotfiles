@@ -4,8 +4,8 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
  (filename . "~/org/agenda.org")
- (front-context-string . "** WAITING Exame")
- (rear-context-string . "2025-03-19 mié>\n")
- (position . 144)
- (last-modified 26582 43060 671397 991000))
+ (front-context-string . "** TODO Entregar")
+ (rear-context-string . "2-27 jue 08:37]\n")
+ (position . 443)
+ (last-modified 26593 16722 175637 823000))
 )

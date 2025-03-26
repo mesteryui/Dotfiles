@@ -1,10 +1,10 @@
-
-(add-to-list 'load-path (expand-file-name "scripts/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "scripts" user-emacs-directory))
 
 ;;(require 'no-littering-setup) ;; No littering
-(require 'elpaca-setup)  ;; The Elpaca Package Manager
+(require 'elpaca-setup)
 ;(require 'app-launchers)
-
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024))
 (setq erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
 
@@ -113,11 +113,13 @@
                     org-hide-emphasis-markers t
                     org-startup-with-inline-images t
                     image-actual-width '(300))
-    (add-hook 'org-mode-hook 'org-indent-mode)
+(add-hook 'org-mode-hook 'org-indent-mode)
+
+
 
     ;; Mostrar marcadores de énfasis ocultos
   (setq org-directory "~/org/")
-  (setq org-agenda-files '("~/org/agenda.org"))
+  (setq org-agenda-files '("~/org/agenda.org" "~/org/proyectos.org"))
   (setq org-archive-location "~/org/%s_archivo.org::datetree/")
   (setq org-todo-keywords
        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(p)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -138,6 +140,16 @@
                 org-export-with-smart-quotes t
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((scheme . t)
+   )
+ )
+(use-package geiser
+  :ensure t)
+
+(use-package geiser-guile  ;; Si usas Guile Scheme
+  :ensure t)
  (setq org-capture-templates
         `(("t" "Tarea" entry
            (file+headline "~/org/agenda.org" "Tareas")
@@ -153,7 +165,7 @@
            (file+datetree "~/org/diario.org")
            "* %?\nCreado: %U\n")
 	   ("p" "Project" entry
-           (file+headline "~/org/agenda.org" "Proyectos")
+           (file+headline "~/org/proyectos.org" "Proyectos")
            "* PROJ %?\n")
 	  )
 	  )
@@ -297,8 +309,12 @@
  :init
  (setq initial-buffer-choice 'dashboard-open)
  (setq dashboard-set-heading-icons t)
+ (setq dashboard-display-icons-p t)
  (setq dashboard-set-file-icons t)
- (setq dashboard-banner-logo-title (format "Bienvenido a Emacs, %s" (capitalize (user-login-name))))
+ (setq dashboard-set-heading-icons t)
+ (setq dashboard-set-file-icons t)
+ (setq dashboard-vertically-center-content t)
+ (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
  (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
  (setq dashboard-center-content nil) ;; set to 't' for centered content
@@ -306,9 +322,11 @@
                          (agenda . 5 )
                          (bookmarks . 3)))
  :custom 
- (dashboard-modify-heading-icons '((recents . "file-text")
+ (setq dashboard-modify-heading-icons '((recents . "file-text")
                                      (bookmarks . "book")))
  :config
+ (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
  (dashboard-setup-startup-hook))
 (global-set-key (kbd "<f10>") 'open-dashboard)
 
@@ -503,9 +521,47 @@
 (setq markdown-fontify-code-blocks-natively t)
 (setq markdown-enable-math t))
 
+(defun toggle-webserver ()
+  "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things"
+  (interactive)
+  (let ((proc (get-process "webserver")))
+    (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
+        (progn
+          (delete-process "webserver")
+          (message "Webserver stopped"))
+      (progn
+        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
+        (message "Webserver started")))))
+
+
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (rust-mode . lsp)
+	 (mhtml-mode . lsp)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration)
+	 (python-mode . lsp)
+	 (js-mode . lsp))
+  :commands lsp)
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+
+
+(use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
+
 (use-package jsonrpc
-  :defer t
-  )
+  :ensure t)
+
   (use-package flymake
     :ensure t
     :defer t
@@ -552,7 +608,7 @@
   (global-treesit-auto-mode))
 
 ;; Formateo de código
-  (use-package elpy
+(use-package elpy
     :ensure t
     :defer t
     :config
@@ -560,12 +616,11 @@
     (setq elpy-rpc-python-command "python3")
     :init
     (advice-add 'python-mode :before 'elpy-enable))
-  (add-hook 'python-mode-hook 'eglot-ensure)
 ;; (use-package prettier  ;; JavaScript
 ;;   :hook ((js-mode . prettier-mode)
 ;;          (typescript-mode . prettier-mode)))
 (use-package rust-mode) ;; Rust
-(add-hook 'rust-mode-hook 'eglot-ensure)
+
 (use-package cargo-mode
     :defer t
     :hook
@@ -583,23 +638,7 @@
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (use-package yasnippet-snippets)
 
-  (use-package eglot
-    :defer t)
 
-  (use-package eglot-java
-    :defer t
-    :after eglot)
-
-  (add-hook 'java-mode-hook 'eglot-ensure)
-  (add-hook 'java-mode-hook 'eglot-java-mode)
-  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-  (with-eval-after-load 'eglot-java
-    (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
-    (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
-    (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
-    (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
-    (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
-    (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
 
   (with-eval-after-load 'flymake-mode
     (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))

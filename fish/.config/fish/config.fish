@@ -1,5 +1,5 @@
 set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs
-
+#set -Ux GSETTINGS_SCHEMA_DIR "/usr/share/glib-2.0/schemas"
 if status is-interactive
     # Commands to run in interactive sessions can go here
     set -g fish_greeting
@@ -15,15 +15,17 @@ if status is-interactive
     syncthing install-completions | source
     fzf --fish | source
     # Television
-    tv init fish | source
+    #tv init fish | source
 end
+#source "$XDG_CONFIG_DIR/fish/conf.d/guix_profile.fish"
+#source "$XDG_CONFIG_DIR/fish/conf.d/guix_current.fish"
 set TERM "xterm-256color"                         # Sets the terminal type
 alias unlock='sudo rm /var/lib/pacman/db.lck'
 alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
 #alias ssh='wezterm ssh'
 alias "unimatrix" "unimatrix -n -s 96"
 alias "tiempo" 'curl wttr.in/Vigo'
-alias rem="killall emacs || echo 'Emacs server not running'; /usr/bin/emacs --daemon" # Kill Emacs and restart daemon..
+alias rem="pkill emacsclient && systemctl restart --user emacs" # Kill Emacs and restart daemon..
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
