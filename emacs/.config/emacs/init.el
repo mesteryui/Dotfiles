@@ -682,7 +682,7 @@
 :defer t
 :hook org-mode prog-mode)
 
-(use-package sudo-edit)
+;;(use-package sudo-edit)
 
 (use-package typst-mode
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
