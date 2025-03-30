@@ -239,7 +239,7 @@
   :ensure (:host codeberg :repo "mester/Organizer")
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
-  (add-to-list 'organizer-files '("Libros" . "~/Documentos/Libros.org")))
+  (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
 
 (use-package nerd-icons
   ;; :custom
@@ -321,8 +321,7 @@
  (setq dashboard-items '((recents . 5)
                          (agenda . 5 )
                          (bookmarks . 3)))
- :custom 
- (setq dashboard-modify-heading-icons '((recents . "file-text")
+  (setq dashboard-modify-heading-icons '((recents . "file-text")
                                      (bookmarks . "book")))
  :config
  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
