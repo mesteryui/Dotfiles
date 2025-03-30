@@ -12,13 +12,11 @@ if status is-interactive
     # zoxide
     zoxide init fish | source
     #syncthing
-    syncthing install-completions | source
+    #syncthing install-completions | source
     fzf --fish | source
     # Television
     #tv init fish | source
 end
-#source "$XDG_CONFIG_DIR/fish/conf.d/guix_profile.fish"
-#source "$XDG_CONFIG_DIR/fish/conf.d/guix_current.fish"
 set TERM "xterm-256color"                         # Sets the terminal type
 alias unlock='sudo rm /var/lib/pacman/db.lck'
 alias removeorphan 'sudo pacman -Rsn $(pacman -Qtdq)'
