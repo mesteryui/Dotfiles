@@ -1,9 +1,7 @@
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
-;;(require 'no-littering-setup) ;; No littering
-;(require 'app-launchers)
-
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
+
 (require 'various-settings) ;; Ajustes varios
 
 (use-package catppuccin-theme

@@ -8,15 +8,15 @@
 * Configuraciones basicas
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/.config/emacs/scripts/")
-
-;;(require 'no-littering-setup) ;; No littering
-;(require 'app-launchers)
 #+end_src
 ** Elpaca
 El gestor de paquetes que utilizo
 #+begin_src emacs-lisp
   (require 'elpaca-setup)  ;; The Elpaca Package Manager
-  (require 'various-settings) ;; Ajustes varios
+#+end_src
+** Ajustes varios
+#+begin_src emacs-lisp
+ (require 'various-settings) ;; Ajustes varios
 #+end_src
 ** Apariencia
 *** Tema visual
@@ -127,7 +127,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 12 25 "Navidad")
 			  ))
 #+end_src
-* Ajustes del recolector de basura
+** Ajustes del recolector de basura
 Sirve para ajustar cosas en relacion a la recoleccion y otras verborreas para usar *LSP Mode*
 #+begin_src emacs-lisp
   (setq gc-cons-threshold 100000000)
@@ -216,6 +216,7 @@ Me permite abrir el dashboard
     (switch-to-buffer dashboard-buffer-name))
 #+end_src
 * Org Mode
+** Ajustes generales
 Ajustes de OrgMode
 #+begin_src emacs-lisp
  (setq org-return-follows-link  t)
