@@ -52,14 +52,15 @@
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
     (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 (setq
- display-time-24hr-format t              ; Muestra el reloj en formato 24 hrs
+ display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
  display-time-format "%H:%M"             ; Le da formato a la hora
+ auto-save-default nil                   ; Deshabilita #file#
  load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
  select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
  vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
  make-backup-files nil                   ; No realiza backups de ficheros
- auto-save-default nil                   ; Deshabilita #file#
 ;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
  ;; global-hl-line-mode t                ; Highlight current line
  kill-ring-max 128                       ; Longitud máxima del anillo de matar
@@ -115,9 +116,7 @@
 	  (completing-read "Seleccione el diccionario a usar: " '("eo" "es_ES" "en_US") nil t)))
     (unless (string= dic change)
       (ispell-change-dictionary change)
-      (message "Diccionario cambiado desde %s a %s" dic change))
-    )
-  )
+      (message "Diccionario cambiado desde %s a %s" dic change))))
 
 (defun toggle-webserver ()
   "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things"
@@ -130,31 +129,6 @@
       (progn
         (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
         (message "Webserver started")))))
-
-(defun ews-distraction-free ()
-  "Distraction-free writing environment using Olivetti package."
-  (interactive)
-  (if (equal olivetti-mode nil)
-      (progn
-        (window-configuration-to-register 1)
-        (delete-other-windows)
-        (text-scale-set 2)
-        (olivetti-mode t))
-    (progn
-      (if (eq (length (window-list)) 1)
-          (jump-to-register 1))
-      (olivetti-mode 0)
-      (text-scale-set 0))))
-
-(defun open-dashboard ()
-  "Abre el buffer *dashboard* y salta al primer widget."
-  (interactive)
-  (delete-other-windows)
-  ;; Refresca  dashboard buffer
-  (if (get-buffer dashboard-buffer-name)
-      (kill-buffer dashboard-buffer-name))
-  (dashboard-insert-startupify-lists)
-  (switch-to-buffer dashboard-buffer-name))
 
 (setq org-return-follows-link  t)
 
@@ -169,8 +143,6 @@
                     org-startup-with-inline-images t
                     image-actual-width '(300))
 (add-hook 'org-mode-hook 'org-indent-mode)
-
-
     ;; Mostrar marcadores de énfasis ocultos
   (setq org-directory "~/org/")
   (setq org-agenda-files '("~/org/agenda.org" "~/org/proyectos.org"))
@@ -218,8 +190,7 @@
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((scheme . t)
-   )
- )
+   ))
 
 (use-package org-auto-tangle
     :defer t
@@ -274,12 +245,10 @@
 (use-package vterm-toggle)
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 
-;; Aun no soportado en la shell de comandos que uso
-;; (use-package eat
-;;     :ensure t
-;;     :defer t
-;;     :config
-;;     (eat-eshell-mode t))
+;; ;; Aun no soportado en la shell de comandos que uso
+(use-package eat
+  :ensure t
+  :defer t)
 
 (use-package dired-sidebar
     :ensure t
@@ -320,12 +289,13 @@
   (eshell-clear-scrollback))
 
       (use-package eshell
-        :ensure nil)
+        :ensure nil
+	  :init
+      (eat-eshell-mode t))
       (use-package eshell-toggle
       :ensure t
       :custom
     (eshell-toggle-size-fraction 3))
-
       (use-package eshell-syntax-highlighting
         :after esh-mode
         :config
@@ -412,7 +382,7 @@
     :init (doom-modeline-mode 1)
     :config
     (setq doom-modeline-height 27      ;; sets modeline height
-          doom-modeline-bar-width 8    ;; sets right bar width
+          doom-modeline-bar-width 10    ;; sets right bar width
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 
@@ -489,10 +459,10 @@
 
 (use-package eradio
   :defer t
-:init
-(setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
-:config
-(setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+  :init
+  (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+  :config
+  (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                         ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 			)))
@@ -578,11 +548,19 @@
   :init
   (savehist-mode))
 
-
 (use-package jsonrpc
   :ensure t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+(use-package elpy
+    :ensure t
+    :defer t
+    :config
+    (setq python-shell-interpreter "python3")
+    (setq elpy-rpc-python-command "python3")
+    :init
+    (advice-add 'python-mode :before 'elpy-enable))
 
 (use-package flycheck-pycheckers)
 
@@ -704,3 +682,5 @@
   (flymake-mode-hook . flymake-flycheck-auto))
 (with-eval-after-load 'flymake-mode
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+(provide 'init)
