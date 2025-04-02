@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
@@ -51,7 +53,8 @@
     (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+    (tooltip-mode 0)
+   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq
  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
@@ -126,17 +129,17 @@
           (delete-process "webserver")
           (message "Webserver stopped"))
       (progn
-        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
+        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*" "--open")
         (message "Webserver started")))))
 
 (defun org-temp-buffer ()
   "Acceder a un buffer temporal de orgmode"
   (interactive)
-  (if (not (get-buffer "org-temp"))
+  (if (get-buffer "org-temp")
+       (switch-to-buffer "org-temp")
       (progn (switch-to-buffer (get-buffer-create "org-temp"))
-              (insert "#+title: Org Temp\n#+description: Espacio para la toma de notas temporales\n\n")
-  	   (org-mode))
-      (switch-to-buffer "org-temp")))
+              (insert "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n\n")
+  	   (org-mode))))
 
 (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
 
@@ -211,6 +214,13 @@
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 
+(use-package org-crypt
+    :after org
+    :config
+    (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+    :custom
+    (org-crypt-key "oscarodriguez56@gmail.com"))
+
 (use-package nerd-icons
   ;; :custom
   ;; The Nerd Font you want to use in GUI
@@ -248,9 +258,16 @@
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 
 ;; ;; Aun no soportado en la shell de comandos que uso
-(use-package eat
-  :ensure t
-  :defer t)
+  (use-package eat
+    :ensure t
+    :defer t)
+  
+
+;; For `eat-eshell-mode'.
+(add-hook 'eshell-load-hook #'eat-eshell-mode)
+
+;; For `eat-eshell-visual-command-mode'.
+(add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
 
 (use-package dired-sidebar
     :ensure t
@@ -391,7 +408,7 @@
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 27      ;; sets modeline height
+    (setq doom-modeline-height 25      ;; sets modeline height
           doom-modeline-bar-width 10    ;; sets right bar width
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
@@ -436,11 +453,14 @@
 (global-set-key (kbd "C-c o") 'consult-org-agenda)
 
 (use-package which-key
-  :defer t
-  :config
-  (which-key-setup-minibuffer)
-  (which-key-mode)
-  (setq which-key-idle-delay 0.3))
+ :ensure nil
+ :delight
+ :config
+ (which-key-mode)
+ (setq which-key-idle-delay 0.3)
+ (setq which-key-dont-use-unicode nil)
+ (setq which-key-separator " → " )
+ (setq which-key-ellipsis "…"))
 
 (use-package organizer
   :demand t
@@ -599,6 +619,7 @@
   :defer t)
 (add-hook 'org-mode-hook 'yas-minor-mode)
 (add-hook 'prog-mode-hook 'yas-minor-mode)
+(add-hook 'lsp-mode 'yas-minor-mode)
 (use-package yasnippet-snippets)
 
 (use-package lsp-mode
@@ -608,6 +629,7 @@
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
            (rust-mode . lsp)
   	       (mhtml-mode . lsp)
+	       (html-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
   	       (python-mode . lsp)
@@ -690,4 +712,4 @@
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 
 (provide 'init)
-;; init.el ends here
+;;; init.el ends here

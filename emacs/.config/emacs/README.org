@@ -6,6 +6,10 @@
 #+auto_tangle: t
 
 * Configuraciones básicas
+** Añadiendo lexical binding
+#+begin_src emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+end_src
 ** Añadir ruta al directorio de carga
 Esto es para hacer que algunos scripts de uso propio sean utilizables
 #+begin_src emacs-lisp
@@ -78,13 +82,14 @@ Configuracion del cliente erc
 ** Configuraciones personales varias
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
 #+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Oscar")
-    (setq inhibit-startup-message t
-          use-short-answers t)
-      (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
-      (menu-bar-mode -1)                                            ; Desactivar la barra de menús
-      (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-      (add-to-list 'default-frame-alist '(fullscreen . maximized))
+    (setq user-full-name "Oscar")
+      (setq inhibit-startup-message t
+            use-short-answers t)
+        (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
+        (menu-bar-mode -1)                                            ; Desactivar la barra de menús
+        (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+        (tooltip-mode 0)
+       (add-to-list 'default-frame-alist '(fullscreen . maximized))
   #+end_src
 *** Configuraciones diversas
 Aquí se tratan configuraciones especificas útiles para diversos aspectos
@@ -208,21 +213,21 @@ Activa un servidor web con auto refresco
           (delete-process "webserver")
           (message "Webserver stopped"))
       (progn
-        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
+        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*" "--open")
         (message "Webserver started")))))
 #+end_src
 ** Buffer temporal en modo Org
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
 #+begin_src emacs-lisp
-(defun org-temp-buffer ()
-  "Acceder a un buffer temporal de orgmode"
-  (interactive)
-  (if (not (get-buffer "org-temp"))
-      (progn (switch-to-buffer (get-buffer-create "org-temp"))
-              (insert "#+title: Org Temp\n#+description: Espacio para la toma de notas temporales\n\n")
-  	   (org-mode))
-      (switch-to-buffer "org-temp")))
+  (defun org-temp-buffer ()
+    "Acceder a un buffer temporal de orgmode"
+    (interactive)
+    (if (get-buffer "org-temp")
+         (switch-to-buffer "org-temp")
+        (progn (switch-to-buffer (get-buffer-create "org-temp"))
+                (insert "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n\n")
+    	   (org-mode))))
 #+end_src
 ** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
@@ -343,6 +348,16 @@ Hace que en según que caso el tangle sea automático
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
+** Org Crypt
+Encriptar entradas de archivos ~.org~ usando una clave GPG
+#+begin_src emacs-lisp
+  (use-package org-crypt
+      :after org
+      :config
+      (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+      :custom
+      (org-crypt-key "oscarodriguez56@gmail.com"))
+#+end_src
 * Paquetes
 ** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
@@ -377,7 +392,7 @@ Hace que el calendario pueda verse bonito
   :bind ([f8] . cfw:open-org-calendar))
 #+end_src
 ** Vterm
-Un emulador de terminal muy potente dentro de emacs
+Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 #+begin_src emacs-lisp
 (use-package vterm
   :defer t
@@ -396,10 +411,18 @@ A usar en futuro proximo a lo mejor, la estoy probando
   (use-package eat
     :ensure t
     :defer t)
+  
+
+;; For `eat-eshell-mode'.
+(add-hook 'eshell-load-hook #'eat-eshell-mode)
+
+;; For `eat-eshell-visual-command-mode'.
+(add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
+
+
 #+end_src
 ** Dired sidebar
 #+begin_src emacs-lisp
-
 (use-package dired-sidebar
     :ensure t
     :defer t
@@ -556,7 +579,7 @@ Para retocar la barra de abajo
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 27      ;; sets modeline height
+    (setq doom-modeline-height 25      ;; sets modeline height
           doom-modeline-bar-width 10    ;; sets right bar width
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
@@ -592,6 +615,8 @@ Me muestra los comandos disponibles desde M-x de una forma más vistosa
  '((file (styles partial-completion)))))
 #+end_src
 *** Consult
+Sustituye cosas como la tipica busqueda el cambio de buffer o así con una alternativa más
+potente
 #+begin_src emacs-lisp
   (use-package consult
     :demand t
@@ -612,12 +637,15 @@ Me muestra los comandos disponibles desde M-x de una forma más vistosa
 *** Which key
 Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 #+begin_src emacs-lisp
-  (use-package which-key
-    :defer t
+   (use-package which-key
+    :ensure nil
+    :delight
     :config
-    (which-key-setup-minibuffer)
     (which-key-mode)
-    (setq which-key-idle-delay 0.3))
+    (setq which-key-idle-delay 0.3)
+    (setq which-key-dont-use-unicode nil)
+    (setq which-key-separator " → " )
+    (setq which-key-ellipsis "…"))
 #+end_src
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
@@ -716,7 +744,8 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
 :PROPERTIES:
    :CUSTOM_ID: autoguardado
    :END:
-Herramienta para el auto guardado
+Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor
+deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad 
 #+begin_src emacs-lisp
 (use-package super-save
   :config
@@ -825,30 +854,32 @@ Soporte para el auto completado
 *** Yasnippet
 Habilita el uso de snippets
 #+begin_src emacs-lisp
-(use-package yasnippet
-  :defer t)
-(add-hook 'org-mode-hook 'yas-minor-mode)
-(add-hook 'prog-mode-hook 'yas-minor-mode)
-(use-package yasnippet-snippets)
+  (use-package yasnippet
+    :defer t)
+  (add-hook 'org-mode-hook 'yas-minor-mode)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'lsp-mode 'yas-minor-mode)
+  (use-package yasnippet-snippets)
 #+end_src
 *** LSP
 Configuracion de LSP
 #+begin_src emacs-lisp
-  (use-package lsp-mode
-    :init
-    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-    (setq lsp-keymap-prefix "C-c l")
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (rust-mode . lsp)
-  	       (mhtml-mode . lsp)
-           ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration)
-  	       (python-mode . lsp)
-  	       (js-mode . lsp))
-    :commands lsp)
+    (use-package lsp-mode
+      :init
+      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+      (setq lsp-keymap-prefix "C-c l")
+      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+             (rust-mode . lsp)
+    	       (mhtml-mode . lsp)
+  	       (html-mode . lsp)
+             ;; if you want which-key integration
+             (lsp-mode . lsp-enable-which-key-integration)
+    	       (python-mode . lsp)
+    	       (js-mode . lsp))
+      :commands lsp)
 
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
+  ;; optionally
+  (use-package lsp-ui :commands lsp-ui-mode)
 #+end_src
 *** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
@@ -953,5 +984,5 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 Esto es para aplicar algunas buenas formas al programar
 #+begin_src emacs-lisp
   (provide 'init)
-  ;; init.el ends here
+  ;;; init.el ends here
 #+end_src
