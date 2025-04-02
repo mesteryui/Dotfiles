@@ -3,9 +3,9 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
- (filename . "~/org/agenda.org")
- (front-context-string . "** TODO Entregar")
- (rear-context-string . "2-27 jue 08:37]\n")
- (position . 443)
- (last-modified 26593 16722 175637 823000))
+ (filename . "~/org/diario.org")
+ (front-context-string . "**** Sentimiento")
+ (rear-context-string . "25-04-01 martes\n")
+ (position . 331)
+ (last-modified 26604 6046 270073 848000))
 )

@@ -27,7 +27,6 @@ alias rem="pkill emacsclient && systemctl restart --user emacs" # Kill Emacs and
 #alias "tree" 'eza --tree'
 #set -x QT_QPA_PLATFORMTHEME 'qt5ct'
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
-set -x XDG_CONFIG_DIR '/home/oscar/.config'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias "yt-watch" 'yt-dlp -o "/tmp/%(title)s.%(ext)s" --restrict-filenames --sponsorblock-remove sponsor --exec "xdg-open {} && sleep 10 && rm {}"'
 #set EDITOR "emacsclient -t -a ''"                 # $EDITOR use Emacs in terminal
