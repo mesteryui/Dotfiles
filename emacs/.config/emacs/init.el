@@ -84,13 +84,12 @@
 			  (holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
-                          (holiday-fixed 11 01 "Todos los Santos")
+                      (holiday-fixed 11 01 "Todos los Santos")
 			  (holiday-fixed 12 06 "Constitución")
 			  (holiday-fixed 3 28 "Reconquista de Vigo")
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
-			  (holiday-fixed 12 25 "Navidad")
-			  ))
+			  (holiday-fixed 12 25 "Navidad")))
 
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
@@ -130,7 +129,16 @@
         (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
         (message "Webserver started")))))
 
-(setq org-return-follows-link  t)
+(defun org-temp-buffer ()
+  "Acceder a un buffer temporal de orgmode"
+  (interactive)
+  (if (not (get-buffer "org-temp"))
+      (progn (switch-to-buffer (get-buffer-create "org-temp"))
+              (insert "#+title: Org Temp\n#+description: Espacio para la toma de notas temporales\n\n")
+  	   (org-mode))
+      (switch-to-buffer "org-temp")))
+
+(setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
 
 (use-package org
     :ensure nil
@@ -195,12 +203,6 @@
 (use-package org-auto-tangle
     :defer t
 :hook (org-mode . org-auto-tangle-mode))
-
-(use-package geiser
-  :ensure t)
-
-(use-package geiser-guile  ;; Si usas Guile Scheme
-  :ensure t)
 
 (require 'org-utilities)
 
@@ -289,9 +291,7 @@
   (eshell-clear-scrollback))
 
       (use-package eshell
-        :ensure nil
-	  :init
-      (eat-eshell-mode t))
+        :ensure nil)
       (use-package eshell-toggle
       :ensure t
       :custom
@@ -353,17 +353,27 @@
  (setq dashboard-set-file-icons t)
  (setq dashboard-set-heading-icons t)
  (setq dashboard-set-file-icons t)
+ (setq dashboard-center-content t)
  (setq dashboard-vertically-center-content t)
  (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
  (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
  (setq dashboard-center-content nil) ;; set to 't' for centered content
-  (setq dashboard-modify-heading-icons '((recents . "file-text")
-                                     (bookmarks . "book")))
  (setq dashboard-items '((recents . 5)
                          (agenda . 5 )
                          (bookmarks . 3)))
+ (setq dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+				("Bookmarks:" . "Marcadores:")
+				("Agenda for the coming week:" . "Agenda para la proxima semana:")
+				))
+
+
  :config
+  (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+                                  (projects  . "nf-oct-rocket")
+                                  (bookmarks . "nf-oct-bookmark")
+                                  (agenda    . "nf-oct-calendar")
+                                  (registers . "nf-oct-note")))
  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
   (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
  (dashboard-setup-startup-hook))
@@ -428,6 +438,7 @@
 (use-package which-key
   :defer t
   :config
+  (which-key-setup-minibuffer)
   (which-key-mode)
   (setq which-key-idle-delay 0.3))
 
@@ -468,21 +479,6 @@
 			)))
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
-
-(use-package transient)
-
-(use-package doc-view
-  :demand t
- :ensure nil
- :custom
-(doc-view-resolution 300)
-(doc-view-mupdf-use-svg t)
-(large-file-warning-threshold (* 50 (expt 2 20))))
-
-(use-package nov
-  :demand t
-:init
-(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
 (use-package typst-mode
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
@@ -553,15 +549,6 @@
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-(use-package elpy
-    :ensure t
-    :defer t
-    :config
-    (setq python-shell-interpreter "python3")
-    (setq elpy-rpc-python-command "python3")
-    :init
-    (advice-add 'python-mode :before 'elpy-enable))
-
 (use-package flycheck-pycheckers)
 
 (use-package flycheck-pos-tip
@@ -570,6 +557,7 @@
   :hook
   (flycheck-mode . flycheck-pos-tip-mode))
 
+(use-package transient)
 (use-package magit
    :bind
    ("C-x g" . magit-status))
@@ -625,16 +613,32 @@
   	       (python-mode . lsp)
   	       (js-mode . lsp))
     :commands lsp)
-  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
-  (use-package lsp-pyright
-  :ensure t
-  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
 
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode)
+
+(use-package lsp-pyright
+:ensure t
+:custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+:hook (python-mode . (lambda ()
+                        (require 'lsp-pyright)
+                        (lsp))))  ; or lsp-deferred
+(use-package elpy
+    :ensure t
+    :defer t
+    :config
+    (setq python-shell-interpreter "python3")
+    (setq elpy-rpc-python-command "python3")
+    :init
+    (advice-add 'python-mode :before 'elpy-enable))
+
+(use-package geiser
+  :ensure t)
+
+(use-package geiser-guile  ;; Si usas Guile Scheme
+  :ensure t)
+  (use-package flymake-guile
+    :defer t)
 
 (use-package rust-mode) ;; Rust
 
@@ -645,6 +649,8 @@
     (setq compilation-scroll-output t))
 
 (use-package lua-mode)
+
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
 
 (use-package flymake-gradle
   :defer t)
@@ -684,3 +690,4 @@
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 
 (provide 'init)
+;; init.el ends here

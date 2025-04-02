@@ -1,8 +1,8 @@
 #+title: Configuraciones
 #+author: Mester
-#+description: Configuración de Emacs
-#+STARTUP: showeverything
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+#+description: configuración de emacs
+#+startup: showeverything
+#+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
 
 * Configuraciones básicas
@@ -61,6 +61,7 @@ El tema visual a utilizar estando disponible aqui la configuracion
 (setq-default line-spacing 0.11)
 #+end_src
 *** Opacidad
+Esta es la opacidad que el editor aplica por defecto
 #+begin_src emacs-lisp
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 #+end_src
@@ -150,13 +151,12 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
-                          (holiday-fixed 11 01 "Todos los Santos")
+                      (holiday-fixed 11 01 "Todos los Santos")
 			  (holiday-fixed 12 06 "Constitución")
 			  (holiday-fixed 3 28 "Reconquista de Vigo")
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
-			  (holiday-fixed 12 25 "Navidad")
-			  ))
+			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 ** Ajustes del recolector de basura
 Sirve para ajustar cosas en relacion a la recoleccion y otras verborreas para usar *LSP Mode*
@@ -211,6 +211,19 @@ Activa un servidor web con auto refresco
         (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*")
         (message "Webserver started")))))
 #+end_src
+** Buffer temporal en modo Org
+Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
+cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
+#+begin_src emacs-lisp
+(defun org-temp-buffer ()
+  "Acceder a un buffer temporal de orgmode"
+  (interactive)
+  (if (not (get-buffer "org-temp"))
+      (progn (switch-to-buffer (get-buffer-create "org-temp"))
+              (insert "#+title: Org Temp\n#+description: Espacio para la toma de notas temporales\n\n")
+  	   (org-mode))
+      (switch-to-buffer "org-temp")))
+#+end_src
 ** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
 #+name: sin distracciones
@@ -248,7 +261,7 @@ Me permite abrir el dashboard
 ** Ajustes generales
 Ajustes de OrgMode
 #+begin_src emacs-lisp
- (setq org-return-follows-link  t)
+ (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
 
 (use-package org
     :ensure nil
@@ -320,14 +333,6 @@ Hace que en según que caso el tangle sea automático
   (use-package org-auto-tangle
     :defer t
 :hook (org-mode . org-auto-tangle-mode))
-#+end_src
-*** Geiser
-#+begin_src emacs-lisp
-(use-package geiser
-  :ensure t)
-
-(use-package geiser-guile  ;; Si usas Guile Scheme
-  :ensure t)
 #+end_src
 ** Otras cosas
 #+begin_src emacs-lisp
@@ -440,9 +445,7 @@ Shell que permite usar comandos elisp, se puede mejorar la experiencia usando ea
         (eshell-clear-scrollback))
 
             (use-package eshell
-              :ensure nil
-    	  :init
-            (eat-eshell-mode t))
+              :ensure nil)
             (use-package eshell-toggle
             :ensure t
             :custom
@@ -505,36 +508,47 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
+
 ** Paquetes para mejorar o hacer más amena funcionalidad normal de Emacs
 *** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
 #+begin_src emacs-lisp :noweb yes
-  ;; use-package with package.el:
-  (use-package dashboard
-   :ensure t 
-   :init
-   (setq initial-buffer-choice 'dashboard-open)
-   (setq dashboard-set-heading-icons t)
-   (setq dashboard-display-icons-p t)
-   (setq dashboard-set-file-icons t)
-   (setq dashboard-set-heading-icons t)
-   (setq dashboard-set-file-icons t)
-   (setq dashboard-vertically-center-content t)
-   (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
-   ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-   (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
-   (setq dashboard-center-content nil) ;; set to 't' for centered content
-    (setq dashboard-modify-heading-icons '((recents . "file-text")
-                                       (bookmarks . "book")))
-   (setq dashboard-items '((recents . 5)
-                           (agenda . 5 )
-                           (bookmarks . 3)))
-   :config
-   (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-    (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
-   (dashboard-setup-startup-hook))
-  (global-set-key (kbd "<f10>") 'open-dashboard)
-    <<abrir dashboard>>
+    ;; use-package with package.el:
+    (use-package dashboard
+     :ensure t 
+     :init
+     (setq initial-buffer-choice 'dashboard-open)
+     (setq dashboard-set-heading-icons t)
+     (setq dashboard-display-icons-p t)
+     (setq dashboard-set-file-icons t)
+     (setq dashboard-set-heading-icons t)
+     (setq dashboard-set-file-icons t)
+     (setq dashboard-center-content t)
+     (setq dashboard-vertically-center-content t)
+     (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
+     ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+     (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
+     (setq dashboard-center-content nil) ;; set to 't' for centered content
+     (setq dashboard-items '((recents . 5)
+                             (agenda . 5 )
+                             (bookmarks . 3)))
+     (setq dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+  				("Bookmarks:" . "Marcadores:")
+    				("Agenda for the coming week:" . "Agenda para la proxima semana:")
+    				))
+
+
+     :config
+      (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+                                      (projects  . "nf-oct-rocket")
+                                      (bookmarks . "nf-oct-bookmark")
+                                      (agenda    . "nf-oct-calendar")
+                                      (registers . "nf-oct-note")))
+     (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+      (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+     (dashboard-setup-startup-hook))
+    (global-set-key (kbd "<f10>") 'open-dashboard)
+      <<abrir dashboard>>
 #+end_src
 *** Doom modeline
 Para retocar la barra de abajo
@@ -598,11 +612,12 @@ Me muestra los comandos disponibles desde M-x de una forma más vistosa
 *** Which key
 Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 #+begin_src emacs-lisp
-(use-package which-key
-  :defer t
-  :config
-  (which-key-mode)
-  (setq which-key-idle-delay 0.3))
+  (use-package which-key
+    :defer t
+    :config
+    (which-key-setup-minibuffer)
+    (which-key-mode)
+    (setq which-key-idle-delay 0.3))
 #+end_src
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
@@ -638,10 +653,9 @@ Radio en Emacs
   (global-set-key (kbd "C-x r e") 'eradio-toggle)
   (global-set-key (kbd "C-x r p") 'eradio-play)
 #+end_src
-** Doc View, Nov y algo más
-#+begin_src emacs-lisp
-(use-package transient)
-
+** Doc View, Nov
+Esto no lo uso al menos ahora por eso he desactivado el tangle
+#+begin_src emacs-lisp :tangle no
 (use-package doc-view
   :demand t
  :ensure nil
@@ -751,17 +765,6 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
-*** Elpy
-#+begin_src emacs-lisp
-(use-package elpy
-    :ensure t
-    :defer t
-    :config
-    (setq python-shell-interpreter "python3")
-    (setq elpy-rpc-python-command "python3")
-    :init
-    (advice-add 'python-mode :before 'elpy-enable))
-#+end_src
 *** Flycheck
 #+begin_src emacs-lisp
 (use-package flycheck-pycheckers)
@@ -775,18 +778,19 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 *** Magit
 No es 100% imprescindible ni solo debe usarse para eso pero en la practica
 #+begin_src emacs-lisp
- (use-package magit
-    :bind
-    ("C-x g" . magit-status))
+  (use-package transient)
+  (use-package magit
+     :bind
+     ("C-x g" . magit-status))
 
-  (use-package git-gutter
-    :defer 0.3
-    :delight
-    :init (global-git-gutter-mode))
+   (use-package git-gutter
+     :defer 0.3
+     :delight
+     :init (global-git-gutter-mode))
 
-  (use-package git-timemachine
-    :defer 1
-    :delight)
+   (use-package git-timemachine
+     :defer 1
+     :delight)
 #+end_src
 *** Eldoc box
 Para que la documentación de funciones y demás mostradas por eldoc aparezca en caja
@@ -842,18 +846,42 @@ Configuracion de LSP
   	       (python-mode . lsp)
   	       (js-mode . lsp))
     :commands lsp)
-  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
-  (use-package lsp-pyright
-  :ensure t
-  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
 
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode)
 #+end_src
 *** Lenguajes
+Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
+**** Python
+Ajustes varios para python
+#+begin_src emacs-lisp
+   (use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+  (use-package elpy
+      :ensure t
+      :defer t
+      :config
+      (setq python-shell-interpreter "python3")
+      (setq elpy-rpc-python-command "python3")
+      :init
+      (advice-add 'python-mode :before 'elpy-enable))
+#+end_src
+**** Scheme
+Lenguaje de programacion bastante particular al que todavia no le he pillado todo
+el potencial
+#+begin_src emacs-lisp
+  (use-package geiser
+  :ensure t)
+
+(use-package geiser-guile  ;; Si usas Guile Scheme
+  :ensure t)
+  (use-package flymake-guile
+    :defer t)
+#+end_src
 **** Rust
 Lenguaje de programacion conocido por su velocidad y caracteristicas de seguridad en memoria
 #+begin_src emacs-lisp
@@ -872,6 +900,8 @@ Lenguaje de programacion conocido por su velocidad y caracteristicas de segurida
 #+end_src
 **** Java
 #+begin_src emacs-lisp
+  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+  
   (use-package flymake-gradle
     :defer t)
 
@@ -920,6 +950,8 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 #+end_src
 
 * Finalización del fichero
+Esto es para aplicar algunas buenas formas al programar
 #+begin_src emacs-lisp
-(provide 'init)
+  (provide 'init)
+  ;; init.el ends here
 #+end_src
