@@ -154,7 +154,7 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
         (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
         (menu-bar-mode -1)                                            ; Desactivar la barra de menús
         (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-        (tooltip-mode 0)
+        (tooltip-mode 1)
        (add-to-list 'default-frame-alist '(fullscreen . maximized))
   #+end_src
 *** Configuraciones diversas
@@ -518,7 +518,7 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 #+end_src
 ** Eat
-A usar en futuro próximo a lo mejor, la estoy probando
+Actualmente la uso por la integracion que proporciona con Eshell
 #+begin_src emacs-lisp
      ;; ;; Aun no soportado en la shell de comandos que uso
     (use-package eat
@@ -1018,7 +1018,7 @@ Configuracion de LSP
       ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
       (setq lsp-keymap-prefix "C-c l")
       :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-             (rust-mode . lsp)
+                 (rust-mode . lsp)
     	       (mhtml-mode . lsp)
   	       (html-mode . lsp)
              ;; if you want which-key integration

@@ -50,7 +50,7 @@
     (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (tooltip-mode 0)
+    (tooltip-mode 1)
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq
@@ -662,7 +662,7 @@
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (rust-mode . lsp)
+               (rust-mode . lsp)
   	       (mhtml-mode . lsp)
 	       (html-mode . lsp)
            ;; if you want which-key integration
