@@ -1,0 +1,6 @@
+[submodule "emacs/Organizer"]
+	path = emacs/Organizer
+	url = https://codeberg.org/mester/Organizer.git
+[submodule "emacs/.config/emacs/Organizer"]
+	path = emacs/.config/emacs/Organizer
+	url = https://codeberg.org/mester/Organizer.git
