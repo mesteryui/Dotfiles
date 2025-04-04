@@ -84,3 +84,7 @@ output_path = '~/.zen/g2nrrthb.Default (release)/chrome/zen-logo-mocha.svg'
 [templates.zenUserContent]
 input_path = '~/.config/matugen/templates/zen-userContent.css'
 output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userContent.css'
+
+[templates.yazi]
+input_path = '~/.config/matugen/templates/yazi-theme.toml'
+output_path = '~/.config/yazi/theme.toml'

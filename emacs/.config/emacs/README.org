@@ -4,35 +4,101 @@
 #+startup: showeverything
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
-
-* Configuraciones básicas
+* Comienzo del fichero
 ** Añadiendo lexical binding
 #+begin_src emacs-lisp
 ;; -*- lexical-binding: t; -*-
 #+end_src
+* Configuraciones básicas
 ** Añadir ruta al directorio de carga
 Esto es para hacer que algunos scripts de uso propio sean utilizables
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 #+end_src
 ** Elpaca
-El gestor de paquetes que utilizo
-#+begin_src emacs-lisp
-  (require 'elpaca-setup)  ;; The Elpaca Package Manager
+El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no esta
+#+begin_src emacs-lisp :tangle ./scripts/elpaca-setupconfig.el :mkdirp yes
+;;; Package --- elpaca-setup
+;;; Commentary:
+;;; Code:
+(defvar elpaca-installer-version 0.10)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                 ,@(when-let ((depth (plist-get order :depth)))
+                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                 ,(plist-get order :repo) ,repo))))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+
+(elpaca elpaca-use-package
+  ;; Enable :elpaca use-package keyword.
+  (elpaca-use-package-mode)
+  ;; Assume :elpaca t unless otherwise specified.
+  (setq elpaca-use-package-by-default t))
+
+;; Block until current queue processed.
+(elpaca-wait)
+
+;;When installing a package which modifies a form used at the top-level
+;;(e.g. a package which adds a use-package key word),
+;;use `elpaca-wait' to block until that package has been installed/configured.
+;;For example:
+;;(use-package general :demand t)
+;;(elpaca-wait)
+
+;;Turns off elpaca-use-package-mode current declartion
+;;Note this will cause the declaration to be interpreted immediately (not deferred).
+;;Useful for configuring built-in emacs features.
+;;(use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
+
+;; Don't install anything. Defer execution of BODY
+;;(elpaca nil (message "deferred"))
+(provide 'elpaca-setupconfig)
 #+end_src
-** Ajustes varios
+** Cargar elpaca
+Cargar elpaca para la gestión de paquetes
 #+begin_src emacs-lisp
- (require 'various-settings) ;; Ajustes varios
+(require 'elpaca-setupconfig)
 #+end_src
 ** Apariencia
 *** Tema visual
+**** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
 #+begin_src emacs-lisp
-(use-package catppuccin-theme
-    :config
-    (setq catppuccin-flavor 'mocha)
-    (catppuccin-reload)
-    (load-theme 'catppuccin :no-confirm))
+    (use-package catppuccin-theme
+        :config
+        (setq catppuccin-flavor 'mocha)
+          (load-theme 'catppuccin t))
 #+end_src
 *** Ajustes de fuentes y alguna cosa
 #+begin_src emacs-lisp
@@ -107,7 +173,7 @@ Impide la creación de ficheros de bloqueo que a veces son muy coñazo al menos 
 create-lockfiles nil                    ; Impido la creación de ficheros .#
 #+end_src
 **** Deshabilitar sistema de auto guardado propio
-Este sistema de auto guardado es muy coñazo por los archivos que genera así que lo quito, y lo cambio por [[#autoguardado][Supersave]]
+Este sistema de auto guardado es muy coñazo por los archivos que genera así que lo quito, y lo cambio por [[*Supersave][SuperSave]]
 #+name: native auto save
 #+begin_src emacs-lisp :tangle no
  auto-save-default nil                   ; Deshabilita #file#
@@ -139,6 +205,7 @@ O algo asi
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 ** Configuración del calendario
+
 Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario
 #+begin_src emacs-lisp
 (setq calendar-month-name-array
@@ -150,8 +217,8 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 
 (setq org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
-(setq european-calendar-style t) ;; estilo europeo
-
+;;(setq european-calendar-style t) ;; estilo europeo
+(setq iso-calendar-style t) ;; formato ISO
 (setq calendar-holidays '(
 			  (holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
@@ -171,6 +238,8 @@ Sirve para ajustar cosas en relacion a la recoleccion y otras verborreas para us
 #+end_src
 * Funciones propias
 ** Recargar la configuración
+Esta funcion sirve para recargar la configuracion activa sin cerrar Emacs, no funciona
+en todos los casos hay veces que hay que cerrar el programa
 #+begin_src emacs-lisp
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
@@ -180,7 +249,7 @@ Sirve para ajustar cosas en relacion a la recoleccion y otras verborreas para us
 (global-set-key (kbd "C-c r") 'os/reload-config)
 #+end_src
 ** Abrir configuración
-Abrir la configuración la configuracion
+Abrir el archivo de configuracion usado en este caso abro el README.org que se edita para obtener el archivo de configuracion
 #+begin_src emacs-lisp
 (defun os/open-config ()
   "Abrir configuracion de emacs"
@@ -204,17 +273,19 @@ Función propia para cambiar entre mis diccionarios más usados
 ** Toggle webserver
 Activa un servidor web con auto refresco
 #+begin_src emacs-lisp
-(defun toggle-webserver ()
-  "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things"
-  (interactive)
-  (let ((proc (get-process "webserver")))
-    (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
-        (progn
-          (delete-process "webserver")
-          (message "Webserver stopped"))
-      (progn
-        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*" "--open")
-        (message "Webserver started")))))
+    (defun toggle-webserver ()
+      "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things"
+      (interactive)
+      (let ((proc (get-process "webserver")))
+        (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
+            (progn
+              (delete-process "webserver")
+              (message "Webserver stopped"))
+          (progn
+            (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
+             (when (string-match "Local: http://localhost:3000" output)
+               (message " ✅ Webserver started")
+  	     (browse-url-xdg-open "http://localhost:3000"))))))))
 #+end_src
 ** Buffer temporal en modo Org
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
@@ -303,7 +374,47 @@ Ajustes de OrgMode
                 org-export-date-timestamp-format "%d %B %Y"
                 org-list-allow-alphabetical t)
 #+end_src
-** Configuracion de org-capture
+** Org utilities
+Diversas utilidades de org mode para que se vea todo mejor
+#+begin_src emacs-lisp :tangle ./scripts/org-utilities.el
+      (require 'org-tempo)
+        (use-package org-appear
+        :hook
+        (org-mode . org-appear-mode))
+  
+     (use-package org-superstar
+     :demand t  
+     :ensure t
+     :config
+    (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+    (setq org-ellipsis "▼")
+    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
+    (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
+    ;; Modernise Org mode interface
+  ;  (use-package org-modern
+  ;    :hook
+  ;    (org-mode . global-org-modern-mode)
+  ;    :custom
+  ;    (org-modern-keyword nil)
+  ;    (org-modern-checkbox nil)
+  ;    (org-modern-table nil))
+        (use-package org-fragtog
+        :after org
+        :custom
+        (org-startup-with-latex-preview t)
+        :hook
+        (org-mode . org-fragtog-mode)
+        :custom
+        (org-format-latex-options
+         (plist-put org-format-latex-options :scale 2)
+         (plist-put org-format-latex-options :foreground 'auto)
+         (plist-put org-format-latex-options :background 'auto)))
+        (use-package ox-epub
+        :demand t)
+      (use-package ox-reveal)
+  (provide 'org-utilities)
+#+end_src
+** Configuración de org-capture
 #+begin_src emacs-lisp
  (setq org-capture-templates
         `(("t" "Tarea" entry
@@ -325,12 +436,13 @@ Ajustes de OrgMode
 	  )
 	  )
 #+end_src
-** Configuracion de Org Babel
+** Configuración de Org Babel
 #+begin_src emacs-lisp
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((scheme . t)
-   ))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((scheme . t)
+     (python . t)
+     ))
 #+end_src
 *** Org auto tangle
 Hace que en según que caso el tangle sea automático
@@ -341,7 +453,7 @@ Hace que en según que caso el tangle sea automático
 #+end_src
 ** Otras cosas
 #+begin_src emacs-lisp
-(require 'org-utilities)
+(require 'org-utilities) ;; Cargamos las utilidades de la seccion anterior del README
 
 (use-package toc-org
     :demand t
@@ -352,6 +464,7 @@ Hace que en según que caso el tangle sea automático
 Encriptar entradas de archivos ~.org~ usando una clave GPG
 #+begin_src emacs-lisp
   (use-package org-crypt
+      :ensure nil
       :after org
       :config
       (setq org-tags-exclude-from-inheritance (quote ("crypt")))
@@ -362,20 +475,20 @@ Encriptar entradas de archivos ~.org~ usando una clave GPG
 ** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
 #+begin_src emacs-lisp
-(use-package nerd-icons
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
-(use-package nerd-icons-dired
-  :hook
-  (dired-mode . nerd-icons-dired-mode))
-(use-package nerd-icons-completion
-  :config
-  (nerd-icons-completion-mode)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+  (use-package nerd-icons
+    ;; :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+  (use-package nerd-icons-dired
+    :hook
+    (dired-mode . nerd-icons-dired-mode))
+  (use-package nerd-icons-completion
+    :config
+    (nerd-icons-completion-mode)
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 #+end_src
 ** Calfw
 Hace que el calendario pueda verse bonito
@@ -405,21 +518,11 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 #+end_src
 ** Eat
-A usar en futuro proximo a lo mejor, la estoy probando
+A usar en futuro próximo a lo mejor, la estoy probando
 #+begin_src emacs-lisp
-   ;; ;; Aun no soportado en la shell de comandos que uso
-  (use-package eat
-    :ensure t
-    :defer t)
-  
-
-;; For `eat-eshell-mode'.
-(add-hook 'eshell-load-hook #'eat-eshell-mode)
-
-;; For `eat-eshell-visual-command-mode'.
-(add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
-
-
+     ;; ;; Aun no soportado en la shell de comandos que uso
+    (use-package eat
+      :ensure t)
 #+end_src
 ** Dired sidebar
 #+begin_src emacs-lisp
@@ -447,37 +550,46 @@ Hace que un buffer modificado desde otro lugar se refresque solo
 ** Eshell
 Shell que permite usar comandos elisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
 #+begin_src emacs-lisp
-      (setq eshell-prompt-function
-            (lambda ()
-              (let ((status (if (= eshell-last-command-status 0)
-                                (propertize "✔" 'face '(:foreground "green"))
-                              (propertize "✘" 'face '(:foreground "red")))))
-                (concat
-      	   (propertize " " 'face '(:foreground "cyan"))
-                 (propertize (user-login-name))
-                 "@"
-                 (propertize (system-name) 'face '(:foreground "green"))
-                 " "
-                 (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
-                 " " status "\n"
-                 " "))))
+  (setq eshell-prompt-function
+        (lambda ()
+          (let ((status (if (= eshell-last-command-status 0)
+                            (propertize "✔" 'face '(:foreground "green"))
+                          (propertize "✘" 'face '(:foreground "red")))))
+            (concat
+  	   (propertize " " 'face '(:foreground "cyan"))
+             (propertize (user-login-name))
+             "@"
+             (propertize (system-name) 'face '(:foreground "green"))
+             " "
+             (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
+             " " status "\n"
+             " "))))
 
-      (defun eshell/clear ()
-        "Borrar completamente el historial de eshell usando `clear-scrollback`."
-        (interactive)
-        (eshell-clear-scrollback))
+  (defun eshell/clear ()
+    "Borrar completamente el historial de eshell usando `clear-scrollback`."
+    (interactive)
+    (eshell-clear-scrollback))
 
-            (use-package eshell
-              :ensure nil)
-            (use-package eshell-toggle
-            :ensure t
-            :custom
-          (eshell-toggle-size-fraction 3))
-            (use-package eshell-syntax-highlighting
-              :after esh-mode
-              :config
-              (eshell-syntax-highlighting-global-mode +1))
-            (global-set-key (kbd "C-c t") 'eshell-toggle)
+        (use-package eshell
+          :ensure nil
+  	 :hook ((eshell-load . eat-eshell-mode)
+  		(eshell-load . eat-eshell-visual-command-mode))
+  	:config
+  	(setq company-global-modes '(not eshell-mode))
+  	(setq eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
+  	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
+                eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+  		      eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+  	)
+        (use-package eshell-toggle
+        :ensure t
+        :custom
+      (eshell-toggle-size-fraction 3))
+        (use-package eshell-syntax-highlighting
+          :after esh-mode
+          :config
+          (eshell-syntax-highlighting-global-mode +1))
+        (global-set-key (kbd "C-c t") 'eshell-toggle)
 #+end_src
 ** Flyspell
 Habilita la correccion ortografica al vuelo
@@ -650,12 +762,41 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
-(use-package organizer
-  :demand t
-  :ensure (:host codeberg :repo "mester/Organizer")
-  :config
-  (global-set-key (kbd "<f12>")  'organizer-index)
-  (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
+  (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
+  (use-package organizer
+    :config
+    (global-set-key (kbd "<f12>")  'organizer-index)
+    (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
+#+end_src
+** Ellama
+Permite usar Ollama en emacs para usar inteligencia artificial de manera local sin acceso a Internet, por algun motivo no lo encuentra asi que 
+#+begin_src emacs-lisp
+    (use-package ellama
+      :bind ("C-c e" . ellama)
+      :ensure t
+      :defer t
+      :init
+      (setopt ellama-language "Spanish")     ;; language ellama should translate to
+      (require 'llm-ollama)
+      ;; Predefined llm providers for interactive switching.
+      (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
+      (setopt ellama-providers
+    	  '(("deepseek-r1:1.5b" . (make-llm-ollama
+    			 :chat-model "deepseek-r1:1.5b"
+    			 :embedding-model "deepseek-r1:1.5b"))
+    	    ("deepseek-r1:8b" . (make-llm-ollama
+    			  :chat-model "deepseek-r1:8b"
+    			  :embedding-model "deepseek-r1:8b"))
+  	     ("qwen2.5-coder:7b" . (make-llm-ollama
+    			  :chat-model "qwen2.5-coder:7b"
+    			  :embedding-model "qwen2.5-coder:7b"))))
+      ;; Translation llm provider
+      (setopt ellama-translation-provider (make-llm-ollama
+    				       :chat-model "mixtral"
+    				       :embedding-model "nomic-embed-text"))
+      :config
+      (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
+            ellama-sessions-auto-save t))
 #+end_src
 ** Olivetti
 En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
@@ -706,24 +847,35 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
 ** Elfeed
 Programa para lectura de fuentes rss
 #+begin_src emacs-lisp
-(use-package elfeed
-    :bind
-    ("C-x w" . elfeed))
-
-(use-package elfeed-protocol
-    :ensure t
-    :demand t
-    :after elfeed
-    :config
-    (elfeed-protocol-enable)
-    :custom
-    (elfeed-use-curl t)
-    (elfeed-set-timeout 36000)
-    (elfeed-log-level 'debug)
-    (elfeed-protocol-feeds (list
-                   (list "fever+https://Mester@rss.hostux.net"
-                         :api-url "https://Mester@rss.hostux.net/api/fever.php"
-                         :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+    (use-package elfeed
+        :bind
+        ("C-x w" . elfeed))
+  #+end_src
+*** Elfeed protocol
+#+begin_src emacs-lisp
+    (use-package elfeed-protocol
+        :ensure t
+        :demand t
+        :after elfeed
+        :config
+        (elfeed-protocol-enable)
+        :custom
+        (elfeed-use-curl t)
+        (elfeed-set-timeout 36000)
+        (elfeed-log-level 'debug)
+        (elfeed-protocol-feeds (list
+                       (list "fever+https://Mester@rss.hostux.net"
+                             :api-url "https://Mester@rss.hostux.net/api/fever.php"
+                             :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+#+end_src
+*** Elfeed dashboard
+#+begin_src emacs-lisp
+(use-package elfeed-dashboard
+  :ensure t
+  :config
+  (setq elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
+  ;; update feed counts on elfeed-quit
+  (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
 #+end_src
 ** Markdown
 Permitir el uso de Markdown en Emacs con cierto resaltado
@@ -741,9 +893,6 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
 (setq markdown-enable-math t))
 #+end_src
 ** Supersave
-:PROPERTIES:
-   :CUSTOM_ID: autoguardado
-   :END:
 Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor
 deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad 
 #+begin_src emacs-lisp

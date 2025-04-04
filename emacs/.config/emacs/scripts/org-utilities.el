@@ -1,27 +1,24 @@
-    (require 'org-tempo)
+(require 'org-tempo)
       (use-package org-appear
       :hook
       (org-mode . org-appear-mode))
 
-    ;; Modernise Org mode interface
-  ;  (use-package org-modern
-  ;    :hook
-  ;    (org-mode . global-org-modern-mode)
-  ;    :custom
-  ;    (org-modern-keyword nil)
-  ;    (org-modern-checkbox nil)
-  ;    (org-modern-table nil))
    (use-package org-superstar
    :demand t  
    :ensure t
    :config
-    (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-
-     (setq org-ellipsis "▼")
-
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+  (setq org-ellipsis "▼")
   (setq org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆"))
   (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))))
-
+  ;; Modernise Org mode interface
+;  (use-package org-modern
+;    :hook
+;    (org-mode . global-org-modern-mode)
+;    :custom
+;    (org-modern-keyword nil)
+;    (org-modern-checkbox nil)
+;    (org-modern-table nil))
       (use-package org-fragtog
       :after org
       :custom

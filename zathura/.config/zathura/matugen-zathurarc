@@ -1,21 +1,92 @@
-set default-bg                     "#111418"
-set default-fg                     "#e1e2e8"
-set statusbar-bg                   "#111418"
-set statusbar-fg                   "#e1e2e8"
-set inputbar-bg                    "#111418"
-set inputbar-fg                    "#e1e2e8"
-set notification-bg                "#111418"
-set notification-fg                "#e1e2e8"
-set notification-error-bg          "#111418"
-set notification-error-fg          "#e1e2e8"
-set notification-warning-bg        "#111418"
-set notification-warning-fg        "#e1e2e8"
-set highlight-color                "#a1cafd"
-set highlight-active-color         "#d7bee4"
-set completion-bg                  "#111418"
-set completion-fg                  "#e1e2e8"
-set completion-highlight-bg        "#a1cafd"   # O el color que prefieras para resaltar
-set completion-highlight-fg        "#e1e2e8"
-set recolor-lightcolor             "#e1e2e8"
-set recolor-darkcolor              "#111418"
+" -----------------------------------------------------------------------------
+" Zathura settings
+" -----------------------------------------------------------------------------
 
+" Colors
+set default-bg              "rgba(17, 20, 24, 1.0)"
+set default-fg              "#a1cafd"
+
+set statusbar-bg            "#003259"
+set statusbar-fg            "#a1cafd"
+
+set inputbar-bg             "#003259"
+set inputbar-fg             "#a1cafd"
+
+set notification-error-bg   "#690005"
+set notification-error-fg   "#ffb4ab"
+
+set notification-warning-bg "#d2e4ff"
+set notification-warning-fg "#93000a"
+
+set highlight-color         "#d2e4ff"
+set highlight-active-color  "#a1cafd"
+
+set completion-highlight-fg "#003259"
+set completion-highlight-bg #a1cafd""
+
+set completion-bg           "#003259"
+set completion-fg           "#a1cafd"
+
+set notification-bg         "#003259"
+set notification-fg         "#a1cafd"
+
+set recolor                 "true"
+set recolor-lightcolor      "rgba(0, 50, 89, 1.0)"
+set recolor-darkcolor       "#a1cafd"
+set recolor-reverse-video   "true"
+set recolor-keephue         "true"
+
+" Clipboard
+set selection-clipboard clipboard
+
+" Search
+set incremental-search true
+set search-hadjust true
+
+" Autoadjust
+set adjust-open width
+
+" Typography
+set font "FiraCode Nerd Font 12"
+
+" -----------------------------------------------------------------------------
+" Zathura mappings
+" -----------------------------------------------------------------------------
+" remove status bar
+set guioptions none
+" Zoom in/out
+map [normal]     z zoom in
+map [normal]     Z zoom out
+map [fullscreen] z zoom in
+map [fullscreen] Z zoom out
+
+" Toggle mode
+map [normal]     D toggle_page_mode
+map [fullscreen] D toggle_page_mode
+
+" Scroll
+map [normal]     u scroll half-up
+map [normal]     d scroll half-down
+map [fullscreen] u scroll half-up
+map [fullscreen] d scroll half-down
+
+" Fullscreen
+map [normal]     f toggle_fullscreen
+map [fullscreen] f toggle_fullscreen
+
+" Reload
+map [normal]     <C-r> reload
+map [fullscreen] <C-r> reload
+
+" Status bar
+map [normal]     b toggle_statusbar
+map [fullscreen] b toggle_statusbar
+
+" Set width as in mupdf
+map [normal]     H adjust_window best-fit
+map [normal]     W adjust_window width
+map [fullscreen] H adjust_window best-fit
+map [fullscreen] W adjust_window width
+
+map [normal]     i set recolor
+map [fullscreen] i set recolor

@@ -2,15 +2,12 @@
 
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
-(require 'elpaca-setup)  ;; The Elpaca Package Manager
-
-(require 'various-settings) ;; Ajustes varios
+(require 'elpaca-setupconfig)
 
 (use-package catppuccin-theme
     :config
     (setq catppuccin-flavor 'mocha)
-    (catppuccin-reload)
-    (load-theme 'catppuccin :no-confirm))
+      (load-theme 'catppuccin t))
 
 (set-face-attribute 'default nil
   :font "Jetbrains Mono"
@@ -81,8 +78,8 @@
 
 (setq org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
-(setq european-calendar-style t) ;; estilo europeo
-
+;;(setq european-calendar-style t) ;; estilo europeo
+(setq iso-calendar-style t) ;; formato ISO
 (setq calendar-holidays '(
 			  (holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
@@ -129,8 +126,10 @@
           (delete-process "webserver")
           (message "Webserver stopped"))
       (progn
-        (start-process "webserver" "*webserver*" "npx" "browser-sync" "start" "--server" "--files" "**/*" "--open")
-        (message "Webserver started")))))
+        (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
+         (when (string-match "Local: http://localhost:3000" output)
+           (message " ✅ Webserver started")
+	     (browse-url-xdg-open "http://localhost:3000"))))))))
 
 (defun org-temp-buffer ()
   "Acceder a un buffer temporal de orgmode"
@@ -201,13 +200,14 @@
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((scheme . t)
+   (python . t)
    ))
 
 (use-package org-auto-tangle
     :defer t
 :hook (org-mode . org-auto-tangle-mode))
 
-(require 'org-utilities)
+(require 'org-utilities) ;; Cargamos las utilidades de la seccion anterior del README
 
 (use-package toc-org
     :demand t
@@ -215,6 +215,7 @@
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 
 (use-package org-crypt
+    :ensure nil
     :after org
     :config
     (setq org-tags-exclude-from-inheritance (quote ("crypt")))
@@ -258,16 +259,8 @@
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 
 ;; ;; Aun no soportado en la shell de comandos que uso
-  (use-package eat
-    :ensure t
-    :defer t)
-  
-
-;; For `eat-eshell-mode'.
-(add-hook 'eshell-load-hook #'eat-eshell-mode)
-
-;; For `eat-eshell-visual-command-mode'.
-(add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
+(use-package eat
+  :ensure t)
 
 (use-package dired-sidebar
     :ensure t
@@ -308,7 +301,16 @@
   (eshell-clear-scrollback))
 
       (use-package eshell
-        :ensure nil)
+        :ensure nil
+	 :hook ((eshell-load . eat-eshell-mode)
+		(eshell-load . eat-eshell-visual-command-mode))
+	:config
+	(setq company-global-modes '(not eshell-mode))
+	(setq eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
+	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
+              eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+		      eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+	)
       (use-package eshell-toggle
       :ensure t
       :custom
@@ -462,12 +464,38 @@
  (setq which-key-separator " → " )
  (setq which-key-ellipsis "…"))
 
+(add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
 (use-package organizer
-  :demand t
-  :ensure (:host codeberg :repo "mester/Organizer")
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
   (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
+
+(use-package ellama
+  :bind ("C-c e" . ellama)
+  :ensure t
+  :defer t
+  :init
+  (setopt ellama-language "Spanish")     ;; language ellama should translate to
+  (require 'llm-ollama)
+  ;; Predefined llm providers for interactive switching.
+  (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
+  (setopt ellama-providers
+	  '(("deepseek-r1:1.5b" . (make-llm-ollama
+			 :chat-model "deepseek-r1:1.5b"
+			 :embedding-model "deepseek-r1:1.5b"))
+	    ("deepseek-r1:8b" . (make-llm-ollama
+			  :chat-model "deepseek-r1:8b"
+			  :embedding-model "deepseek-r1:8b"))
+	     ("qwen2.5-coder:7b" . (make-llm-ollama
+			  :chat-model "qwen2.5-coder:7b"
+			  :embedding-model "qwen2.5-coder:7b"))))
+  ;; Translation llm provider
+  (setopt ellama-translation-provider (make-llm-ollama
+				       :chat-model "mixtral"
+				       :embedding-model "nomic-embed-text"))
+  :config
+  (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
+        ellama-sessions-auto-save t))
 
 (defun ews-distraction-free ()
   "Distraction-free writing environment using Olivetti package."
@@ -521,6 +549,13 @@
                    (list "fever+https://Mester@rss.hostux.net"
                          :api-url "https://Mester@rss.hostux.net/api/fever.php"
                          :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+
+(use-package elfeed-dashboard
+  :ensure t
+  :config
+  (setq elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
+  ;; update feed counts on elfeed-quit
+  (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
 
 (use-package markdown-mode
   :demand t
