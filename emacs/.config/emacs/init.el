@@ -5,8 +5,7 @@
 (require 'elpaca-setupconfig)
 
 (use-package catppuccin-theme
-    :config
-    (setq catppuccin-flavor 'mocha)
+    :init
       (load-theme 'catppuccin t))
 
 (set-face-attribute 'default nil
@@ -46,11 +45,13 @@
 
 (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
-        use-short-answers t)
+        use-short-answers t
+	  )
     (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (tooltip-mode 1)
+    (tooltip-mode -1)
+(set-fringe-mode 10)        ; Give some breathing room
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq
@@ -260,7 +261,7 @@
 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
-  :ensure t)
+   :ensure t)
 
 (use-package dired-sidebar
     :ensure t
@@ -410,8 +411,7 @@
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 25      ;; sets modeline height
-          doom-modeline-bar-width 10    ;; sets right bar width
+    (setq doom-modeline-height 24      ;; sets modeline height
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 

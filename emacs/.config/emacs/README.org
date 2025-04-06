@@ -96,8 +96,7 @@ Cargar elpaca para la gestión de paquetes
 El tema visual a utilizar estando disponible aqui la configuracion
 #+begin_src emacs-lisp
     (use-package catppuccin-theme
-        :config
-        (setq catppuccin-flavor 'mocha)
+        :init
           (load-theme 'catppuccin t))
 #+end_src
 *** Ajustes de fuentes y alguna cosa
@@ -150,11 +149,13 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
 #+BEGIN_SRC emacs-lisp
     (setq user-full-name "Oscar")
       (setq inhibit-startup-message t
-            use-short-answers t)
+            use-short-answers t
+  	  )
         (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
         (menu-bar-mode -1)                                            ; Desactivar la barra de menús
         (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-        (tooltip-mode 1)
+        (tooltip-mode -1)
+    (set-fringe-mode 10)        ; Give some breathing room
        (add-to-list 'default-frame-alist '(fullscreen . maximized))
   #+end_src
 *** Configuraciones diversas
@@ -333,46 +334,47 @@ Me permite abrir el dashboard
     (dashboard-insert-startupify-lists)
     (switch-to-buffer dashboard-buffer-name))
 #+end_src
+
 * Org Mode
 ** Ajustes generales
 Ajustes de OrgMode
 #+begin_src emacs-lisp
- (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+     (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
 
-(use-package org
-    :ensure nil
-    :defer t)
-    (require 'org-tempo)
-      (setq-default org-startup-indented t
-                    org-pretty-entities t
-                    org-use-sub-superscripts "{}"
-                    org-hide-emphasis-markers t
-                    org-startup-with-inline-images t
-                    image-actual-width '(300))
-(add-hook 'org-mode-hook 'org-indent-mode)
-    ;; Mostrar marcadores de énfasis ocultos
-  (setq org-directory "~/org/")
-  (setq org-agenda-files '("~/org/agenda.org" "~/org/proyectos.org"))
-  (setq org-archive-location "~/org/%s_archivo.org::datetree/")
-  (setq org-todo-keywords
-       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(p)" "|" "DONE(d)" "CANCELLED(c)")))
-   (setq org-todo-keyword-faces
-          '(("TODO" . "coral")
-            ("NEXT" . "cyan")
-            ("PROJ" . "orange")
-	    ("WAITING" . "yellow")
-            ("DONE" . "green")
-            ("PAUSED" . "IndianRed1")
-            ("CANCELLED" . "grey")))
-        (global-set-key (kbd "C-c c") 'org-capture)
-        (global-set-key (kbd "C-c a") 'org-agenda)
-          (setq org-export-with-drawers nil
-                org-export-with-todo-keywords nil
-                org-export-with-broken-links t
-                org-export-with-toc nil
-                org-export-with-smart-quotes t
-                org-export-date-timestamp-format "%d %B %Y"
-                org-list-allow-alphabetical t)
+    (use-package org
+        :ensure nil
+        :defer t)
+        (require 'org-tempo)
+          (setq-default org-startup-indented t
+                        org-pretty-entities t
+                        org-use-sub-superscripts "{}"
+                        org-hide-emphasis-markers t
+                        org-startup-with-inline-images t
+                        image-actual-width '(300))
+    (add-hook 'org-mode-hook 'org-indent-mode)
+        ;; Mostrar marcadores de énfasis ocultos
+      (setq org-directory "~/org/")
+      (setq org-agenda-files '("~/org/agenda.org" "~/org/proyectos.org"))
+      (setq org-archive-location "~/org/%s_archivo.org::datetree/")
+      (setq org-todo-keywords
+           '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(p)" "|" "DONE(d)" "CANCELLED(c)")))
+       (setq org-todo-keyword-faces
+              '(("TODO" . "coral")
+                ("NEXT" . "cyan")
+                ("PROJ" . "orange")
+    	    ("WAITING" . "yellow")
+                ("DONE" . "green")
+                ("PAUSED" . "IndianRed1")
+                ("CANCELLED" . "grey")))
+            (global-set-key (kbd "C-c c") 'org-capture)
+            (global-set-key (kbd "C-c a") 'org-agenda)
+              (setq org-export-with-drawers nil
+                    org-export-with-todo-keywords nil
+                    org-export-with-broken-links t
+                    org-export-with-toc nil
+                    org-export-with-smart-quotes t
+                    org-export-date-timestamp-format "%d %B %Y"
+                    org-list-allow-alphabetical t)
 #+end_src
 ** Org utilities
 Diversas utilidades de org mode para que se vea todo mejor
@@ -520,9 +522,9 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 ** Eat
 Actualmente la uso por la integracion que proporciona con Eshell
 #+begin_src emacs-lisp
-     ;; ;; Aun no soportado en la shell de comandos que uso
-    (use-package eat
-      :ensure t)
+   ;; ;; Aun no soportado en la shell de comandos que uso
+  (use-package eat
+     :ensure t)
 #+end_src
 ** Dired sidebar
 #+begin_src emacs-lisp
@@ -688,13 +690,12 @@ El dashboard que me aparece al principio cuando abre el programa
 *** Doom modeline
 Para retocar la barra de abajo
 #+begin_src emacs-lisp
-(use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :config
-    (setq doom-modeline-height 25      ;; sets modeline height
-          doom-modeline-bar-width 10    ;; sets right bar width
-          doom-modeline-persp-name t   ;; adds perspective name to modeline
-          doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+  (use-package doom-modeline
+      :init (doom-modeline-mode 1)
+      :config
+      (setq doom-modeline-height 24      ;; sets modeline height
+            doom-modeline-persp-name t   ;; adds perspective name to modeline
+            doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 #+end_src
 *** Vertico
 Me muestra los comandos disponibles desde M-x de una forma más vistosa
@@ -867,6 +868,13 @@ Programa para lectura de fuentes rss
                        (list "fever+https://Mester@rss.hostux.net"
                              :api-url "https://Mester@rss.hostux.net/api/fever.php"
                              :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+#+end_src
+*** Elfeed goodies
+No lo estoy usando no me atrajo tanto
+#+begin_src emacs-lisp :tangle no
+    (use-package elfeed-goodies
+      :ensure t
+      :config (elfeed-goodies/setup))
 #+end_src
 *** Elfeed dashboard
 #+begin_src emacs-lisp
