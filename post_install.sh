@@ -22,12 +22,12 @@ add_configs() {
 }
 install_software_notAUR() {
     echo "Instalando programas varios...."
-    sudo pacman -S waybar rofi-wayland hypr kitty yazi ly --noconfirm
+    sudo pacman -S waybar rofi-wayland hypr kitty yazi ly emacs-wayland --noconfirm
     echo "Instalando packs de iconos y tipografias"
     sudo pacman -S papirus-icon-theme ttf-jetbrains-mono-nerd ttf-font-awesome
 }
 install_AUR_software() {
-    paru -S matugen-bin
+    paru -S matugen-bin --noconfirm
 }
 echo "Primero antes que nada colocaremos los archivos de configuracion"
 add_configs

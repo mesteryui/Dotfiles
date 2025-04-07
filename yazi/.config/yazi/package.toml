@@ -15,10 +15,10 @@ hash = "5614c46d5de76623c283d415bfac8025"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:chmod"
-rev = "5186af7"
-hash = "f28138c2e11e87962b66d583fef724c3"
+rev = "9a09505"
+hash = "2f1053f89d1a301a648ab181d0948e38"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "df95930"
-hash = "c40e434318a8ceffd01842f8dfb2390e"
+rev = "68326b4"
+hash = "2ac87e1b3a61f5887472899e86535d29"

@@ -1,10 +1,10 @@
-@import "colors.css";
+@import "mocha.css";
 window#waybar {
 	background-color: transparent;
 }
 
 window > box {
-	background-color: @background;
+	background-color: @crust;
 	margin: 8px 8px 0px 8px;
 	padding: 0px 10px;
 }
@@ -38,36 +38,36 @@ window > box {
 #network.ethernet,
 #custom-hypridle,
 #network.wifi{
-    background-color: @surface_container;
+    background-color: @mantle;
 }
 
 #custom-launcher {
 	margin: 6px 2px;
 	font-size: 16px;
-	color: @on_primary_container;
+	color: @sapphire;
 	padding: 0px 5px 0px 10px;
 }
 #custom-hypridle {
-	background-color: @surface_container;
+	background-color: @mantle;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;
 }
 #custom-three-dots-seperator {
-	color: @inverse_background;
+	color: @text;
 	margin: 6px 2px;
 	padding: 0px 5px;
 }
 
 #cpu {
-	color: @on_surface;
+	color: @text;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #memory {
-	color: @on_surface;
+	color: @text;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
@@ -101,12 +101,12 @@ window > box {
 }
 
 #workspaces button {
-	color: @secondary;
+	color: @blue;
 	padding: 0px 4px;
 }
 
 #workspaces button.active {
-	color: @primary;
+	color: @blue;
 }
 
 #workspaces button.urgent {
@@ -118,7 +118,7 @@ window > box {
 }
 
 #workspaces button:hover {
-	color: @primary;
+	color: @blue;
 }
 
 #pownet {
@@ -200,24 +200,25 @@ window > box {
 
 tooltip {
     padding: 25px;
-    background-color: @surface;
-    color: @on_surface;
-    border: 2px solid @tertiary;
+    background-color: @mantle;
+    color: @text;
+    border: 2px solid @blue;
     font-family: JetbrainsMono Nerd Font;
 }
 #backlight,
 #custom-weather {
-	background-color: @surface_container;
+	background-color: @mantle;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;
 }
+
 tooltip label {
     padding: 15px;
-    color: @on_surface;
+    color: @text;
 }
 
 label:focus {
-    background-color: @surface;
+    background-color: @mantle;
 }
 

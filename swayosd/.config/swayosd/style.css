@@ -1,17 +1,16 @@
-@import 'colors.css';
+@import 'mocha.css';
 window#osd {
   padding: 12px 20px;
   border-radius: 999px;
   border: none;
-  background: @background;
+  background: @base;
 }
   #container {
     margin: 16px;
   }
-
   image,
   label {
-    color: @on_background;
+    color: @text;
   }
 
   progressbar:disabled,
@@ -29,12 +28,12 @@ window#osd {
     min-height: inherit;
     border-radius: inherit;
     border: none;
-    background: @primary_container;
+    background: @surface0;
   }
   progress {
     min-height: inherit;
     border-radius: inherit;
     border: none;
-    background: @primary;
+    background: @blue;
   }
 
