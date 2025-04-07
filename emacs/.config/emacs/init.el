@@ -53,6 +53,7 @@
     (tooltip-mode -1)
 (set-fringe-mode 10)        ; Give some breathing room
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq use-dialog-box nil)
 
 (setq
  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
