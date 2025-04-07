@@ -52,6 +52,10 @@
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
     (tooltip-mode 0)
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq use-dialog-box nil)
+
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
 
 (setq
  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
