@@ -149,11 +149,14 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Oscar")
     (setq inhibit-startup-message t
-          use-short-answers t)
+          use-short-answers t
+  	  )
       (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
       (menu-bar-mode -1)                                            ; Desactivar la barra de menús
       (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-      (tooltip-mode 0)
+      (tooltip-mode -1)
+      (set-fringe-mode 10)        ; Give some breathing room
+
      (add-to-list 'default-frame-alist '(fullscreen . maximized))
   (setq use-dialog-box nil)
   #+end_src
