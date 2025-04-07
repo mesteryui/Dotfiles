@@ -51,7 +51,7 @@
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
     (tooltip-mode -1)
-(set-fringe-mode 10)        ; Give some breathing room
+    (set-fringe-mode 10)        ; Give some breathing room
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq use-dialog-box nil)
 
