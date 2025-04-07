@@ -5,8 +5,7 @@
 (require 'elpaca-setupconfig)
 
 (use-package catppuccin-theme
-    :config
-    (setq catppuccin-flavor 'mocha)
+    :init
       (load-theme 'catppuccin t))
 
 (set-face-attribute 'default nil
@@ -264,7 +263,7 @@
 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
-  :ensure t)
+   :ensure t)
 
 (use-package dired-sidebar
     :ensure t
@@ -414,8 +413,7 @@
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 25      ;; sets modeline height
-          doom-modeline-bar-width 10    ;; sets right bar width
+    (setq doom-modeline-height 24      ;; sets modeline height
           doom-modeline-persp-name t   ;; adds perspective name to modeline
           doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 
@@ -666,7 +664,7 @@
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (rust-mode . lsp)
+               (rust-mode . lsp)
   	       (mhtml-mode . lsp)
 	       (html-mode . lsp)
            ;; if you want which-key integration
