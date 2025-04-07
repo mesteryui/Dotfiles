@@ -156,7 +156,6 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
       (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
       (tooltip-mode -1)
       (set-fringe-mode 10)        ; Give some breathing room
-
      (add-to-list 'default-frame-alist '(fullscreen . maximized))
   (setq use-dialog-box nil)
   #+end_src
@@ -213,7 +212,6 @@ O algo asi
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 ** Configuración del calendario
-
 Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario
 #+begin_src emacs-lisp
 (setq calendar-month-name-array
@@ -239,7 +237,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 ** Ajustes del recolector de basura
-Sirve para ajustar cosas en relacion a la recoleccion y otras verborreas para usar *LSP Mode*
+Sirve para ajustar cosas en relación a la recoleccion y otras verborreas para usar *LSP Mode*
 #+begin_src emacs-lisp
   (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
