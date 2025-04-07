@@ -413,9 +413,7 @@
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :config
-    (setq doom-modeline-height 24      ;; sets modeline height
-          doom-modeline-persp-name t   ;; adds perspective name to modeline
-          doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+    (setq doom-modeline-height 24)) ;; adds folder icon next to persp name
 
 (use-package vertico
   :init
