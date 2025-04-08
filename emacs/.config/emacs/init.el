@@ -379,7 +379,7 @@
  (setq dashboard-set-file-icons t)
  (setq dashboard-center-content t)
  (setq dashboard-vertically-center-content t)
- (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
+ (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
  (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
  (setq dashboard-center-content nil) ;; set to 't' for centered content
@@ -467,37 +467,12 @@
  (setq which-key-ellipsis "…"))
 
 (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
+
 (use-package organizer
+  :ensure nil
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
   (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
-
-(use-package ellama
-  :bind ("C-c e" . ellama)
-  :ensure t
-  :defer t
-  :init
-  (setopt ellama-language "Spanish")     ;; language ellama should translate to
-  (require 'llm-ollama)
-  ;; Predefined llm providers for interactive switching.
-  (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
-  (setopt ellama-providers
-	  '(("deepseek-r1:1.5b" . (make-llm-ollama
-			 :chat-model "deepseek-r1:1.5b"
-			 :embedding-model "deepseek-r1:1.5b"))
-	    ("deepseek-r1:8b" . (make-llm-ollama
-			  :chat-model "deepseek-r1:8b"
-			  :embedding-model "deepseek-r1:8b"))
-	     ("qwen2.5-coder:7b" . (make-llm-ollama
-			  :chat-model "qwen2.5-coder:7b"
-			  :embedding-model "qwen2.5-coder:7b"))))
-  ;; Translation llm provider
-  (setopt ellama-translation-provider (make-llm-ollama
-				       :chat-model "mixtral"
-				       :embedding-model "nomic-embed-text"))
-  :config
-  (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
-        ellama-sessions-auto-save t))
 
 (defun ews-distraction-free ()
   "Distraction-free writing environment using Olivetti package."

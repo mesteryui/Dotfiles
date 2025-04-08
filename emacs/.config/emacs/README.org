@@ -186,7 +186,7 @@ Este sistema de auto guardado es muy coñazo por los archivos que genera así qu
  auto-save-default nil                   ; Deshabilita #file#
 #+end_src
 **** Archivos de copia de seguridad
-Configura la creacion de archivos de backup para mantener las cosas más simples y practicas
+Configura la creación de archivos de backup para mantener las cosas más simples y practicas
 #+name: backup
 #+begin_src emacs-lisp :tangle no
    make-backup-files nil                   ; No realiza backups de ficheros
@@ -667,7 +667,7 @@ El dashboard que me aparece al principio cuando abre el programa
      (setq dashboard-set-file-icons t)
      (setq dashboard-center-content t)
      (setq dashboard-vertically-center-content t)
-     (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version (capitalize (user-login-name))))
+     (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
      ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
      (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
      (setq dashboard-center-content nil) ;; set to 't' for centered content
@@ -767,14 +767,16 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
   (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
+
   (use-package organizer
+    :ensure nil
     :config
     (global-set-key (kbd "<f12>")  'organizer-index)
     (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
 #+end_src
 ** Ellama
 Permite usar Ollama en emacs para usar inteligencia artificial de manera local sin acceso a Internet, por algun motivo no lo encuentra asi que 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
     (use-package ellama
       :bind ("C-c e" . ellama)
       :ensure t
