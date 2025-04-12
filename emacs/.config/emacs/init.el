@@ -42,6 +42,10 @@
 
 (setq erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
+(setq erc-track-enable-keybindings t)
+(setq erc-fill-column 120
+      erc-fill-function 'erc-fill-static
+      erc-fill-static-center 20)
 
 (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
@@ -54,6 +58,9 @@
     (set-fringe-mode 10)        ; Give some breathing room
    (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq use-dialog-box nil)
+
+(global-set-key (kbd "C-+") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
 
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
@@ -123,96 +130,132 @@
       (message "Diccionario cambiado desde %s a %s" dic change))))
 
 (defun toggle-webserver ()
-  "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things"
-  (interactive)
-  (let ((proc (get-process "webserver")))
-    (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
-        (progn
-          (delete-process "webserver")
-          (message "Webserver stopped"))
-      (progn
-        (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
-         (when (string-match "Local: http://localhost:3000" output)
-           (message " ✅ Webserver started")
-	     (browse-url-xdg-open "http://localhost:3000"))))))))
+"Function to toggle a not much bigger webserver ChatGPT helping me to fix some things
+This function allow to activate the webserver when you use but if there is a process of webserver the function kill it"
+   (interactive)
+   (let ((proc (get-process "webserver")))
+         (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
+             (progn
+                (delete-process "webserver")
+                (message "Webserver stopped"))
+                (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
+                 (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
+                   (message " ✅ Webserver started")))))))
 
 (defun org-temp-buffer ()
-  "Acceder a un buffer temporal de orgmode"
-  (interactive)
-  (if (get-buffer "org-temp")
-       (switch-to-buffer "org-temp")
-      (progn (switch-to-buffer (get-buffer-create "org-temp"))
-              (insert "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n\n")
-  	   (org-mode))))
+   "Acceder a un buffer temporal de orgmode"
+   (interactive)
+   (if (get-buffer "*orgtemp*")
+         (switch-to-buffer "*orgtemp*")
+         (switch-to-buffer (get-buffer-create "*orgtemp*"))
+         (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
+         (org-mode)))
 
-(setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+(dolist (item '((org-level-1 . (1.3 . outilne-1))
+    	      (org-level-2 . (1.1 . outline-2))
+	          (org-level-3 . (1.0 . outline-3))
+	          (org-level-4 . (0.99 . outiline-4))))
+  (custom-set-faces `( ,(car item) ((t (:inherit ,(cdr (cdr item)) :height ,(car (cdr item))))))))
 
+(setq org-directory "~/org/")
+(setq diary-file (expand-file-name "diario.org" org-directory))
+(setq org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
+(setq org-archive-location "~/org/%s_archivo.org::datetree/")
+
+(setq org-export-with-drawers nil
+      org-export-with-todo-keywords nil
+      org-export-with-broken-links t
+      org-export-with-toc nil
+      org-export-with-smart-quotes t
+      org-export-date-timestamp-format "%d %B %Y"
+      org-list-allow-alphabetical t)
+
+ (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+ (require 'org-tempo)               
 (use-package org
-    :ensure nil
-    :defer t)
-    (require 'org-tempo)
-      (setq-default org-startup-indented t
+    :ensure nil)
+(setq org-ellipsis "▼")
+(setq-default org-startup-indented t
                     org-pretty-entities t
                     org-use-sub-superscripts "{}"
                     org-hide-emphasis-markers t
                     org-startup-with-inline-images t
                     image-actual-width '(300))
 (add-hook 'org-mode-hook 'org-indent-mode)
-    ;; Mostrar marcadores de énfasis ocultos
-  (setq org-directory "~/org/")
-  (setq org-agenda-files '("~/org/agenda.org" "~/org/proyectos.org"))
-  (setq org-archive-location "~/org/%s_archivo.org::datetree/")
-  (setq org-todo-keywords
-       '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(p)" "|" "DONE(d)" "CANCELLED(c)")))
-   (setq org-todo-keyword-faces
-          '(("TODO" . "coral")
-            ("NEXT" . "cyan")
-            ("PROJ" . "orange")
-	    ("WAITING" . "yellow")
-            ("DONE" . "green")
-            ("PAUSED" . "IndianRed1")
-            ("CANCELLED" . "grey")))
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
-          (setq org-export-with-drawers nil
-                org-export-with-todo-keywords nil
-                org-export-with-broken-links t
-                org-export-with-toc nil
-                org-export-with-smart-quotes t
-                org-export-date-timestamp-format "%d %B %Y"
-                org-list-allow-alphabetical t)
+
+(setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+    (setq org-todo-keyword-faces
+           '(("TODO" . "coral")
+             ("NEXT" . "cyan")
+             ("PROJ" . "orange")
+ 	    ("WAITING" . "yellow")
+             ("DONE" . "green")
+             ("PAUSED" . "IndianRed1")
+             ("CANCELLED" . "grey")))
+
+(electric-indent-mode 0)
+(setq org-edit-src-content-indentation 0
+      org-src-preserve-indentation nil)
+
+(setq org-src-tab-acts-natively t
+      org-src-fontify-natively t)
+
+(use-package org-appear
+             :hook
+             (org-mode . org-appear-mode))
+;; ;; Modern Org mode interface
+    (use-package org-modern
+      :hook
+      (org-mode . org-modern-mode)
+      :custom
+      (org-modern-keyword t)
+      (org-modern-checkbox nil)
+      (org-modern-table nil)
+      (org-modern-list nil)
+      (org-modern-star nil)
+      (org-modern-todo nil))
+(use-package org-superstar
+            :demand t  
+            :ensure t
+	    :config
+	    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "✿" "󰓎" "" ""))
+            (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦)))
+            (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+  (use-package ox-epub
+             :demand t)
+           (use-package ox-reveal)
 
 (setq org-capture-templates
-       `(("t" "Tarea" entry
-          (file+headline "~/org/agenda.org" "Tareas")
-          "* TODO %?\n  Creado: %U\n  %i\n  %a")
-         ("n" "Nota" entry
-          (file+headline "~/org/notes.org" "Notas")
-          "* %? :nota:\n  Creado: %U\n  %i\n  %a")
+        `(("t" "Tarea" entry
+           (file+headline "~/org/agenda.org" "Tareas")
+           "* TODO %?\n  Creado: %U\n  %i\n  %a")
+          ("n" "Nota" entry
+           (file+headline "~/org/notes.org" "Notas")
+           "* %? :nota:\n  Creado: %U\n  %i\n %a")
 	  ("e" "Evento" entry
 	   (file+headline "~/org/agenda.org" "Evento")
 	   "* WAITING %?\n"
 	   )
-         ("j" "Diario" entry
-          (file+datetree "~/org/diario.org")
-          "* %?\nCreado: %U\n")
+          ("j" "Diario" entry
+           (file+datetree "~/org/diario.org")
+           "* %?\nCreado: %U\n")
 	   ("p" "Project" entry
-          (file+headline "~/org/proyectos.org" "Proyectos")
-          "* PROJ %?\n")
-	  )
-	  )
+           (file+headline "~/org/proyectos.org" "Proyectos")
+           "* PROJ %?\n")))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((scheme . t)
-   (python . t)
+ '((emacs-lisp . t)
+   (scheme . t)
    ))
 
 (use-package org-auto-tangle
     :defer t
 :hook (org-mode . org-auto-tangle-mode))
-
-(require 'org-utilities) ;; Cargamos las utilidades de la seccion anterior del README
 
 (use-package toc-org
     :demand t
@@ -226,6 +269,14 @@
     (setq org-tags-exclude-from-inheritance (quote ("crypt")))
     :custom
     (org-crypt-key "oscarodriguez56@gmail.com"))
+
+(use-package org-contrib
+ :ensure nil
+ :after org
+ :config
+ (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((ledger . t))))
 
 (use-package nerd-icons
   ;; :custom
@@ -357,6 +408,9 @@
 (use-package treemacs)
 (global-set-key (kbd "C-c f") 'treemacs)
 
+(use-package ledger-mode
+  :ensure t)
+
 (use-package embark
     :bind
     (("C-." . embark-act)
@@ -379,6 +433,7 @@
  (setq dashboard-set-file-icons t)
  (setq dashboard-center-content t)
  (setq dashboard-vertically-center-content t)
+ (setq dashboard-banner-logo-title "Emacs Kawaii")
  (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
  (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
@@ -421,7 +476,7 @@
   :init
   (vertico-mode)
   :custom
-  (vertico-count 13)                    ; Número de candidatos a mostrar
+  (vertico-count 15)                    ; Número de candidatos a mostrar
   (vertico-resize t)
   (vertico-cycle t)
   (vertico-sort-function 'vertico-sort-history-alpha))
@@ -475,19 +530,19 @@
   (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
 
 (defun ews-distraction-free ()
-  "Distraction-free writing environment using Olivetti package."
-  (interactive)
-  (if (equal olivetti-mode nil)
-      (progn
-        (window-configuration-to-register 1)
-        (delete-other-windows)
-        (text-scale-set 2)
-        (olivetti-mode t))
-    (progn
-      (if (eq (length (window-list)) 1)
-          (jump-to-register 1))
-      (olivetti-mode 0)
-      (text-scale-set 0))))
+ "Distraction-free writing environment using Olivetti package."
+ (interactive)
+ (if (equal olivetti-mode nil)
+     (progn
+       (window-configuration-to-register 1)
+       (delete-other-windows)
+       (text-scale-set 2)
+       (olivetti-mode t))
+   (progn
+     (if (eq (length (window-list)) 1)
+         (jump-to-register 1))
+     (olivetti-mode 0)
+     (text-scale-set 0))))
 (use-package olivetti
   :demand t
   :bind
