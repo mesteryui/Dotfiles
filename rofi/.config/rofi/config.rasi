@@ -12,4 +12,4 @@ configuration {
     sidebar-mode: false;
 }
 
-@theme "catppuccin-mocha.rasi"
+@theme "colors.rasi"

@@ -1,5 +1,6 @@
+@import 'colors.css';
 window {
-        background-color: #11111b;
+        background-color: @background;
 	border-radius: 10px;
 	border-width: 5px;
 }
@@ -11,11 +12,11 @@ window {
 
 /* Inner bar container, surrounds buttons */
 #inner-box {
-	background-color: #1e1e2e;
+	background-color: @background;
 	border-radius: 4px;
 	border-style: solid;
 	border-width: 3px;
-	border-color: @theme_selected_bg_color;
+	border-color: @primary;
 	padding: 5px;
 	margin: 0px
 }
@@ -33,6 +34,6 @@ button {
 }
 
 button:hover {
-        background-color: @theme_selected_bg_color;
-	color: #11111b
+        background-color: @primary;
+	color: @on_primary
 }

@@ -1,17 +1,18 @@
-@import "mocha.css";
+@import "colors.css";
 window#waybar {
 	background-color: transparent;
 }
 
 window > box {
-	background-color: @crust;
+	background-color: @background;
 	margin: 8px 8px 0px 8px;
 	padding: 0px 10px;
+	color: @text
 }
 * {
 	font-family: "Gabarito Medium", FontAwesome, Roboto, IPAMincho;
 	/*font-weight: 400;*/
-	font-size: 12px;
+	font-size: 11.5px;
 	padding: 0;
 	border-radius: 20px;
 }
@@ -38,50 +39,50 @@ window > box {
 #network.ethernet,
 #custom-hypridle,
 #network.wifi{
-    background-color: @mantle;
+	background-color: @surface_container;
 }
 
 #custom-launcher {
 	margin: 6px 2px;
 	font-size: 16px;
-	color: @sapphire;
+	color: @on_primary_container;
 	padding: 0px 5px 0px 10px;
 }
 #custom-hypridle {
-	background-color: @mantle;
+	background-color: @surface_container;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;
 }
 #custom-three-dots-seperator {
-	color: @text;
+	color: @inverse_background;
 	margin: 6px 2px;
 	padding: 0px 5px;
 }
 
 #cpu {
-	color: @text;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #memory {
-	color: @text;
+	color: @inverse_background;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #disk {
-	color: @on_surface;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #mpris {
-	color: @on_surface;
+	color: @invert_surface;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 0px;
@@ -97,16 +98,15 @@ window > box {
 	border-radius: 100px;
 	margin: 6px 2px;
 	padding: 0px 9px;
-	color: @on_surface
 }
 
 #workspaces button {
-	color: @blue;
+	color: @secondary;
 	padding: 0px 4px;
 }
 
 #workspaces button.active {
-	color: @blue;
+	color: @primary;
 }
 
 #workspaces button.urgent {
@@ -114,19 +114,20 @@ window > box {
 }
 
 #workspaces button.empty {
-	color: @on_surface;
+	color: @text;
 }
 
 #workspaces button:hover {
-	color: @blue;
+	color: @primary;
 }
 
 #pownet {
-	color: @on_surface;
+	color: @text;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
+
 #battery{
 	margin-left: 2px;
 	margin-right: 10px;
@@ -134,7 +135,7 @@ window > box {
 
 #network {
 	font-size: 11px;
-	color: @on_surface;
+	color: #ffffff;
 	margin-right: 5px;
 }
 
@@ -157,21 +158,23 @@ window > box {
     animation-iteration-count: infinite;
     animation-direction: alternate;
 }
+
 #pulseaudio {
-	color: @on_surface;
+	color: @text;
 	border-radius: 100px;
-	padding: 0px 13px;
+	padding: 0px 10px;
 	margin: 6px 2px;
 }
+
 #custom-updates {
-	color: @on_surface;
+	color: @text;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
 }
 
 #clock {
-	color: @on_surface;
+	color: @inverse_background;
 	border-radius: 100px;
 	padding: 0px 10px;
 	margin: 6px 2px;
@@ -187,10 +190,6 @@ window > box {
     padding: 5;
 	
 }
-#tray menu * {
-    padding: 0px 5px;
-    transition: all .3s ease; 
-}
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
@@ -200,25 +199,22 @@ window > box {
 
 tooltip {
     padding: 25px;
-    background-color: @mantle;
+    background-color: @surface;
     color: @text;
-    border: 2px solid @blue;
     font-family: JetbrainsMono Nerd Font;
 }
 #backlight,
 #custom-weather {
-	background-color: @mantle;
+	background-color: @surface_container;
 	border-radius: 100px;
         padding: 0px 10px;
         margin: 6px 2px;
 }
-
 tooltip label {
     padding: 15px;
     color: @text;
 }
 
 label:focus {
-    background-color: @mantle;
+    background-color: @inverse_background;
 }
-
