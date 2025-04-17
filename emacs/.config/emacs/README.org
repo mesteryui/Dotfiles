@@ -1,7 +1,6 @@
 #+title: Configuraciones
 #+author: Mester
 #+description: configuración de emacs
-#+startup: showeverything
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
 
@@ -17,12 +16,9 @@ Esto es para hacer que algunos scripts de uso propio sean utilizables
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 #+end_src
 ** Elpaca
-El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no esta
-#+begin_src emacs-lisp :tangle ./scripts/elpaca-setupconfig.el :mkdirp yes
-;;; Package --- elpaca-setup
-;;; Commentary:
-;;; Code:
-(defvar elpaca-installer-version 0.10)
+El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no esta.
+#+begin_src emacs-lisp
+(defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -84,12 +80,6 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
-(provide 'elpaca-setupconfig)
-#+end_src
-** Cargar elpaca
-Cargar elpaca para la gestión de paquetes
-#+begin_src emacs-lisp
-(require 'elpaca-setupconfig)
 #+end_src
 ** Apariencia
 *** Tema visual
@@ -107,7 +97,6 @@ El tema visual a utilizar estando disponible aqui la configuracion
     :config
     (load-theme 'ef-cherie :no-confirm))
 #+end_src
-
 *** Ajustes de fuentes y alguna cosa
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil
@@ -116,7 +105,7 @@ El tema visual a utilizar estando disponible aqui la configuracion
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
   :font "Ubuntu"
-  :height 105
+  :height 110
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
   :font "Jetbrains Mono"
@@ -136,7 +125,7 @@ El tema visual a utilizar estando disponible aqui la configuracion
 (add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
 
 ;; Uncomment the following line if line spacing needs adjusting.
-(setq-default line-spacing 0.11)
+(setq-default line-spacing 0.3)
 #+end_src
 *** Opacidad
 Esta es la opacidad que el editor aplica por defecto
@@ -163,7 +152,7 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
   (setq user-full-name "Oscar")
     (setq inhibit-startup-message t
           use-short-answers t
-  	  )
+  	      blink-matching-parent t)
       (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
       (menu-bar-mode -1)                                            ; Desactivar la barra de menús
       (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
@@ -231,7 +220,7 @@ O algo asi
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 ** Configuración del calendario
-Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario
+Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
 #+begin_src emacs-lisp
 (setq calendar-month-name-array
       ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
@@ -244,37 +233,41 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
 (setq iso-calendar-style t) ;; formato ISO
-(setq calendar-holidays '(
-			  (holiday-fixed 1 1 "Año nuevo")
+(setq calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
-                      (holiday-fixed 11 01 "Todos los Santos")
+			  (holiday-fixed 11 01 "Todos los Santos")
 			  (holiday-fixed 12 06 "Constitución")
 			  (holiday-fixed 3 28 "Reconquista de Vigo")
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
-** Ajustes del recolector de basura
-Sirve para ajustar cosas en relación a la recoleccion y otras verborreas para usar *LSP Mode*
+** Ajustes de rendimiento
+Sirve para optimizar cosas en relación al rendimiento
 #+begin_src emacs-lisp
 (setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024))
+(setq read-process-output-max (* 4 1024 1024))
+;; Garbage collector optimization
+(setq gcmh-idle-delay 5)
+(setq gcmh-high-cons-threshold (* 1024 1024 1024))
+(setq comp-deferred-compilation t)
+(setq comp-async-jobs-number 8)
 #+end_src
 * Funciones propias
 ** Recargar la configuración
-Esta funcion sirve para recargar la configuracion activa sin cerrar Emacs, no funciona
+Esta función sirve para recargar la configuracion activa sin cerrar Emacs, no funciona
 en todos los casos hay veces que hay que cerrar el programa
 #+begin_src emacs-lisp
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
-  (load-file "~/.config/emacs/init.el")
+  (load-file (expand-file-name "init.el" user-emacs-directory))
   (ignore (elpaca-process-queues)))
 (global-set-key (kbd "C-c r") 'os/reload-config)
 #+end_src
 ** Abrir configuración
-Abrir el archivo de configuracion usado en este caso abro el README.org que se edita para obtener el archivo de configuracion
+Abrir el archivo de configuración usado en este caso abro el README.org que se edita para obtener el archivo de configuracion
 #+begin_src emacs-lisp
 (defun os/open-config ()
   "Abrir configuracion de emacs"
@@ -311,10 +304,6 @@ This function allow to activate the webserver when you use but if there is a pro
                  (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
                    (message " ✅ Webserver started")))))))
 #+end_src
-
-#+RESULTS:
-: toggle-webserver
-
 ** Buffer temporal en modo Org
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
@@ -366,16 +355,16 @@ Me permite abrir el dashboard
 Esto me permite aplicar mis configuraciones de preferencia a los encabezados tengo una lista que contiene listas asociativas con la información necesaria, y aprovecho las
 funciones car y cdr para extraer los múltiples objetos de esa lista con la información y ejecutar la macro custom-set-faces con la información requerida y que fue puesta en la lista
 #+begin_src emacs-lisp
-(dolist (item '((org-level-1 . (1.3 . outilne-1))
-    	      (org-level-2 . (1.1 . outline-2))
-	          (org-level-3 . (1.0 . outline-3))
-	          (org-level-4 . (0.99 . outiline-4))))
+(dolist (item '((org-level-1 . (1.5 . outilne-1))
+    		   (org-level-2 . (1.4 . outline-2))
+	          (org-level-3 . (1.25 . outline-3))
+                  (org-level-3 . (1.1 . outline-3))
+                  (org-document-title . (1.7 . nil))))
   (custom-set-faces `( ,(car item) ((t (:inherit ,(cdr (cdr item)) :height ,(car (cdr item))))))))
 #+end_src
 ** Ajustes generales
-Ajustes de OrgMode
+Ajustes de Org Mode
 *** Configurar archivos
-
 #+begin_src emacs-lisp
   (setq org-directory "~/org/")
   (setq diary-file (expand-file-name "diario.org" org-directory))
@@ -408,29 +397,44 @@ Ajustes de OrgMode
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
+*** Ajustes a elementos del org-mode
+#+begin_src emacs-lisp :tangle no
+(add-hook 'org-mode-hook #'variable-pitch-mode)
+(custom-set-faces
+ ;; Código, bloques, verbatim, tablas
+ '(org-block ((t (:inherit fixed-pitch))))
+ '(org-code ((t (:inherit fixed-pitch))))
+ '(org-table ((t (:inherit fixed-pitch))))
+ '(org-verbatim ((t (:inherit fixed-pitch))))
+ '(org-formula ((t (:inherit fixed-pitch))))
+ '(org-checkbox ((t (:inherit fixed-pitch))))
+ ;; Estilo gris clásico para metadatos
+ '(org-meta-line ((t (:inherit (shadow fixed-pitch)))))
+ '(org-modern-symbol ((t (:family "Jetbrains Mono")))))
+#+end_src
 *** Ajustes del todo
 #+begin_src emacs-lisp
- (setq org-todo-keywords
-         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
-     (setq org-todo-keyword-faces
-            '(("TODO" . "coral")
-              ("NEXT" . "cyan")
-              ("PROJ" . "orange")
-  	    ("WAITING" . "yellow")
-              ("DONE" . "green")
-              ("PAUSED" . "IndianRed1")
-              ("CANCELLED" . "grey")))
+(setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+    (setq org-todo-keyword-faces
+           '(("TODO" . "coral")
+             ("NEXT" . "cyan")
+             ("PROJ" . "orange")
+ 	       ("WAITING" . "yellow")
+             ("DONE" . "green")
+             ("PAUSED" . "IndianRed1")
+             ("CANCELLED" . "grey")))
 #+end_src
 ** Org utilities
 *** Org superstar
 Nos permite modificar los encabezados y los modos
 #+name: org superstar
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle no :noweb yes
   (use-package org-superstar
               :demand t  
               :ensure t
   	    :config
-  	    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "✿" "󰓎" "" ""))
+  	    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "✿" "" "󰓎" ""))
               (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦)))
               (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 #+end_src
@@ -438,17 +442,22 @@ Nos permite modificar los encabezados y los modos
 Org modern nos permite modernizar el estilo visual del orgmode para que se vea más moderno por supuesto si queremos que alguna cosa se vea como normalmente podemos modificarlo en cualquier momento
 #+name: org modern
 #+begin_src emacs-lisp :tangle no :noweb yes
-  ;; ;; Modern Org mode interface
-      (use-package org-modern
-        :hook
-        (org-mode . org-modern-mode)
-        :custom
-        (org-modern-keyword t)
-        (org-modern-checkbox nil)
-        (org-modern-table nil)
-        (org-modern-list nil)
-        (org-modern-star nil)
-        (org-modern-todo nil))
+;; ;; Modern Org mode interface
+(use-package org-modern
+    :hook (org-mode . global-org-modern-mode)
+    :custom
+    (org-modern-keyword t)
+    (org-modern-table nil)
+    (org-modern-star 'replace)
+    (org-modern-replace-stars "◉○◈◇✿✳")
+    (org-modern-list '((?+ . "➤") (?- . "✦") (?* . "•")))
+    (org-modern-todo-faces
+          '(("TODO" :background "coral" :foreground "black")
+            ("NEXT" :background "cyan" :foreground "black")
+            ("PAUSED" :background "IndianRed1" :foreground "black")
+            ("PROG" :background "orange" :foreground "black")
+            ("WAITING" :background "yellow")
+            ("DONE" :background "green" :foreground "white"))))
 #+end_src
 *** Desactivando algunas indentaciones raras en org mode
 #+begin_src emacs-lisp
@@ -464,16 +473,14 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 *** Cargándolo todo
 Diversas utilidades de org mode para que se vea todo mejor  
 #+begin_src emacs-lisp :noweb yes
-               (use-package org-appear
-               :hook
-               (org-mode . org-appear-mode))
+(use-package org-appear
+       :hook
+(org-mode . org-appear-mode))
   <<org modern>>
-  <<org superstar>>
-    (use-package ox-epub
-               :demand t)
-             (use-package ox-reveal)
-#+end_src
-
+(use-package ox-epub
+        :demand t)
+(use-package ox-reveal)
+#+end_src 
 ** Configuración de org-capture
 #+begin_src emacs-lisp
 (setq org-capture-templates
@@ -489,7 +496,7 @@ Diversas utilidades de org mode para que se vea todo mejor
 	   )
           ("j" "Diario" entry
            (file+datetree "~/org/diario.org")
-           "* %?\nCreado: %U\n")
+           "* Titulo de Entrada: %?\n")
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
            "* PROJ %?\n")))
@@ -500,6 +507,8 @@ Diversas utilidades de org mode para que se vea todo mejor
    'org-babel-load-languages
    '((emacs-lisp . t)
      (scheme . t)
+     (python . t)
+     (shell . t)
      ))
 #+end_src
 *** Org auto tangle
@@ -507,7 +516,7 @@ Hace que en según que caso el tangle sea automático
 #+begin_src emacs-lisp
   (use-package org-auto-tangle
     :defer t
-:hook (org-mode . org-auto-tangle-mode))
+    :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 ** Otras cosas
 #+begin_src emacs-lisp
@@ -531,7 +540,6 @@ Encriptar entradas de archivos ~.org~ usando una clave GPG
 Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
 #+begin_src emacs-lisp
  (use-package org-contrib
-  :ensure nil
   :after org
   :config
   (org-babel-do-load-languages
@@ -556,6 +564,10 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
     :config
     (nerd-icons-completion-mode)
     (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+(use-package nerd-icons-corfu
+   :after corfu
+   :config
+   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 #+end_src
 ** Calfw
 Hace que el calendario pueda verse bonito
@@ -585,7 +597,7 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 #+end_src
 ** Eat
-Actualmente la uso por la integracion que proporciona con Eshell
+Actualmente la uso por la integracion que proporciona con Eshell.
 #+begin_src emacs-lisp
    ;; ;; Aun no soportado en la shell de comandos que uso
   (use-package eat
@@ -642,7 +654,6 @@ Shell que permite usar comandos elisp, se puede mejorar la experiencia usando ea
   	 :hook ((eshell-load . eat-eshell-mode)
   		(eshell-load . eat-eshell-visual-command-mode))
   	:config
-  	(setq company-global-modes '(not eshell-mode))
   	(setq eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
   	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
                 eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
@@ -659,7 +670,7 @@ Shell que permite usar comandos elisp, se puede mejorar la experiencia usando ea
         (global-set-key (kbd "C-c t") 'eshell-toggle)
 #+end_src
 ** Flyspell
-Habilita la correccion ortografica al vuelo
+Habilita la correccion ortografica al vuelo.
 #+begin_src emacs-lisp
 (use-package flyspell
       :ensure nil
@@ -670,7 +681,8 @@ Habilita la correccion ortografica al vuelo
         flyspell-case-fold-duplications t
         flyspell-issue-message-flag nil
         flyspell-default-dictionary "es_ES"
-        ispell-program-name "hunspell")
+        ispell-program-name "hunspell"
+        ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
      :hook (text-mode . flyspell-mode)
      :bind(("M-<f7>" . flyspell-buffer)
            ("<f7>" . flyspell-word)))
@@ -715,7 +727,6 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
-
 ** Paquetes parar o hacer más amena funcionalidad normal de Emacs
 *** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
@@ -762,9 +773,12 @@ El dashboard que me aparece al principio cuando abre el programa
 Para retocar la barra de abajo
 #+begin_src emacs-lisp
   (use-package doom-modeline
-      :init (doom-modeline-mode 1)
+      :hook (elpaca-after-init-hook . doom-modeline-mode)
       :config
-      (setq doom-modeline-height 24)) ;; adds folder icon next to persp name
+      (setq doom-modeline-height 24)
+      (setq doom-modeline-icon t)
+      (setq doom-modeline-major-mode-icon t)
+      (setq doom-modeline-major-mode-color-icon t))
 #+end_src
 *** Vertico
 Completacion minimalista y más vistosa
@@ -833,42 +847,12 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
   (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
-
   (use-package organizer
     :ensure nil
     :config
     (global-set-key (kbd "<f12>")  'organizer-index)
-    (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
-#+end_src
-** Ellama
-Permite usar Ollama en emacs para usar inteligencia artificial de manera local sin acceso a Internet, por algun motivo no lo encuentra asi que 
-#+begin_src emacs-lisp :tangle no
-    (use-package ellama
-      :bind ("C-c e" . ellama)
-      :ensure t
-      :defer t
-      :init
-      (setopt ellama-language "Spanish")     ;; language ellama should translate to
-      (require 'llm-ollama)
-      ;; Predefined llm providers for interactive switching.
-      (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
-      (setopt ellama-providers
-    	  '(("deepseek-r1:1.5b" . (make-llm-ollama
-    			 :chat-model "deepseek-r1:1.5b"
-    			 :embedding-model "deepseek-r1:1.5b"))
-    	    ("deepseek-r1:8b" . (make-llm-ollama
-    			  :chat-model "deepseek-r1:8b"
-    			  :embedding-model "deepseek-r1:8b"))
-  	     ("qwen2.5-coder:7b" . (make-llm-ollama
-    			  :chat-model "qwen2.5-coder:7b"
-    			  :embedding-model "qwen2.5-coder:7b"))))
-      ;; Translation llm provider
-      (setopt ellama-translation-provider (make-llm-ollama
-    				       :chat-model "mixtral"
-    				       :embedding-model "nomic-embed-text"))
-      :config
-      (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
-            ellama-sessions-auto-save t))
+    (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+    (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 #+end_src
 ** Olivetti
 En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
@@ -883,17 +867,17 @@ En el caso de olivetti tambien le añado encima la función que me activa una es
 ** Eradio
 Radio en Emacs
 #+begin_src emacs-lisp
-  (use-package eradio
-    :defer t
-    :init
-    (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
-    :config
-    (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
-                          ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
-  			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
-  			)))
-  (global-set-key (kbd "C-x r e") 'eradio-toggle)
-  (global-set-key (kbd "C-x r p") 'eradio-play)
+(use-package eradio
+  :defer t
+  :init
+  (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+  :config
+  (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+                        ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
+			)))
+(global-set-key (kbd "C-x r e") 'eradio-toggle)
+(global-set-key (kbd "C-x r p") 'eradio-play)
 #+end_src
 ** Doc View, Nov
 Esto no lo uso al menos ahora por eso he desactivado el tangle
@@ -1059,26 +1043,68 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
     :after eldoc
     :init (setq eldoc-box-hover-mode t))
 #+end_src
-*** Company
-Soporte para el auto completado
+*** Corfu + Cape
+Soporte para el auto completado de una manera más 🐱
 #+begin_src emacs-lisp
-(use-package company
+;; Corfu: interfaz mínima y rápida de completado en buffer
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-separator ?\s)  ; separador de palabra
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.1)
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)
   :init
-  (global-company-mode)
+  (global-corfu-mode)
+  (corfu-history-mode)
+  (corfu-popupinfo-mode))         ; activación global
+
+;; Cape: extensiones para completion-at-point
+(use-package cape
+  :ensure t
+  :init
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  (add-hook 'completion-at-point-functions #'cape-emoji))
+;; Atajos prácticos
+(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
+#+end_src
+
+**** Configuraciones extra para corfu
+#+begin_src emacs-lisp
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
+
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
+
+  ;; Emacs 30 and newer: Disable Ispell completion function.
+  ;; Try `cape-dict' as an alternative.
+  (text-mode-ispell-word-completion nil)
+
+  ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  ;; commands are hidden, since they are not used via M-x. This setting is
+  ;; useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
+
+#+end_src
+**** Kind icon
+#+begin_src emacs-lisp :tangle no
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
   :config
-  (setq company-minimum-prefix-length 1
-        company-idle-delay 0.0))
-(use-package company-posframe
-    :after company
-    :config
-    (company-posframe-mode t)
-    :delight " C-PF")
-  (use-package company-box
-    :ensure t
-    :defer t
-    :after company
-    :delight " CBox"
-    :hook (company-mode-hook . company-box-mode))
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 *** Yasnippet
 Habilita el uso de snippets
@@ -1089,26 +1115,38 @@ Habilita el uso de snippets
   (add-hook 'prog-mode-hook 'yas-minor-mode)
   (add-hook 'lsp-mode 'yas-minor-mode)
   (use-package yasnippet-snippets)
+(use-package yasnippet-capf
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+  (setq yasnippet-capf-lookup-by 'name))
 #+end_src
+
 *** LSP
 Configuracion de LSP
 #+begin_src emacs-lisp
-    (use-package lsp-mode
-      :init
-      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-      (setq lsp-keymap-prefix "C-c l")
-      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-                 (rust-mode . lsp)
-    	       (mhtml-mode . lsp)
-  	       (html-mode . lsp)
-             ;; if you want which-key integration
-             (lsp-mode . lsp-enable-which-key-integration)
-    	       (python-mode . lsp)
-    	       (js-mode . lsp))
-      :commands lsp)
-
-  ;; optionally
-  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package lsp-mode
+    :init
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setq lsp-keymap-prefix "C-c l")
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (rust-mode . lsp)
+  	 (mhtml-mode . lsp)
+	   (html-mode . lsp)
+           (clojure-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration)
+  	       (python-mode . lsp)
+  	       (js-mode . lsp))
+    :commands lsp)
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode
+:config
+(setq lsp-ui-doc-enable t
+      lsp-ui-doc-position 'at-point
+      lsp-ui-doc-delay 0.5
+      lsp-ui-peek-enable t
+      lsp-ui-doc-show-with-cursor t))
 #+end_src
 *** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
@@ -1121,14 +1159,6 @@ Ajustes varios para python
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
                           (lsp))))  ; or lsp-deferred
-  (use-package elpy
-      :ensure t
-      :defer t
-      :config
-      (setq python-shell-interpreter "python3")
-      (setq elpy-rpc-python-command "python3")
-      :init
-      (advice-add 'python-mode :before 'elpy-enable))
 #+end_src
 **** Scheme
 Lenguaje de programacion bastante particular al que todavia no le he pillado todo
@@ -1141,6 +1171,10 @@ el potencial
   :ensure t)
   (use-package flymake-guile
     :defer t)
+#+end_src
+**** Clojure
+#+begin_src emacs-lisp
+(use-package cider)
 #+end_src
 **** Rust
 Lenguaje de programacion conocido por su velocidad y caracteristicas de seguridad en memoria

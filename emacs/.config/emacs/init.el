@@ -2,7 +2,68 @@
 
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
-(require 'elpaca-setupconfig)
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                 ,@(when-let ((depth (plist-get order :depth)))
+                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                 ,(plist-get order :repo) ,repo))))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+
+(elpaca elpaca-use-package
+  ;; Enable :elpaca use-package keyword.
+  (elpaca-use-package-mode)
+  ;; Assume :elpaca t unless otherwise specified.
+  (setq elpaca-use-package-by-default t))
+
+;; Block until current queue processed.
+(elpaca-wait)
+
+;;When installing a package which modifies a form used at the top-level
+;;(e.g. a package which adds a use-package key word),
+;;use `elpaca-wait' to block until that package has been installed/configured.
+;;For example:
+;;(use-package general :demand t)
+;;(elpaca-wait)
+
+;;Turns off elpaca-use-package-mode current declartion
+;;Note this will cause the declaration to be interpreted immediately (not deferred).
+;;Useful for configuring built-in emacs features.
+;;(use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
+
+;; Don't install anything. Defer execution of BODY
+;;(elpaca nil (message "deferred"))
 
 (use-package catppuccin-theme
     :init
@@ -14,7 +75,7 @@
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
   :font "Ubuntu"
-  :height 105
+  :height 110
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
   :font "Jetbrains Mono"
@@ -34,7 +95,7 @@
 (add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
 
 ;; Uncomment the following line if line spacing needs adjusting.
-(setq-default line-spacing 0.11)
+(setq-default line-spacing 0.3)
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 
@@ -50,7 +111,7 @@
 (setq user-full-name "Oscar")
   (setq inhibit-startup-message t
         use-short-answers t
-	  )
+	      blink-matching-parent t)
     (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
     (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
@@ -92,11 +153,10 @@
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
 (setq iso-calendar-style t) ;; formato ISO
-(setq calendar-holidays '(
-			  (holiday-fixed 1 1 "Año nuevo")
+(setq calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
-                      (holiday-fixed 11 01 "Todos los Santos")
+			  (holiday-fixed 11 01 "Todos los Santos")
 			  (holiday-fixed 12 06 "Constitución")
 			  (holiday-fixed 3 28 "Reconquista de Vigo")
 			  (holiday-fixed 5 1 "Dia del Trabajo")
@@ -104,12 +164,17 @@
 			  (holiday-fixed 12 25 "Navidad")))
 
 (setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024))
+(setq read-process-output-max (* 4 1024 1024))
+;; Garbage collector optimization
+(setq gcmh-idle-delay 5)
+(setq gcmh-high-cons-threshold (* 1024 1024 1024))
+(setq comp-deferred-compilation t)
+(setq comp-async-jobs-number 8)
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
-  (load-file "~/.config/emacs/init.el")
+  (load-file (expand-file-name "init.el" user-emacs-directory))
   (ignore (elpaca-process-queues)))
 (global-set-key (kbd "C-c r") 'os/reload-config)
 
@@ -151,10 +216,11 @@ This function allow to activate the webserver when you use but if there is a pro
          (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
          (org-mode)))
 
-(dolist (item '((org-level-1 . (1.3 . outilne-1))
-    	      (org-level-2 . (1.1 . outline-2))
-	          (org-level-3 . (1.0 . outline-3))
-	          (org-level-4 . (0.99 . outiline-4))))
+(dolist (item '((org-level-1 . (1.5 . outilne-1))
+    		   (org-level-2 . (1.4 . outline-2))
+	          (org-level-3 . (1.25 . outline-3))
+                  (org-level-3 . (1.1 . outline-3))
+                  (org-document-title . (1.7 . nil))))
   (custom-set-faces `( ,(car item) ((t (:inherit ,(cdr (cdr item)) :height ,(car (cdr item))))))))
 
 (setq org-directory "~/org/")
@@ -192,7 +258,7 @@ This function allow to activate the webserver when you use but if there is a pro
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
              ("PROJ" . "orange")
- 	    ("WAITING" . "yellow")
+ 	       ("WAITING" . "yellow")
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
@@ -205,29 +271,27 @@ This function allow to activate the webserver when you use but if there is a pro
       org-src-fontify-natively t)
 
 (use-package org-appear
-             :hook
-             (org-mode . org-appear-mode))
-;; ;; Modern Org mode interface
-    (use-package org-modern
-      :hook
-      (org-mode . org-modern-mode)
+       :hook
+(org-mode . org-appear-mode))
+  ;; ;; Modern Org mode interface
+  (use-package org-modern
+      :hook (org-mode . global-org-modern-mode)
       :custom
       (org-modern-keyword t)
-      (org-modern-checkbox nil)
       (org-modern-table nil)
-      (org-modern-list nil)
-      (org-modern-star nil)
-      (org-modern-todo nil))
-(use-package org-superstar
-            :demand t  
-            :ensure t
-	    :config
-	    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "✿" "󰓎" "" ""))
-            (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦)))
-            (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
-  (use-package ox-epub
-             :demand t)
-           (use-package ox-reveal)
+      (org-modern-star 'replace)
+      (org-modern-replace-stars "◉○◈◇✿✳")
+      (org-modern-list '((?+ . "➤") (?- . "✦") (?* . "•")))
+      (org-modern-todo-faces
+            '(("TODO" :background "coral" :foreground "black")
+              ("NEXT" :background "cyan" :foreground "black")
+              ("PAUSED" :background "IndianRed1" :foreground "black")
+              ("PROG" :background "orange" :foreground "black")
+              ("WAITING" :background "yellow")
+              ("DONE" :background "green" :foreground "white"))))
+(use-package ox-epub
+        :demand t)
+(use-package ox-reveal)
 
 (setq org-capture-templates
         `(("t" "Tarea" entry
@@ -242,7 +306,7 @@ This function allow to activate the webserver when you use but if there is a pro
 	   )
           ("j" "Diario" entry
            (file+datetree "~/org/diario.org")
-           "* %?\nCreado: %U\n")
+           "* Titulo de Entrada: %?\n")
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
            "* PROJ %?\n")))
@@ -251,11 +315,13 @@ This function allow to activate the webserver when you use but if there is a pro
  'org-babel-load-languages
  '((emacs-lisp . t)
    (scheme . t)
+   (python . t)
+   (shell . t)
    ))
 
 (use-package org-auto-tangle
-    :defer t
-:hook (org-mode . org-auto-tangle-mode))
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
 
 (use-package toc-org
     :demand t
@@ -271,7 +337,6 @@ This function allow to activate the webserver when you use but if there is a pro
     (org-crypt-key "oscarodriguez56@gmail.com"))
 
 (use-package org-contrib
- :ensure nil
  :after org
  :config
  (org-babel-do-load-languages
@@ -279,19 +344,23 @@ This function allow to activate the webserver when you use but if there is a pro
   '((ledger . t))))
 
 (use-package nerd-icons
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
-(use-package nerd-icons-dired
-  :hook
-  (dired-mode . nerd-icons-dired-mode))
-(use-package nerd-icons-completion
-  :config
-  (nerd-icons-completion-mode)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+    ;; :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+  (use-package nerd-icons-dired
+    :hook
+    (dired-mode . nerd-icons-dired-mode))
+  (use-package nerd-icons-completion
+    :config
+    (nerd-icons-completion-mode)
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+(use-package nerd-icons-corfu
+   :after corfu
+   :config
+   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 (use-package calfw
   :config
@@ -361,7 +430,6 @@ This function allow to activate the webserver when you use but if there is a pro
 	 :hook ((eshell-load . eat-eshell-mode)
 		(eshell-load . eat-eshell-visual-command-mode))
 	:config
-	(setq company-global-modes '(not eshell-mode))
 	(setq eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
 	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
               eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
@@ -386,7 +454,8 @@ This function allow to activate the webserver when you use but if there is a pro
         flyspell-case-fold-duplications t
         flyspell-issue-message-flag nil
         flyspell-default-dictionary "es_ES"
-        ispell-program-name "hunspell")
+        ispell-program-name "hunspell"
+        ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
      :hook (text-mode . flyspell-mode)
      :bind(("M-<f7>" . flyspell-buffer)
            ("<f7>" . flyspell-word)))
@@ -468,9 +537,12 @@ This function allow to activate the webserver when you use but if there is a pro
     (switch-to-buffer dashboard-buffer-name))
 
 (use-package doom-modeline
-    :init (doom-modeline-mode 1)
+    :hook (elpaca-after-init-hook . doom-modeline-mode)
     :config
-    (setq doom-modeline-height 24)) ;; adds folder icon next to persp name
+    (setq doom-modeline-height 24)
+    (setq doom-modeline-icon t)
+    (setq doom-modeline-major-mode-icon t)
+    (setq doom-modeline-major-mode-color-icon t))
 
 (use-package vertico
   :init
@@ -522,12 +594,12 @@ This function allow to activate the webserver when you use but if there is a pro
  (setq which-key-ellipsis "…"))
 
 (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
-
 (use-package organizer
   :ensure nil
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
-  (add-to-list 'organizer-files '("Libros" . "~/org/Libros.org")))
+  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 
 (defun ews-distraction-free ()
  "Distraction-free writing environment using Olivetti package."
@@ -664,47 +736,88 @@ This function allow to activate the webserver when you use but if there is a pro
   :after eldoc
   :init (setq eldoc-box-hover-mode t))
 
-(use-package company
+;; Corfu: interfaz mínima y rápida de completado en buffer
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-separator ?\s)  ; separador de palabra
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.1)
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)
   :init
-  (global-company-mode)
-  :config
-  (setq company-minimum-prefix-length 1
-        company-idle-delay 0.0))
-(use-package company-posframe
-    :after company
-    :config
-    (company-posframe-mode t)
-    :delight " C-PF")
-  (use-package company-box
-    :ensure t
-    :defer t
-    :after company
-    :delight " CBox"
-    :hook (company-mode-hook . company-box-mode))
+  (global-corfu-mode)
+  (corfu-history-mode)
+  (corfu-popupinfo-mode))         ; activación global
+
+;; Cape: extensiones para completion-at-point
+(use-package cape
+  :ensure t
+  :init
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  (add-hook 'completion-at-point-functions #'cape-emoji))
+;; Atajos prácticos
+(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
+
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
+
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
+
+  ;; Emacs 30 and newer: Disable Ispell completion function.
+  ;; Try `cape-dict' as an alternative.
+  (text-mode-ispell-word-completion nil)
+
+  ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  ;; commands are hidden, since they are not used via M-x. This setting is
+  ;; useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
 
 (use-package yasnippet
-  :defer t)
-(add-hook 'org-mode-hook 'yas-minor-mode)
-(add-hook 'prog-mode-hook 'yas-minor-mode)
-(add-hook 'lsp-mode 'yas-minor-mode)
-(use-package yasnippet-snippets)
+    :defer t)
+  (add-hook 'org-mode-hook 'yas-minor-mode)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'lsp-mode 'yas-minor-mode)
+  (use-package yasnippet-snippets)
+(use-package yasnippet-capf
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+  (setq yasnippet-capf-lookup-by 'name))
 
 (use-package lsp-mode
     :init
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-               (rust-mode . lsp)
-  	       (mhtml-mode . lsp)
-	       (html-mode . lsp)
+           (rust-mode . lsp)
+  	 (mhtml-mode . lsp)
+	   (html-mode . lsp)
+           (clojure-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
   	       (python-mode . lsp)
   	       (js-mode . lsp))
     :commands lsp)
-
 ;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-ui :commands lsp-ui-mode
+:config
+(setq lsp-ui-doc-enable t
+      lsp-ui-doc-position 'at-point
+      lsp-ui-doc-delay 0.5
+      lsp-ui-peek-enable t
+      lsp-ui-doc-show-with-cursor t))
 
 (use-package lsp-pyright
 :ensure t
@@ -712,14 +825,6 @@ This function allow to activate the webserver when you use but if there is a pro
 :hook (python-mode . (lambda ()
                         (require 'lsp-pyright)
                         (lsp))))  ; or lsp-deferred
-(use-package elpy
-    :ensure t
-    :defer t
-    :config
-    (setq python-shell-interpreter "python3")
-    (setq elpy-rpc-python-command "python3")
-    :init
-    (advice-add 'python-mode :before 'elpy-enable))
 
 (use-package geiser
   :ensure t)
@@ -728,6 +833,8 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure t)
   (use-package flymake-guile
     :defer t)
+
+(use-package cider)
 
 (use-package rust-mode) ;; Rust
 
