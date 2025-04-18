@@ -78,8 +78,8 @@
   :height 110
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
-  :font "Jetbrains Mono"
-  :height 102
+  :font "Hack"
+  :height 1.0
   :weight 'medium)
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
@@ -275,12 +275,18 @@ This function allow to activate the webserver when you use but if there is a pro
 (org-mode . org-appear-mode))
   ;; ;; Modern Org mode interface
   (use-package org-modern
-      :hook (org-mode . global-org-modern-mode)
+      :hook   (org-mode . org-modern-mode)
+              (org-agenda-finalize . org-modern-agenda)
       :custom
+      (org-modern-block-indent t)  ; to enable org-modern-indent when org-indent is active
       (org-modern-keyword t)
       (org-modern-table nil)
       (org-modern-star 'replace)
       (org-modern-replace-stars "◉○◈◇✿✳")
+      (org-modern-checkbox
+       '((?X . "✔")
+         (?- . "┅")
+         (?\s . "")))
       (org-modern-list '((?+ . "➤") (?- . "✦") (?* . "•")))
       (org-modern-todo-faces
             '(("TODO" :background "coral" :foreground "black")
@@ -288,7 +294,8 @@ This function allow to activate the webserver when you use but if there is a pro
               ("PAUSED" :background "IndianRed1" :foreground "black")
               ("PROG" :background "orange" :foreground "black")
               ("WAITING" :background "yellow")
-              ("DONE" :background "green" :foreground "white"))))
+              ("DONE" :background "green" :foreground "white")))
+      (org-modern-label-border 1))
 (use-package ox-epub
         :demand t)
 (use-package ox-reveal)
@@ -747,21 +754,27 @@ This function allow to activate the webserver when you use but if there is a pro
   (corfu-auto-delay 0.1)
   (corfu-popupinfo-delay '(0.5 . 0.2))
   (corfu-preview-current 'insert) ; insert previewed candidate
-  (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)
   :init
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode))         ; activación global
-
+(use-package corfu-terminal
+   :after corfu
+   :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
+   :config
+   (corfu-terminal-mode))
 ;; Cape: extensiones para completion-at-point
 (use-package cape
   :ensure t
   :init
+  (add-hook 'completion-at-point-functions #'cape-abbrev)
   (add-hook 'completion-at-point-functions #'cape-dabbrev)
   (add-hook 'completion-at-point-functions #'cape-file)
   (add-hook 'completion-at-point-functions #'cape-elisp-block)
-  (add-hook 'completion-at-point-functions #'cape-emoji))
+  (add-hook 'completion-at-point-functions #'cape-emoji)
+  (add-hook 'completion-at-point-functions #'cape-dict)
+  (add-hook 'completion-at-point-functions #'cape-keyword))
 ;; Atajos prácticos
 (global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 
@@ -784,31 +797,50 @@ This function allow to activate the webserver when you use but if there is a pro
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p))
 
-(use-package yasnippet
-    :defer t)
-  (add-hook 'org-mode-hook 'yas-minor-mode)
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
-  (add-hook 'lsp-mode 'yas-minor-mode)
-  (use-package yasnippet-snippets)
-(use-package yasnippet-capf
-  :after cape
-  :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
-  (setq yasnippet-capf-lookup-by 'name))
+(use-package tempel
+  :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
+         ("M-*" . tempel-insert))
+  :custom
+  (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
+  :init
+    (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand (cons #'tempel-complete
+                      completion-at-point-functions))))
+  (add-hook 'conf-mode-hook 'tempel-setup-capf)
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+  (add-hook 'org-mode-hook 'tempel-setup-capf)
+  (add-hook 'lsp-mode-hook 'tempel-setup-capf)
+  (add-hook 'lsp-mode 'tempel-setup-capf)
+  (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
+  (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
+  :config 
+   (define-key tempel-map (kbd "TAB") #'tempel-next))
+
+(use-package tempel-collection)
 
 (use-package lsp-mode
     :init
+    (setq lsp-completion-provider :capf)  ;; Usar completado a través de CAPF (no company)
+    (setq lsp-enable-snippet nil)
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
            (rust-mode . lsp)
   	 (mhtml-mode . lsp)
 	   (html-mode . lsp)
-           (clojure-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
-  	       (python-mode . lsp)
-  	       (js-mode . lsp))
+  	 (python-mode . lsp)
+  	  (js-mode . lsp))
     :commands lsp)
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode
@@ -849,9 +881,6 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
 
 (use-package flymake-gradle
-  :defer t)
-
-(use-package java-snippets
   :defer t)
 
 (use-package projectile
