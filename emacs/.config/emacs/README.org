@@ -944,6 +944,7 @@ Programa para lectura de fuentes rss
         ("C-x w" . elfeed))
   #+end_src
 *** Elfeed protocol
+Esto permite leer feeds de servicios RSS externos al propio ordenador
 #+begin_src emacs-lisp
     (use-package elfeed-protocol
         :ensure t
@@ -968,6 +969,7 @@ No lo estoy usando no me atrajo tanto
       :config (elfeed-goodies/setup))
 #+end_src
 *** Elfeed dashboard
+Permite tener un dashboard para organizarlo todo usando org-mode
 #+begin_src emacs-lisp
 (use-package elfeed-dashboard
   :ensure t
@@ -1053,6 +1055,7 @@ Aquí están todos los paquetes y modos que utilizo para programar
   :hook
   (flycheck-mode . flycheck-pos-tip-mode))
 #+end_src
+
 *** Magit
 No es 100% imprescindible ni solo debe usarse para eso pero en la practica
 #+begin_src emacs-lisp
@@ -1080,7 +1083,7 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
     :init (setq eldoc-box-hover-mode t))
 #+end_src
 *** Corfu + Cape
-Soporte para el auto completado de una manera más 🐱
+Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de autocompletado.
 #+begin_src emacs-lisp
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
@@ -1120,6 +1123,7 @@ Soporte para el auto completado de una manera más 🐱
 #+end_src
 
 **** Configuraciones extra para corfu
+Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
@@ -1142,6 +1146,7 @@ Soporte para el auto completado de una manera más 🐱
 
 #+end_src
 **** Kind icon
+Actualmente estoy usando la alternativa nerd-icons-corfu porque como ya uso nerd-icons para lo demás no tengo tanto lio
 #+begin_src emacs-lisp :tangle no
 (use-package kind-icon
   :after corfu
@@ -1165,7 +1170,7 @@ Habilita el uso de snippets
   (setq yasnippet-capf-lookup-by 'name))
 #+end_src
 *** Tempel
-Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs
+Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual
 #+begin_src emacs-lisp
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
@@ -1202,7 +1207,6 @@ Configuracion de LSP
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :init
-    (setq lsp-completion-provider :capf)  ;; Usar completado a través de CAPF (no company)
     (setq lsp-enable-snippet nil)
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
@@ -1213,7 +1217,7 @@ Configuracion de LSP
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
   	 (python-mode . lsp)
-  	  (js-mode . lsp))
+  	 (js-mode . lsp))
     :commands lsp)
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode
@@ -1230,9 +1234,9 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 Ajustes varios para python
 #+begin_src emacs-lisp
  (use-package lsp-pyright
-:ensure t
-:custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-:hook (python-mode . (lambda ()
+   :ensure t
+   :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+   :hook (python-mode . (lambda ()
                         (require 'lsp-pyright)
                         (lsp))))  ; or lsp-deferred
 #+end_src
@@ -1248,10 +1252,6 @@ el potencial
   (use-package flymake-guile
     :defer t)
 #+end_src
-**** Clojure
-#+begin_src emacs-lisp
-(use-package cider)
-#+end_src
 **** Rust
 Lenguaje de programacion conocido por su velocidad y caracteristicas de seguridad en memoria
 #+begin_src emacs-lisp
@@ -1260,7 +1260,8 @@ Lenguaje de programacion conocido por su velocidad y caracteristicas de segurida
 (use-package cargo-mode
     :defer t
     :hook
-    (rust-mode . cargo-minor-mode)    :config
+    (rust-mode . cargo-minor-mode)    
+    :config
     (setq compilation-scroll-output t))
 
 #+end_src

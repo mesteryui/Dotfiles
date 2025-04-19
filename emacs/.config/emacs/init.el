@@ -828,7 +828,6 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package lsp-mode
     :init
-    (setq lsp-completion-provider :capf)  ;; Usar completado a través de CAPF (no company)
     (setq lsp-enable-snippet nil)
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
@@ -839,7 +838,7 @@ This function allow to activate the webserver when you use but if there is a pro
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
   	 (python-mode . lsp)
-  	  (js-mode . lsp))
+  	 (js-mode . lsp))
     :commands lsp)
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode
@@ -851,11 +850,11 @@ This function allow to activate the webserver when you use but if there is a pro
       lsp-ui-doc-show-with-cursor t))
 
 (use-package lsp-pyright
-:ensure t
-:custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-:hook (python-mode . (lambda ()
-                        (require 'lsp-pyright)
-                        (lsp))))  ; or lsp-deferred
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+  :hook (python-mode . (lambda ()
+                       (require 'lsp-pyright)
+                       (lsp))))  ; or lsp-deferred
 
 (use-package geiser
   :ensure t)
@@ -865,14 +864,13 @@ This function allow to activate the webserver when you use but if there is a pro
   (use-package flymake-guile
     :defer t)
 
-(use-package cider)
-
 (use-package rust-mode) ;; Rust
 
 (use-package cargo-mode
     :defer t
     :hook
-    (rust-mode . cargo-minor-mode)    :config
+    (rust-mode . cargo-minor-mode)    
+    :config
     (setq compilation-scroll-output t))
 
 (use-package lua-mode)
