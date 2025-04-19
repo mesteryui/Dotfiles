@@ -1,5 +1,4 @@
-emacs/.config/emacs/elpa/org-superstar-1.5.1.signed
-emacs/.config/emacs/elpa/org-superstar-1.5.1/
+emacs/.config/emacs/elpa/*
 emacs/.config/emacs/tutorial/
 fish/.config/fish/conf.d/
 emacs/.config/emacs/share/eclipse.jdt.ls/*
@@ -36,7 +35,6 @@ emacs/.config/emacs/.dap-breakpoints/
 emacs/.config/emacs/eclipse.jdt.ls/*
 emacs/.config/emacs/workspace/*
 emacs/.config/emacs/projects/*
-snippets/
 emacs/.config/emacs/tldr/*
 emacs/.config/emacs/elpaca/
 yazi/.config/yazi/package.toml
@@ -44,4 +42,5 @@ emacs/*/emacs/.lsp-session-*
 emacs/tramp
 emacs/.config/emacs/projectile-bookmarks.eld
 emacs/.config/emacs/.lsp-session-*
-emacs/.config/emacs/url/
+emacs/.config/emacs/url/*
+emacs/.config/emacs/emms/*
