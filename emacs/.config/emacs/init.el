@@ -65,20 +65,25 @@
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 
-(use-package catppuccin-theme
-    :init
-      (load-theme 'catppuccin t))
+(setq custom-safe-themes t)
+
+(use-package ef-themes
+  :ensure t
+  :config
+  (setq ef-themes-variable-pitch-ui t
+        ef-themes-mixed-fonts t)
+  (load-theme 'ef-cherie :no-confirm))
 
 (set-face-attribute 'default nil
-  :font "Jetbrains Mono"
-  :height 102
+  :font "Aporetic Sans Mono"
+  :height 108
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
-  :font "Ubuntu"
-  :height 110
+  :font "Aporetic Sans"
+  :height 105
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
-  :font "Hack"
+  :font "Aporetic Sans Mono"
   :height 1.0
   :weight 'medium)
 ;; Makes commented text and keywords italics.
@@ -92,10 +97,11 @@
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
-(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
+;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
+(add-hook 'text-mode-hook #'variable-pitch-mode)
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 
@@ -144,7 +150,7 @@
 
 (setq calendar-month-name-array
       ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-       "Julio"    "Agosto"   "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
 (setq calendar-day-name-array
       ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
@@ -152,7 +158,7 @@
 (setq org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
-(setq iso-calendar-style t) ;; formato ISO
+(setq calendar-date-style 'iso)
 (setq calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
@@ -162,14 +168,6 @@
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
-
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 4 1024 1024))
-;; Garbage collector optimization
-(setq gcmh-idle-delay 5)
-(setq gcmh-high-cons-threshold (* 1024 1024 1024))
-(setq comp-deferred-compilation t)
-(setq comp-async-jobs-number 8)
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
@@ -217,7 +215,7 @@ This function allow to activate the webserver when you use but if there is a pro
          (org-mode)))
 
 (dolist (item '((org-level-1 . (1.5 . outilne-1))
-    		   (org-level-2 . (1.4 . outline-2))
+		  (org-level-2 . (1.4 . outline-2))
 	          (org-level-3 . (1.25 . outline-3))
                   (org-level-3 . (1.1 . outline-3))
                   (org-document-title . (1.7 . nil))))
@@ -350,13 +348,13 @@ This function allow to activate the webserver when you use but if there is a pro
   'org-babel-load-languages
   '((ledger . t))))
 
-(use-package nerd-icons
-    ;; :custom
-    ;; The Nerd Font you want to use in GUI
-    ;; "Symbols Nerd Font Mono" is the default and is recommended
-    ;; but you can use any other Nerd Font if you want
-    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-    )
+(use-package emms
+  :config
+  (require 'emms-setup)
+  (emms-all)
+  (emms-default-players))
+
+(use-package nerd-icons)
   (use-package nerd-icons-dired
     :hook
     (dired-mode . nerd-icons-dired-mode))
@@ -382,11 +380,11 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package vterm
   :defer t
-:bind
-(:map
- vterm-mode-map
- ("C-y" . vterm-yank)
- ("C-q" . vterm-send-next-key)))
+  :bind
+  (:map
+   vterm-mode-map
+   ("C-y" . vterm-yank)
+   ("C-q" . vterm-send-next-key)))
 (use-package vterm-toggle)
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 
@@ -544,9 +542,9 @@ This function allow to activate the webserver when you use but if there is a pro
     (switch-to-buffer dashboard-buffer-name))
 
 (use-package doom-modeline
-    :hook (elpaca-after-init-hook . doom-modeline-mode)
+    :hook (elpaca-after-init-hook . doom-modeline-mode) (elpaca-after-init-hook . display-battery-mode)
     :config
-    (setq doom-modeline-height 24)
+    (setq doom-modeline-height 29)
     (setq doom-modeline-icon t)
     (setq doom-modeline-major-mode-icon t)
     (setq doom-modeline-major-mode-color-icon t))
@@ -635,7 +633,7 @@ This function allow to activate the webserver when you use but if there is a pro
   (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                         ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
-			)))
+			("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"))))
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
 
@@ -763,7 +761,8 @@ This function allow to activate the webserver when you use but if there is a pro
    :after corfu
    :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
    :config
-   (corfu-terminal-mode))
+   (unless (display-graphic-p)
+      (corfu-terminal-mode)))
 ;; Cape: extensiones para completion-at-point
 (use-package cape
   :ensure t

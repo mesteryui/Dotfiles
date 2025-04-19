@@ -1,10 +1,27 @@
 #+title: Configuraciones
 #+author: Mester
-#+description: configuración de emacs
+#+email: oscarodriguez56@gmail.com
+#+description: configuración de Emacs
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
-
-* Comienzo del fichero
+* Comienzo de la configuracion
+** Otras configs basicas
+Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabilitar el gestor de paquetes por defecto, es lo que va normalmente en el archivo [[file:early-init.el][early-init.el]]
+#+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes
+(setq package-enable-at-startup nil) ;; Desactivamos el gestor de paquetes de Emacs para poder usar elpaca
+(setq byte-compile-warnings '(not obsolete))
+(setq warning-suppress-log-types '((comp) (bytecomp)))
+(setq native-comp-async-report-warnings-errors 'silent)
+(setenv "LSP_USE_PLISTS" "true")
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 4 1024 1024))
+;; Garbage collector optimization
+(setq gcmh-idle-delay 5)
+(setq gcmh-high-cons-threshold (* 1024 1024 1024))
+(setq comp-deferred-compilation t)
+(setq comp-async-jobs-number 8)
+(provide 'early-init)
+#+end_src
 ** Añadiendo lexical binding
 #+begin_src emacs-lisp
 ;; -*- lexical-binding: t; -*-
@@ -83,32 +100,48 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 #+end_src
 ** Apariencia
 *** Tema visual
+**** Algun ajuste que otro
+El ajuste custom-safe-themes es para que los temas personalizados carguen sin problema incluso si se me olvida el =:no-confirm=
+#+begin_src emacs-lisp
+(setq custom-safe-themes t)
+#+end_src
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp
-    (use-package catppuccin-theme
+#+begin_src emacs-lisp :tangle no
+(use-package catppuccin-theme
         :init
           (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package ef-themes
     :ensure t
     :config
+    (setq ef-themes-variable-pitch-ui t
+          ef-themes-mixed-fonts t)
     (load-theme 'ef-cherie :no-confirm))
 #+end_src
 *** Ajustes de fuentes y alguna cosa
+**** Cosas para mejorar el asunto del texto
+Aquí procederemos a configurar mixed-pitch para aseguar que emacs se vea genial
+#+begin_src emacs-lisp :tangle no
+  (use-package mixed-pitch
+    :hook
+    (text-mode . mixed-pitch-mode))
+#+end_src
+**** Ajustes diversos
+Aqui estan los ajustes de tipografia, que utilizo
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil
-  :font "Jetbrains Mono"
-  :height 102
+  :font "Aporetic Sans Mono"
+  :height 108
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
-  :font "Ubuntu"
-  :height 110
+  :font "Aporetic Sans"
+  :height 105
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
-  :font "Hack"
+  :font "Aporetic Sans Mono"
   :height 1.0
   :weight 'medium)
 ;; Makes commented text and keywords italics.
@@ -122,11 +155,13 @@ El tema visual a utilizar estando disponible aqui la configuracion
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
-(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
+;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
-#+end_src
+(add-hook 'text-mode-hook #'variable-pitch-mode)
+#+END_SRC
+[[#CUSTOM_ORG_BLOCKS][Configuracion para bloques especificos del modo org]]
 *** Opacidad
 Esta es la opacidad que el editor aplica por defecto
 #+begin_src emacs-lisp
@@ -137,7 +172,7 @@ Esta es la opacidad que el editor aplica por defecto
 (electric-pair-mode t)
 #+end_src
 ** Configuración de IRC
-Configuracion del cliente erc
+Configuración del cliente erc
 #+BEGIN_SRC emacs-lisp
 (setq erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
@@ -224,7 +259,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 #+begin_src emacs-lisp
 (setq calendar-month-name-array
       ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-       "Julio"    "Agosto"   "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
 (setq calendar-day-name-array
       ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
@@ -232,7 +267,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 (setq org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setq calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
-(setq iso-calendar-style t) ;; formato ISO
+(setq calendar-date-style 'iso)
 (setq calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
@@ -242,17 +277,6 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
-#+end_src
-** Ajustes de rendimiento
-Sirve para optimizar cosas en relación al rendimiento
-#+begin_src emacs-lisp
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 4 1024 1024))
-;; Garbage collector optimization
-(setq gcmh-idle-delay 5)
-(setq gcmh-high-cons-threshold (* 1024 1024 1024))
-(setq comp-deferred-compilation t)
-(setq comp-async-jobs-number 8)
 #+end_src
 * Funciones propias
 ** Recargar la configuración
@@ -356,7 +380,7 @@ Esto me permite aplicar mis configuraciones de preferencia a los encabezados ten
 funciones car y cdr para extraer los múltiples objetos de esa lista con la información y ejecutar la macro custom-set-faces con la información requerida y que fue puesta en la lista
 #+begin_src emacs-lisp
 (dolist (item '((org-level-1 . (1.5 . outilne-1))
-    		   (org-level-2 . (1.4 . outline-2))
+		  (org-level-2 . (1.4 . outline-2))
 	          (org-level-3 . (1.25 . outline-3))
                   (org-level-3 . (1.1 . outline-3))
                   (org-document-title . (1.7 . nil))))
@@ -398,21 +422,23 @@ Ajustes de Org Mode
         (global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
 *** Ajustes a elementos del org-mode
+:PROPERTIES:
+:CUSTOM_ID: CUSTOM_ORG_BLOCKS
+:END:
 #+begin_src emacs-lisp :tangle no
-(add-hook 'org-mode-hook #'variable-pitch-mode)
 (custom-set-faces
  ;; Código, bloques, verbatim, tablas
  '(org-block ((t (:inherit fixed-pitch))))
- '(org-code ((t (:family "Jetbrains Mono"))))
+ '(org-code ((t (:family fixed-pitch))))
  '(org-table ((t (:inherit fixed-pitch))))
  '(org-verbatim ((t (:inherit fixed-pitch))))
  '(org-formula ((t (:inherit fixed-pitch))))
  '(org-checkbox ((t (:inherit fixed-pitch))))
  ;; Estilo gris clásico para metadatos
- '(org-meta-line ((t (:inherit (shadow fixed-pitch)))))
- '(org-modern-symbol ((t (:inherit fixed-pitch)))))
+ '(org-meta-line ((t (:inherit (shadow fixed-pitch))))))
 #+end_src
 *** Ajustes del todo
+Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
 #+begin_src emacs-lisp
 (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -427,7 +453,7 @@ Ajustes de Org Mode
 #+end_src
 ** Org utilities
 *** Org superstar
-Nos permite modificar los encabezados y los modos
+Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
 #+name: org superstar
 #+begin_src emacs-lisp :tangle no :noweb yes
   (use-package org-superstar
@@ -554,16 +580,18 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
    '((ledger . t))))
 #+end_src
 * Paquetes
+** EMMS
+#+begin_src emacs-lisp
+(use-package emms
+  :config
+  (require 'emms-setup)
+  (emms-all)
+  (emms-default-players))
+#+end_src
 ** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
 #+begin_src emacs-lisp
-  (use-package nerd-icons
-    ;; :custom
-    ;; The Nerd Font you want to use in GUI
-    ;; "Symbols Nerd Font Mono" is the default and is recommended
-    ;; but you can use any other Nerd Font if you want
-    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-    )
+  (use-package nerd-icons)
   (use-package nerd-icons-dired
     :hook
     (dired-mode . nerd-icons-dired-mode))
@@ -595,11 +623,11 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 #+begin_src emacs-lisp
 (use-package vterm
   :defer t
-:bind
-(:map
- vterm-mode-map
- ("C-y" . vterm-yank)
- ("C-q" . vterm-send-next-key)))
+  :bind
+  (:map
+   vterm-mode-map
+   ("C-y" . vterm-yank)
+   ("C-q" . vterm-send-next-key)))
 (use-package vterm-toggle)
 (global-set-key (kbd "C-c g") 'vterm-toggle)
 #+end_src
@@ -780,15 +808,15 @@ El dashboard que me aparece al principio cuando abre el programa
 Para retocar la barra de abajo
 #+begin_src emacs-lisp
   (use-package doom-modeline
-      :hook (elpaca-after-init-hook . doom-modeline-mode)
+      :hook (elpaca-after-init-hook . doom-modeline-mode) (elpaca-after-init-hook . display-battery-mode)
       :config
-      (setq doom-modeline-height 24)
+      (setq doom-modeline-height 29)
       (setq doom-modeline-icon t)
       (setq doom-modeline-major-mode-icon t)
       (setq doom-modeline-major-mode-color-icon t))
 #+end_src
 *** Vertico
-Completacion minimalista y más vistosa
+Completacion minimalista y más vistosa en el minibuffer
 #+begin_src emacs-lisp
 (use-package vertico
   :init
@@ -882,7 +910,7 @@ Radio en Emacs
   (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                         ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
-			)))
+			("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"))))
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
 #+end_src
@@ -1011,6 +1039,7 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
     :ensure t)
 #+end_src
 ** Programación
+Aquí están todos los paquetes y modos que utilizo para programar
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
@@ -1073,7 +1102,8 @@ Soporte para el auto completado de una manera más 🐱
    :after corfu
    :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
    :config
-   (corfu-terminal-mode))
+   (unless (display-graphic-p)
+      (corfu-terminal-mode)))
 ;; Cape: extensiones para completion-at-point
 (use-package cape
   :ensure t

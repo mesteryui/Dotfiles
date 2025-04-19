@@ -1,6 +1,8 @@
+@import 'matugen/matugen-swaync.css';
 * {
   all: unset;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   font-family: "Ubuntu Nerd Font";
   transition: 200ms;
 }
@@ -21,11 +23,11 @@ slider {
 }
 
 .floating-notifications.background .notification-row .notification-background {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px #313244;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
   margin: 18px;
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: @surface;
+  color: @on_surface;
   padding: 0;
 }
 
@@ -60,22 +62,22 @@ slider {
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action {
   border-radius: 7px;
-  color: #cdd6f4;
-  background-color: #313244;
+  color: @on_surface;
+  background-color: @surface;
   box-shadow: inset 0 0 0 1px #45475a;
   margin: 7px;
 }
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: @primary;
+  color: @on_primary;
 }
 
 .floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @theme_selected_bg_color;
-  color: #cdd6f4;
+  box-shadow: inset 0 0 0 1px @shadow;
+  background-color: @primary;
+  color: @on_primary;
 }
 
 .floating-notifications.background .notification-row .notification-background .close-button {
@@ -97,44 +99,44 @@ slider {
 }
 
 .control-center {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px #313244;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
   margin: 18px;
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: @surface;
+  color: @on_surface;
   padding: 14px;
 }
 
 .control-center .widget-title > label {
-  color: #cdd6f4;
+  color: @on_surface;
   font-size: 1.3em;
 }
 
 .control-center .widget-title button {
   border-radius: 7px;
-  color: #cdd6f4;
-  background-color: #313244;
-  box-shadow: inset 0 0 0 1px #45475a;
+  color: @on_surface;
+  background-color: @surface_variant;
+  box-shadow: inset 0 0 0 1px @shadow;
   padding: 8px;
 }
 
 .control-center .widget-title button:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #585b70;
-  color: #cdd6f4;
+  background-color: @outline;
+  color: @on_background;
 }
 
 .control-center .widget-title button:active {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @theme_selected_bg_color;
+  background-color: @primary;
   color: #1e1e2e;
 }
 
 .control-center .notification-row .notification-background {
   border-radius: 7px;
   color: #cdd6f4;
-  background-color: #313244;
-  box-shadow: inset 0 0 0 1px #45475a;
+  background-color: @surface_container;
+  box-shadow: inset 0 0 0 1px @surface_container_highest;
   margin-top: 14px;
 }
 
@@ -152,7 +154,7 @@ slider {
 }
 
 .control-center .notification-row .notification-background .notification .notification-content .summary {
-  color: #cdd6f4;
+  color: @on_surface;
 }
 
 .control-center .notification-row .notification-background .notification .notification-content .time {
@@ -160,7 +162,7 @@ slider {
 }
 
 .control-center .notification-row .notification-background .notification .notification-content .body {
-  color: #cdd6f4;
+  color: @on_surface;
 }
 
 .control-center .notification-row .notification-background .notification > *:last-child > * {
@@ -170,28 +172,28 @@ slider {
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action {
   border-radius: 7px;
   color: #cdd6f4;
-  background-color: #11111b;
-  box-shadow: inset 0 0 0 1px #45475a;
+  background-color: @background;
+  box-shadow: inset 0 0 0 1px @surface_container;
   margin: 7px;
 }
 
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #313244;
+  background-color: @background;
   color: #cdd6f4;
 }
 
 .control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @theme_selected_bg_color;
-  color: #cdd6f4;
+  box-shadow: inset 0 0 0 1px @shadow;
+  background-color: @background;
+  color: @on_surface;
 }
 
 .control-center .notification-row .notification-background .close-button {
   margin: 7px;
   padding: 2px;
   border-radius: 6.3px;
-  color: #1e1e2e;
+  color: @surface;
   background-color: #eba0ac;
 }
 
@@ -211,12 +213,12 @@ slider {
 
 .control-center .notification-row .notification-background:hover {
   box-shadow: inset 0 0 0 1px #45475a;
-  background-color: #7f849c;
+  background-color: @background;
   color: #cdd6f4;
 }
 
 .control-center .notification-row .notification-background:active {
-  box-shadow: inset 0 0 0 1px #45475a;
+  box-shadow: inset 0 0 0 1px @shadow;
   background-color: #cba6f7;
   color: #cdd6f4;
 }
@@ -233,17 +235,17 @@ slider {
 .control-center-dnd {
   margin-top: 5px;
   border-radius: 8px;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: @surface_bright;
+  border: 1px solid @shadow;
   box-shadow: none;
 }
 
 .control-center-dnd:checked {
-  background: #313244;
+  background: @primary;
 }
 
 .control-center-dnd slider {
-  background: #45475a;
+  background: @surface_dim;
   border-radius: 8px;
 }
 
@@ -255,19 +257,19 @@ slider {
 .widget-dnd > switch {
   font-size: initial;
   border-radius: 8px;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: @surface_variant;
+  border: 1px solid @shadow;
   box-shadow: none;
 }
 
 .widget-dnd > switch:checked {
-  background: #313244;
+  background: @surface_variant;
 }
 
 .widget-dnd > switch slider {
-  background: #45475a;
+  background: @surface_variant;
   border-radius: 8px;
-  border: 1px solid #6c7086;
+  border: 1px solid @surface_container;
 }
 
 .widget-mpris .widget-mpris-player {
@@ -299,7 +301,7 @@ slider {
 }
 
 .control-center .widget-label > label {
-  color: #cdd6f4;
+  color: @on_surface;
   font-size: 2rem;
 }
 
