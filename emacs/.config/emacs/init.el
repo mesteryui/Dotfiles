@@ -251,12 +251,11 @@ This function allow to activate the webserver when you use but if there is a pro
         (global-set-key (kbd "C-c a") 'org-agenda)
 
 (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
     (setq org-todo-keyword-faces
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
-             ("PROJ" . "orange")
- 	       ("WAITING" . "yellow")
+ 	           ("WAITING" . "yellow")
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
@@ -290,9 +289,9 @@ This function allow to activate the webserver when you use but if there is a pro
             '(("TODO" :background "coral" :foreground "black")
               ("NEXT" :background "cyan" :foreground "black")
               ("PAUSED" :background "IndianRed1" :foreground "black")
-              ("PROG" :background "orange" :foreground "black")
               ("WAITING" :background "yellow")
-              ("DONE" :background "green" :foreground "white")))
+              ("DONE" :background "green" :foreground "white")
+              ("CANCELLED" :background "gray" :foreground "white")))
       (org-modern-label-border 1))
 (use-package ox-epub
         :demand t)
@@ -314,7 +313,7 @@ This function allow to activate the webserver when you use but if there is a pro
            "* Titulo de Entrada: %?\n")
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
-           "* PROJ %?\n")))
+           "*  %?\n")))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -347,12 +346,6 @@ This function allow to activate the webserver when you use but if there is a pro
  (org-babel-do-load-languages
   'org-babel-load-languages
   '((ledger . t))))
-
-(use-package emms
-  :config
-  (require 'emms-setup)
-  (emms-all)
-  (emms-default-players))
 
 (use-package nerd-icons)
   (use-package nerd-icons-dired
@@ -598,9 +591,9 @@ This function allow to activate the webserver when you use but if there is a pro
  (setq which-key-separator " → " )
  (setq which-key-ellipsis "…"))
 
-(add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
 (use-package organizer
   :ensure nil
+  :load-path "Organizer/"
   :config
   (global-set-key (kbd "<f12>")  'organizer-index)
   (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))

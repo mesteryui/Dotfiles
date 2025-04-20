@@ -4,10 +4,20 @@
 #+description: configuración de Emacs
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
-* Comienzo de la configuracion
+* Comienzo de la configuración
 ** Otras configs basicas
+*** Ajustes del recolector de basura 
+#+name: Recolector de basura
+#+begin_src emacs-lisp :tangle no
+;; Garbage collector optimization
+(setq gcmh-idle-delay 5)
+(setq gcmh-high-cons-threshold (* 1024 1024 1024))
+(setq comp-deferred-compilation t)
+(setq comp-async-jobs-number 8)
+#+end_src
+*** Ajustes del early-init.el
 Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabilitar el gestor de paquetes por defecto, es lo que va normalmente en el archivo [[file:early-init.el][early-init.el]]
-#+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes :noweb yes
 (setq package-enable-at-startup nil) ;; Desactivamos el gestor de paquetes de Emacs para poder usar elpaca
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))
@@ -15,11 +25,7 @@ Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabi
 (setenv "LSP_USE_PLISTS" "true")
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 4 1024 1024))
-;; Garbage collector optimization
-(setq gcmh-idle-delay 5)
-(setq gcmh-high-cons-threshold (* 1024 1024 1024))
-(setq comp-deferred-compilation t)
-(setq comp-async-jobs-number 8)
+<<Recolector de basura>>
 (provide 'early-init)
 #+end_src
 ** Añadiendo lexical binding
@@ -441,12 +447,11 @@ Ajustes de Org Mode
 Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PROJ(p)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
     (setq org-todo-keyword-faces
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
-             ("PROJ" . "orange")
- 	       ("WAITING" . "yellow")
+ 	           ("WAITING" . "yellow")
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
@@ -487,9 +492,9 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
           '(("TODO" :background "coral" :foreground "black")
             ("NEXT" :background "cyan" :foreground "black")
             ("PAUSED" :background "IndianRed1" :foreground "black")
-            ("PROG" :background "orange" :foreground "black")
             ("WAITING" :background "yellow")
-            ("DONE" :background "green" :foreground "white")))
+            ("DONE" :background "green" :foreground "white")
+            ("CANCELLED" :background "gray" :foreground "white")))
     (org-modern-label-border 1))
 #+end_src
 *** Desactivando algunas indentaciones raras en org mode
@@ -532,9 +537,10 @@ Diversas utilidades de org mode para que se vea todo mejor
            "* Titulo de Entrada: %?\n")
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
-           "* PROJ %?\n")))
+           "*  %?\n")))
 #+end_src
 ** Configuración de Org Babel
+Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -581,12 +587,22 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
 #+end_src
 * Paquetes
 ** EMMS
-#+begin_src emacs-lisp
+Es un reproductor de musica desde Emacs permite usar mpv para reproducir musica desde el editor
+#+begin_src emacs-lisp :tangle no
 (use-package emms
   :config
   (require 'emms-setup)
   (emms-all)
-  (emms-default-players))
+  (emms-default-players)
+  (setq-default
+   emms-source-file-default-directory "~/Musica/"
+   emms-source-playlist-default-format 'm3u
+   emms-playlist-mode-center-when-go t
+   emms-playlist-default-major-mode 'emms-playlist-mode
+   emms-show-format "NP: %s"
+   emms-player-list '(emms-player-mpv)
+   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-video" "--no-audio-display" "--force-window=no" "--vo=null")))
 #+end_src
 ** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
@@ -881,9 +897,9 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
-  (add-to-list 'load-path (expand-file-name "Organizer/" user-emacs-directory))
   (use-package organizer
     :ensure nil
+    :load-path "Organizer/"
     :config
     (global-set-key (kbd "<f12>")  'organizer-index)
     (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))

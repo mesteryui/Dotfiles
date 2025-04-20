@@ -7,7 +7,7 @@ java-mode
 (javadocClass "/**" n "* " n "* " "@author: " user-full-name n "* " "@version: " (p> "Version de la clase") n "*" n "**/")
 (trycatch "try {" n (r> "Codigo a comprobar") n "}" "catch (" (r> "Tipo de excecpcion") " " (r> "Nombre en el try catch") ") {" n q n "}")
 
-org-mode 
+org-mode
 (title "#+title: " (r "Titulo por defecto"))
 (normal-author "#+author: " user-full-name q)
 (author "#+author: " (r "Introduzca nombre del autor") q)
