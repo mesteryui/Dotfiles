@@ -67,20 +67,30 @@
 
 (setq custom-safe-themes t)
 
-(use-package ef-themes
-  :ensure t
-  :config
-  (setq ef-themes-variable-pitch-ui t
-        ef-themes-mixed-fonts t)
-  (load-theme 'ef-cherie :no-confirm))
+(use-package catppuccin-theme
+        :init
+          (load-theme 'catppuccin t))
+
+(tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
+    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
+    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+    (tooltip-mode -1)
+    (set-fringe-mode 10)        ; Give some breathing room
+   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq void-text-area-pointer 'text)
+(set-mouse-color (cdr (assoc 'mouse-color (frame-parameters))))
+(setq-default cursor-type 'bar)
+(delete-selection-mode t)
+(setq use-dialog-box nil)
+(display-time-mode 1)
 
 (set-face-attribute 'default nil
   :font "Aporetic Sans Mono"
-  :height 108
+  :height 110
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
   :font "Aporetic Sans"
-  :height 105
+  :height 110
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
   :font "Aporetic Sans Mono"
@@ -101,7 +111,14 @@
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
+
 (add-hook 'text-mode-hook #'variable-pitch-mode)
+
+(defun my/mhtml-use-fixed-pitch ()
+  "Usar fuente monoespaciada en mhtml-mode."
+  (setq buffer-face-mode-face 'fixed-pitch)
+  (buffer-face-mode 1))
+(add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 
@@ -118,13 +135,6 @@
   (setq inhibit-startup-message t
         use-short-answers t
 	      blink-matching-parent t)
-    (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
-    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
-    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (tooltip-mode -1)
-    (set-fringe-mode 10)        ; Give some breathing room
-   (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(setq use-dialog-box nil)
 
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
@@ -214,6 +224,15 @@ This function allow to activate the webserver when you use but if there is a pro
          (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
          (org-mode)))
 
+(defun mi-cfw-calendar-sin-marcos ()
+  "Mostrar `cfw:open-org-calendar` en la ventana actual,
+sin abrir nuevos frames ni cerrar los existentes."
+  (interactive)
+  (let ((pop-up-frames nil)
+        (display-buffer-overriding-action
+         '((display-buffer-same-window))))
+    (cfw:open-org-calendar)))
+
 (dolist (item '((org-level-1 . (1.5 . outilne-1))
 		  (org-level-2 . (1.4 . outline-2))
 	          (org-level-3 . (1.25 . outline-3))
@@ -255,7 +274,7 @@ This function allow to activate the webserver when you use but if there is a pro
     (setq org-todo-keyword-faces
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
- 	           ("WAITING" . "yellow")
+ 	        ("WAITING" . "yellow")
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
@@ -491,29 +510,49 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; use-package with package.el:
 (use-package dashboard
  :ensure t 
- :init
- (setq initial-buffer-choice 'dashboard-open)
- (setq dashboard-set-heading-icons t)
- (setq dashboard-display-icons-p t)
- (setq dashboard-set-file-icons t)
- (setq dashboard-set-heading-icons t)
- (setq dashboard-set-file-icons t)
- (setq dashboard-center-content t)
- (setq dashboard-vertically-center-content t)
- (setq dashboard-banner-logo-title "Emacs Kawaii")
- (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+ :custom-face
+ (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
+ :custom
+ (initial-buffer-choice 'dashboard-open)
+ (dashboard-set-heading-icons t)
+ (dashboard-display-icons-p t)
+ (dashboard-set-file-icons t)
+ (dashboard-set-heading-icons t)
+ (dashboard-set-file-icons t)
+ (dashboard-center-content t)
+ (dashboard-vertically-center-content t)
+ (dashboard-banner-logo-title "Emacs Kawaii")
+ (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
- (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
- (setq dashboard-center-content nil) ;; set to 't' for centered content
- (setq dashboard-items '((recents . 5)
+ (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
+ (dashboard-center-content nil) ;; set to 't' for centered content
+ (dashboard-items '((recents . 5)
                          (agenda . 5 )
                          (bookmarks . 3)))
- (setq dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+ (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
 				("Bookmarks:" . "Marcadores:")
 				("Agenda for the coming week:" . "Agenda para la proxima semana:")
 				))
-
-
+ (dashboard-navigator-buttons
+   `((
+      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0)
+       "Settings" "Open Config file"
+       (lambda (&rest _) (os/open-config)))
+      (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
+       "WM Settings" "Hyprland settings" 
+	(lambda (&rest _) (find-file (expand-file-name "hypr/hyprland.conf" (getenv "XDG_CONFIG_HOME"))))))))
+  (dashboard-startupify-list
+   '(dashboard-insert-newline
+     dashboard-insert-banner
+     dashboard-insert-newline
+     dashboard-insert-banner-title
+     dashboard-insert-newline
+     dashboard-insert-navigator
+     dashboard-insert-items
+     dashboard-insert-newline
+     dashboard-insert-footer
+     dashboard-insert-newline
+     dashboard-insert-init-info))
  :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
                                   (projects  . "nf-oct-rocket")
@@ -535,7 +574,7 @@ This function allow to activate the webserver when you use but if there is a pro
     (switch-to-buffer dashboard-buffer-name))
 
 (use-package doom-modeline
-    :hook (elpaca-after-init-hook . doom-modeline-mode) (elpaca-after-init-hook . display-battery-mode)
+    :hook (elpaca-after-init-hook . doom-modeline-mode)
     :config
     (setq doom-modeline-height 29)
     (setq doom-modeline-icon t)
@@ -634,6 +673,8 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
 
 (use-package elfeed
+    :custom-face
+    (elfeed-search-unread-title-face ((t (:inherit fixed-pitch))))
     :bind
     ("C-x w" . elfeed))
 
@@ -670,6 +711,12 @@ This function allow to activate the webserver when you use but if there is a pro
 (setq visual-line-column 80)
 (setq markdown-fontify-code-blocks-natively t)
 (setq markdown-enable-math t))
+(use-package markdown-preview-eww
+  :ensure t
+  :after markdown-mode)
+
+(use-package markdown-preview-mode
+  :ensure t)
 
 (use-package super-save
   :config
@@ -705,6 +752,8 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook (lambda () (setq-local display-fill-column-indicator-column 79)))
 
 (use-package flycheck-pycheckers)
 
@@ -826,12 +875,12 @@ This function allow to activate the webserver when you use but if there is a pro
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
            (rust-mode . lsp)
-  	 (mhtml-mode . lsp)
+	   (mhtml-mode . lsp)
 	   (html-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
-  	 (python-mode . lsp)
-  	 (js-mode . lsp))
+  	      (python-mode . lsp)
+  	      (js-mode . lsp))
     :commands lsp)
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode
@@ -848,6 +897,23 @@ This function allow to activate the webserver when you use but if there is a pro
   :hook (python-mode . (lambda ()
                        (require 'lsp-pyright)
                        (lsp))))  ; or lsp-deferred
+
+(defun uv-project-run (archivo)
+  "Ejecuta el archivo que desees de un proyecto con uv"
+  (interactive "fSeleccione un archivo: ")
+  (let ((dir default-directory))
+    (if (and (file-exists-p (expand-file-name "pyproject.toml" dir)) (file-exists-p (expand-file-name "README.md" dir)) (file-exists-p (expand-file-name "main.py" dir)))
+       (progn (start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
+       	(split-window-below)
+        (other-window 1)
+	 (with-current-buffer "*uv-project-run*"
+            (setq-local comint-prompt-read-only t)
+            (setq-local comint-use-prompt-regexp t)
+            (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+            (setq-local comint-move-point-for-output 'this)
+            (comint-mode))
+       (switch-to-buffer "*uv-project-run*")
+       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV")))))
 
 (use-package geiser
   :ensure t)
@@ -883,12 +949,11 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
-         (clojure-mode . rainbow-delimiters-mode)
          (prog-mode . rainbow-delimiters-mode)))
 
 (use-package rainbow-mode
 :defer t
-:hook org-mode prog-mode)
+:hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
 
 (use-package flymake
   :ensure t
@@ -903,6 +968,17 @@ This function allow to activate the webserver when you use but if there is a pro
   (flymake-mode-hook . flymake-flycheck-auto))
 (with-eval-after-load 'flymake-mode
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+(custom-set-faces
+ ;; Código, bloques, verbatim, tablas
+ '(org-block ((t (:inherit fixed-pitch))))
+ '(org-code ((t (:family fixed-pitch))))
+ '(org-table ((t (:inherit fixed-pitch))))
+ '(org-verbatim ((t (:inherit fixed-pitch))))
+ '(org-formula ((t (:inherit fixed-pitch))))
+ '(org-checkbox ((t (:inherit fixed-pitch))))
+ ;; Estilo gris clásico para metadatos
+ '(org-meta-line ((t (:inherit (shadow fixed-pitch))))))
 
 (provide 'init)
 ;;; init.el ends here

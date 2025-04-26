@@ -4,9 +4,12 @@
 #+description: configuración de Emacs
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
+
 * Comienzo de la configuración
 ** Otras configs basicas
 *** Ajustes del recolector de basura 
+Aqui definimos ajustes al recolector de basura el plan es que esto se añada a las cosas del early-init.el para de esa manera,
+configurar esos detalles antes de que cargue lo demás, son más que nada optimizaciones
 #+name: Recolector de basura
 #+begin_src emacs-lisp :tangle no
 ;; Garbage collector optimization
@@ -113,13 +116,13 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 #+end_src
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package catppuccin-theme
         :init
           (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package ef-themes
     :ensure t
     :config
@@ -128,6 +131,22 @@ El tema visual a utilizar estando disponible aqui la configuracion
     (load-theme 'ef-cherie :no-confirm))
 #+end_src
 *** Ajustes de fuentes y alguna cosa
+**** Diversos ajustes de apariencia
+Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
+#+begin_src emacs-lisp
+    (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
+    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
+    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+    (tooltip-mode -1)
+    (set-fringe-mode 10)        ; Give some breathing room
+   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq void-text-area-pointer 'text)
+(set-mouse-color (cdr (assoc 'mouse-color (frame-parameters))))
+(setq-default cursor-type 'bar)
+(delete-selection-mode t)
+(setq use-dialog-box nil)
+(display-time-mode 1)
+#+end_src
 **** Cosas para mejorar el asunto del texto
 Aquí procederemos a configurar mixed-pitch para aseguar que emacs se vea genial
 #+begin_src emacs-lisp :tangle no
@@ -140,11 +159,11 @@ Aqui estan los ajustes de tipografia, que utilizo
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil
   :font "Aporetic Sans Mono"
-  :height 108
+  :height 110
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
   :font "Aporetic Sans"
-  :height 105
+  :height 110
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
   :font "Aporetic Sans Mono"
@@ -165,9 +184,20 @@ Aqui estan los ajustes de tipografia, que utilizo
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
+
 (add-hook 'text-mode-hook #'variable-pitch-mode)
 #+END_SRC
 [[#CUSTOM_ORG_BLOCKS][Configuracion para bloques especificos del modo org]]
+**** Ajustes en otros aspectos
+Pendiente de implementar es para asegurarse que el modo HTML tenga monoespacido para mayor
+comodidad tambien puede llegar a servir para otras cosas
+#+begin_src emacs-lisp
+(defun my/mhtml-use-fixed-pitch ()
+  "Usar fuente monoespaciada en mhtml-mode."
+  (setq buffer-face-mode-face 'fixed-pitch)
+  (buffer-face-mode 1))
+(add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
+#+end_src
 *** Opacidad
 Esta es la opacidad que el editor aplica por defecto
 #+begin_src emacs-lisp
@@ -190,17 +220,10 @@ Configuración del cliente erc
 ** Configuraciones personales varias
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
 #+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Oscar")
-    (setq inhibit-startup-message t
-          use-short-answers t
-  	      blink-matching-parent t)
-      (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
-      (menu-bar-mode -1)                                            ; Desactivar la barra de menús
-      (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-      (tooltip-mode -1)
-      (set-fringe-mode 10)        ; Give some breathing room
-     (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  (setq use-dialog-box nil)
+(setq user-full-name "Oscar")
+  (setq inhibit-startup-message t
+        use-short-answers t
+	      blink-matching-parent t)
   #+end_src
 *** Configuracion zoom
 La configuracion de los atajos de zoom
@@ -380,6 +403,17 @@ Me permite abrir el dashboard
     (dashboard-insert-startupify-lists)
     (switch-to-buffer dashboard-buffer-name))
 #+end_src
+** Abrir calendario en sistema
+#+begin_src emacs-lisp
+(defun mi-cfw-calendar-sin-marcos ()
+  "Mostrar `cfw:open-org-calendar` en la ventana actual,
+sin abrir nuevos frames ni cerrar los existentes."
+  (interactive)
+  (let ((pop-up-frames nil)
+        (display-buffer-overriding-action
+         '((display-buffer-same-window))))
+    (cfw:open-org-calendar)))
+#+end_src
 * Org Mode
 ** Encabezados
 Esto me permite aplicar mis configuraciones de preferencia a los encabezados tengo una lista que contiene listas asociativas con la información necesaria, y aprovecho las
@@ -395,12 +429,13 @@ funciones car y cdr para extraer los múltiples objetos de esa lista con la info
 ** Ajustes generales
 Ajustes de Org Mode
 *** Configurar archivos
+Aqui establezco los archivos tipo org que mi configuración va a requerir
 #+begin_src emacs-lisp
-  (setq org-directory "~/org/")
-  (setq diary-file (expand-file-name "diario.org" org-directory))
-  (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
-  (setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
-  (setq org-archive-location "~/org/%s_archivo.org::datetree/")
+(setq org-directory "~/org/")
+(setq diary-file (expand-file-name "diario.org" org-directory))
+(setq org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
+(setq org-archive-location "~/org/%s_archivo.org::datetree/")
 #+end_src
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp
@@ -427,22 +462,6 @@ Ajustes de Org Mode
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
-*** Ajustes a elementos del org-mode
-:PROPERTIES:
-:CUSTOM_ID: CUSTOM_ORG_BLOCKS
-:END:
-#+begin_src emacs-lisp :tangle no
-(custom-set-faces
- ;; Código, bloques, verbatim, tablas
- '(org-block ((t (:inherit fixed-pitch))))
- '(org-code ((t (:family fixed-pitch))))
- '(org-table ((t (:inherit fixed-pitch))))
- '(org-verbatim ((t (:inherit fixed-pitch))))
- '(org-formula ((t (:inherit fixed-pitch))))
- '(org-checkbox ((t (:inherit fixed-pitch))))
- ;; Estilo gris clásico para metadatos
- '(org-meta-line ((t (:inherit (shadow fixed-pitch))))))
-#+end_src
 *** Ajustes del todo
 Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
 #+begin_src emacs-lisp
@@ -451,7 +470,7 @@ Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendient
     (setq org-todo-keyword-faces
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
- 	           ("WAITING" . "yellow")
+ 	        ("WAITING" . "yellow")
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
@@ -593,16 +612,7 @@ Es un reproductor de musica desde Emacs permite usar mpv para reproducir musica 
   :config
   (require 'emms-setup)
   (emms-all)
-  (emms-default-players)
-  (setq-default
-   emms-source-file-default-directory "~/Musica/"
-   emms-source-playlist-default-format 'm3u
-   emms-playlist-mode-center-when-go t
-   emms-playlist-default-major-mode 'emms-playlist-mode
-   emms-show-format "NP: %s"
-   emms-player-list '(emms-player-mpv)
-   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
-   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-video" "--no-audio-display" "--force-window=no" "--vo=null")))
+  (emms-default-players))
 #+end_src
 ** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
@@ -778,53 +788,78 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
+
 ** Paquetes parar o hacer más amena funcionalidad normal de Emacs
 *** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
 #+begin_src emacs-lisp :noweb yes
-  ;; use-package with package.el:
-  (use-package dashboard
-   :ensure t 
-   :init
-   (setq initial-buffer-choice 'dashboard-open)
-   (setq dashboard-set-heading-icons t)
-   (setq dashboard-display-icons-p t)
-   (setq dashboard-set-file-icons t)
-   (setq dashboard-set-heading-icons t)
-   (setq dashboard-set-file-icons t)
-   (setq dashboard-center-content t)
-   (setq dashboard-vertically-center-content t)
-   (setq dashboard-banner-logo-title "Emacs Kawaii")
-   (setq dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
-   ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-   (setq dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
-   (setq dashboard-center-content nil) ;; set to 't' for centered content
-   (setq dashboard-items '((recents . 5)
-                           (agenda . 5 )
-                           (bookmarks . 3)))
-   (setq dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
-  				("Bookmarks:" . "Marcadores:")
-  				("Agenda for the coming week:" . "Agenda para la proxima semana:")
-  				))
-
-
-   :config
-    (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
-                                    (projects  . "nf-oct-rocket")
-                                    (bookmarks . "nf-oct-bookmark")
-                                    (agenda    . "nf-oct-calendar")
-                                    (registers . "nf-oct-note")))
-   (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-    (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
-   (dashboard-setup-startup-hook))
-  (global-set-key (kbd "<f10>") 'open-dashboard)
-    <<abrir dashboard>>
+;; use-package with package.el:
+(use-package dashboard
+ :ensure t 
+ :custom-face
+ (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
+ :custom
+ (initial-buffer-choice 'dashboard-open)
+ (dashboard-set-heading-icons t)
+ (dashboard-display-icons-p t)
+ (dashboard-set-file-icons t)
+ (dashboard-set-heading-icons t)
+ (dashboard-set-file-icons t)
+ (dashboard-center-content t)
+ (dashboard-vertically-center-content t)
+ (dashboard-banner-logo-title "Emacs Kawaii")
+ (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+ ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+ (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
+ (dashboard-center-content nil) ;; set to 't' for centered content
+ (dashboard-items '((recents . 5)
+                         (agenda . 5 )
+                         (bookmarks . 3)))
+ (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+				("Bookmarks:" . "Marcadores:")
+				("Agenda for the coming week:" . "Agenda para la proxima semana:")
+				))
+ (dashboard-navigator-buttons
+   `((
+      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0)
+       "Settings" "Open Config file"
+       (lambda (&rest _) (os/open-config)))
+      (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
+       "WM Settings" "Hyprland settings" 
+	(lambda (&rest _) (find-file (expand-file-name "hypr/hyprland.conf" (getenv "XDG_CONFIG_HOME"))))))))
+  (dashboard-startupify-list
+   '(dashboard-insert-newline
+     dashboard-insert-banner
+     dashboard-insert-newline
+     dashboard-insert-banner-title
+     dashboard-insert-newline
+     dashboard-insert-navigator
+     dashboard-insert-items
+     dashboard-insert-newline
+     dashboard-insert-footer
+     dashboard-insert-newline
+     dashboard-insert-init-info))
+ :config
+  (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+                                  (projects  . "nf-oct-rocket")
+                                  (bookmarks . "nf-oct-bookmark")
+                                  (agenda    . "nf-oct-calendar")
+                                  (registers . "nf-oct-note")))
+ (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+ (dashboard-setup-startup-hook))
+(global-set-key (kbd "<f10>") 'open-dashboard)
+  <<abrir dashboard>>
 #+end_src
+
+#+RESULTS:
+: open-dashboard
+
 *** Doom modeline
 Para retocar la barra de abajo
 #+begin_src emacs-lisp
   (use-package doom-modeline
-      :hook (elpaca-after-init-hook . doom-modeline-mode) (elpaca-after-init-hook . display-battery-mode)
+      :hook (elpaca-after-init-hook . doom-modeline-mode)
       :config
       (setq doom-modeline-height 29)
       (setq doom-modeline-icon t)
@@ -955,9 +990,11 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
 ** Elfeed
 Programa para lectura de fuentes rss
 #+begin_src emacs-lisp
-    (use-package elfeed
-        :bind
-        ("C-x w" . elfeed))
+(use-package elfeed
+    :custom-face
+    (elfeed-search-unread-title-face ((t (:inherit fixed-pitch))))
+    :bind
+    ("C-x w" . elfeed))
   #+end_src
 *** Elfeed protocol
 Esto permite leer feeds de servicios RSS externos al propio ordenador
@@ -1008,6 +1045,12 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
 (setq visual-line-column 80)
 (setq markdown-fontify-code-blocks-natively t)
 (setq markdown-enable-math t))
+(use-package markdown-preview-eww
+  :ensure t
+  :after markdown-mode)
+
+(use-package markdown-preview-mode
+  :ensure t)
 #+end_src
 ** Supersave
 Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor
@@ -1060,6 +1103,8 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 Aquí están todos los paquetes y modos que utilizo para programar
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook (lambda () (setq-local display-fill-column-indicator-column 79)))
 #+end_src
 *** Flycheck
 #+begin_src emacs-lisp
@@ -1228,12 +1273,12 @@ Configuracion de LSP
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
            (rust-mode . lsp)
-  	 (mhtml-mode . lsp)
+	   (mhtml-mode . lsp)
 	   (html-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
-  	 (python-mode . lsp)
-  	 (js-mode . lsp))
+  	      (python-mode . lsp)
+  	      (js-mode . lsp))
     :commands lsp)
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode
@@ -1255,6 +1300,26 @@ Ajustes varios para python
    :hook (python-mode . (lambda ()
                         (require 'lsp-pyright)
                         (lsp))))  ; or lsp-deferred
+#+end_src
+***** Trabajo con uv 
+Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
+#+begin_src emacs-lisp
+(defun uv-project-run (archivo)
+  "Ejecuta el archivo que desees de un proyecto con uv"
+  (interactive "fSeleccione un archivo: ")
+  (let ((dir default-directory))
+    (if (and (file-exists-p (expand-file-name "pyproject.toml" dir)) (file-exists-p (expand-file-name "README.md" dir)) (file-exists-p (expand-file-name "main.py" dir)))
+       (progn (start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
+       	(split-window-below)
+        (other-window 1)
+	 (with-current-buffer "*uv-project-run*"
+            (setq-local comint-prompt-read-only t)
+            (setq-local comint-use-prompt-regexp t)
+            (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+            (setq-local comint-move-point-for-output 'this)
+            (comint-mode))
+       (switch-to-buffer "*uv-project-run*")
+       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV")))))
 #+end_src
 **** Scheme
 Lenguaje de programacion bastante particular al que todavia no le he pillado todo
@@ -1310,12 +1375,11 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
-         (clojure-mode . rainbow-delimiters-mode)
          (prog-mode . rainbow-delimiters-mode)))
 
 (use-package rainbow-mode
 :defer t
-:hook org-mode prog-mode)
+:hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
 #+end_src
 *** Flymake
 #+begin_src emacs-lisp
@@ -1334,8 +1398,26 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
     (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 #+end_src
 
+* Ajustes de algunas faces
+*** Ajustes a elementos del org-mode
+:PROPERTIES:
+:CUSTOM_ID: CUSTOM_ORG_BLOCKS
+:END:
+En el tema ef-themes no es necesario debido a que ya da la posibilidad de que eso funcione de forma correcta
+#+begin_src emacs-lisp
+(custom-set-faces
+ ;; Código, bloques, verbatim, tablas
+ '(org-block ((t (:inherit fixed-pitch))))
+ '(org-code ((t (:family fixed-pitch))))
+ '(org-table ((t (:inherit fixed-pitch))))
+ '(org-verbatim ((t (:inherit fixed-pitch))))
+ '(org-formula ((t (:inherit fixed-pitch))))
+ '(org-checkbox ((t (:inherit fixed-pitch))))
+ ;; Estilo gris clásico para metadatos
+ '(org-meta-line ((t (:inherit (shadow fixed-pitch))))))
+#+end_src
 * Finalización del fichero
-Esto es para aplicar algunas buenas formas al programar
+Esto es para aplicar algunas buenas formas al programar en Emacs Lisp
 #+begin_src emacs-lisp
   (provide 'init)
   ;;; init.el ends here
