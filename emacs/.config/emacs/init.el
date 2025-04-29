@@ -234,9 +234,9 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
-(setq org-default-notes-file (expand-file-name "notes.org" org-directory))
-(setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
-(setq org-archive-location "~/org/%s_archivo.org::datetree/")
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setopt org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
+(setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 
 (setopt org-export-with-drawers nil
       org-export-with-todo-keywords nil
@@ -246,7 +246,7 @@ This function allow to activate the webserver when you use but if there is a pro
       org-export-date-timestamp-format "%d %B %Y"
       org-list-allow-alphabetical t)
 
- (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+ (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
  (require 'org-tempo)               
 (use-package org
     :ensure nil)
@@ -404,7 +404,6 @@ This function allow to activate the webserver when you use but if there is a pro
     (setopt dired-sidebar-theme 'nerd)
     (setopt dired-sidebar-use-term-integration t)
     (setopt dired-sidebar-use-custom-font t))
-
   (use-package dired-git
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
@@ -776,7 +775,7 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure t)
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(setq display-line-numbers-type 'relative)
+(setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
@@ -784,9 +783,9 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package flycheck
   :ensure t
   :init
-  (setq flycheck-check-syntax-automatically
+  (setopt flycheck-check-syntax-automatically
         '(save mode-enabled idle-change))
-  (setq flycheck-idle-change-delay 0))
+  (setopt flycheck-idle-change-delay 0))
 
 (setq flycheck-checker-cache "~/.flycheck-cache")
 (setq flycheck-indication-mode nil)
@@ -816,7 +815,7 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure t
   :defer t
   :after eldoc
-  :init (setq eldoc-box-hover-mode t))
+  :init (setopt eldoc-box-hover-mode t))
 
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu

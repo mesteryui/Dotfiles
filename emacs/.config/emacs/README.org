@@ -423,9 +423,9 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 #+begin_src emacs-lisp
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
-(setq org-default-notes-file (expand-file-name "notes.org" org-directory))
-(setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
-(setq org-archive-location "~/org/%s_archivo.org::datetree/")
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setopt org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
+(setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 #+end_src
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp
@@ -437,7 +437,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
       org-export-date-timestamp-format "%d %B %Y"
       org-list-allow-alphabetical t)
 
- (setq org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+ (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
  (require 'org-tempo)               
 (use-package org
     :ensure nil)
@@ -664,7 +664,6 @@ Actualmente la uso por la integracion que proporciona con Eshell.
     (setopt dired-sidebar-theme 'nerd)
     (setopt dired-sidebar-use-term-integration t)
     (setopt dired-sidebar-use-custom-font t))
-
   (use-package dired-git
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
@@ -861,9 +860,6 @@ El dashboard que me aparece al principio cuando abre el programa
 (global-set-key (kbd "<f10>") 'open-dashboard)
   <<abrir dashboard>>
 #+end_src
-
-#+RESULTS:
-: open-dashboard
 
 *** Doom modeline
 Para retocar la barra de abajo
@@ -1134,7 +1130,7 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 Aquí están todos los paquetes y modos que utilizo para programar
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(setq display-line-numbers-type 'relative)
+(setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
@@ -1144,9 +1140,9 @@ Aquí están todos los paquetes y modos que utilizo para programar
 (use-package flycheck
   :ensure t
   :init
-  (setq flycheck-check-syntax-automatically
+  (setopt flycheck-check-syntax-automatically
         '(save mode-enabled idle-change))
-  (setq flycheck-idle-change-delay 0))
+  (setopt flycheck-idle-change-delay 0))
 
 (setq flycheck-checker-cache "~/.flycheck-cache")
 (setq flycheck-indication-mode nil)
@@ -1183,7 +1179,7 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
     :ensure t
     :defer t
     :after eldoc
-    :init (setq eldoc-box-hover-mode t))
+    :init (setopt eldoc-box-hover-mode t))
 #+end_src
 *** Corfu + Cape
 Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de autocompletado.
