@@ -68,8 +68,8 @@
 (setq custom-safe-themes t)
 
 (use-package catppuccin-theme
-        :init
-          (load-theme 'catppuccin t))
+  :config 
+  (load-theme 'catppuccin t))
 
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
     (menu-bar-mode -1)                                            ; Desactivar la barra de menús
@@ -81,6 +81,7 @@
 (set-mouse-color (cdr (assoc 'mouse-color (frame-parameters))))
 (setq-default cursor-type 'bar)
 (delete-selection-mode t)
+
 (setq use-dialog-box nil)
 (display-time-mode 1)
 
@@ -131,10 +132,10 @@
       erc-fill-function 'erc-fill-static
       erc-fill-static-center 20)
 
-(setq user-full-name "Oscar")
-  (setq inhibit-startup-message t
+(setopt user-full-name "Oscar")
+  (setopt inhibit-startup-message t
         use-short-answers t
-	      blink-matching-parent t)
+	blink-matching-parent t)
 
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
@@ -158,18 +159,18 @@
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
-(setq calendar-month-name-array
+(setopt calendar-month-name-array
       ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
        "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
-(setq calendar-day-name-array
+(setopt calendar-day-name-array
       ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
 (setq org-icalendar-timezone "Europe/Madrid") ;; timezone
-(setq calendar-week-start-day 1) ;; la semana empieza el lunes
+(setopt calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
 (setq calendar-date-style 'iso)
-(setq calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
+(setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
 			  (holiday-fixed 11 01 "Todos los Santos")
@@ -224,15 +225,6 @@ This function allow to activate the webserver when you use but if there is a pro
          (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
          (org-mode)))
 
-(defun mi-cfw-calendar-sin-marcos ()
-  "Mostrar `cfw:open-org-calendar` en la ventana actual,
-sin abrir nuevos frames ni cerrar los existentes."
-  (interactive)
-  (let ((pop-up-frames nil)
-        (display-buffer-overriding-action
-         '((display-buffer-same-window))))
-    (cfw:open-org-calendar)))
-
 (dolist (item '((org-level-1 . (1.5 . outilne-1))
 		  (org-level-2 . (1.4 . outline-2))
 	          (org-level-3 . (1.25 . outline-3))
@@ -240,13 +232,13 @@ sin abrir nuevos frames ni cerrar los existentes."
                   (org-document-title . (1.7 . nil))))
   (custom-set-faces `( ,(car item) ((t (:inherit ,(cdr (cdr item)) :height ,(car (cdr item))))))))
 
-(setq org-directory "~/org/")
-(setq diary-file (expand-file-name "diario.org" org-directory))
+(setopt org-directory "~/org/")
+(setopt diary-file (expand-file-name "diario.org" org-directory))
 (setq org-default-notes-file (expand-file-name "notes.org" org-directory))
 (setq org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
 (setq org-archive-location "~/org/%s_archivo.org::datetree/")
 
-(setq org-export-with-drawers nil
+(setopt org-export-with-drawers nil
       org-export-with-todo-keywords nil
       org-export-with-broken-links t
       org-export-with-toc nil
@@ -269,9 +261,9 @@ sin abrir nuevos frames ni cerrar los existentes."
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 
-(setq org-todo-keywords
+(setopt org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
-    (setq org-todo-keyword-faces
+    (setopt org-todo-keyword-faces
            '(("TODO" . "coral")
              ("NEXT" . "cyan")
  	        ("WAITING" . "yellow")
@@ -397,8 +389,8 @@ sin abrir nuevos frames ni cerrar los existentes."
    vterm-mode-map
    ("C-y" . vterm-yank)
    ("C-q" . vterm-send-next-key)))
-(use-package vterm-toggle)
-(global-set-key (kbd "C-c g") 'vterm-toggle)
+(use-package vterm-toggle
+  :bind (("C-c g" . vterm-toggle)))
 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
@@ -409,9 +401,9 @@ sin abrir nuevos frames ni cerrar los existentes."
     :defer t
     :commands (dired-sidebar-toggle-sidebar)
     :init
-    (setq dired-sidebar-theme 'nerd)
-    (setq dired-sidebar-use-term-integration t)
-    (setq dired-sidebar-use-custom-font t))
+    (setopt dired-sidebar-theme 'nerd)
+    (setopt dired-sidebar-use-term-integration t)
+    (setopt dired-sidebar-use-custom-font t))
 
   (use-package dired-git
     :ensure t)
@@ -447,10 +439,10 @@ sin abrir nuevos frames ni cerrar los existentes."
 	 :hook ((eshell-load . eat-eshell-mode)
 		(eshell-load . eat-eshell-visual-command-mode))
 	:config
-	(setq eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
+	(setopt eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
 	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
-              eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
-		      eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+          eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
 	)
       (use-package eshell-toggle
       :ensure t
@@ -467,7 +459,7 @@ sin abrir nuevos frames ni cerrar los existentes."
       :defer t
       :init
       :config
-      (setq ispell-silently-savep t
+      (setopt ispell-silently-savep t
         flyspell-case-fold-duplications t
         flyspell-issue-message-flag nil
         flyspell-default-dictionary "es_ES"
@@ -491,7 +483,32 @@ sin abrir nuevos frames ni cerrar los existentes."
 (undo-tree-visualizer-diff t)
 (undo-tree-auto-save-history nil))
 
-(use-package treemacs)
+(use-package treemacs
+ :config 
+(setopt treemacs-hide-gitignored-files-mode t)
+   treemacs-project-follow-cleanup t
+   treemacs-width 45
+   treemacs-width-is-initially-locked nil
+   delete-by-moving-to-trash t
+  treemacs-collapse-dirs 3
+  treemacs-display-in-side-window t
+  treemacs-is-never-other-window t
+  treemacs-indentation 2
+  treemacs-indentation-string " "
+  treemacs-filewatch-mode t
+  treemacs-git-mode 'deferred
+  treemacs-text-scale 1
+  treemacs-move-files-by-mouse-dragging nil
+  treemacs-move-forward-on-expand t
+  treemacs-pulse-on-success t
+  treemacs-file-event-delay 0
+  treemacs-deferred-git-apply-delay 0
+  treemacs-git-commit-diff-mode 1)
+  (add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode)
+(use-package treemacs-nerd-icons
+  :after nerd-icons
+  :config
+  (treemacs-load-theme "nerd-icons"))
 (global-set-key (kbd "C-c f") 'treemacs)
 
 (use-package ledger-mode
@@ -501,7 +518,7 @@ sin abrir nuevos frames ni cerrar los existentes."
     :bind
     (("C-." . embark-act)
      ("C-:" . embark-dwim)
-     ("C-h B" . embark-bindings)))
+     ("C-h b" . embark-bindings)))
 
 (use-package embark-consult
   :hook
@@ -509,38 +526,35 @@ sin abrir nuevos frames ni cerrar los existentes."
 
 ;; use-package with package.el:
 (use-package dashboard
- :ensure t 
- :custom-face
- (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
- :custom
- (initial-buffer-choice 'dashboard-open)
- (dashboard-set-heading-icons t)
- (dashboard-display-icons-p t)
- (dashboard-set-file-icons t)
- (dashboard-set-heading-icons t)
- (dashboard-set-file-icons t)
- (dashboard-center-content t)
- (dashboard-vertically-center-content t)
- (dashboard-banner-logo-title "Emacs Kawaii")
- (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
- ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
- (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")  ;; use custom image as banner
- (dashboard-center-content nil) ;; set to 't' for centered content
- (dashboard-items '((recents . 5)
-                         (agenda . 5 )
-                         (bookmarks . 3)))
- (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
-				("Bookmarks:" . "Marcadores:")
-				("Agenda for the coming week:" . "Agenda para la proxima semana:")
-				))
- (dashboard-navigator-buttons
+  :ensure t
+  :custom-face
+  (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
+  :custom
+  (initial-buffer-choice 'dashboard-open)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-display-icons-p t)     ; display icons on both GUI and terminal
+  (dashboard-vertically-center-content t)
+  (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+  (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
+  (dashboard-items '((recents . 5)
+                     (agenda . 5)
+                     (bookmarks . 3)))
+  (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+                          ("Bookmarks:" . "Marcadores:")
+                          ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
+  (dashboard-navigator-buttons
    `((
       (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0)
        "Settings" "Open Config file"
        (lambda (&rest _) (os/open-config)))
       (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
-       "WM Settings" "Hyprland settings" 
-	(lambda (&rest _) (find-file (expand-file-name "hypr/hyprland.conf" (getenv "XDG_CONFIG_HOME"))))))))
+       "WM Settings" "Hyprland settings"
+       (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
+      (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
+       "Index" "Index of my Org"
+       (lambda (&rest _) (organizer-index))))))
   (dashboard-startupify-list
    '(dashboard-insert-newline
      dashboard-insert-banner
@@ -550,18 +564,16 @@ sin abrir nuevos frames ni cerrar los existentes."
      dashboard-insert-navigator
      dashboard-insert-items
      dashboard-insert-newline
-     dashboard-insert-footer
-     dashboard-insert-newline
-     dashboard-insert-init-info))
- :config
+     dashboard-insert-footer))
+  :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
-                                  (projects  . "nf-oct-rocket")
-                                  (bookmarks . "nf-oct-bookmark")
-                                  (agenda    . "nf-oct-calendar")
-                                  (registers . "nf-oct-note")))
- (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+                                     (projects  . "nf-oct-rocket")
+                                     (bookmarks . "nf-oct-bookmark")
+                                     (agenda    . "nf-oct-calendar")
+                                     (registers . "nf-oct-note")))
+  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
   (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
- (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook))
 (global-set-key (kbd "<f10>") 'open-dashboard)
   (defun open-dashboard ()
     "Abre el buffer *dashboard* y salta al primer widget."
@@ -575,11 +587,11 @@ sin abrir nuevos frames ni cerrar los existentes."
 
 (use-package doom-modeline
     :hook (elpaca-after-init-hook . doom-modeline-mode)
-    :config
-    (setq doom-modeline-height 29)
-    (setq doom-modeline-icon t)
-    (setq doom-modeline-major-mode-icon t)
-    (setq doom-modeline-major-mode-color-icon t))
+    :custom
+    (doom-modeline-height 29)
+    (doom-modeline-icon t)
+    (doom-modeline-major-mode-icon t)
+    (doom-modeline-major-mode-color-icon t))
 
 (use-package vertico
   :init
@@ -593,6 +605,10 @@ sin abrir nuevos frames ni cerrar los existentes."
 ;;(use-package vertico-posframe)
 
 (use-package marginalia
+   :after vertico
+   :custom
+  (marginalia-annotators
+   '(marginalia-annotators-heavy marginalia-annotators-lv))
       :init
       (marginalia-mode))
 
@@ -625,10 +641,10 @@ sin abrir nuevos frames ni cerrar los existentes."
  :delight
  :config
  (which-key-mode)
- (setq which-key-idle-delay 0.3)
- (setq which-key-dont-use-unicode nil)
- (setq which-key-separator " → " )
- (setq which-key-ellipsis "…"))
+ (setopt which-key-idle-delay 0.3)
+         which-key-dont-use-unicode nil
+         which-key-separator " → " 
+         which-key-ellipsis "…"))
 
 (use-package organizer
   :ensure nil
@@ -660,17 +676,14 @@ sin abrir nuevos frames ni cerrar los existentes."
 (use-package eradio
   :defer t
   :init
-  (setq eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+  (setopt eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
   :config
-  (setq eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+  (setopt eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                         ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 			("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"))))
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
-
-(use-package typst-mode
-  :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
 
 (use-package elfeed
     :custom-face
@@ -700,6 +713,20 @@ sin abrir nuevos frames ni cerrar los existentes."
   ;; update feed counts on elfeed-quit
   (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
 
+(use-package super-save
+  :config
+  (setq super-save-triggers
+  '(other-window  ; Al cambiar de ventana
+    switch-to-buffer  ; Al cambiar de buffer
+    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
+  (super-save-mode 1)
+  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
+  (setq super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+
+(use-package adaptive-wrap
+  :config
+  (adaptive-wrap-prefix-mode))
+
 (use-package markdown-mode
   :demand t
 :commands (markdown-mode gfm-mode)
@@ -718,19 +745,16 @@ sin abrir nuevos frames ni cerrar los existentes."
 (use-package markdown-preview-mode
   :ensure t)
 
-(use-package super-save
-  :config
-  (setq super-save-triggers
-  '(other-window  ; Al cambiar de ventana
-    switch-to-buffer  ; Al cambiar de buffer
-    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
-  (super-save-mode 1)
-  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
-  (setq super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+(use-package typst-mode
+  :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el"))
 
-(use-package adaptive-wrap
-  :config
-  (adaptive-wrap-prefix-mode))
+(use-package hyprlang-ts-mode
+  :ensure t
+  :custom
+  (hyprlang-ts-mode-indent-offset 4)
+  :config 
+  (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
+(add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
 
 (use-package fish-mode
   :ensure t
@@ -753,15 +777,26 @@ sin abrir nuevos frames ni cerrar los existentes."
 
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setq display-line-numbers-type 'relative)
-(add-hook 'prog-mode-hook (lambda () (setq-local display-fill-column-indicator-column 79)))
+(setq-default display-fill-column-indicator-column 79)
+(add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
 (use-package flycheck-pycheckers)
+(use-package flycheck
+  :ensure t
+  :init
+  (setq flycheck-check-syntax-automatically
+        '(save mode-enabled idle-change))
+  (setq flycheck-idle-change-delay 0))
 
+(setq flycheck-checker-cache "~/.flycheck-cache")
+(setq flycheck-indication-mode nil)
 (use-package flycheck-pos-tip
   :ensure t
   :defer t
   :hook
   (flycheck-mode . flycheck-pos-tip-mode))
+
+(add-hook 'python-mode-hook #'flycheck-mode)
 
 (use-package transient)
 (use-package magit
@@ -891,6 +926,11 @@ sin abrir nuevos frames ni cerrar los existentes."
       lsp-ui-peek-enable t
       lsp-ui-doc-show-with-cursor t))
 
+(use-package dap-mode
+  :ensure t
+  :config
+  (dap-auto-configure-mode))
+
 (use-package lsp-pyright
   :ensure t
   :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
@@ -903,17 +943,18 @@ sin abrir nuevos frames ni cerrar los existentes."
   (interactive "fSeleccione un archivo: ")
   (let ((dir default-directory))
     (if (and (file-exists-p (expand-file-name "pyproject.toml" dir)) (file-exists-p (expand-file-name "README.md" dir)) (file-exists-p (expand-file-name "main.py" dir)))
-       (progn (start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
-       	(split-window-below)
-        (other-window 1)
-	 (with-current-buffer "*uv-project-run*"
-            (setq-local comint-prompt-read-only t)
-            (setq-local comint-use-prompt-regexp t)
-            (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
-            (setq-local comint-move-point-for-output 'this)
-            (comint-mode))
-       (switch-to-buffer "*uv-project-run*")
-       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV")))))
+       (progn
+	(start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
+          (with-current-buffer "*uv-project-run*"
+               (setq-local comint-prompt-read-only t)
+               (setq-local comint-use-prompt-regexp t)
+               (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+               (setq-local comint-move-point-for-output 'this)
+                (comint-mode))
+          (split-window-below)
+          (other-window 1)
+	  (switch-to-buffer "*uv-project-run*"))
+       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV"))))
 
 (use-package geiser
   :ensure t)
@@ -940,12 +981,17 @@ sin abrir nuevos frames ni cerrar los existentes."
   :defer t)
 
 (use-package projectile
-  :init (projectile-mode +1)
-  :bind-keymap ("C-c p" . projectile-command-map))
+  :ensure t
+  :config
+  (projectile-mode +1))
+
+(setq projectile-project-root-files '(".git"))
 
 (use-package treesit-auto
   :config
   (global-treesit-auto-mode))
+(add-to-list 'treesit-language-source-alist
+        '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
 
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
@@ -978,7 +1024,7 @@ sin abrir nuevos frames ni cerrar los existentes."
  '(org-formula ((t (:inherit fixed-pitch))))
  '(org-checkbox ((t (:inherit fixed-pitch))))
  ;; Estilo gris clásico para metadatos
- '(org-meta-line ((t (:inherit (shadow fixed-pitch))))))
+ '(org-meta-line ((t (:inherit (shadow fixed-pitch) :slant italic)))))
 
 (provide 'init)
 ;;; init.el ends here

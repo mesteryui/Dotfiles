@@ -7,7 +7,7 @@
 (setq read-process-output-max (* 4 1024 1024))
 ;; Garbage collector optimization
 (setq gcmh-idle-delay 5)
-(setq gcmh-high-cons-threshold (* 1024 1024 1024))
+(setopt gcmh-high-cons-threshold (* 1024 1024 1024))
 (setq comp-deferred-compilation t)
 (setq comp-async-jobs-number 8)
 (provide 'early-init)
