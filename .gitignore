@@ -5,6 +5,3 @@ lazy-lock.json
 fish_variables/
 waybar/.config/waybar/scripts/clave.txt
 fish/.config/fish/themes
-emacs/.config/emacs/*
-emacs/.config/emacs/README.org
-emacs/.config/emacs/init.el
