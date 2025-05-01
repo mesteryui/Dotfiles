@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: elemento
-# key: xel
-# --
-<${1:element_name} ${2:attribute="value"}>
-  "$0"
-</${1:element_name}>

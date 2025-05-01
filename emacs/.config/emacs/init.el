@@ -2,8 +2,18 @@
 
 (add-to-list 'load-path "~/.config/emacs/scripts/")
 
+(defvar no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/"))
+(defvar no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/"))
+
+(when (boundp 'native-comp-eln-load-path)
+  (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Needed to avoid elpaca warning
+(defvar elpaca-core-date '(20250223)) ;; set to the tag 'emacs-30.1'  date in Emacs repo
+
 (defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-directory (expand-file-name "elpaca/"  no-littering-var-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
@@ -49,7 +59,23 @@
 
 ;; Block until current queue processed.
 (elpaca-wait)
-
+(use-package no-littering
+  :ensure t
+  :init
+  ;; set paths for no-littering etc and var directories
+  ;; instead of this paths, you could use
+  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
+  (setq no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/")
+        no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/")
+      )
+  :config
+  ;; set sensible defaults for backups
+  (no-littering-theme-backups)
+  ;; set paths for url-history-file and custom-file
+  (setopt url-history-file (no-littering-expand-etc-file-name "url/history")
+        custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
+  )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;When installing a package which modifies a form used at the top-level
 ;;(e.g. a package which adds a use-package key word),
 ;;use `elpaca-wait' to block until that package has been installed/configured.
@@ -72,17 +98,17 @@
   (load-theme 'catppuccin t))
 
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
-    (menu-bar-mode -1)                                            ; Desactivar la barra de menús
-    (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
-    (tooltip-mode -1)
-    (set-fringe-mode 10)        ; Give some breathing room
-   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(menu-bar-mode -1)                                            ; Desactivar la barra de menús
+(scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+(tooltip-mode -1)
+(set-fringe-mode 10)        ; Give some breathing room
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq void-text-area-pointer 'text)
 (set-mouse-color (cdr (assoc 'mouse-color (frame-parameters))))
 (setq-default cursor-type 'bar)
 (delete-selection-mode t)
 
-(setq use-dialog-box nil)
+(setopt use-dialog-box nil)
 (display-time-mode 1)
 
 (set-face-attribute 'default nil
@@ -125,25 +151,22 @@
 
 (electric-pair-mode t)
 
-(setq erc-nick "mester")
+(setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
-(setq erc-fill-column 120
+(setopt erc-fill-column 120
       erc-fill-function 'erc-fill-static
       erc-fill-static-center 20)
 
 (setopt user-full-name "Oscar")
-  (setopt inhibit-startup-message t
+(setopt inhibit-startup-message t
         use-short-answers t
 	blink-matching-parent t)
 
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
-
-(setq
+(setopt
  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
  display-time-format "%H:%M"             ; Le da formato a la hora
  auto-save-default nil                   ; Deshabilita #file#
@@ -166,10 +189,10 @@
 (setopt calendar-day-name-array
       ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
-(setq org-icalendar-timezone "Europe/Madrid") ;; timezone
+(setopt org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
-(setq calendar-date-style 'iso)
+(setopt calendar-date-style 'iso)
 (setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
 			  (holiday-fixed 5 17 "Dia de las letras gallegas")
 			  (holiday-fixed 10 12 "Día de la Hispanidad")
@@ -235,7 +258,7 @@ This function allow to activate the webserver when you use but if there is a pro
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
-(setopt org-agenda-files (list (expand-file-name "agenda.org" org-directory) (expand-file-name "proyectos.org" org-directory)))
+(setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 
 (setopt org-export-with-drawers nil
@@ -300,7 +323,7 @@ This function allow to activate the webserver when you use but if there is a pro
             '(("TODO" :background "coral" :foreground "black")
               ("NEXT" :background "cyan" :foreground "black")
               ("PAUSED" :background "IndianRed1" :foreground "black")
-              ("WAITING" :background "yellow")
+              ("WAITING" :background "yellow" :foreground "black")
               ("DONE" :background "green" :foreground "white")
               ("CANCELLED" :background "gray" :foreground "white")))
       (org-modern-label-border 1))
@@ -373,8 +396,8 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package calfw
   :config
-  (setq cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
-  (setq cfw:display-calendar-holidays t) ;; para esconder fiestas calendario emacs
+  (setopt cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
+  (setopt cfw:display-calendar-holidays t) ;; para esconder fiestas calendario emacs
 
 (use-package calfw-org
   :ensure t
@@ -438,7 +461,7 @@ This function allow to activate the webserver when you use but if there is a pro
 	 :hook ((eshell-load . eat-eshell-mode)
 		(eshell-load . eat-eshell-visual-command-mode))
 	:config
-	(setopt eshell-scroll-to-bottom-on-input t   ;; Desplazar abajo al escribir
+	(setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
 	      eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
           eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
 	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
@@ -621,7 +644,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package consult
   :demand t
-:bind (
+  :bind (
        ("C-c M-x" . consult-mode-command)
        ;; ("C-c k" . consult-kmacro)
        ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
@@ -633,14 +656,13 @@ This function allow to activate the webserver when you use but if there is a pro
        ("M-s d" . consult-find)                  ;; Alternativa: consult-fd
        ("M-s g" . consult-grep)
        ("C-s" . consult-line)))
-(global-set-key (kbd "C-c o") 'consult-org-agenda)
 
 (use-package which-key
  :ensure nil
  :delight
  :config
  (which-key-mode)
- (setopt which-key-idle-delay 0.3)
+ (setopt which-key-idle-delay 0.3
          which-key-dont-use-unicode nil
          which-key-separator " → " 
          which-key-ellipsis "…"))
@@ -707,8 +729,9 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package elfeed-dashboard
   :ensure t
+  :after (elfeed elfeed-protocol)
   :config
-  (setq elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
+  (setopt elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
   ;; update feed counts on elfeed-quit
   (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
 
@@ -719,8 +742,8 @@ This function allow to activate the webserver when you use but if there is a pro
     switch-to-buffer  ; Al cambiar de buffer
     mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
   (super-save-mode 1)
-  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
-  (setq super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+  (setopt super-save-idle-duration 1)  ; 0.3 segundos de inactividad
+  (setopt super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
 
 (use-package adaptive-wrap
   :config
@@ -728,15 +751,15 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package markdown-mode
   :demand t
-:commands (markdown-mode gfm-mode)
-:mode (("README\\.md\\'" . gfm-mode)
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
        ("\\.md\\'" . gfm-mode)
        ("\\.markdown\\'" . markdown-mode))
-:init (setq markdown-command "markdown2")
-:config
-(setq visual-line-column 80)
-(setq markdown-fontify-code-blocks-natively t)
-(setq markdown-enable-math t))
+  :init (setq markdown-command "markdown2")
+  :config
+  (setq visual-line-column 80)
+  (setopt markdown-fontify-code-blocks-natively t)
+  (setopt markdown-enable-math t))
 (use-package markdown-preview-eww
   :ensure t
   :after markdown-mode)
@@ -802,6 +825,9 @@ This function allow to activate the webserver when you use but if there is a pro
    :bind
    ("C-x g" . magit-status))
 
+(use-package magit-stats
+  :ensure t)
+
  (use-package git-gutter
    :defer 0.3
    :delight
@@ -813,9 +839,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package eldoc-box
   :ensure t
-  :defer t
-  :after eldoc
-  :init (setopt eldoc-box-hover-mode t))
+  :defer t)
 
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
@@ -893,49 +917,35 @@ This function allow to activate the webserver when you use but if there is a pro
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf)
   (add-hook 'org-mode-hook 'tempel-setup-capf)
-  (add-hook 'lsp-mode-hook 'tempel-setup-capf)
-  (add-hook 'lsp-mode 'tempel-setup-capf)
-  (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
-  (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
+  (add-hook 'eglot-managed-mode-hook 'tempel-setup-capf)
+;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
+ ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
+ ;; (add-hook 'lsp-mode 'tempel-setup-capf)
+ ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
+ ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
   :config 
    (define-key tempel-map (kbd "TAB") #'tempel-next))
 
 (use-package tempel-collection)
 
-(use-package lsp-mode
-    :init
-    (setq lsp-enable-snippet nil)
-    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-    (setq lsp-keymap-prefix "C-c l")
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (rust-mode . lsp)
-	   (mhtml-mode . lsp)
-	   (html-mode . lsp)
-           ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration)
-  	      (python-mode . lsp)
-  	      (js-mode . lsp))
-    :commands lsp)
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode
-:config
-(setq lsp-ui-doc-enable t
-      lsp-ui-doc-position 'at-point
-      lsp-ui-doc-delay 0.5
-      lsp-ui-peek-enable t
-      lsp-ui-doc-show-with-cursor t))
-
-(use-package dap-mode
-  :ensure t
+(use-package eglot
+  :ensure nil
+  :hook ((python-mode . eglot-ensure)
+         (rust-mode . eglot-ensure)
+         (js-mode . eglot-ensure)
+         (html-mode . eglot-ensure)
+         (mhtml-mode . eglot-ensure)
+	 (java-mode . eglot-ensure))
   :config
-  (dap-auto-configure-mode))
+  ;; Opcional: cambiar la tecla prefijo para comandos de eglot
+  (define-key eglot-mode-map (kbd "C-c l a") #'eglot-code-actions)
+  (define-key eglot-mode-map (kbd "C-c l r") #'eglot-rename)
+  (define-key eglot-mode-map (kbd "C-c l f") #'eglot-format))
+   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
+   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
 
-(use-package lsp-pyright
-  :ensure t
-  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-  :hook (python-mode . (lambda ()
-                       (require 'lsp-pyright)
-                       (lsp))))  ; or lsp-deferred
+(use-package pyvenv
+  :hook (pyvenv-mode . python-mode))
 
 (defun uv-project-run (archivo)
   "Ejecuta el archivo que desees de un proyecto con uv"
@@ -954,6 +964,8 @@ This function allow to activate the webserver when you use but if there is a pro
           (other-window 1)
 	  (switch-to-buffer "*uv-project-run*"))
        (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV"))))
+(use-package uv-mode
+  :hook (python-mode . uv-mode-auto-activate-hook))
 
 (use-package geiser
   :ensure t)
@@ -974,9 +986,27 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package lua-mode)
 
-(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+;;  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+  (use-package eglot-java
+    :defer t)
 
-(use-package flymake-gradle
+ (add-hook 'java-mode-hook 'eglot-java-mode)
+
+ (with-eval-after-load 'eglot-java
+    (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
+    (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
+    (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
+    (define-key eglot-java-mode-map (kbd "C-c l N") #'eglot-java-project-new)
+    (define-key eglot-java-mode-map (kbd "C-c l T") #'eglot-java-project-build-task)
+    (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
+  (use-package flymake-gradle
+    :defer t)
+
+(use-package iedit
+  :ensure t)
+(global-set-key (kbd "C-v") 'iedit-mode)
+
+(use-package dape
   :defer t)
 
 (use-package projectile
@@ -984,11 +1014,11 @@ This function allow to activate the webserver when you use but if there is a pro
   :config
   (projectile-mode +1))
 
-(setq projectile-project-root-files '(".git"))
+(setopt projectile-project-root-files '(".git"))
 
-(use-package treesit-auto
-  :config
-  (global-treesit-auto-mode))
+;; (use-package treesit-auto
+;;   :config
+;;   (global-treesit-auto-mode))
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
 

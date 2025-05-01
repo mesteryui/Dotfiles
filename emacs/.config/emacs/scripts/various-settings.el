@@ -1,5 +1,0 @@
-
-
-(provide 'various-settings)
-
-
