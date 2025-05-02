@@ -93,6 +93,15 @@
   (add-hook 'elpaca-after-init-hook '(lambda ()  (setopt gc-cons-percentage 0.1
            gc-cons-threshold 16777216))))
 
-(require 'config)
+(let ((config-el (expand-file-name "slv-config.el" user-emacs-directory))
+      (config-org (expand-file-name "slv-config.org" user-emacs-directory)))
+  (if (and (file-exists-p config-el)
+           (file-exists-p config-org)
+           (time-less-p (file-attribute-modification-time (file-attributes config-org))
+                        (file-attribute-modification-time (file-attributes config-el))))
+      (load-file config-el)
+    (if (file-exists-p config-org)
+        (org-babel-load-file config-org)
+      (error "No file `%s' found!! No configuration loaded!!" config-org))))
 (provide 'init)
 ;;; init.el ends here

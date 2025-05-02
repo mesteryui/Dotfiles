@@ -150,7 +150,16 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 * Finalización del fichero
 Esto es para aplicar algunas buenas formas al programar en Emacs Lisp
 #+begin_src emacs-lisp
-(require 'config)
+(let ((config-el (expand-file-name "slv-config.el" user-emacs-directory))
+      (config-org (expand-file-name "slv-config.org" user-emacs-directory)))
+  (if (and (file-exists-p config-el)
+           (file-exists-p config-org)
+           (time-less-p (file-attribute-modification-time (file-attributes config-org))
+                        (file-attribute-modification-time (file-attributes config-el))))
+      (load-file config-el)
+    (if (file-exists-p config-org)
+        (org-babel-load-file config-org)
+      (error "No file `%s' found!! No configuration loaded!!" config-org))))
 (provide 'init)
 ;;; init.el ends here
 #+end_src
