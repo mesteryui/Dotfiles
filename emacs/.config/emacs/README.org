@@ -165,6 +165,8 @@ Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con
   (provide 'init)
   ;;; init.el ends here
 #+end_src
+* Configuración
+[[file:config.org][ Sigue aqui]]
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
 - [[https://protesilaos.com/][Protesilaos]]

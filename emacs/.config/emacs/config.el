@@ -1,3 +1,102 @@
+;; -*- lexical-binding: t; -*-
+
+;;(add-to-list 'load-path "~/.config/emacs/scripts/")
+
+(dolist (item '((org-level-1 . (1.5 . outilne-1))
+		  (org-level-2 . (1.4 . outline-2))
+	          (org-level-3 . (1.25 . outline-3))
+                  (org-level-3 . (1.1 . outline-3))
+                  (org-document-title . (1.7 . default))))
+  (set-face-attribute (car item) nil :inherit (cddr item) :height (cadr item)))
+
+
+    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch)
+
+(setq custom-safe-themes t)
+
+(use-package catppuccin-theme
+  :config 
+  (load-theme 'catppuccin t))
+
+(tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
+(menu-bar-mode -1)                                            ; Desactivar la barra de menús
+(scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
+(tooltip-mode -1)
+
+(set-fringe-mode 10)        ; Give some breathing room
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq void-text-area-pointer 'text)
+(setq-default cursor-type 'bar) ;; Barra de cursor
+(delete-selection-mode t)
+(setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
+(setopt use-dialog-box nil)
+(display-time-mode 1)
+
+(set-face-attribute 'default nil
+  :font "Aporetic Sans Mono"
+  :height 110
+  :weight 'medium)
+(set-face-attribute 'variable-pitch nil
+  :font "Aporetic Sans"
+  :height 110
+  :weight 'medium)
+(set-face-attribute 'fixed-pitch nil
+  :font "Aporetic Sans Mono"
+  :height 1.0
+  :weight 'medium)
+;; Makes commented text and keywords italics.
+;; This is working in emacsclient but not emacs.
+;; Your font must have an italic face available.
+(set-face-attribute 'font-lock-comment-face nil
+  :slant 'italic)
+(set-face-attribute 'font-lock-keyword-face nil
+  :slant 'italic)
+
+;; This sets the default font on all graphical frames created after restarting Emacs.
+;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
+;; are not right unless I also add this method of setting the default font.
+;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
+
+;; Uncomment the following line if line spacing needs adjusting.
+(setq-default line-spacing 0.3)
+
+(add-hook 'text-mode-hook #'variable-pitch-mode)
+
+(defun my/mhtml-use-fixed-pitch ()
+  "Usar fuente monoespaciada en mhtml-mode."
+  (setq buffer-face-mode-face 'fixed-pitch)
+  (buffer-face-mode 1))
+(add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
+
+(add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
+
+(electric-pair-mode t)
+
+(setopt erc-nick "mester")
+(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
+(setq erc-track-enable-keybindings t)
+(setopt erc-fill-column 120
+      erc-fill-function 'erc-fill-static
+      erc-fill-static-center 20)
+
+(setopt user-full-name "Oscar")
+(setopt inhibit-startup-message t
+        use-short-answers t
+	blink-matching-parent t)
+
+(global-set-key (kbd "C-+") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+
 (setopt
  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
  display-time-format "%H:%M"             ; Le da formato a la hora
@@ -11,6 +110,120 @@
  kill-ring-max 128                       ; Longitud máxima del anillo de matar
  create-lockfiles nil                    ; Impido la creación de ficheros .#
  )
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+(setopt calendar-month-name-array
+      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+
+(setopt calendar-day-name-array
+      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
+
+(setopt org-icalendar-timezone "Europe/Madrid") ;; timezone
+(setopt calendar-week-start-day 1) ;; la semana empieza el lunes
+;;(setq european-calendar-style t) ;; estilo europeo
+(setopt calendar-date-style 'iso)
+(setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
+			  (holiday-fixed 5 17 "Dia de las letras gallegas")
+			  (holiday-fixed 10 12 "Día de la Hispanidad")
+			  (holiday-fixed 11 01 "Todos los Santos")
+			  (holiday-fixed 12 06 "Constitución")
+			  (holiday-fixed 3 28 "Reconquista de Vigo")
+			  (holiday-fixed 5 1 "Dia del Trabajo")
+			  (holiday-fixed 12 24 "Nochebuena")
+			  (holiday-fixed 12 25 "Navidad")))
+
+(defun os/reload-config ()
+  "Recargar configuracion Emacs"
+  (interactive)
+  (load-file (expand-file-name "init.el" user-emacs-directory))
+  (ignore (elpaca-process-queues)))
+(global-set-key (kbd "C-c r") 'os/reload-config)
+
+(defun os/open-config ()
+  "Abrir configuracion de emacs"
+  (interactive)
+  (find-file (expand-file-name "config.org" user-emacs-directory)))
+(global-set-key (kbd "C-x c") 'os/open-config)
+
+(defun dictionary-switcher()
+  "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+         (change
+	  (completing-read "Seleccione el diccionario a usar: " '("eo" "es_ES" "en_US") nil t)))
+    (unless (string= dic change)
+      (ispell-change-dictionary change)
+      (message "Diccionario cambiado desde %s a %s" dic change))))
+
+(defun toggle-webserver ()
+"Function to toggle a not much bigger webserver ChatGPT helping me to fix some things
+This function allow to activate the webserver when you use but if there is a process of webserver the function kill it"
+   (interactive)
+   (let ((proc (get-process "webserver")))
+         (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
+             (progn
+                (delete-process "webserver")
+                (message "Webserver stopped"))
+                (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
+                 (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
+                   (message " ✅ Webserver started")))))))
+
+(defun org-temp-buffer ()
+   "Acceder a un buffer temporal de orgmode"
+   (interactive)
+   (if (get-buffer "*orgtemp*")
+         (switch-to-buffer "*orgtemp*")
+         (switch-to-buffer (get-buffer-create "*orgtemp*"))
+         (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
+         (org-mode)))
+
+(setopt org-directory "~/org/")
+(setopt diary-file (expand-file-name "diario.org" org-directory))
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
+(setopt org-archive-location "~/org/%s_archivo.org::datetree/")
+
+(setopt org-export-with-drawers nil
+      org-export-with-todo-keywords nil
+      org-export-with-broken-links t
+      org-export-with-toc nil
+      org-export-with-smart-quotes t
+      org-export-date-timestamp-format "%d %B %Y"
+      org-list-allow-alphabetical t)
+
+ (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+ (require 'org-tempo)               
+(use-package org
+    :ensure nil)
+(setq org-ellipsis "▼")
+(setq-default org-startup-indented t
+                    org-pretty-entities t
+                    org-use-sub-superscripts "{}"
+                    org-hide-emphasis-markers t
+                    org-startup-with-inline-images t
+                    image-actual-width '(300))
+(add-hook 'org-mode-hook 'org-indent-mode)
+        (global-set-key (kbd "C-c c") 'org-capture)
+        (global-set-key (kbd "C-c a") 'org-agenda)
+
+(setopt org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+    (setopt org-todo-keyword-faces
+           '(("TODO" . "coral")
+             ("NEXT" . "cyan")
+ 	        ("WAITING" . "yellow")
+             ("DONE" . "green")
+             ("PAUSED" . "IndianRed1")
+             ("CANCELLED" . "grey")))
+
+(electric-indent-mode 0)
+(setq org-edit-src-content-indentation 0
+      org-src-preserve-indentation nil)
+
+(setq org-src-tab-acts-natively t
+      org-src-fontify-natively t)
 
 (use-package org-appear
        :hook
@@ -42,6 +255,56 @@
 (use-package ox-epub
         :demand t)
 (use-package ox-reveal)
+
+(setq org-capture-templates
+        `(("t" "Tarea" entry
+           (file+headline "~/org/agenda.org" "Tareas")
+           "* TODO %?\n  Creado: %U\n  %i\n  %a")
+          ("n" "Nota" entry
+           (file+headline "~/org/notes.org" "Notas")
+           "* %? :nota:\n  Creado: %U\n  %i\n %a")
+	  ("e" "Evento" entry
+	   (file+headline "~/org/agenda.org" "Evento")
+	   "* WAITING %?\n"
+	   )
+          ("j" "Diario" entry
+           (file+datetree "~/org/diario.org")
+           "* Titulo de Entrada: %?\n")
+	   ("p" "Project" entry
+           (file+headline "~/org/proyectos.org" "Proyectos")
+           "*  %?\n")))
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (scheme . t)
+   (python . t)
+   (shell . t)
+   ))
+
+(use-package org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
+
+(use-package toc-org
+    :demand t
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+
+(use-package org-crypt
+    :ensure nil
+    :after org
+    :config
+    (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+    :custom
+    (org-crypt-key "oscarodriguez56@gmail.com"))
+
+(use-package org-contrib
+ :after org
+ :config
+ (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((ledger . t))))
 
 (use-package tramp
   :ensure nil
@@ -719,3 +982,6 @@
   (flymake-mode-hook . flymake-flycheck-auto))
 (with-eval-after-load 'flymake-mode
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+(provide 'config)
+;;; config.el ends here
