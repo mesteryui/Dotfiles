@@ -1,3 +1,11 @@
+#+title: Configuracion Propia
+#+author: Mester
+#+property: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
+#+startup: overview
+* Macros
+** Carga de tema personalizado
+Me he inspirado en lo que voy a hacer para mi distribución Emacs llamada Nox
+#+begin_src emacs-lisp
 (defmacro os/load-custom-theme (theme-package theme-name &rest params)
 "Carga temas personalizados instaladolos, a través de use-package lo hago
 asi por que para cada tema es el nombre del paquete :config para setearlo despues de que cargue y asi es más comodo, se recomienda meter primero los paramaetros en :config para evitar problemas luego ya que la macro usa :config primero
@@ -5,9 +13,15 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
   `(use-package ,theme-package
      :ensure t
      :config 
+     (mapc #'disable-theme custom-enabled-themes)
      (load-theme ',theme-name t)
      ,@params))
-
+#+end_src
+* Apariencia
+** Ajustes de faces
+Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
+*** Ajustes a elementos del org-mode
+#+begin_src emacs-lisp
 (defun os/org-heading-setters ()
    (dolist (item '((org-level-1 . 1.5)
 		    (org-level-2 . 1.4)
@@ -33,10 +47,46 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
       (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
       (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
+#+end_src
+** Tema visual
+*** Algun ajuste que otro
+El ajuste custom-safe-themes es para que los temas personalizados carguen sin problema incluso si se me olvida el =:no-confirm=
+#+begin_src emacs-lisp
 (setq custom-safe-themes t)
-
+#+end_src
+*** Tema visual
+#+begin_src emacs-lisp
 (os/load-custom-theme catppuccin-theme catppuccin)
+#+end_src
+*** Configuraciones de tema 'archivadas'
+Guardo esto aqui por si acaso
+**** Tema Catppuccin
+El tema visual a utilizar estando disponible aqui la configuracion
+#+begin_src emacs-lisp :tangle no
+(use-package catppuccin-theme
+  :config 
+  (load-theme 'catppuccin t))
+#+end_src
+**** Tema ef
+#+begin_src emacs-lisp :tangle no
+  (use-package ef-themes
+    :ensure t
+    :config
+    (setq ef-themes-variable-pitch-ui t
+          ef-themes-mixed-fonts t))
+#+end_src
+**** Doom themes
+#+begin_src emacs-lisp :tangle no
+    (use-package doom-themes
+      :ensure t
+      :config
+      (load-theme 'doom-moonlight :no-confirm))
+#+end_src
 
+*** Ajustes de fuentes y alguna cosa
+**** Diversos ajustes de apariencia
+Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
+#+begin_src emacs-lisp
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
@@ -48,7 +98,10 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
 (setopt use-dialog-box nil)
 (display-time-mode 1)
-
+#+end_src
+**** Ajustes diversos
+Aqui estan los ajustes de tipografía, que utilizo
+#+begin_src emacs-lisp
 (set-face-attribute 'default nil
   :font "Aporetic Sans Mono"
   :height 110
@@ -78,48 +131,104 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
 (setq-default line-spacing 0.3)
 
 (add-hook 'text-mode-hook #'variable-pitch-mode)
-
+#+END_SRC
+**** Ajustes en otros aspectos
+Pendiente de implementar es para asegurarse que el modo HTML tenga monoespacido para mayor
+comodidad tambien puede llegar a servir para otras cosas
+#+begin_src emacs-lisp
 (defun my/mhtml-use-fixed-pitch ()
   "Usar fuente monoespaciada en mhtml-mode."
   (setq buffer-face-mode-face 'fixed-pitch)
   (buffer-face-mode 1))
 (add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
-
+#+end_src
+*** Opacidad
+Esta es la opacidad que el editor aplica por defecto
+#+begin_src emacs-lisp
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
-
+#+end_src
+*** Electric pair
+#+begin_src emacs-lisp
 (electric-pair-mode t)
-
+#+end_src
+** Configuración de IRC
+Configuración del cliente erc
+#+BEGIN_SRC emacs-lisp
 (setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
 (setopt erc-fill-column 120
       erc-fill-function 'erc-fill-static
       erc-fill-static-center 20)
-
+#+END_SRC
+** Configuraciones personales varias
+Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
+#+BEGIN_SRC emacs-lisp
 (setopt user-full-name "Oscar")
 (setopt inhibit-startup-message t
         use-short-answers t
 	blink-matching-parent t)
-
+  #+end_src
+*** Configuracion zoom
+La configuracion de los atajos de zoom
+#+begin_src emacs-lisp
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
-
-(setopt
- display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
- display-time-format "%H:%M"             ; Le da formato a la hora
- auto-save-default nil                   ; Deshabilita #file#
- load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
- select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
- vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
- make-backup-files nil                   ; No realiza backups de ficheros
-;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
- ;; global-hl-line-mode t                ; Highlight current line
- kill-ring-max 128                       ; Longitud máxima del anillo de matar
- create-lockfiles nil                    ; Impido la creación de ficheros .#
- )
-
+#+end_src
+*** Ubicacion custom file
+#+begin_src emacs-lisp :tangle no
+(load custom-file 'noerror 'nomessage)
+#+end_src
+*** Configuraciones diversas
+Aquí se tratan configuraciones especificas útiles para diversos aspectos
+**** Formato hora
+Configura el formato de la hora
+#+name: formato hora
+#+begin_src emacs-lisp :tangle no
+  display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
+  display-time-format "%H:%M"             ; Le da formato a la hora
+#+end_src
+**** Archivos de bloqueo
+Impide la creación de ficheros de bloqueo que a veces son muy coñazo al menos para mi
+#+name: lock config
+#+begin_src emacs-lisp :tangle no
+create-lockfiles nil                    ; Impido la creación de ficheros .#
+#+end_src
+**** Deshabilitar sistema de auto guardado propio
+Este sistema de auto guardado es muy coñazo por los archivos que genera así que lo quito, y lo cambio por [[*Supersave][SuperSave]]
+#+name: native auto save
+#+begin_src emacs-lisp :tangle no
+auto-save-default nil                   ; Deshabilita #file#
+#+end_src
+**** Archivos de copia de seguridad
+Configura la creación de archivos de backup para mantener las cosas más simples y practicas
+#+name: backup
+#+begin_src emacs-lisp :tangle no
+make-backup-files nil                   ; No realiza backups de ficheros
+#+end_src
+**** Estableciendo configuraciones
+#+begin_src emacs-lisp :noweb yes
+  (setopt
+   <<formato hora>>
+   <<native auto save>>
+   load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+   select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+   vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+   <<backup>>
+  ;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
+   ;; global-hl-line-mode t                ; Highlight current line
+   kill-ring-max 128                       ; Longitud máxima del anillo de matar
+   <<lock config>>
+   )
+ #+end_src
+*** Uso de la tecla escape pues para el escape
+O algo asi
+#+begin_src emacs-lisp
 (global-set-key [escape] 'keyboard-escape-quit)
-
+#+end_src
+** Configuración del calendario
+Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
+#+begin_src emacs-lisp
 (setopt calendar-month-name-array
       ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
        "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
@@ -140,20 +249,31 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
 			  (holiday-fixed 5 1 "Dia del Trabajo")
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
-
+#+end_src
+* Funciones propias
+** Recargar la configuración
+Esta función sirve para recargar la configuración activa sin cerrar Emacs, no funciona
+en todos los casos hay veces que hay que cerrar el programa
+#+begin_src emacs-lisp
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
   (load-file (expand-file-name "init.el" user-emacs-directory))
   (ignore (elpaca-process-queues)))
 (global-set-key (kbd "C-c r") 'os/reload-config)
-
+#+end_src
+** Abrir configuración
+Abrir el archivo de configuración usado en este caso abro el README.org que se edita para obtener el archivo de configuracion
+#+begin_src emacs-lisp
 (defun os/open-config ()
   "Abrir configuracion de emacs"
   (interactive)
   (find-file (expand-file-name "config.org" user-emacs-directory)))
 (global-set-key (kbd "C-x c") 'os/open-config)
-
+#+end_src
+** Dictionary Switcher
+Función propia para cambiar entre mis diccionarios más usados
+#+begin_src emacs-lisp
 (defun dictionary-switcher()
   "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
   (interactive)
@@ -163,7 +283,10 @@ THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tem
     (unless (string= dic change)
       (ispell-change-dictionary change)
       (message "Diccionario cambiado desde %s a %s" dic change))))
-
+#+end_src
+** Toggle webserver
+Activa un servidor web con auto refresco, y se abre en cualquier directorio
+#+begin_src emacs-lisp
 (defun toggle-webserver ()
 "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things
 This function allow to activate the webserver when you use but if there is a process of webserver the function kill it"
@@ -176,7 +299,11 @@ This function allow to activate the webserver when you use but if there is a pro
                 (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
                  (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
                    (message " ✅ Webserver started")))))))
-
+#+end_src
+** Buffer temporal en modo Org
+Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
+cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
+#+begin_src emacs-lisp
 (defun org-temp-buffer ()
    "Acceder a un buffer temporal de orgmode"
    (interactive)
@@ -185,13 +312,54 @@ This function allow to activate the webserver when you use but if there is a pro
          (switch-to-buffer (get-buffer-create "*orgtemp*"))
          (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
          (org-mode)))
-
+#+end_src
+** Modo sin distracciones
+No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
+#+name: sin distracciones
+#+begin_src emacs-lisp :tangle no
+ (defun ews-distraction-free ()
+  "Distraction-free writing environment using Olivetti package."
+  (interactive)
+  (if (equal olivetti-mode nil)
+      (progn
+        (window-configuration-to-register 1)
+        (delete-other-windows)
+        (text-scale-set 2)
+        (olivetti-mode t))
+    (progn
+      (if (eq (length (window-list)) 1)
+          (jump-to-register 1))
+      (olivetti-mode 0)
+      (text-scale-set 0))))
+#+end_src
+** Abrir dashboard
+Me permite abrir el dashboard
+#+name: abrir dashboard
+#+begin_src emacs-lisp :tangle no
+  (defun open-dashboard ()
+    "Abre el buffer *dashboard* y salta al primer widget."
+    (interactive)
+    (delete-other-windows)
+    ;; Refresca  dashboard buffer
+    (if (get-buffer dashboard-buffer-name)
+        (kill-buffer dashboard-buffer-name))
+    (dashboard-insert-startupify-lists)
+    (switch-to-buffer dashboard-buffer-name))
+#+end_src
+* Org Mode
+** Ajustes generales
+Ajustes de Org Mode
+*** Configurar archivos
+Aqui establezco los archivos tipo org que mi configuración va a requerir
+#+begin_src emacs-lisp
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
 (setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
-
+#+end_src
+*** Añadiendo ajustes varios
+#+begin_src emacs-lisp
 (setopt org-export-with-drawers nil
       org-export-with-todo-keywords nil
       org-export-with-broken-links t
@@ -217,7 +385,10 @@ This function allow to activate the webserver when you use but if there is a pro
 (add-hook 'org-mode-hook 'org-indent-mode)
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
-
+#+end_src
+*** Ajustes del todo
+Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
+#+begin_src emacs-lisp
 (setopt org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
     (setopt org-todo-keyword-faces
@@ -227,45 +398,73 @@ This function allow to activate the webserver when you use but if there is a pro
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
-
-(electric-indent-mode 0)
-(setq org-edit-src-content-indentation 0
-      org-src-preserve-indentation nil)
-
+#+end_src
+** Org utilities
+*** Org superstar
+Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
+#+name: org superstar
+#+begin_src emacs-lisp :tangle no :noweb yes
+  (use-package org-superstar
+              :demand t  
+              :ensure t
+  	    :config
+  	    (setq org-superstar-headline-bullets-list '("◉" "●" "○" "✿" "" "󰓎" ""))
+              (setq org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦)))
+              (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+#+end_src
+*** Org modern
+Org modern nos permite modernizar el estilo visual del orgmode para que se vea más moderno por supuesto si queremos que alguna cosa se vea como normalmente podemos modificarlo en cualquier momento
+#+name: org modern
+#+begin_src emacs-lisp :tangle no :noweb yes
+;; ;; Modern Org mode interface
+(use-package org-modern
+    :after org
+    :hook   (org-mode . org-modern-mode)
+            (org-agenda-finalize . org-modern-agenda)
+    :custom
+    (org-modern-block-indent t)  ; to enable org-modern-indent when org-indent is active
+    (org-modern-keyword t)
+    (org-modern-table nil)
+    (org-modern-star 'replace)
+    (org-modern-replace-stars "◉○◈◇✿✳")
+    (org-modern-checkbox
+     '((?X . "✔")
+       (?- . "┅")
+       (?\s . "")))
+    (org-modern-list '((?+ . "➤") (?- . "✦") (?* . "•")))
+    (org-modern-todo-faces
+          '(("TODO" :background "coral" :foreground "black")
+            ("NEXT" :background "cyan" :foreground "black")
+            ("PAUSED" :background "IndianRed1" :foreground "black")
+            ("WAITING" :background "yellow" :foreground "black")
+            ("DONE" :background "green" :foreground "white")
+            ("CANCELLED" :background "gray" :foreground "white")))
+    (org-modern-label-border 1))
+#+end_src
+*** Desactivando algunas indentaciones raras en org mode
+#+begin_src emacs-lisp
+  (electric-indent-mode 0)
+  (setq org-edit-src-content-indentation 0
+        org-src-preserve-indentation nil) 
+#+end_src
+*** Ajustando otras cosas en relacion a indentacion
+#+begin_src emacs-lisp
 (setq org-src-tab-acts-natively t
       org-src-fontify-natively t)
-
+#+end_src
+*** Cargándolo todo
+Diversas utilidades de org mode para que se vea todo mejor  
+#+begin_src emacs-lisp :noweb yes
 (use-package org-appear
        :hook
 (org-mode . org-appear-mode))
-  ;; ;; Modern Org mode interface
-  (use-package org-modern
-      :after org
-      :hook   (org-mode . org-modern-mode)
-              (org-agenda-finalize . org-modern-agenda)
-      :custom
-      (org-modern-block-indent t)  ; to enable org-modern-indent when org-indent is active
-      (org-modern-keyword t)
-      (org-modern-table nil)
-      (org-modern-star 'replace)
-      (org-modern-replace-stars "◉○◈◇✿✳")
-      (org-modern-checkbox
-       '((?X . "✔")
-         (?- . "┅")
-         (?\s . "")))
-      (org-modern-list '((?+ . "➤") (?- . "✦") (?* . "•")))
-      (org-modern-todo-faces
-            '(("TODO" :background "coral" :foreground "black")
-              ("NEXT" :background "cyan" :foreground "black")
-              ("PAUSED" :background "IndianRed1" :foreground "black")
-              ("WAITING" :background "yellow" :foreground "black")
-              ("DONE" :background "green" :foreground "white")
-              ("CANCELLED" :background "gray" :foreground "white")))
-      (org-modern-label-border 1))
+  <<org modern>>
 (use-package ox-epub
         :demand t)
 (use-package ox-reveal)
-
+#+end_src 
+** Configuración de org-capture
+#+begin_src emacs-lisp
 (setq org-capture-templates
         `(("t" "Tarea" entry
            (file+headline "~/org/agenda.org" "Tareas")
@@ -283,46 +482,76 @@ This function allow to activate the webserver when you use but if there is a pro
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
            "*  %?\n")))
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (scheme . t)
-   (python . t)
-   (shell . t)
-   ))
-
-(use-package org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode))
-
+#+end_src
+** Configuración de Org Babel
+Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)
+     ))
+#+end_src
+*** Org auto tangle
+Hace que en según que caso el tangle sea automático
+#+begin_src emacs-lisp
+  (use-package org-auto-tangle
+    :defer t
+    :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+** Otras cosas
+#+begin_src emacs-lisp
 (use-package toc-org
     :demand t
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
-
-(use-package org-crypt
-    :ensure nil
-    :after org
-    :config
-    (setq org-tags-exclude-from-inheritance (quote ("crypt")))
-    :custom
-    (org-crypt-key "oscarodriguez56@gmail.com"))
-
-(use-package org-contrib
- :after org
- :config
- (org-babel-do-load-languages
-  'org-babel-load-languages
-  '((ledger . t))))
-
+#+end_src
+** Org Crypt
+Encriptar entradas de archivos ~.org~ usando una clave GPG
+#+begin_src emacs-lisp
+  (use-package org-crypt
+      :ensure nil
+      :after org
+      :config
+      (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+      :custom
+      (org-crypt-key "oscarodriguez56@gmail.com"))
+#+end_src
+** Org contrib
+Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
+#+begin_src emacs-lisp
+ (use-package org-contrib
+  :after org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((ledger . t))))
+#+end_src
+* Paquetes
+** Tramp
+Ya viene con Emacs aqui defino unas configuraciones 
+#+begin_src emacs-lisp
 (use-package tramp
   :ensure nil
   :custom
   (tramp-persistency-file-name
    (no-littering-expand-var-file-name "tramp/history.el")))
-
-(use-package nerd-icons
+#+end_src
+** EMMS
+Es un reproductor de musica desde Emacs permite usar mpv para reproducir musica desde el editor
+#+begin_src emacs-lisp :tangle no
+(use-package emms
+  :config
+  (require 'emms-setup)
+  (emms-all)
+  (emms-default-players))
+#+end_src
+** Nerd Icons
+Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
+#+begin_src emacs-lisp
+  (use-package nerd-icons
     :ensure t)
   (use-package nerd-icons-completion
     :ensure t
@@ -333,7 +562,10 @@ This function allow to activate the webserver when you use but if there is a pro
    :after (corfu nerd-icons)
    :config
    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-
+#+end_src
+** Calfw
+Hace que el calendario pueda verse bonito, y la verdad me gusta
+#+begin_src emacs-lisp
 (use-package calfw
   :config
   (setopt cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
@@ -345,7 +577,10 @@ This function allow to activate the webserver when you use but if there is a pro
   :config
   (setq cfw:org-overwrite-default-keybinding t)
   :bind ([f8] . cfw:open-org-calendar))
-
+#+end_src
+** Vterm
+Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
+#+begin_src emacs-lisp
 (use-package vterm
   :defer t
   :bind
@@ -355,11 +590,16 @@ This function allow to activate the webserver when you use but if there is a pro
    ("C-q" . vterm-send-next-key)))
 (use-package vterm-toggle
   :bind (("C-c g" . vterm-toggle)))
-
-;; ;; Aun no soportado en la shell de comandos que uso
-(use-package eat
-   :ensure t)
-
+#+end_src
+** Eat
+Actualmente la uso por la integracion que proporciona con Eshell.
+#+begin_src emacs-lisp
+   ;; ;; Aun no soportado en la shell de comandos que uso
+  (use-package eat
+     :ensure t)
+#+end_src
+** Dired sidebar
+#+begin_src emacs-lisp
 (use-package dired-sidebar
     :ensure t
     :defer t
@@ -371,12 +611,18 @@ This function allow to activate the webserver when you use but if there is a pro
   (use-package dired-git
     :ensure t)
 (global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
-
+#+end_src
+** Autorevert
+Hace que un buffer modificado desde otro lugar se refresque solo
+#+begin_src emacs-lisp
 (use-package autorevert
 :ensure nil
 :diminish
 :hook (after-init . global-auto-revert-mode))
-
+#+end_src
+** Eshell
+Shell que permite usar comandos elisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
+#+begin_src emacs-lisp
 (setq eshell-prompt-function
       (lambda ()
         (let ((status (if (= eshell-last-command-status 0)
@@ -416,7 +662,10 @@ This function allow to activate the webserver when you use but if there is a pro
         :config
         (eshell-syntax-highlighting-global-mode +1))
       (global-set-key (kbd "C-c t") 'eshell-toggle)
-
+#+end_src
+** Flyspell
+Habilita la correccion ortografica al vuelo.
+#+begin_src emacs-lisp
 (use-package flyspell
       :ensure nil
       :defer t
@@ -437,7 +686,10 @@ This function allow to activate the webserver when you use but if there is a pro
     :after (flyspell)
     :bind (("C-;" . flyspell-auto-correct-previous-word)
            ("<f7>" . flyspell-correct-wrapper)))
-
+#+end_src
+** Undo-tree
+Hace que el sistema de desacer cambios use una estructura de arbol que se puede navegar
+#+begin_src emacs-lisp
 (use-package undo-tree
 :init
 (global-undo-tree-mode 1)
@@ -446,6 +698,9 @@ This function allow to activate the webserver when you use but if there is a pro
 (undo-tree-visualizer-diff t)
 (undo-tree-auto-save-history nil))
 
+#+end_src
+** Treemacs
+#+begin_src emacs-lisp
 (use-package treemacs
  :config 
 (setopt treemacs-hide-gitignored-files-mode t)
@@ -473,10 +728,14 @@ This function allow to activate the webserver when you use but if there is a pro
   :config
   (treemacs-load-theme "nerd-icons"))
 (global-set-key (kbd "C-c f") 'treemacs)
-
+#+end_src
+** Ledger
+#+begin_src emacs-lisp
 (use-package ledger-mode
   :ensure t)
-
+#+end_src
+** Embark
+#+begin_src emacs-lisp
 (use-package embark
     :bind
     (("C-." . embark-act)
@@ -486,7 +745,12 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 
+** Hacer más estetico Emacs
+*** Dashboard
+El dashboard que me aparece al principio cuando abre el programa
+#+begin_src emacs-lisp :noweb yes
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
@@ -539,23 +803,22 @@ This function allow to activate the webserver when you use but if there is a pro
   (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
   (dashboard-setup-startup-hook))
 (global-set-key (kbd "<f10>") 'open-dashboard)
-  (defun open-dashboard ()
-    "Abre el buffer *dashboard* y salta al primer widget."
-    (interactive)
-    (delete-other-windows)
-    ;; Refresca  dashboard buffer
-    (if (get-buffer dashboard-buffer-name)
-        (kill-buffer dashboard-buffer-name))
-    (dashboard-insert-startupify-lists)
-    (switch-to-buffer dashboard-buffer-name))
+  <<abrir dashboard>>
+#+end_src
 
+*** Doom modeline
+Para retocar la barra de abajo
+#+begin_src emacs-lisp
 (use-package doom-modeline
     :after (nerd-icons)
     :hook (elpaca-after-init-hook . doom-modeline-mode)
     :custom
     (doom-modeline-height 25)
     (doom-modeline-icon t))
-
+#+end_src
+*** Vertico
+Completacion minimalista y más vistosa en el minibuffer
+#+begin_src emacs-lisp
 (use-package vertico
   :init
   (vertico-mode)
@@ -564,7 +827,10 @@ This function allow to activate the webserver when you use but if there is a pro
   (vertico-resize t)
   (vertico-cycle t)
   (vertico-sort-function 'vertico-sort-history-alpha))
-
+#+end_src
+*** Marginalia
+Provee anotaciones en el minibuffer para mejorar la experiencia de completado
+#+begin_src emacs-lisp
 (use-package marginalia
    :after vertico
    :custom
@@ -572,7 +838,9 @@ This function allow to activate the webserver when you use but if there is a pro
    '(marginalia-annotators-heavy marginalia-annotators-lv))
       :init
       (marginalia-mode))
-
+#+end_src
+*** Orderless
+#+begin_src emacs-lisp
 (use-package orderless
   :defer t
 :custom
@@ -580,7 +848,11 @@ This function allow to activate the webserver when you use but if there is a pro
 (completion-category-defaults nil)
 (completion-category-overrides
  '((file (styles partial-completion)))))
-
+#+end_src
+*** Consult
+Sustituye cosas como la tipica busqueda el cambio de buffer o así con una alternativa más
+potente
+#+begin_src emacs-lisp
 (use-package consult
   :demand t
   :bind (
@@ -595,7 +867,10 @@ This function allow to activate the webserver when you use but if there is a pro
        ("M-s d" . consult-find)                  ;; Alternativa: consult-fd
        ("M-s g" . consult-grep)
        ("C-s" . consult-line)))
-
+#+end_src
+*** Which key
+Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
+#+begin_src emacs-lisp
 (use-package which-key
  :ensure nil
  :delight
@@ -605,34 +880,31 @@ This function allow to activate the webserver when you use but if there is a pro
          which-key-dont-use-unicode nil
          which-key-separator " → " 
          which-key-ellipsis "…"))
+#+end_src
+** Organizer
+Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
+#+begin_src emacs-lisp
+  (use-package organizer
+    :ensure nil
+    :load-path "Organizer/"
+    :config
+    (global-set-key (kbd "<f12>")  'organizer-index)
+    (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+    (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
+#+end_src
+** Olivetti
+En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
+#+begin_src emacs-lisp :noweb yes
+  <<sin distracciones>>
+  (use-package olivetti
+    :demand t
+    :bind
+    (("<f9>" . ews-distraction-free)))
+#+end_src
 
-(use-package organizer
-  :ensure nil
-  :load-path "Organizer/"
-  :config
-  (global-set-key (kbd "<f12>")  'organizer-index)
-  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
-  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
-
-(defun ews-distraction-free ()
- "Distraction-free writing environment using Olivetti package."
- (interactive)
- (if (equal olivetti-mode nil)
-     (progn
-       (window-configuration-to-register 1)
-       (delete-other-windows)
-       (text-scale-set 2)
-       (olivetti-mode t))
-   (progn
-     (if (eq (length (window-list)) 1)
-         (jump-to-register 1))
-     (olivetti-mode 0)
-     (text-scale-set 0))))
-(use-package olivetti
-  :demand t
-  :bind
-  (("<f9>" . ews-distraction-free)))
-
+** Eradio
+Radio en Emacs
+#+begin_src emacs-lisp
 (use-package eradio
   :defer t
   :init
@@ -644,28 +916,60 @@ This function allow to activate the webserver when you use but if there is a pro
 			("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"))))
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
+#+end_src
+** Doc View, Nov
+Esto no lo uso al menos ahora por eso he desactivado el tangle
+#+begin_src emacs-lisp :tangle no
+(use-package doc-view
+  :demand t
+  :ensure nil
+  :custom
+  (doc-view-resolution 300)
+  (doc-view-mupdf-use-svg t)
+  (large-file-warning-threshold (* 50 (expt 2 20))))
 
+(use-package nov
+  :demand t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+#+end_src
+** Elfeed
+Programa para lectura de fuentes rss
+#+begin_src emacs-lisp
 (use-package elfeed
     :custom-face
     (elfeed-search-unread-title-face ((t (:inherit fixed-pitch))))
     :bind
     ("C-x w" . elfeed))
-
-(use-package elfeed-protocol
-    :ensure t
-    :demand t
-    :after elfeed
-    :config
-    (elfeed-protocol-enable)
-    :custom
-    (elfeed-use-curl t)
-    (elfeed-set-timeout 36000)
-    (elfeed-log-level 'debug)
-    (elfeed-protocol-feeds (list
-                   (list "fever+https://Mester@rss.hostux.net"
-                         :api-url "https://Mester@rss.hostux.net/api/fever.php"
-                         :password (string-trim (shell-command-to-string "pass show freshrss"))))))
-
+  #+end_src
+*** Elfeed protocol
+Esto permite leer feeds de servicios RSS externos al propio ordenador
+#+begin_src emacs-lisp
+    (use-package elfeed-protocol
+        :ensure t
+        :demand t
+        :after elfeed
+        :config
+        (elfeed-protocol-enable)
+        :custom
+        (elfeed-use-curl t)
+        (elfeed-set-timeout 36000)
+        (elfeed-log-level 'debug)
+        (elfeed-protocol-feeds (list
+                       (list "fever+https://Mester@rss.hostux.net"
+                             :api-url "https://Mester@rss.hostux.net/api/fever.php"
+                             :password (string-trim (shell-command-to-string "pass show freshrss"))))))
+#+end_src
+*** Elfeed goodies
+No lo estoy usando no me atrajo tanto
+#+begin_src emacs-lisp :tangle no
+    (use-package elfeed-goodies
+      :ensure t
+      :config (elfeed-goodies/setup))
+#+end_src
+*** Elfeed dashboard
+Permite tener un dashboard para organizarlo todo usando org-mode
+#+begin_src emacs-lisp
 (use-package elfeed-dashboard
   :ensure t
   :after (elfeed elfeed-protocol)
@@ -673,7 +977,11 @@ This function allow to activate the webserver when you use but if there is a pro
   (setopt elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
   ;; update feed counts on elfeed-quit
   (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
-
+#+end_src
+** Supersave
+Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor
+deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad 
+#+begin_src emacs-lisp
 (use-package super-save
   :config
   (setq super-save-triggers
@@ -683,11 +991,18 @@ This function allow to activate the webserver when you use but if there is a pro
   (super-save-mode 1)
   (setopt super-save-idle-duration 1)  ; 0.3 segundos de inactividad
   (setopt super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
-
+#+end_src
+** Adaptative wrap
+#+begin_src emacs-lisp
 (use-package adaptive-wrap
   :config
   (adaptive-wrap-prefix-mode))
-
+#+end_src
+** Modos extra archivos
+Modos extra para algunos archivos específicos
+*** Markdown
+Permitir el uso de Markdown en Emacs con cierto resaltado
+#+begin_src emacs-lisp
 (use-package markdown-mode
   :demand t
   :commands (markdown-mode gfm-mode)
@@ -705,14 +1020,19 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package markdown-preview-mode
   :ensure t)
-
+#+end_src
+*** Typst
+Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
+#+begin_src emacs-lisp
 (use-package typst-mode
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el")
   :custom 
   (typst-ts-mode-watch-options "--open")
   (typst-ts-mode-enable-raw-blocks-highlight t)
   (typst-ts-mode-highlight-raw-blocks-at-startup t))
-
+#+end_src
+*** Hyprland
+#+begin_src emacs-lisp
 (use-package hyprlang-ts-mode
   :ensure t
   :custom
@@ -720,36 +1040,74 @@ This function allow to activate the webserver when you use but if there is a pro
   :config 
   (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
 (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
-
+#+end_src
+*** Fish mode
+Para abrir scripts para la shell fish
+#+begin_src emacs-lisp
 (use-package fish-mode
   :ensure t
   :demand t)
-
+#+end_src
+*** I3wm mode
+Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algunas veces para asuntos cuando Wayland no me sirve sera util
+#+begin_src emacs-lisp
 (use-package i3wm-config-mode
   :demand t
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
+#+end_src
+** Cosas más
+#+begin_src emacs-lisp
+  (use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
+  
+  (use-package jsonrpc
+    :ensure t)
+#+end_src
 
-(use-package savehist
-  :ensure nil
-  :init
-  (savehist-mode))
-
-(use-package jsonrpc
-  :ensure t)
-
+** Programación
+Aquí están todos los paquetes y modos que utilizo para programar
+#+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
-
+#+end_src
+*** Eglot tempel 
+Según la descripción de su repostorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 
+#+begin_src emacs-lisp
 (use-package eglot-tempel
   :preface (eglot-tempel-mode)
   :init
   (eglot-tempel-mode t))
+#+end_src
+*** Flycheck
+#+begin_src emacs-lisp :tangle no
+(use-package flycheck-pycheckers)
+(use-package flycheck
+  :ensure t
+  :init
+  (setopt flycheck-check-syntax-automatically
+        '(save mode-enabled idle-change))
+  (setopt flycheck-idle-change-delay 0))
 
+(setq flycheck-checker-cache "~/.flycheck-cache")
+(setq flycheck-indication-mode nil)
+(use-package flycheck-pos-tip
+  :ensure t
+  :defer t
+  :hook
+  (flycheck-mode . flycheck-pos-tip-mode))
+
+(add-hook 'python-mode-hook #'flycheck-mode)
+#+end_src
+*** Flymake
+Probando a usarlo en lugar de flycheck ya que al ser una herramienta integrada y mucho más facil quiero probar a ver si sirve a mis necesidades
+#+begin_src emacs-lisp
 (setopt flymake-fringe-indicator-position 'left-fringe)
 (setopt flymake-show-diagnostics-at-end-of-line nil)
 
@@ -758,28 +1116,43 @@ This function allow to activate the webserver when you use but if there is a pro
 
 ;; Disable wrapping around when navigating Flymake errors.
 (setopt flymake-wrap-around nil)
+#+end_src
 
-(use-package transient)
-(use-package magit
-   :bind
-   ("C-x g" . magit-status))
+*** Magit
+No es 100% imprescindible ni solo debe usarse para eso pero en la practica
+#+begin_src emacs-lisp
+  (use-package transient)
+  (use-package magit
+     :bind
+     ("C-x g" . magit-status))
 
-(use-package magit-stats
-  :ensure t)
+  (use-package magit-stats
+    :ensure t)
 
- (use-package git-gutter
-   :defer 0.3
-   :delight
-   :init (global-git-gutter-mode))
+   (use-package git-gutter
+     :defer 0.3
+     :delight
+     :init (global-git-gutter-mode))
 
- (use-package git-timemachine
-   :defer 1
-   :delight)
-
+   (use-package git-timemachine
+     :defer 1
+     :delight)
+#+end_src
+*** Eldoc
+#+begin_src emacs-lisp :tangle no
+(use-package eldoc 
+:ensure nil)
+#+end_src
+**** Eldoc box
+Para que la documentación de funciones y demás mostradas por eldoc aparezca en caja
+#+begin_src emacs-lisp
 (use-package eldoc-box
   :ensure t
   :defer t)
-
+#+end_src
+*** Corfu + Cape
+Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de autocompletado.
+#+begin_src emacs-lisp
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
@@ -816,7 +1189,10 @@ This function allow to activate the webserver when you use but if there is a pro
   (add-hook 'completion-at-point-functions #'cape-keyword))
 ;; Atajos prácticos
 (global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
-
+#+end_src
+**** Configuraciones extra para corfu
+Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
+#+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
   :custom
@@ -836,6 +1212,34 @@ This function allow to activate the webserver when you use but if there is a pro
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p))
 
+#+end_src
+**** Kind icon
+Actualmente estoy usando la alternativa nerd-icons-corfu porque como ya uso nerd-icons para lo demás no tengo tanto lio
+#+begin_src emacs-lisp :tangle no
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+*** Yasnippet
+Habilita el uso de snippets
+#+begin_src emacs-lisp :tangle no
+  (use-package yasnippet
+    :defer t)
+  (add-hook 'org-mode-hook 'yas-minor-mode)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'lsp-mode 'yas-minor-mode)
+  (use-package yasnippet-snippets)
+(use-package yasnippet-capf
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+  (setq yasnippet-capf-lookup-by 'name))
+#+end_src
+*** Tempel
+Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual
+#+begin_src emacs-lisp
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
@@ -867,7 +1271,36 @@ This function allow to activate the webserver when you use but if there is a pro
    (define-key tempel-map (kbd "TAB") #'tempel-next))
 
 (use-package tempel-collection)
-
+#+end_src
+*** LSP
+Configuracion de LSP
+#+begin_src emacs-lisp :tangle no
+  (use-package lsp-mode
+    :init
+    (setopt lsp-enable-snippet nil)
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setopt lsp-keymap-prefix "C-c l")
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (rust-mode . lsp)
+	   (mhtml-mode . lsp)
+	   (html-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration)
+  	      (python-mode . lsp)
+  	      (js-mode . lsp))
+    :commands lsp)
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode
+:config
+(setq lsp-ui-doc-enable t
+      lsp-ui-doc-position 'at-point
+      lsp-ui-doc-delay 0.5
+      lsp-ui-peek-enable t
+      lsp-ui-doc-show-with-cursor t))
+#+end_src
+*** Eglot 
+Servidor lsp más minimalista lo voy a probar
+#+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
   :hook ((python-mode . eglot-ensure)
@@ -890,10 +1323,28 @@ This function allow to activate the webserver when you use but if there is a pro
         ("C-c l f" . eglot-format-buffer)))
   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-
+#+end_src
+*** Lenguajes
+Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
+**** Python
+Ajustes varios para python
+#+begin_src emacs-lisp :tangle no
+ (use-package lsp-pyright
+   :ensure t
+   :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+   :hook (python-mode . (lambda ()
+                        (require 'lsp-pyright)
+                        (lsp))))  ; or lsp-deferred
+#+end_src
+**** Pyenv
+Permite que usen los entornos virtuales de python en emacs 
+#+begin_src emacs-lisp
 (use-package pyvenv
   :hook (pyvenv-mode . python-mode))
-
+#+end_src
+***** Trabajo con uv 
+Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
+#+begin_src emacs-lisp
 (defun uv-project-run (archivo)
   "Ejecuta el archivo que desees de un proyecto con uv"
   (interactive "fSeleccione un archivo: ")
@@ -913,15 +1364,22 @@ This function allow to activate the webserver when you use but if there is a pro
        (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV"))))
 (use-package uv-mode
   :hook (python-mode . uv-mode-auto-activate-hook))
-
-(use-package geiser
+#+end_src
+**** Scheme
+Lenguaje de programacion bastante particular al que todavia no le he pillado todo
+el potencial
+#+begin_src emacs-lisp
+  (use-package geiser
   :ensure t)
 
 (use-package geiser-guile  ;; Si usas Guile Scheme
   :ensure t)
   (use-package flymake-guile
     :defer t)
-
+#+end_src
+**** Rust
+Lenguaje de programacion conocido por su velocidad y caracteristicas de seguridad en memoria
+#+begin_src emacs-lisp
 (use-package rust-mode) ;; Rust
 
 (use-package cargo-mode
@@ -931,8 +1389,14 @@ This function allow to activate the webserver when you use but if there is a pro
     :config
     (setq compilation-scroll-output t))
 
+#+end_src
+**** Lua
+#+begin_src emacs-lisp
 (use-package lua-mode)
-
+#+end_src
+**** Java
+Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui es un poco complicado
+#+begin_src emacs-lisp
 ;;  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
   (use-package eglot-java
     :defer t)
@@ -948,21 +1412,33 @@ This function allow to activate the webserver when you use but if there is a pro
     (define-key eglot-java-mode-map (kbd "C-c l R") #'eglot-java-project-build-refresh))
   (use-package flymake-gradle
     :defer t)
-
-(use-package iedit
-  :ensure t)
-(global-set-key (kbd "C-v") 'iedit-mode)
-
-(use-package dape
-  :defer t)
-
+#+end_src
+*** Iedit
+Permite cambiar todas las apariciones de las palabras, se podria llegar a aprovechar para 
+hacer algo parecido al refractor
+#+begin_src emacs-lisp
+  (use-package iedit
+    :ensure t)
+  (global-set-key (kbd "C-v") 'iedit-mode)
+#+end_src
+*** Dape
+Herramienta de debug alternativa a dap-mode 
+#+begin_src emacs-lisp
+  (use-package dape
+    :defer t)
+#+end_src
+*** Projectile
+Gestion de proyectos cosa que puede ser util para el aspecto organizativo
+#+begin_src emacs-lisp
 (use-package projectile
   :ensure t
   :config
   (projectile-mode +1))
 
 (setopt projectile-project-root-files '(".git"))
-
+#+end_src
+*** Tressiter
+#+begin_src emacs-lisp
 ;; (use-package treesit-auto
 ;;   :config
 ;;   (global-treesit-auto-mode))
@@ -970,7 +1446,10 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
-
+    
+#+end_src
+*** Rainbow mode y Rainbow delimiters
+#+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
          (prog-mode . rainbow-delimiters-mode)))
@@ -978,20 +1457,26 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package rainbow-mode
 :defer t
 :hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
+#+end_src
+*** Flymake
+#+begin_src emacs-lisp
+  (use-package flymake
+    :ensure t
+    :defer t
+    :hook
+    (prog-mode . flymake-mode))
 
-(use-package flymake
-  :ensure t
-  :defer t
-  :hook
-  (prog-mode . flymake-mode))
+  (use-package flymake-flycheck
+    :ensure t
+    :defer t
+    :hook
+    (flymake-mode-hook . flymake-flycheck-auto))
+  (with-eval-after-load 'flymake-mode
+    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+#+end_src
 
-(use-package flymake-flycheck
-  :ensure t
-  :defer t
-  :hook
-  (flymake-mode-hook . flymake-flycheck-auto))
-(with-eval-after-load 'flymake-mode
-  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
-
+* Finalización del fichero
+#+begin_src emacs-lisp
 (provide 'config)
 ;;; config.el ends here
+#+end_src

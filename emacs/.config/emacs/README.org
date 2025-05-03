@@ -4,6 +4,7 @@
 #+description: Configuración de Emacs
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
+#+startup: overview
 
 * Comienzo de la configuración
 ** Otras configs básicas
@@ -166,13 +167,13 @@ Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con
   ;;; init.el ends here
 #+end_src
 * Configuración
-[[file:config.org][ Sigue aqui]]
+[[file:config.org][Sigue aqui]]
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
 - [[https://protesilaos.com/][Protesilaos]]
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
-- [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]]
+- [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 
 - [[https://elblogdelazaro.org/posts/2024-04-15-mi-fichero-configuracion-emacs-2024/][El blog de lazaro 2024]]
 También hay algunos más como el mitico [[https://notxor.nueva-actitud.org/][Notxor]]
 
