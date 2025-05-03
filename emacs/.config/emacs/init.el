@@ -93,12 +93,13 @@
   (add-hook 'elpaca-after-init-hook '(lambda ()  (setopt gc-cons-percentage 0.1
            gc-cons-threshold 16777216))))
 
-(let ((config-el (expand-file-name "slv-config.el" user-emacs-directory))
-      (config-org (expand-file-name "slv-config.org" user-emacs-directory)))
+(let ((config-el (expand-file-name "config.el" user-emacs-directory))
+      (config-org (expand-file-name "config.org" user-emacs-directory)))
   (if (and (file-exists-p config-el)
            (file-exists-p config-org)
            (time-less-p (file-attribute-modification-time (file-attributes config-org))
-                        (file-attribute-modification-time (file-attributes config-el))))
+                        (file-attribute-modification-time (file-attributes config-el)))) ;; Comprueba si el archivo .org es más viejo en el sistema en cuyo caso el archivo .el ya ha sido tangleado ya que la edicion que eso causa es posterior
+; debido a eso si el archivo .org es más viejo ya esta tangleado y cargamos el archivo .el y en caso contrario verificamos si existe y lo tangleamos
       (load-file config-el)
     (if (file-exists-p config-org)
         (org-babel-load-file config-org)

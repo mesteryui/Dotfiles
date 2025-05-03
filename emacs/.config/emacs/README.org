@@ -140,28 +140,30 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 ;;(elpaca nil (message "deferred"))
 #+end_src
 *** Cosas despues de elpaca 
+Una vez elpaca que es el proceso más pesado ha cargado completamente ponemos el recolector de basura a unos niveles más normalistos
+yo me he inspirado en las opciones usadas por DOOM Emacs
 #+begin_src emacs-lisp
-
 (with-eval-after-load 'elpaca
   (add-hook 'elpaca-after-init-hook '(lambda ()  (setopt gc-cons-percentage 0.1
            gc-cons-threshold 16777216))))
 #+end_src
 #+include: Config.org
 * Finalización del fichero
-Esto es para aplicar algunas buenas formas al programar en Emacs Lisp
+Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con alguna que otra cosa
 #+begin_src emacs-lisp
-(let ((config-el (expand-file-name "slv-config.el" user-emacs-directory))
-      (config-org (expand-file-name "slv-config.org" user-emacs-directory)))
-  (if (and (file-exists-p config-el)
-           (file-exists-p config-org)
-           (time-less-p (file-attribute-modification-time (file-attributes config-org))
-                        (file-attribute-modification-time (file-attributes config-el))))
-      (load-file config-el)
-    (if (file-exists-p config-org)
-        (org-babel-load-file config-org)
-      (error "No file `%s' found!! No configuration loaded!!" config-org))))
-(provide 'init)
-;;; init.el ends here
+  (let ((config-el (expand-file-name "config.el" user-emacs-directory))
+        (config-org (expand-file-name "config.org" user-emacs-directory)))
+    (if (and (file-exists-p config-el)
+             (file-exists-p config-org)
+             (time-less-p (file-attribute-modification-time (file-attributes config-org))
+                          (file-attribute-modification-time (file-attributes config-el)))) ;; Comprueba si el archivo .org es más viejo en el sistema en cuyo caso el archivo .el ya ha sido tangleado ya que la edicion que eso causa es posterior
+  ; debido a eso si el archivo .org es más viejo ya esta tangleado y cargamos el archivo .el y en caso contrario verificamos si existe y lo tangleamos
+        (load-file config-el)
+      (if (file-exists-p config-org)
+          (org-babel-load-file config-org)
+        (error "No file `%s' found!! No configuration loaded!!" config-org))))
+  (provide 'init)
+  ;;; init.el ends here
 #+end_src
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
