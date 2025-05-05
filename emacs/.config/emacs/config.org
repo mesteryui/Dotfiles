@@ -6,7 +6,8 @@
 * Recolector de basura
 #+begin_src emacs-lisp
 (use-package gcmh
-  :init (setq gc-cons-threshold (* 16 1024 1024))
+  :init 
+  (setq gc-cons-threshold (* 16 1024 1024))
   (setq gcmh-idle-delay 'auto  ; default is 15s
       gcmh-auto-idle-delay-factor 10
       gcmh-high-cons-threshold (* 64 1024 1024))
@@ -263,6 +264,16 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 * Funciones propias
+** Obtener valor de una macro org
+Este codigo es util ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
+#+begin_src emacs-lisp
+(defun get-local-macro-definition (macro-name)
+  "Retrieve the definition of a local Org mode macro."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
+      (match-string 1))))
+#+end_src
 ** Recargar la configuración
 Esta función sirve para recargar la configuración activa sin cerrar Emacs, no funciona
 en todos los casos hay veces que hay que cerrar el programa
@@ -480,10 +491,10 @@ Diversas utilidades de org mode para que se vea todo mejor
 (setq org-capture-templates
         `(("t" "Tarea" entry
            (file+headline "~/org/agenda.org" "Tareas")
-           "* TODO %?\n  Creado: %U\n  %i\n  %a")
+           "* TODO %?\n %i\n  %a")
           ("n" "Nota" entry
            (file+headline "~/org/notes.org" "Notas")
-           "* %? :nota:\n  Creado: %U\n  %i\n %a")
+           "* %? :nota:\n %i\n %a")
 	  ("e" "Evento" entry
 	   (file+headline "~/org/agenda.org" "Evento")
 	   "* WAITING %?\n"
@@ -875,8 +886,6 @@ El dashboard que me aparece al principio cuando abre el programa
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
-  :custom-face
-  (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
   :custom
   (initial-buffer-choice 'dashboard-open)
   (dashboard-set-heading-icons t)

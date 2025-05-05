@@ -1,5 +1,6 @@
 (use-package gcmh
-  :init (setq gc-cons-threshold (* 16 1024 1024))
+  :init 
+  (setq gc-cons-threshold (* 16 1024 1024))
   (setq gcmh-idle-delay 'auto  ; default is 15s
       gcmh-auto-idle-delay-factor 10
       gcmh-high-cons-threshold (* 64 1024 1024))
@@ -596,8 +597,6 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
-  :custom-face
-  (dashboard-footer-face ((t (:inherit font-lock-doc-face :slant italic :height 0.98))))
   :custom
   (initial-buffer-choice 'dashboard-open)
   (dashboard-set-heading-icons t)
