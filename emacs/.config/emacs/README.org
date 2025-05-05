@@ -115,7 +115,7 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
     (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-(elpaca org)
+;;(elpaca org)
 (elpaca elpaca-use-package
   ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
@@ -140,15 +140,6 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 #+end_src
-*** Cosas despues de elpaca 
-Una vez elpaca que es el proceso más pesado ha cargado completamente ponemos el recolector de basura a unos niveles más normalistos
-yo me he inspirado en las opciones usadas por DOOM Emacs
-#+begin_src emacs-lisp
-(with-eval-after-load 'elpaca
-  (add-hook 'elpaca-after-init-hook '(lambda ()  (setopt gc-cons-percentage 0.1
-           gc-cons-threshold 16777216))))
-#+end_src
-#+include: Config.org
 * Finalización del fichero
 Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con alguna que otra cosa
 #+begin_src emacs-lisp

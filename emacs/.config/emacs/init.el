@@ -48,7 +48,7 @@
     (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-(elpaca org)
+;;(elpaca org)
 (elpaca elpaca-use-package
   ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
@@ -88,10 +88,6 @@
 
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
-
-(with-eval-after-load 'elpaca
-  (add-hook 'elpaca-after-init-hook '(lambda ()  (setopt gc-cons-percentage 0.1
-           gc-cons-threshold 16777216))))
 
 (let ((config-el (expand-file-name "config.el" user-emacs-directory))
       (config-org (expand-file-name "config.org" user-emacs-directory)))

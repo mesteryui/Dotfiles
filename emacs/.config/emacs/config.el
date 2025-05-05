@@ -1,18 +1,28 @@
+(use-package gcmh
+  :init (setq gc-cons-threshold (* 16 1024 1024))
+  (setq gcmh-idle-delay 'auto  ; default is 15s
+      gcmh-auto-idle-delay-factor 10
+      gcmh-high-cons-threshold (* 64 1024 1024))
+  :ensure t
+  :hook (elpaca-after-init-hook . gcmh-mode))
+
 (defmacro os/load-custom-theme (theme-package theme-name &rest params)
-"Carga temas personalizados instaladolos, a través de use-package lo hago
-asi por que para cada tema es el nombre del paquete :config para setearlo despues de que cargue y asi es más comodo, se recomienda meter primero los paramaetros en :config para evitar problemas luego ya que la macro usa :config primero
-THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tema y PARAMS es para poner lo que se requiera como variables o así teniendo en cuenta las limitaciones comentadas"
+  "Carga temas personalizados instaladolos, a través de use-package lo hago
+  asi por que para cada tema es el nombre del paquete :config para setearlo despues de que cargue y asi es más comodo, se recomienda meter primero los paramaetros en :config para evitar problemas luego ya que la macro usa :config primero
+  THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tema y &rest PARAMS es para poner lo que se requiera como variables o así teniendo en cuenta las limitaciones comentadas, descarga el resto de temas para evitar incoherencias visuales
+  en cambios de tema más al vuelo o si tienes la sentencia escrita dos veces con varios temas"
   `(use-package ,theme-package
-     :ensure t
-     :config 
-     (load-theme ',theme-name t)
-     ,@params))
+       :ensure t
+       :config
+       (mapc #'disable-theme custom-enabled-themes)
+       (load-theme ',theme-name t)
+       ,@params))
 
 (defun os/org-heading-setters ()
    (dolist (item '((org-level-1 . 1.5)
 		    (org-level-2 . 1.4)
 		    (org-level-3 . 1.25)
-                  (org-level-4 . 1.1)
+		    (org-level-4 . 1.1)
                    (org-document-title . 1.7)))
     (set-face-attribute (car item) nil :height (cdr item)))
    (dolist (item '((org-level-1 . outline-1)
@@ -205,7 +215,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package org
     :ensure nil
     :hook (org-mode . os/org-heading-setters) 
-    (org-mode . os/org-items-faces-setter)
+          (org-mode . os/org-items-faces-setter)
+	  (org-mode . org-indent-mode)
     :config 
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
@@ -214,7 +225,6 @@ This function allow to activate the webserver when you use but if there is a pro
                     org-hide-emphasis-markers t
                     org-startup-with-inline-images t
                     image-actual-width '(300)))
-(add-hook 'org-mode-hook 'org-indent-mode)
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 
@@ -320,7 +330,14 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure nil
   :custom
   (tramp-persistency-file-name
-   (no-littering-expand-var-file-name "tramp/history.el")))
+   (no-littering-expand-var-file-name "tramp/history.el"))
+  :config 
+(connection-local-set-profile-variables
+     'remote-direct-async-process
+     '((tramp-direct-async-process . t)))
+    (connection-local-set-profiles
+     '(:application tramp :protocol "ssh")
+     'remote-direct-async-process))
 
 (use-package nerd-icons
     :ensure t)
@@ -360,6 +377,93 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package eat
    :ensure t)
 
+(use-package dired 
+  :ensure nil 
+  :config
+ (when-let (cmd (cond ((equal system-type 'darwin) "open")
+                       ((equal system-type 'gnu/linux) "xdg-open")
+                       ((equal system-type 'windows-nt) "start")))
+    (setopt dired-guess-shell-alist-user
+          `(("\\.\\(?:docx\\|pdf\\|djvu\\|eps\\)\\'" ,cmd)
+            ("\\.\\(?:jpe?g\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+            ("\\.\\(?:xcf\\)\\'" ,cmd)
+            ("\\.csv\\'" ,cmd)
+            ("\\.tex\\'" ,cmd)
+            ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+            ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
+            ("\\.html?\\'" ,cmd)
+            ("\\.md\\'" ,cmd))))
+ (put 'dired-find-alternate-file 'disabled nil))
+(use-package dired-x
+  :ensure nil
+  :hook (dired-mode . dired-omit-mode)
+  :config
+  ;; Make dired-omit-mode hide all "dotfiles"
+    (setq dired-omit-verbose nil)
+  (setq dired-omit-files
+        (concat dired-omit-files "\\|^\\..*$")))
+
+;; Additional syntax highlighting for dired
+(use-package diredfl
+  :hook
+  ((dired-mode . diredfl-mode)
+   ;; highlight parent and directory preview as well
+   (dirvish-directory-view-mode . diredfl-mode))
+  :config
+  (set-face-attribute 'diredfl-dir-name nil :bold t))
+
+(use-package dirvish
+  :after dired
+  :init  (dirvish-override-dired-mode) 
+   (setq dirvish-reuse-session 'open)
+  :custom
+  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+   '(("h" "~/"                          "Home")
+     ("m" "/mnt/"                       "Drives")
+     ("s" "/ssh:root@192.168.0.84:/"     "SSH server")
+     ("e" "/sudo::/etc"  "Modify program settings")
+     ("t" "~/.local/share/Trash/files/" "TrashCan")))
+  :config
+  (setq dirvish-side-width 40
+        dirvish-side-display-alist '((side . left) (slot . -1))
+        dirvish-side-window-parameters
+        '((no-delete-other-windows . t)
+          (no-other-window . t)))
+  (setq dired-mouse-drag-files t)                   ; added in Emacs 29
+  (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
+    (setq dirvish-large-directory-threshold 20000)
+     (setq dirvish-attributes
+        '(nerd-icons
+	   vc-state        ; indicador VC
+          file-size       ; tamaño de archivo
+          file-time))     ; fecha de modificación
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --group-directories-first --no-group")
+  (setq dirvish-preview-dispatchers
+      (cl-substitute 'pdf-tools 'pdf dirvish-preview-dispatchers))
+(setq dirvish-preview-dispatchers (remove 'epub dirvish-preview-dispatchers))
+  :ensure t
+  :bind
+  (("C-c f" . dirvish)
+   :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
+   (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
+   ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
+   ("a"   . dirvish-setup-menu)        ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
+   ("f"   . dirvish-file-info-menu)    ; [f]ile info
+   ("o"   . dirvish-quick-access)      ; [o]pen `dirvish-quick-access-entries'
+   ("s"   . dirvish-quicksort)         ; [s]ort flie list
+   ("r"   . dirvish-history-jump)      ; [r]ecent visited
+   ("l"   . dirvish-ls-switches-menu)  ; [l]s command flags
+   ("v"   . dirvish-vc-menu)           ; [v]ersion control commands
+   ("*"   . dirvish-mark-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("^"   . dirvish-history-last)
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-e" . dirvish-emerge-menu)))
+
 (use-package dired-sidebar
     :ensure t
     :defer t
@@ -370,7 +474,7 @@ This function allow to activate the webserver when you use but if there is a pro
     (setopt dired-sidebar-use-custom-font t))
   (use-package dired-git
     :ensure t)
-(global-set-key (kbd "C-c s") 'dired-sidebar-toggle-sidebar)
+(global-set-key (kbd "C-c s") #'dirvish-side)
 
 (use-package autorevert
 :ensure nil
@@ -383,19 +487,20 @@ This function allow to activate the webserver when you use but if there is a pro
                           (propertize "✔" 'face '(:foreground "green"))
                         (propertize "✘" 'face '(:foreground "red")))))
           (concat
-	   (propertize " " 'face '(:foreground "cyan"))
+	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14) 'face '(:foreground "purple" :height 1.5))
+	   " "
            (propertize (user-login-name))
            "@"
            (propertize (system-name) 'face '(:foreground "green"))
            " "
            (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
            " " status "\n"
-           " "))))
+           (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
 (defun eshell/clear ()
   "Borrar completamente el historial de eshell usando `clear-scrollback`."
   (interactive)
-  (eshell-clear-scrollback))
+  (eshell/clear-scrollback))
 
       (use-package eshell
         :ensure nil
@@ -448,6 +553,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package treemacs
  :config 
+(global-set-key (kbd "C-c d") 'treemacs)
 (setopt treemacs-hide-gitignored-files-mode t)
    treemacs-project-follow-cleanup t
    treemacs-width 45
@@ -750,15 +856,6 @@ This function allow to activate the webserver when you use but if there is a pro
   :init
   (eglot-tempel-mode t))
 
-(setopt flymake-fringe-indicator-position 'left-fringe)
-(setopt flymake-show-diagnostics-at-end-of-line nil)
-
-;; Suppress the display of Flymake error counters when there are no errors.
-(setopt flymake-suppress-zero-counters t)
-
-;; Disable wrapping around when navigating Flymake errors.
-(setopt flymake-wrap-around nil)
-
 (use-package transient)
 (use-package magit
    :bind
@@ -866,7 +963,7 @@ This function allow to activate the webserver when you use but if there is a pro
   :config 
    (define-key tempel-map (kbd "TAB") #'tempel-next))
 
-(use-package tempel-collection)
+(use-package tempel-collection :ensure t)
 
 (use-package eglot
   :ensure nil
@@ -980,18 +1077,27 @@ This function allow to activate the webserver when you use but if there is a pro
 :hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
 
 (use-package flymake
-  :ensure t
-  :defer t
-  :hook
-  (prog-mode . flymake-mode))
+    :ensure t
+    :defer t
+    :hook
+    (prog-mode . flymake-mode)
+    :config 
+(setopt flymake-fringe-indicator-position 'left-fringe)
+(setopt flymake-show-diagnostics-at-end-of-line nil)
 
-(use-package flymake-flycheck
-  :ensure t
-  :defer t
-  :hook
-  (flymake-mode-hook . flymake-flycheck-auto))
-(with-eval-after-load 'flymake-mode
-  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+;; Suppress the display of Flymake error counters when there are no errors.
+(setopt flymake-suppress-zero-counters t)
+
+;; Disable wrapping around when navigating Flymake errors.
+(setopt flymake-wrap-around nil))
+
+  (use-package flymake-flycheck
+    :ensure t
+    :defer t
+    :hook
+    (flymake-mode-hook . flymake-flycheck-auto))
+  (with-eval-after-load 'flymake-mode
+    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 
 (provide 'config)
 ;;; config.el ends here
