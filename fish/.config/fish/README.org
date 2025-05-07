@@ -42,6 +42,13 @@ lo chulo es que es asiduo a la shell que uses
 #+begin_src fish :tangle no
 starship init fish | source
 #+end_src
+*** The fuck
+Nos permite escribiendo =fuck= te da una corrección al ultimo comando y te da la opción de usarla siendo muy útil para corregir tus errores
+puedes añadir errores frecuentes
+#+name: thefuck
+#+begin_src fish :tangle no
+thefuck --alias | source
+#+end_src
 *** Aplicar configuracion 
 #+begin_src fish :noweb yes 
 if status is-interactive
@@ -55,6 +62,7 @@ if status is-interactive
     atuin init fish | source
     # zoxide
     <<zoxide>>
+    <<thefuck>>
     #syncthing
     #syncthing install-completions | source
     fzf --fish | source

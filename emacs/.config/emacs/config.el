@@ -1,3 +1,7 @@
+;;; -*- lexical-binding: t; -*-
+
+(setenv "DISPLAY" ":0")
+
 (use-package gcmh
   :init 
   (setq gc-cons-threshold (* 16 1024 1024))
@@ -7,30 +11,18 @@
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
 
-(defmacro os/load-custom-theme (theme-package theme-name &rest params)
-  "Carga temas personalizados instaladolos, a través de use-package lo hago
-  asi por que para cada tema es el nombre del paquete :config para setearlo despues de que cargue y asi es más comodo, se recomienda meter primero los paramaetros en :config para evitar problemas luego ya que la macro usa :config primero
-  THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tema y &rest PARAMS es para poner lo que se requiera como variables o así teniendo en cuenta las limitaciones comentadas, descarga el resto de temas para evitar incoherencias visuales
-  en cambios de tema más al vuelo o si tienes la sentencia escrita dos veces con varios temas"
-  `(use-package ,theme-package
-       :ensure t
-       :config
-       (mapc #'disable-theme custom-enabled-themes)
-       (load-theme ',theme-name t)
-       ,@params))
-
 (defun os/org-heading-setters ()
+  (dolist (item '((org-level-1 . outline-1)
+		    (org-level-2 . outline-2)
+		    (org-level-3 . outline-3)
+                    (org-level-4 . outline-4)))
+      (set-face-attribute (car item) nil :inherit (cdr item)))
    (dolist (item '((org-level-1 . 1.5)
 		    (org-level-2 . 1.4)
 		    (org-level-3 . 1.25)
 		    (org-level-4 . 1.1)
                    (org-document-title . 1.7)))
-    (set-face-attribute (car item) nil :height (cdr item)))
-   (dolist (item '((org-level-1 . outline-1)
-		    (org-level-2 . outline-2)
-		    (org-level-3 . outline-3)
-                    (org-level-4 . outline-4)))
-      (set-face-attribute (car item) nil :inherit (cdr item))))
+    (set-face-attribute (car item) nil :height (cdr item))))
  (defun os/org-items-faces-setter ()
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
       (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
@@ -46,13 +38,19 @@
 
 (setq custom-safe-themes t)
 
-(os/load-custom-theme catppuccin-theme catppuccin)
+(use-package ef-themes
+  :ensure t
+  :custom (ef-themes-mixed-fonts)
+  :config
+  (mapc #'disable-theme custom-enabled-themes)
+  (ef-themes-select 'ef-cherie))
 
+(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
 (tooltip-mode -1)
-
+(pixel-scroll-precision-mode t)
 (set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
 (delete-selection-mode t)
@@ -152,6 +150,13 @@
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 
+(defun get-local-macro-definition (macro-name)
+  "Retrieve the definition of a local Org mode macro."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
+      (match-string 1))))
+
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
@@ -218,7 +223,15 @@ This function allow to activate the webserver when you use but if there is a pro
     :hook (org-mode . os/org-heading-setters) 
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . org-indent-mode)
+	  (org-mode . visual-line-mode)
     :config 
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (scheme . t)
+       (python . t)
+       (shell . t)
+       ))
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
                     org-pretty-entities t
@@ -238,6 +251,16 @@ This function allow to activate the webserver when you use but if there is a pro
              ("DONE" . "green")
              ("PAUSED" . "IndianRed1")
              ("CANCELLED" . "grey")))
+
+(use-package org-wild-notifier
+  :ensure t
+  :after org
+  :custom
+  (org-wild-notifier-notification-title "Org Wild Reminder")
+  (org-wild-notifier-alert-time (quote(1 10 30)))
+  (alert-default-style 'libnotify)
+  :hook
+  (org-mode . (lambda () (org-wild-notifier-mode 1))))
 
 (electric-indent-mode 0)
 (setq org-edit-src-content-indentation 0
@@ -276,14 +299,16 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package ox-epub
         :demand t)
 (use-package ox-reveal)
+(use-package htmlize
+  :ensure t)
 
 (setq org-capture-templates
         `(("t" "Tarea" entry
            (file+headline "~/org/agenda.org" "Tareas")
-           "* TODO %?\n  Creado: %U\n  %i\n  %a")
+           "* TODO %?\n %i\n  %a")
           ("n" "Nota" entry
            (file+headline "~/org/notes.org" "Notas")
-           "* %? :nota:\n  Creado: %U\n  %i\n %a")
+           "* %? :nota:\n %i\n %a")
 	  ("e" "Evento" entry
 	   (file+headline "~/org/agenda.org" "Evento")
 	   "* WAITING %?\n"
@@ -294,14 +319,6 @@ This function allow to activate the webserver when you use but if there is a pro
 	   ("p" "Project" entry
            (file+headline "~/org/proyectos.org" "Proyectos")
            "*  %?\n")))
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (scheme . t)
-   (python . t)
-   (shell . t)
-   ))
 
 (use-package org-auto-tangle
   :defer t
@@ -315,9 +332,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package org-crypt
     :ensure nil
     :after org
-    :config
-    (setq org-tags-exclude-from-inheritance (quote ("crypt")))
     :custom
+    (org-tags-exclude-from-inheritance (quote ("crypt")))
     (org-crypt-key "oscarodriguez56@gmail.com"))
 
 (use-package org-contrib
@@ -440,8 +456,6 @@ This function allow to activate the webserver when you use but if there is a pro
           file-time))     ; fecha de modificación
   (setq dired-listing-switches
         "-l --almost-all --human-readable --group-directories-first --no-group")
-  (setq dirvish-preview-dispatchers
-      (cl-substitute 'pdf-tools 'pdf dirvish-preview-dispatchers))
 (setq dirvish-preview-dispatchers (remove 'epub dirvish-preview-dispatchers))
   :ensure t
   :bind
@@ -492,9 +506,9 @@ This function allow to activate the webserver when you use but if there is a pro
 	   " "
            (propertize (user-login-name))
            "@"
-           (propertize (system-name) 'face '(:foreground "green"))
+           (propertize (system-name) 'face '(:foreground "red"))
            " "
-           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
+           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
            " " status "\n"
            (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
@@ -624,8 +638,7 @@ This function allow to activate the webserver when you use but if there is a pro
        "Index" "Index of my Org"
        (lambda (&rest _) (organizer-index))))))
   (dashboard-startupify-list
-   '(dashboard-insert-newline
-     dashboard-insert-banner
+   '(dashboard-insert-banner
      dashboard-insert-newline
      dashboard-insert-banner-title
      dashboard-insert-newline
@@ -633,7 +646,7 @@ This function allow to activate the webserver when you use but if there is a pro
      dashboard-insert-items
      dashboard-insert-newline
      dashboard-insert-footer
-      dashboard-insert-init-info))
+     dashboard-insert-init-info))
   :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
                                      (projects  . "nf-oct-rocket")
@@ -658,6 +671,7 @@ This function allow to activate the webserver when you use but if there is a pro
     :after (nerd-icons)
     :hook (elpaca-after-init-hook . doom-modeline-mode)
     :custom
+    (doom-modeline-buffer-file-name-style 'truncate-with-project)
     (doom-modeline-height 25)
     (doom-modeline-icon t))
 
@@ -714,8 +728,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package organizer
   :ensure nil
   :load-path "Organizer/"
+  :bind ("<f12>" . organizer-index)
   :config
-  (global-set-key (kbd "<f12>")  'organizer-index)
   (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
   (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 
@@ -793,6 +807,15 @@ This function allow to activate the webserver when you use but if there is a pro
   :config
   (adaptive-wrap-prefix-mode))
 
+(defun set-markdown-headers () 
+  (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
+  (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
+  (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
+  (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
+  (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
+  (set-face-attribute 'markdown-header-face-6 nil :height 1.05)
+  (set-face-attribute 'markdown-code-face nil :inherit  'fixed-pitch))
+
 (use-package markdown-mode
   :demand t
   :commands (markdown-mode gfm-mode)
@@ -801,6 +824,7 @@ This function allow to activate the webserver when you use but if there is a pro
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
+  (set-markdown-headers)
   (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
@@ -879,6 +903,8 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :bind (:map corfu-map ("TAB" . corfu-next)
+	      ([tab] . corfu-next))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
@@ -911,7 +937,7 @@ This function allow to activate the webserver when you use but if there is a pro
   (add-hook 'completion-at-point-functions #'cape-dict)
   (add-hook 'completion-at-point-functions #'cape-keyword))
 ;; Atajos prácticos
-(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
+;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 
 (use-package emacs
   :ensure nil
@@ -978,7 +1004,7 @@ This function allow to activate the webserver when you use but if there is a pro
  (eglot-autoshutdown t)
  (eglot-events-buffer-size 0)
  (eglot-auto-display-help-buffer nil)
-   :bind
+ :bind
   (:map eglot-mode-map
         ;; Cada binding incluye el prefijo C-c l de forma literal
         ("C-c l r" . eglot-rename)
@@ -986,9 +1012,6 @@ This function allow to activate the webserver when you use but if there is a pro
         ("C-c l f" . eglot-format-buffer)))
   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-
-(use-package pyvenv
-  :hook (pyvenv-mode . python-mode))
 
 (defun uv-project-run (archivo)
   "Ejecuta el archivo que desees de un proyecto con uv"

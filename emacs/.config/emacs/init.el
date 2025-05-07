@@ -1,5 +1,4 @@
 ;; -*- lexical-binding: t; -*-
-
 ;;(add-to-list 'load-path "~/.config/emacs/scripts/")
 
 (defvar no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/"))

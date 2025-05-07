@@ -22,6 +22,7 @@ configurar esos detalles antes de que cargue lo demás, son más que nada optimi
 *** Ajustes del early-init.el
 Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabilitar el gestor de paquetes por defecto, es lo que va normalmente en el archivo [[file:early-init.el][early-init.el]]
 #+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes :noweb yes
+<<lexicalbind>>
 (setq package-enable-at-startup nil) ;; Desactivamos el gestor de paquetes de Emacs para poder usar elpaca
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))
@@ -32,13 +33,15 @@ Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabi
 (provide 'early-init)
 #+end_src
 ** Añadiendo lexical binding
-#+begin_src emacs-lisp
+#+name: lexicalbind
+#+begin_src emacs-lisp :tangle no
 ;; -*- lexical-binding: t; -*-
 #+end_src
 * Configuraciones básicas
 ** Añadir ruta al directorio de carga
 Esto es para hacer que algunos scripts de uso propio sean utilizables
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 ;;(add-to-list 'load-path "~/.config/emacs/scripts/")
 #+end_src
 ** Ajustes No littering

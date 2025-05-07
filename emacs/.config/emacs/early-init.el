@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (setq package-enable-at-startup nil) ;; Desactivamos el gestor de paquetes de Emacs para poder usar elpaca
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))

@@ -3,7 +3,18 @@
 #+property: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
 #+startup: overview
 
+* Preámbulo
+Añado aqui alguna cosa
+#+begin_src emacs-lisp
+;;; -*- lexical-binding: t; -*-
+#+end_src
+** Estableciendo variables de entorno
+Variables de entorno que al establecerlas me permiten funcionar mejor en el editor
+#+begin_src emacs-lisp
+(setenv "DISPLAY" ":0")
+#+end_src
 * Recolector de basura
+Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gcmh la cual permite hacer la configuracion del recolector de basura algo más automatica ya que la herramienta, decide cuando ejecutar el recolector de basura para no activarlo por ejemplo mientras escribes sino que lo hace cuando estes un tiempo sin usar el editor
 #+begin_src emacs-lisp
 (use-package gcmh
   :init 
@@ -15,38 +26,24 @@
   :hook (elpaca-after-init-hook . gcmh-mode))
 #+end_src
 * Macros
-** Carga de tema personalizado
-Me he inspirado en lo que voy a hacer para mi distribución Emacs llamada Nox
-#+begin_src emacs-lisp
-(defmacro os/load-custom-theme (theme-package theme-name &rest params)
-  "Carga temas personalizados instaladolos, a través de use-package lo hago
-  asi por que para cada tema es el nombre del paquete :config para setearlo despues de que cargue y asi es más comodo, se recomienda meter primero los paramaetros en :config para evitar problemas luego ya que la macro usa :config primero
-  THEME-PACKAGE es el paquete que contiene el tema THEME-NAME es el nombre del tema y &rest PARAMS es para poner lo que se requiera como variables o así teniendo en cuenta las limitaciones comentadas, descarga el resto de temas para evitar incoherencias visuales
-  en cambios de tema más al vuelo o si tienes la sentencia escrita dos veces con varios temas"
-  `(use-package ,theme-package
-       :ensure t
-       :config
-       (mapc #'disable-theme custom-enabled-themes)
-       (load-theme ',theme-name t)
-       ,@params))
-#+end_src
+Proximamente....
 * Apariencia
 ** Ajustes de faces
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
 *** Ajustes a elementos del org-mode
 #+begin_src emacs-lisp
 (defun os/org-heading-setters ()
+  (dolist (item '((org-level-1 . outline-1)
+		    (org-level-2 . outline-2)
+		    (org-level-3 . outline-3)
+                    (org-level-4 . outline-4)))
+      (set-face-attribute (car item) nil :inherit (cdr item)))
    (dolist (item '((org-level-1 . 1.5)
 		    (org-level-2 . 1.4)
 		    (org-level-3 . 1.25)
 		    (org-level-4 . 1.1)
                    (org-document-title . 1.7)))
-    (set-face-attribute (car item) nil :height (cdr item)))
-   (dolist (item '((org-level-1 . outline-1)
-		    (org-level-2 . outline-2)
-		    (org-level-3 . outline-3)
-                    (org-level-4 . outline-4)))
-      (set-face-attribute (car item) nil :inherit (cdr item))))
+    (set-face-attribute (car item) nil :height (cdr item))))
  (defun os/org-items-faces-setter ()
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
       (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
@@ -67,11 +64,7 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 #+begin_src emacs-lisp
 (setq custom-safe-themes t)
 #+end_src
-*** Tema visual
-#+begin_src emacs-lisp
-(os/load-custom-theme catppuccin-theme catppuccin)
-#+end_src
-*** Configuraciones de tema 'archivadas'
+*** Configuraciones de temas
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
@@ -81,12 +74,14 @@ El tema visual a utilizar estando disponible aqui la configuracion
   (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
-#+begin_src emacs-lisp :tangle no
-  (use-package ef-themes
-    :ensure t
-    :config
-    (setq ef-themes-variable-pitch-ui t
-          ef-themes-mixed-fonts t))
+Temas ef de Protesilaos es bastante chulo
+#+begin_src emacs-lisp
+(use-package ef-themes
+  :ensure t
+  :custom (ef-themes-mixed-fonts)
+  :config
+  (mapc #'disable-theme custom-enabled-themes)
+  (ef-themes-select 'ef-cherie))
 #+end_src
 **** Doom themes
 #+begin_src emacs-lisp :tangle no
@@ -100,11 +95,12 @@ El tema visual a utilizar estando disponible aqui la configuracion
 **** Diversos ajustes de apariencia
 Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
 #+begin_src emacs-lisp
+(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
 (tooltip-mode -1)
-
+(pixel-scroll-precision-mode t)
 (set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
 (delete-selection-mode t)
@@ -182,13 +178,13 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
         use-short-answers t
 	blink-matching-parent t)
   #+end_src
-*** Configuracion zoom
+*** Configuración zoom
 La configuracion de los atajos de zoom
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 #+end_src
-*** Ubicacion custom file
+*** Ubicación custom file
 #+begin_src emacs-lisp :tangle no
 (load custom-file 'noerror 'nomessage)
 #+end_src
@@ -265,7 +261,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 #+end_src
 * Funciones propias
 ** Obtener valor de una macro org
-Este codigo es util ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
+Este codigo es útil ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
 #+begin_src emacs-lisp
 (defun get-local-macro-definition (macro-name)
   "Retrieve the definition of a local Org mode macro."
@@ -382,7 +378,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 #+end_src
 *** Añadiendo ajustes varios
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
 (setopt org-export-with-drawers nil
       org-export-with-todo-keywords nil
       org-export-with-broken-links t
@@ -398,7 +394,9 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
     :hook (org-mode . os/org-heading-setters) 
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . org-indent-mode)
+	  (org-mode . visual-line-mode)
     :config 
+    <<org-babel>>
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
                     org-pretty-entities t
@@ -423,6 +421,19 @@ Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendient
              ("CANCELLED" . "grey")))
 #+end_src
 ** Org utilities
+*** Org wild notifier
+Permite que se te notfique de las tareas y notas definidas mediante org
+#+begin_src emacs-lisp
+  (use-package org-wild-notifier
+    :ensure t
+    :after org
+    :custom
+    (org-wild-notifier-notification-title "Org Wild Reminder")
+    (org-wild-notifier-alert-time (quote(1 10 30)))
+    (alert-default-style 'libnotify)
+    :hook
+    (org-mode . (lambda () (org-wild-notifier-mode 1))))
+#+end_src
 *** Org superstar
 Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
 #+name: org superstar
@@ -485,6 +496,9 @@ Diversas utilidades de org mode para que se vea todo mejor
 (use-package ox-epub
         :demand t)
 (use-package ox-reveal)
+(use-package htmlize
+  :ensure t)
+
 #+end_src 
 ** Configuración de org-capture
 #+begin_src emacs-lisp
@@ -508,14 +522,15 @@ Diversas utilidades de org mode para que se vea todo mejor
 #+end_src
 ** Configuración de Org Babel
 Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
-#+begin_src emacs-lisp
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (scheme . t)
-     (python . t)
-     (shell . t)
-     ))
+#+name: org-babel
+#+begin_src emacs-lisp :tangle no
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (scheme . t)
+   (python . t)
+   (shell . t)
+   ))
 #+end_src
 *** Org auto tangle
 Hace que en según que caso el tangle sea automático
@@ -534,13 +549,12 @@ Hace que en según que caso el tangle sea automático
 ** Org Crypt
 Encriptar entradas de archivos ~.org~ usando una clave GPG
 #+begin_src emacs-lisp
-  (use-package org-crypt
-      :ensure nil
-      :after org
-      :config
-      (setq org-tags-exclude-from-inheritance (quote ("crypt")))
-      :custom
-      (org-crypt-key "oscarodriguez56@gmail.com"))
+(use-package org-crypt
+    :ensure nil
+    :after org
+    :custom
+    (org-tags-exclude-from-inheritance (quote ("crypt")))
+    (org-crypt-key "oscarodriguez56@gmail.com"))
 #+end_src
 ** Org contrib
 Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
@@ -554,7 +568,7 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
 #+end_src
 * Paquetes
 ** Tramp
-Ya viene con Emacs aqui defino unas configuraciones 
+Ya viene con Emacs aqui defino unas configuraciones, para que funcione como necesito
 #+begin_src emacs-lisp
 (use-package tramp
   :ensure nil
@@ -698,8 +712,6 @@ Es un paquete que dota a dired de una gran funcionalidad para volverlo un gran e
           file-time))     ; fecha de modificación
   (setq dired-listing-switches
         "-l --almost-all --human-readable --group-directories-first --no-group")
-  (setq dirvish-preview-dispatchers
-      (cl-substitute 'pdf-tools 'pdf dirvish-preview-dispatchers))
 (setq dirvish-preview-dispatchers (remove 'epub dirvish-preview-dispatchers))
   :ensure t
   :bind
@@ -763,9 +775,9 @@ Shell que permite usar comandos elisp, se puede mejorar la experiencia usando ea
 	   " "
            (propertize (user-login-name))
            "@"
-           (propertize (system-name) 'face '(:foreground "green"))
+           (propertize (system-name) 'face '(:foreground "red"))
            " "
-           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "yellow"))
+           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
            " " status "\n"
            (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
@@ -913,8 +925,7 @@ El dashboard que me aparece al principio cuando abre el programa
        "Index" "Index of my Org"
        (lambda (&rest _) (organizer-index))))))
   (dashboard-startupify-list
-   '(dashboard-insert-newline
-     dashboard-insert-banner
+   '(dashboard-insert-banner
      dashboard-insert-newline
      dashboard-insert-banner-title
      dashboard-insert-newline
@@ -922,7 +933,7 @@ El dashboard que me aparece al principio cuando abre el programa
      dashboard-insert-items
      dashboard-insert-newline
      dashboard-insert-footer
-      dashboard-insert-init-info))
+     dashboard-insert-init-info))
   :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
                                      (projects  . "nf-oct-rocket")
@@ -943,6 +954,7 @@ Para retocar la barra de abajo
     :after (nerd-icons)
     :hook (elpaca-after-init-hook . doom-modeline-mode)
     :custom
+    (doom-modeline-buffer-file-name-style 'truncate-with-project)
     (doom-modeline-height 25)
     (doom-modeline-icon t))
 #+end_src
@@ -1014,13 +1026,13 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
-  (use-package organizer
-    :ensure nil
-    :load-path "Organizer/"
-    :config
-    (global-set-key (kbd "<f12>")  'organizer-index)
-    (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
-    (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
+(use-package organizer
+  :ensure nil
+  :load-path "Organizer/"
+  :bind ("<f12>" . organizer-index)
+  :config
+  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 #+end_src
 ** Olivetti
 En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
@@ -1133,6 +1145,15 @@ Modos extra para algunos archivos específicos
 *** Markdown
 Permitir el uso de Markdown en Emacs con cierto resaltado
 #+begin_src emacs-lisp
+(defun set-markdown-headers () 
+  (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
+  (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
+  (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
+  (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
+  (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
+  (set-face-attribute 'markdown-header-face-6 nil :height 1.05)
+  (set-face-attribute 'markdown-code-face nil :inherit  'fixed-pitch))
+
 (use-package markdown-mode
   :demand t
   :commands (markdown-mode gfm-mode)
@@ -1141,6 +1162,7 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
+  (set-markdown-headers)
   (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
@@ -1273,6 +1295,8 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :bind (:map corfu-map ("TAB" . corfu-next)
+	      ([tab] . corfu-next))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
@@ -1305,7 +1329,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
   (add-hook 'completion-at-point-functions #'cape-dict)
   (add-hook 'completion-at-point-functions #'cape-keyword))
 ;; Atajos prácticos
-(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
+;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 #+end_src
 **** Configuraciones extra para corfu
 Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
@@ -1432,7 +1456,7 @@ Servidor lsp más minimalista lo voy a probar
  (eglot-autoshutdown t)
  (eglot-events-buffer-size 0)
  (eglot-auto-display-help-buffer nil)
-   :bind
+ :bind
   (:map eglot-mode-map
         ;; Cada binding incluye el prefijo C-c l de forma literal
         ("C-c l r" . eglot-rename)
@@ -1452,12 +1476,6 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
    :hook (python-mode . (lambda ()
                         (require 'lsp-pyright)
                         (lsp))))  ; or lsp-deferred
-#+end_src
-***** Pyenv
-Permite que usen los entornos virtuales de python en emacs 
-#+begin_src emacs-lisp
-(use-package pyvenv
-  :hook (pyvenv-mode . python-mode))
 #+end_src
 ***** Trabajo con uv 
 Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
