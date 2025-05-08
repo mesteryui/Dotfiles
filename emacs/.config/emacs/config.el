@@ -150,6 +150,22 @@
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 
+(defun get-local-language ()
+  "Retrieve the definition the language org variable."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward
+           "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
+      (let ((lang (match-string-no-properties 1)))
+	(cond 
+	 ((equal lang "es") "es_ES")
+	 ((equal lang "en") "en_US")
+	 (t lang))))))
+
+(defun dynamic-language-change ()
+  (when-let ((lang (get-local-language)))
+    (setq ispell-local-dictionary lang)))
+
 (defun get-local-macro-definition (macro-name)
   "Retrieve the definition of a local Org mode macro."
   (save-excursion
@@ -224,6 +240,7 @@ This function allow to activate the webserver when you use but if there is a pro
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . org-indent-mode)
 	  (org-mode . visual-line-mode)
+	  (org-mode . dynamic-language-change)
     :config 
     (org-babel-do-load-languages
      'org-babel-load-languages
