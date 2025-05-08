@@ -9,6 +9,7 @@ if status is-interactive
     atuin init fish | source
     # zoxide
     zoxide init fish | source
+    thefuck --alias | source
     #syncthing
     #syncthing install-completions | source
     fzf --fish | source
