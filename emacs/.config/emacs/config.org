@@ -1,4 +1,4 @@
-#+title: Configuracion Propia
+#+title: Configuración Propia
 #+author: Mester
 #+property: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
 #+startup: overview
@@ -18,9 +18,9 @@ Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gc
 #+begin_src emacs-lisp
 (use-package gcmh
   :init 
-  (setq gc-cons-threshold (* 16 1024 1024))
+  (setq gc-cons-threshold (* 16 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
   (setq gcmh-idle-delay 'auto  ; default is 15s
-      gcmh-auto-idle-delay-factor 10
+      gcmh-auto-idle-delay-factor 10 ;; Factor usado para decidir cuanto espera el recolector de basura cuando no has estado usando el editor
       gcmh-high-cons-threshold (* 64 1024 1024))
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
@@ -68,20 +68,21 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package catppuccin-theme
   :config 
+   (mapc #'disable-theme custom-enabled-themes)
   (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
 Temas ef de Protesilaos es bastante chulo
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package ef-themes
   :ensure t
   :custom (ef-themes-mixed-fonts)
   :config
   (mapc #'disable-theme custom-enabled-themes)
-  (ef-themes-select 'ef-cherie))
+  (ef-themes-select 'ef-trio-dark))
 #+end_src
 **** Doom themes
 #+begin_src emacs-lisp :tangle no
@@ -145,11 +146,12 @@ Aqui estan los ajustes de tipografía, que utilizo
 Pendiente de implementar es para asegurarse que el modo HTML tenga monoespacido para mayor
 comodidad tambien puede llegar a servir para otras cosas
 #+begin_src emacs-lisp
-(defun my/mhtml-use-fixed-pitch ()
-  "Usar fuente monoespaciada en mhtml-mode."
+(defun my/certain-use-fixed-pitch ()
+  "Usar fuente monoespaciada en ciertos modos."
   (setq buffer-face-mode-face 'fixed-pitch)
   (buffer-face-mode 1))
-(add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
+(add-hook 'mhtml-mode-hook #'my/certain-use-fixed-pitch)
+(add-hook 'nxml-mode #'my/certain-use-fixed-pitch)
 #+end_src
 *** Opacidad
 Esta es la opacidad que el editor aplica por defecto
@@ -260,8 +262,19 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 * Funciones propias
+** Append to gitignore
+Te permite seleccionar un archivo para añadir al gitignore
+#+begin_src emacs-lisp
+(defun append-to-gitignore (file)
+  "Añade archivos al gitignore"
+  (interactive "fSelect a file to append in the gitignore: ")
+  (with-current-buffer (find-file-noselect (expand-file-name ".gitignore" doom-modeline--project-root))
+    (end-of-buffer)
+    (insert (format "\n%s" file))
+    (save-buffer)))
+#+end_src
 ** Grammar dynamic changer
-Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etiqueta =#+language:= que se le haya introducido
+Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etiqueta =#+language:= que se le haya introducido, si no se introduce ninguna usa la por defecto del sistema
 #+begin_src emacs-lisp
 (defun get-local-language ()
   "Retrieve the definition the language org variable."
@@ -276,6 +289,8 @@ Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etique
 	 (t lang))))))
 
 (defun dynamic-language-change ()
+  "Define the dictionary used locally to apply the word correction,
+using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
   (when-let ((lang (get-local-language)))
     (setq ispell-local-dictionary lang)))
 #+end_src
@@ -312,7 +327,6 @@ Abrir el archivo de configuración usado en este caso abro el README.org que se 
 ** Dictionary Switcher
 Función propia para cambiar entre mis diccionarios más usados
 #+begin_src emacs-lisp
-
 (defun dictionary-switcher()
   "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
   (interactive)
@@ -346,11 +360,10 @@ cuando necesitas crear notas para algo puntual simplemente organizando informaci
 (defun org-temp-buffer ()
    "Acceder a un buffer temporal de orgmode"
    (interactive)
+   (switch-to-buffer (get-buffer-create "*orgtemp*"))
    (if (get-buffer "*orgtemp*")
-         (switch-to-buffer "*orgtemp*")
-         (switch-to-buffer (get-buffer-create "*orgtemp*"))
-         (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
-         (org-mode)))
+         (progn (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
+	(org-mode))))
 #+end_src
 ** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
@@ -418,6 +431,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 	  (org-mode . dynamic-language-change)
     :config 
     <<org-babel>>
+    (setq org-src-fontify-natively t)
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
                     org-pretty-entities t
@@ -427,6 +441,14 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
                     image-actual-width '(300)))
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
+
+;; disable electric pairing for angle bracket
+
+(add-hook 'org-mode-hook (lambda ()
+           (setq-local electric-pair-inhibit-predicate
+                   `(lambda (c)
+                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
 #+end_src
 *** Ajustes del todo
 Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
@@ -759,8 +781,9 @@ Es un paquete que dota a dired de una gran funcionalidad para volverlo un gran e
 **** Dependencias
 Necesario para obtener toda la funcionalidad en la previsualizacion
 #+begin_src bash
-sudo pacman -S poppler ffmpegthumbnailer mediainfo libvips 7zip imagemagick
+sudo pacman -S ffmpegthumbnailer mediainfo libvips 7zip imagemagick --noconfirm
 #+end_src
+Instalar poppler a parte porque es dependencia de otros como GIMP y hace lio
 *** Dired sidebar
 #+begin_src emacs-lisp
 (use-package dired-sidebar
@@ -859,9 +882,7 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
 (global-undo-tree-mode 1)
 :custom
 (undo-tree-visualizer-timestamps t)
-(undo-tree-visualizer-diff t)
 (undo-tree-auto-save-history nil))
-
 #+end_src
 ** Treemacs
 #+begin_src emacs-lisp
@@ -919,8 +940,11 @@ El dashboard que me aparece al principio cuando abre el programa
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
+  :hook 
+  (elpaca-after-init-hook . dashboard-insert-startupify-lists)
+  (elpaca-after-init-hook . dashboard-initialize)
   :custom
-  (initial-buffer-choice 'dashboard-open)
+  (initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
   (dashboard-set-heading-icons t)
   (dashboard-set-file-icons t)
   (dashboard-icon-type 'nerd-icons)
@@ -936,9 +960,9 @@ El dashboard que me aparece al principio cuando abre el programa
                           ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
   (dashboard-navigator-buttons
    `((
-      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0)
-       "Settings" "Open Config file"
-       (lambda (&rest _) (os/open-config)))
+      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
+       "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
+       (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
       (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
        "WM Settings" "Hyprland settings"
        (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
@@ -946,23 +970,21 @@ El dashboard que me aparece al principio cuando abre el programa
        "Index" "Index of my Org"
        (lambda (&rest _) (organizer-index))))))
   (dashboard-startupify-list
-   '(dashboard-insert-banner
-     dashboard-insert-newline
-     dashboard-insert-banner-title
+   '(dashboard-insert-banner ;; Banner
+     dashboard-insert-newline ;; Insertando nueva linea
+     dashboard-insert-banner-title ;; Insertando banner del titulo
      dashboard-insert-newline
      dashboard-insert-navigator
      dashboard-insert-items
      dashboard-insert-newline
      dashboard-insert-footer
-     dashboard-insert-init-info))
+     dashboard-insert-init-info)) ;; Insertando informacion de inicio
   :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
                                      (projects  . "nf-oct-rocket")
                                      (bookmarks . "nf-oct-bookmark")
                                      (agenda    . "nf-oct-calendar")
                                      (registers . "nf-oct-note")))
-  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
   (dashboard-setup-startup-hook))
 (global-set-key (kbd "<f10>") 'open-dashboard)
   <<abrir dashboard>>
@@ -997,20 +1019,20 @@ Provee anotaciones en el minibuffer para mejorar la experiencia de completado
 (use-package marginalia
    :after vertico
    :custom
-  (marginalia-annotators
-   '(marginalia-annotators-heavy marginalia-annotators-lv))
-      :init
-      (marginalia-mode))
+   (marginalia-annotators
+    '(marginalia-annotators-heavy marginalia-annotators-lv))
+   :init
+   (marginalia-mode))
 #+end_src
 *** Orderless
 #+begin_src emacs-lisp
 (use-package orderless
   :defer t
-:custom
-(completion-styles '(orderless basic))
-(completion-category-defaults nil)
-(completion-category-overrides
- '((file (styles partial-completion)))))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles partial-completion)))))
 #+end_src
 *** Consult
 Sustituye cosas como la tipica busqueda el cambio de buffer o así con una alternativa más
@@ -1092,6 +1114,7 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   (large-file-warning-threshold (* 50 (expt 2 20))))
 
 (use-package nov
+  :ensure t
   :demand t
   :init
   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
@@ -1249,6 +1272,12 @@ Aquí están todos los paquetes y modos que utilizo para programar
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+#+end_src
+*** Slime
+Modo para programar en Common Lisp me interesa así que lo estoy probando 
+#+begin_src emacs-lisp
+(use-package slime
+  :custom (inferior-lisp-program "sblc"))
 #+end_src
 *** Eglot tempel 
 Según la descripción de su repostorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 

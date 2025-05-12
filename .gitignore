@@ -5,3 +5,7 @@ lazy-lock.json
 fish_variables/
 waybar/.config/waybar/scripts/clave.txt
 fish/.config/fish/themes
+.dap-breakpoints
+~/.dotfiles/emacs/.config/emacs/.lsp-session-v1
+~/.dotfiles/emacs/.config/emacs/.org-id-locations
+~/.dotfiles/emacs/.config/emacs/.last-package-update-day

@@ -4,9 +4,9 @@
 
 (use-package gcmh
   :init 
-  (setq gc-cons-threshold (* 16 1024 1024))
+  (setq gc-cons-threshold (* 16 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
   (setq gcmh-idle-delay 'auto  ; default is 15s
-      gcmh-auto-idle-delay-factor 10
+      gcmh-auto-idle-delay-factor 10 ;; Factor usado para decidir cuanto espera el recolector de basura cuando no has estado usando el editor
       gcmh-high-cons-threshold (* 64 1024 1024))
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
@@ -38,12 +38,10 @@
 
 (setq custom-safe-themes t)
 
-(use-package ef-themes
-  :ensure t
-  :custom (ef-themes-mixed-fonts)
-  :config
-  (mapc #'disable-theme custom-enabled-themes)
-  (ef-themes-select 'ef-cherie))
+(use-package catppuccin-theme
+  :config 
+   (mapc #'disable-theme custom-enabled-themes)
+  (load-theme 'catppuccin t))
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
@@ -88,11 +86,12 @@
 
 (add-hook 'text-mode-hook #'variable-pitch-mode)
 
-(defun my/mhtml-use-fixed-pitch ()
-  "Usar fuente monoespaciada en mhtml-mode."
+(defun my/certain-use-fixed-pitch ()
+  "Usar fuente monoespaciada en ciertos modos."
   (setq buffer-face-mode-face 'fixed-pitch)
   (buffer-face-mode 1))
-(add-hook 'mhtml-mode-hook #'my/mhtml-use-fixed-pitch)
+(add-hook 'mhtml-mode-hook #'my/certain-use-fixed-pitch)
+(add-hook 'nxml-mode #'my/certain-use-fixed-pitch)
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 
@@ -163,6 +162,8 @@
 	 (t lang))))))
 
 (defun dynamic-language-change ()
+  "Define the dictionary used locally to apply the word correction,
+using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
   (when-let ((lang (get-local-language)))
     (setq ispell-local-dictionary lang)))
 
@@ -249,6 +250,7 @@ This function allow to activate the webserver when you use but if there is a pro
        (python . t)
        (shell . t)
        ))
+    (setq org-src-fontify-natively t)
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
                     org-pretty-entities t
@@ -258,6 +260,13 @@ This function allow to activate the webserver when you use but if there is a pro
                     image-actual-width '(300)))
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
+
+;; disable electric pairing for angle bracket
+
+(add-hook 'org-mode-hook (lambda ()
+           (setq-local electric-pair-inhibit-predicate
+                   `(lambda (c)
+                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
 
 (setopt org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -580,7 +589,6 @@ This function allow to activate the webserver when you use but if there is a pro
 (global-undo-tree-mode 1)
 :custom
 (undo-tree-visualizer-timestamps t)
-(undo-tree-visualizer-diff t)
 (undo-tree-auto-save-history nil))
 
 (use-package treemacs
@@ -628,8 +636,11 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
+  :hook 
+  (elpaca-after-init-hook . dashboard-insert-startupify-lists)
+  (elpaca-after-init-hook . dashboard-initialize)
   :custom
-  (initial-buffer-choice 'dashboard-open)
+  (initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
   (dashboard-set-heading-icons t)
   (dashboard-set-file-icons t)
   (dashboard-icon-type 'nerd-icons)
@@ -645,9 +656,9 @@ This function allow to activate the webserver when you use but if there is a pro
                           ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
   (dashboard-navigator-buttons
    `((
-      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0)
-       "Settings" "Open Config file"
-       (lambda (&rest _) (os/open-config)))
+      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
+       "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
+       (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
       (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
        "WM Settings" "Hyprland settings"
        (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
@@ -655,23 +666,21 @@ This function allow to activate the webserver when you use but if there is a pro
        "Index" "Index of my Org"
        (lambda (&rest _) (organizer-index))))))
   (dashboard-startupify-list
-   '(dashboard-insert-banner
-     dashboard-insert-newline
-     dashboard-insert-banner-title
+   '(dashboard-insert-banner ;; Banner
+     dashboard-insert-newline ;; Insertando nueva linea
+     dashboard-insert-banner-title ;; Insertando banner del titulo
      dashboard-insert-newline
      dashboard-insert-navigator
      dashboard-insert-items
      dashboard-insert-newline
      dashboard-insert-footer
-     dashboard-insert-init-info))
+     dashboard-insert-init-info)) ;; Insertando informacion de inicio
   :config
   (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
                                      (projects  . "nf-oct-rocket")
                                      (bookmarks . "nf-oct-bookmark")
                                      (agenda    . "nf-oct-calendar")
                                      (registers . "nf-oct-note")))
-  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
   (dashboard-setup-startup-hook))
 (global-set-key (kbd "<f10>") 'open-dashboard)
   (defun open-dashboard ()
@@ -704,18 +713,18 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package marginalia
    :after vertico
    :custom
-  (marginalia-annotators
-   '(marginalia-annotators-heavy marginalia-annotators-lv))
-      :init
-      (marginalia-mode))
+   (marginalia-annotators
+    '(marginalia-annotators-heavy marginalia-annotators-lv))
+   :init
+   (marginalia-mode))
 
 (use-package orderless
   :defer t
-:custom
-(completion-styles '(orderless basic))
-(completion-category-defaults nil)
-(completion-category-overrides
- '((file (styles partial-completion)))))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles partial-completion)))))
 
 (use-package consult
   :demand t
@@ -890,6 +899,9 @@ This function allow to activate the webserver when you use but if there is a pro
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+
+(use-package slime
+  :custom (inferior-lisp-program "sblc"))
 
 (use-package eglot-tempel
   :preface (eglot-tempel-mode)

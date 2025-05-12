@@ -23,3 +23,4 @@ PS1='[\u@\h \W]\$ '
   source "$EAT_SHELL_INTEGRATION_DIR/bash"
 
 
+## Fin de archivo 
