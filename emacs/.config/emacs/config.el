@@ -11,36 +11,37 @@
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
 
-(defun os/org-heading-setters ()
-  (dolist (item '((org-level-1 . outline-1)
+(defun os/org-headers-setters () 
+ (dolist (item '((org-level-1 . outline-1)
 		    (org-level-2 . outline-2)
 		    (org-level-3 . outline-3)
-                    (org-level-4 . outline-4)))
-      (set-face-attribute (car item) nil :inherit (cdr item)))
-   (dolist (item '((org-level-1 . 1.5)
+                   (org-level-4 . outline-4)))
+     (set-face-attribute (car item) nil :inherit (cdr item)))
+  (dolist (item '((org-level-1 . 1.5)
 		    (org-level-2 . 1.4)
 		    (org-level-3 . 1.25)
 		    (org-level-4 . 1.1)
-                   (org-document-title . 1.7)))
-    (set-face-attribute (car item) nil :height (cdr item))))
- (defun os/org-items-faces-setter ()
-      (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
-      (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-      (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-      (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+                  (org-document-title . 1.7)))
+   (set-face-attribute (car item) nil :height (cdr item))))
+
+(defun os/org-items-faces-setter ()
+     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+     (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
+     (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
+     (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
+     (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
+     (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+     (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+     (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+     (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+     (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (setq custom-safe-themes t)
 
 (use-package ef-themes
   :ensure t
-  :custom (ef-themes-mixed-fonts)
+  :custom (ef-themes-mixed-fonts t)
   :config
   (mapc #'disable-theme custom-enabled-themes)
   (ef-themes-select 'ef-trio-dark))
@@ -100,7 +101,7 @@
 (electric-pair-mode t)
 
 (setopt erc-nick "mester")
-(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
+(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
 (setopt erc-fill-column 120
       erc-fill-function 'erc-fill-static
@@ -115,29 +116,16 @@
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
 (setopt
- display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
- display-time-format "%H:%M"             ; Le da formato a la hora
- auto-save-default nil                   ; Deshabilita #file#
- load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
- select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
- vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
- make-backup-files nil                   ; No realiza backups de ficheros
-;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
- ;; global-hl-line-mode t                ; Highlight current line
- kill-ring-max 128                       ; Longitud máxima del anillo de matar
- create-lockfiles nil                    ; Impido la creación de ficheros .#
+   display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
+   display-time-format "%H:%M"             ; Le da formato a la hora
+   auto-save-default nil                   ; Deshabilita #file#
+   load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+   select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+   vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+   make-backup-files nil                   ; No realiza backups de ficheros
+
  )
-
-(global-set-key [escape] 'keyboard-escape-quit)
-
-(setopt calendar-month-name-array
-      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
-
-(setopt calendar-day-name-array
-      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
-
-(setopt org-icalendar-timezone "Europe/Madrid") ;; timezone
+  ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
 (setopt calendar-date-style 'iso)
@@ -235,30 +223,29 @@ This function allow to activate the webserver when you use but if there is a pro
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 
 (setopt org-export-with-drawers nil
-      org-export-with-todo-keywords nil
-      org-export-with-broken-links t
-      org-export-with-toc nil
-      org-export-with-smart-quotes t
-      org-export-date-timestamp-format "%d %B %Y"
-      org-list-allow-alphabetical t)
+        org-export-with-todo-keywords nil
+        org-export-with-broken-links t
+        org-export-with-toc nil
+        org-export-with-smart-quotes t
+        org-export-date-timestamp-format "%d %B %Y"
+        org-list-allow-alphabetical t)
 
- (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
- (require 'org-tempo)               
+   (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+   (require 'org-tempo)               
 (use-package org
     :ensure nil
-    :hook (org-mode . os/org-heading-setters) 
+    :hook
           (org-mode . os/org-items-faces-setter)
-	  (org-mode . org-indent-mode)
 	  (org-mode . visual-line-mode)
 	  (org-mode . dynamic-language-change)
-    :config 
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (scheme . t)
-       (python . t)
-       (shell . t)
-       ))
+    :config
+     (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((emacs-lisp . t)
+        (scheme . t)
+        (python . t)
+        (shell . t)
+        ))
     (setq org-src-fontify-natively t)
     (setq org-ellipsis "▼")
     (setq-default org-startup-indented t
@@ -276,6 +263,15 @@ This function allow to activate the webserver when you use but if there is a pro
            (setq-local electric-pair-inhibit-predicate
                    `(lambda (c)
                   (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+(setopt calendar-month-name-array
+      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+
+(setopt calendar-day-name-array
+      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
 (setopt org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -759,7 +755,7 @@ This function allow to activate the webserver when you use but if there is a pro
          which-key-ellipsis "…"))
 
 (use-package organizer
-  :ensure nil
+  :ensure nil 
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
   :config
@@ -857,7 +853,7 @@ This function allow to activate the webserver when you use but if there is a pro
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
-  (set-markdown-headers)
+  ;;(set-markdown-headers)
   (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))

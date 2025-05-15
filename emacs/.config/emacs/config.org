@@ -32,30 +32,31 @@ Proximamente....
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
 *** Ajustes a elementos del org-mode
 #+begin_src emacs-lisp
-(defun os/org-heading-setters ()
-  (dolist (item '((org-level-1 . outline-1)
-		    (org-level-2 . outline-2)
-		    (org-level-3 . outline-3)
-                    (org-level-4 . outline-4)))
-      (set-face-attribute (car item) nil :inherit (cdr item)))
-   (dolist (item '((org-level-1 . 1.5)
-		    (org-level-2 . 1.4)
-		    (org-level-3 . 1.25)
-		    (org-level-4 . 1.1)
-                   (org-document-title . 1.7)))
-    (set-face-attribute (car item) nil :height (cdr item))))
- (defun os/org-items-faces-setter ()
-      (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
-      (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-      (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-      (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+  (defun os/org-headers-setters () 
+   (dolist (item '((org-level-1 . outline-1)
+  		    (org-level-2 . outline-2)
+  		    (org-level-3 . outline-3)
+                     (org-level-4 . outline-4)))
+       (set-face-attribute (car item) nil :inherit (cdr item)))
+    (dolist (item '((org-level-1 . 1.5)
+  		    (org-level-2 . 1.4)
+  		    (org-level-3 . 1.25)
+  		    (org-level-4 . 1.1)
+                    (org-document-title . 1.7)))
+     (set-face-attribute (car item) nil :height (cdr item))))
+  
+  (defun os/org-items-faces-setter ()
+       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+       (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
+       (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
+       (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
+       (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
+       (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+       (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+       (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+       (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+       (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+       (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 #+end_src
 ** Tema visual
@@ -79,7 +80,7 @@ Temas ef de Protesilaos es bastante chulo
 #+begin_src emacs-lisp
 (use-package ef-themes
   :ensure t
-  :custom (ef-themes-mixed-fonts)
+  :custom (ef-themes-mixed-fonts t)
   :config
   (mapc #'disable-theme custom-enabled-themes)
   (ef-themes-select 'ef-trio-dark))
@@ -168,17 +169,17 @@ Esta es la opacidad que el editor aplica por defecto
 #+begin_src emacs-lisp
 (electric-pair-mode t)
 #+end_src
-** Configuración de IRC
+* Configuración de IRC
 Configuración del cliente erc
 #+BEGIN_SRC emacs-lisp
 (setopt erc-nick "mester")
-(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\ contraseña/password_irc")))
+(setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
 (setopt erc-fill-column 120
       erc-fill-function 'erc-fill-static
       erc-fill-static-center 20)
 #+END_SRC
-** Configuraciones personales varias
+* Configuraciones personales varias
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
 #+BEGIN_SRC emacs-lisp
 (setopt user-full-name "Oscar")
@@ -225,47 +226,27 @@ make-backup-files nil                   ; No realiza backups de ficheros
 #+end_src
 **** Estableciendo configuraciones
 #+begin_src emacs-lisp :noweb yes
-  (setopt
-   <<formato hora>>
-   <<native auto save>>
-   load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
-   select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
-   vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
-   <<backup>>
-  ;; org-footnote-section "Referencias:"  ; cambio footnotes por referencias
-   ;; global-hl-line-mode t                ; Highlight current line
-   kill-ring-max 128                       ; Longitud máxima del anillo de matar
-   <<lock config>>
-   )
- #+end_src
-*** Uso de la tecla escape pues para el escape
-O algo asi
-#+begin_src emacs-lisp
-(global-set-key [escape] 'keyboard-escape-quit)
-#+end_src
-** Configuración del calendario
-Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
-#+begin_src emacs-lisp
-(setopt calendar-month-name-array
-      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
-
-(setopt calendar-day-name-array
-      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
-
-(setopt org-icalendar-timezone "Europe/Madrid") ;; timezone
-(setopt calendar-week-start-day 1) ;; la semana empieza el lunes
-;;(setq european-calendar-style t) ;; estilo europeo
-(setopt calendar-date-style 'iso)
-(setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
-			  (holiday-fixed 5 17 "Dia de las letras gallegas")
-			  (holiday-fixed 10 12 "Día de la Hispanidad")
-			  (holiday-fixed 11 01 "Todos los Santos")
-			  (holiday-fixed 12 06 "Constitución")
-			  (holiday-fixed 3 28 "Reconquista de Vigo")
-			  (holiday-fixed 5 1 "Dia del Trabajo")
-			  (holiday-fixed 12 24 "Nochebuena")
-			  (holiday-fixed 12 25 "Navidad")))
+    (setopt
+     <<formato hora>>
+     <<native auto save>>
+     load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+     select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+     vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+     <<backup>>
+     )
+    ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
+  (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
+  ;;(setq european-calendar-style t) ;; estilo europeo
+  (setopt calendar-date-style 'iso)
+  (setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
+  			  (holiday-fixed 5 17 "Dia de las letras gallegas")
+  			  (holiday-fixed 10 12 "Día de la Hispanidad")
+  			  (holiday-fixed 11 01 "Todos los Santos")
+  			  (holiday-fixed 12 06 "Constitución")
+  			  (holiday-fixed 3 28 "Reconquista de Vigo")
+  			  (holiday-fixed 5 1 "Dia del Trabajo")
+  			  (holiday-fixed 12 24 "Nochebuena")
+  			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 * Funciones propias
 ** Append to gitignore
@@ -418,42 +399,56 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 #+end_src
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp :noweb yes
-(setopt org-export-with-drawers nil
-      org-export-with-todo-keywords nil
-      org-export-with-broken-links t
-      org-export-with-toc nil
-      org-export-with-smart-quotes t
-      org-export-date-timestamp-format "%d %B %Y"
-      org-list-allow-alphabetical t)
+    (setopt org-export-with-drawers nil
+          org-export-with-todo-keywords nil
+          org-export-with-broken-links t
+          org-export-with-toc nil
+          org-export-with-smart-quotes t
+          org-export-date-timestamp-format "%d %B %Y"
+          org-list-allow-alphabetical t)
 
- (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
- (require 'org-tempo)               
-(use-package org
-    :ensure nil
-    :hook (org-mode . os/org-heading-setters) 
-          (org-mode . os/org-items-faces-setter)
-	  (org-mode . org-indent-mode)
-	  (org-mode . visual-line-mode)
-	  (org-mode . dynamic-language-change)
-    :config 
-    <<org-babel>>
-    (setq org-src-fontify-natively t)
-    (setq org-ellipsis "▼")
-    (setq-default org-startup-indented t
-                    org-pretty-entities t
-                    org-use-sub-superscripts "{}"
-                    org-hide-emphasis-markers t
-                    org-startup-with-inline-images t
-                    image-actual-width '(300)))
-        (global-set-key (kbd "C-c c") 'org-capture)
-        (global-set-key (kbd "C-c a") 'org-agenda)
+     (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+     (require 'org-tempo)               
+  (use-package org
+      :ensure nil
+      :hook
+            (org-mode . os/org-items-faces-setter)
+  	  (org-mode . visual-line-mode)
+  	  (org-mode . dynamic-language-change)
+      :config
+       <<org-babel>>
+      (setq org-src-fontify-natively t)
+      (setq org-ellipsis "▼")
+      (setq-default org-startup-indented t
+                      org-pretty-entities t
+                      org-use-sub-superscripts "{}"
+                      org-hide-emphasis-markers t
+                      org-startup-with-inline-images t
+                      image-actual-width '(300)))
+          (global-set-key (kbd "C-c c") 'org-capture)
+          (global-set-key (kbd "C-c a") 'org-agenda)
 
-;; disable electric pairing for angle bracket
+  ;; disable electric pairing for angle bracket
 
-(add-hook 'org-mode-hook (lambda ()
-           (setq-local electric-pair-inhibit-predicate
-                   `(lambda (c)
-                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+  (add-hook 'org-mode-hook (lambda ()
+             (setq-local electric-pair-inhibit-predicate
+                     `(lambda (c)
+                    (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+ #+end_src
+*** Uso de la tecla escape pues para el escape
+O algo asi
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+** Configuración del calendario
+Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
+#+begin_src emacs-lisp
+(setopt calendar-month-name-array
+      ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+       "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+
+(setopt calendar-day-name-array
+      ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
 #+end_src
 *** Ajustes del todo
@@ -473,6 +468,7 @@ Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendient
 *** Org wild notifier
 Permite que se te notfique de las tareas y notas definidas mediante org
 #+begin_src emacs-lisp
+
   (use-package org-wild-notifier
     :ensure t
     :after org
@@ -1074,7 +1070,7 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
 (use-package organizer
-  :ensure nil
+  :ensure nil 
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
   :config
@@ -1210,7 +1206,7 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
-  (set-markdown-headers)
+  ;;(set-markdown-headers)
   (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
