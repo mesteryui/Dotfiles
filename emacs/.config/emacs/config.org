@@ -68,7 +68,7 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package catppuccin-theme
   :config 
    (mapc #'disable-theme custom-enabled-themes)
@@ -76,7 +76,7 @@ El tema visual a utilizar estando disponible aqui la configuracion
 #+end_src
 **** Tema ef
 Temas ef de Protesilaos es bastante chulo
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package ef-themes
   :ensure t
   :custom (ef-themes-mixed-fonts)
@@ -91,7 +91,13 @@ Temas ef de Protesilaos es bastante chulo
       :config
       (load-theme 'doom-moonlight :no-confirm))
 #+end_src
-
+**** Doric themes
+#+begin_src emacs-lisp :tangle no
+(use-package doric-themes
+  :ensure (:host github :repo "protesilaos/doric-themes")
+  :config
+  (doric-themes-select 'doric-dark))
+#+end_src
 *** Ajustes de fuentes y alguna cosa
 **** Diversos ajustes de apariencia
 Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
@@ -809,13 +815,14 @@ Hace que un buffer modificado desde otro lugar se refresque solo
 ** Eshell
 Shell que permite usar comandos elisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
 #+begin_src emacs-lisp
+;; 
 (setq eshell-prompt-function
       (lambda ()
         (let ((status (if (= eshell-last-command-status 0)
                           (propertize "✔" 'face '(:foreground "green"))
                         (propertize "✘" 'face '(:foreground "red")))))
           (concat
-	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14) 'face '(:foreground "purple" :height 1.5))
+	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
 	   " "
            (propertize (user-login-name))
            "@"
@@ -825,10 +832,7 @@ Shell que permite usar comandos elisp, se puede mejorar la experiencia usando ea
            " " status "\n"
            (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
-(defun eshell/clear ()
-  "Borrar completamente el historial de eshell usando `clear-scrollback`."
-  (interactive)
-  (eshell/clear-scrollback))
+(defalias 'clean 'eshell/clear-scrollback)
 
       (use-package eshell
         :ensure nil
@@ -1273,6 +1277,18 @@ Aquí están todos los paquetes y modos que utilizo para programar
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
+*** hl-todo
+Para resaltar palabras como todo en los comentarios que contengan tareas pendientes
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :hook (prog-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-keyword-faces
+    '(("FIXME" error bold)
+      ("TODO" org-todo)
+      ("DONE" org-done)
+      ("NOTE" bold))))
+#+end_src
 *** Slime
 Modo para programar en Common Lisp me interesa así que lo estoy probando 
 #+begin_src emacs-lisp
@@ -1585,7 +1601,7 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 ;;  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
   (use-package eglot-java
     :defer t)
-
+;; TODO Do the java programation more useful
  (add-hook 'java-mode-hook 'eglot-java-mode)
 
  (with-eval-after-load 'eglot-java

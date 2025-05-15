@@ -38,10 +38,12 @@
 
 (setq custom-safe-themes t)
 
-(use-package catppuccin-theme
-  :config 
-   (mapc #'disable-theme custom-enabled-themes)
-  (load-theme 'catppuccin t))
+(use-package ef-themes
+  :ensure t
+  :custom (ef-themes-mixed-fonts)
+  :config
+  (mapc #'disable-theme custom-enabled-themes)
+  (ef-themes-select 'ef-trio-dark))
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
@@ -149,6 +151,14 @@
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 
+(defun append-to-gitignore (file)
+  "Añade archivos al gitignore"
+  (interactive "fSelect a file to append in the gitignore: ")
+  (with-current-buffer (find-file-noselect (expand-file-name ".gitignore" doom-modeline--project-root))
+    (end-of-buffer)
+    (insert (format "\n%s" file))
+    (save-buffer)))
+
 (defun get-local-language ()
   "Retrieve the definition the language org variable."
   (save-excursion
@@ -213,11 +223,10 @@ This function allow to activate the webserver when you use but if there is a pro
 (defun org-temp-buffer ()
    "Acceder a un buffer temporal de orgmode"
    (interactive)
+   (switch-to-buffer (get-buffer-create "*orgtemp*"))
    (if (get-buffer "*orgtemp*")
-         (switch-to-buffer "*orgtemp*")
-         (switch-to-buffer (get-buffer-create "*orgtemp*"))
-         (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
-         (org-mode)))
+         (progn (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
+	(org-mode))))
 
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
@@ -522,13 +531,14 @@ This function allow to activate the webserver when you use but if there is a pro
 :diminish
 :hook (after-init . global-auto-revert-mode))
 
+;; 
 (setq eshell-prompt-function
       (lambda ()
         (let ((status (if (= eshell-last-command-status 0)
                           (propertize "✔" 'face '(:foreground "green"))
                         (propertize "✘" 'face '(:foreground "red")))))
           (concat
-	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14) 'face '(:foreground "purple" :height 1.5))
+	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
 	   " "
            (propertize (user-login-name))
            "@"
@@ -538,10 +548,7 @@ This function allow to activate the webserver when you use but if there is a pro
            " " status "\n"
            (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
-(defun eshell/clear ()
-  "Borrar completamente el historial de eshell usando `clear-scrollback`."
-  (interactive)
-  (eshell/clear-scrollback))
+(defalias 'clean 'eshell/clear-scrollback)
 
       (use-package eshell
         :ensure nil
@@ -900,6 +907,15 @@ This function allow to activate the webserver when you use but if there is a pro
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
+(use-package hl-todo
+  :hook (prog-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-keyword-faces
+    '(("FIXME" error bold)
+      ("TODO" org-todo)
+      ("DONE" org-done)
+      ("NOTE" bold))))
+
 (use-package slime
   :custom (inferior-lisp-program "sblc"))
 
@@ -1084,7 +1100,7 @@ This function allow to activate the webserver when you use but if there is a pro
 ;;  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
   (use-package eglot-java
     :defer t)
-
+;; TODO Do the java programation more useful
  (add-hook 'java-mode-hook 'eglot-java-mode)
 
  (with-eval-after-load 'eglot-java
