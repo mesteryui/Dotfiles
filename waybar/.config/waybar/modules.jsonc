@@ -491,7 +491,7 @@
 	"custom/weather": {
 	   "format": "{}",
  	   "return-type": "json",
-           "exec": "python ~/.config/waybar/scripts/weather.py Vigo",
+           "exec": "~/.config/waybar/scripts/weather.rb",
            "interval": 240,
 }
 }

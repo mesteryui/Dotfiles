@@ -69,7 +69,7 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package catppuccin-theme
   :config 
    (mapc #'disable-theme custom-enabled-themes)
@@ -77,7 +77,7 @@ El tema visual a utilizar estando disponible aqui la configuracion
 #+end_src
 **** Tema ef
 Temas ef de Protesilaos es bastante chulo
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package ef-themes
   :ensure t
   :custom (ef-themes-mixed-fonts t)
@@ -399,41 +399,43 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 #+end_src
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp :noweb yes
-    (setopt org-export-with-drawers nil
-          org-export-with-todo-keywords nil
-          org-export-with-broken-links t
-          org-export-with-toc nil
-          org-export-with-smart-quotes t
-          org-export-date-timestamp-format "%d %B %Y"
-          org-list-allow-alphabetical t)
+  (setopt org-export-with-drawers nil
+        org-export-with-todo-keywords nil
+        org-export-with-broken-links t
+        org-export-with-toc nil
+        org-export-with-smart-quotes t
+        org-export-date-timestamp-format "%d %B %Y"
+        org-list-allow-alphabetical t)
 
-     (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
-     (require 'org-tempo)               
-  (use-package org
-      :ensure nil
-      :hook
-            (org-mode . os/org-items-faces-setter)
-  	  (org-mode . visual-line-mode)
-  	  (org-mode . dynamic-language-change)
-      :config
-       <<org-babel>>
-      (setq org-src-fontify-natively t)
-      (setq org-ellipsis "▼")
-      (setq-default org-startup-indented t
-                      org-pretty-entities t
-                      org-use-sub-superscripts "{}"
-                      org-hide-emphasis-markers t
-                      org-startup-with-inline-images t
-                      image-actual-width '(300)))
-          (global-set-key (kbd "C-c c") 'org-capture)
-          (global-set-key (kbd "C-c a") 'org-agenda)
+   (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
+   (require 'org-tempo)               
+(use-package org
+    :ensure nil
+    :hook
+          (org-mode . org-indent-mode)
+          (org-mode . os/org-headers-setters)
+          (org-mode . os/org-items-faces-setter)
+	  (org-mode . visual-line-mode)
+	  (org-mode . dynamic-language-change)
+    :config
+     <<org-babel>>
+    (setq org-src-fontify-natively t)
+    (setq org-ellipsis "▼")
+    (setq-default org-startup-indented t
+                    org-pretty-entities t
+                    org-use-sub-superscripts "{}"
+                    org-hide-emphasis-markers t
+                    org-startup-with-inline-images t
+                    image-actual-width '(300)))
+        (global-set-key (kbd "C-c c") 'org-capture)
+        (global-set-key (kbd "C-c a") 'org-agenda)
 
-  ;; disable electric pairing for angle bracket
+;; disable electric pairing for angle bracket
 
-  (add-hook 'org-mode-hook (lambda ()
-             (setq-local electric-pair-inhibit-predicate
-                     `(lambda (c)
-                    (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+(add-hook 'org-mode-hook (lambda ()
+           (setq-local electric-pair-inhibit-predicate
+                   `(lambda (c)
+                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
  #+end_src
 *** Uso de la tecla escape pues para el escape
 O algo asi
@@ -474,10 +476,10 @@ Permite que se te notfique de las tareas y notas definidas mediante org
     :after org
     :custom
     (org-wild-notifier-notification-title "Org Wild Reminder")
-    (org-wild-notifier-alert-time (quote(1 10 30)))
+    (org-wild-notifier-alert-time (quote(1 10 30 1440 2880)))
     (alert-default-style 'libnotify)
-    :hook
-    (org-mode . (lambda () (org-wild-notifier-mode 1))))
+    :config
+    (org-wild-notifier-mode 1))
 #+end_src
 *** Org superstar
 Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
@@ -1001,6 +1003,13 @@ Para retocar la barra de abajo
     (doom-modeline-height 25)
     (doom-modeline-icon t))
 #+end_src
+**** Clima en la modeline
+#+begin_src emacs-lisp
+(use-package ewth
+:ensure (:type git :host github :repo "ISouthRain/ewth.el")
+:custom (ewth-url "https://wttr.in/Vigo?format=2&M")
+:config (ewth-mode))
+#+end_src
 *** Vertico
 Completacion minimalista y más vistosa en el minibuffer
 #+begin_src emacs-lisp
@@ -1070,6 +1079,7 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp
 (use-package organizer
+  :demand t
   :ensure nil 
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
@@ -1512,7 +1522,8 @@ Servidor lsp más minimalista lo voy a probar
          (html-mode . eglot-ensure)
          (mhtml-mode . eglot-ensure)
 	 (java-mode . eglot-ensure)
-	 (c-mode . eglot-ensure))
+	 (c-mode . eglot-ensure)
+	 (ruby-mode . eglot-ensure))
  :custom 
  (eglot-sync-connect 1)
  (eglot-autoshutdown t)
@@ -1529,6 +1540,14 @@ Servidor lsp más minimalista lo voy a probar
 #+end_src
 *** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
+**** Ruby
+#+begin_src emacs-lisp
+(use-package ruby-mode
+  :ensure t
+  :mode "\\.rb\\'"
+  :custom
+  (ruby-indent-level 2))
+#+end_src
 **** Python
 
 #+begin_src emacs-lisp :tangle no

@@ -39,12 +39,10 @@
 
 (setq custom-safe-themes t)
 
-(use-package ef-themes
-  :ensure t
-  :custom (ef-themes-mixed-fonts t)
-  :config
-  (mapc #'disable-theme custom-enabled-themes)
-  (ef-themes-select 'ef-trio-dark))
+(use-package catppuccin-theme
+  :config 
+   (mapc #'disable-theme custom-enabled-themes)
+  (load-theme 'catppuccin t))
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
@@ -123,8 +121,7 @@
    select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
    vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
    make-backup-files nil                   ; No realiza backups de ficheros
-
- )
+   )
   ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
@@ -235,6 +232,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package org
     :ensure nil
     :hook
+          (org-mode . org-indent-mode)
+          (org-mode . os/org-headers-setters)
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . visual-line-mode)
 	  (org-mode . dynamic-language-change)
@@ -288,10 +287,10 @@ This function allow to activate the webserver when you use but if there is a pro
   :after org
   :custom
   (org-wild-notifier-notification-title "Org Wild Reminder")
-  (org-wild-notifier-alert-time (quote(1 10 30)))
+  (org-wild-notifier-alert-time (quote(1 10 30 1440 2880)))
   (alert-default-style 'libnotify)
-  :hook
-  (org-mode . (lambda () (org-wild-notifier-mode 1))))
+  :config
+  (org-wild-notifier-mode 1))
 
 (electric-indent-mode 0)
 (setq org-edit-src-content-indentation 0
@@ -704,6 +703,11 @@ This function allow to activate the webserver when you use but if there is a pro
     (doom-modeline-height 25)
     (doom-modeline-icon t))
 
+(use-package ewth
+:ensure (:type git :host github :repo "ISouthRain/ewth.el")
+:custom (ewth-url "https://wttr.in/Vigo?format=2&M")
+:config (ewth-mode))
+
 (use-package vertico
   :init
   (vertico-mode)
@@ -755,6 +759,7 @@ This function allow to activate the webserver when you use but if there is a pro
          which-key-ellipsis "…"))
 
 (use-package organizer
+  :demand t
   :ensure nil 
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
@@ -1039,7 +1044,8 @@ This function allow to activate the webserver when you use but if there is a pro
          (html-mode . eglot-ensure)
          (mhtml-mode . eglot-ensure)
 	 (java-mode . eglot-ensure)
-	 (c-mode . eglot-ensure))
+	 (c-mode . eglot-ensure)
+	 (ruby-mode . eglot-ensure))
  :custom 
  (eglot-sync-connect 1)
  (eglot-autoshutdown t)
@@ -1053,6 +1059,12 @@ This function allow to activate the webserver when you use but if there is a pro
         ("C-c l f" . eglot-format-buffer)))
   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+
+(use-package ruby-mode
+  :ensure t
+  :mode "\\.rb\\'"
+  :custom
+  (ruby-indent-level 2))
 
 (defun uv-project-run (archivo)
   "Ejecuta el archivo que desees de un proyecto con uv"

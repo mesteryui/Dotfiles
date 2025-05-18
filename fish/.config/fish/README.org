@@ -10,7 +10,7 @@ Aqui defino algunos valores sobre que nos servirán para luego
 Aquí defino los directorios del path
 #+name: PATH
 #+begin_src fish :tangle no 
-~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs
+~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs ~/.local/share/gem/ruby/3.4.0/bin
 #+end_src
 *** Definiendo valores de TERM
 #+name: TERM

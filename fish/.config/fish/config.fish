@@ -17,7 +17,7 @@ if status is-interactive
     #tv init fish | source
 end
 
-set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs
+set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs ~/.local/share/gem/ruby/3.4.0/bin
 
 set VISUAL "emacsclient -c -a emacs"
 set EDITOR "emacsclient -t -a ''"
