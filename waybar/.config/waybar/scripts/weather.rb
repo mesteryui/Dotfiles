@@ -4,7 +4,7 @@ require 'net/http'
 require 'json'
 require 'uri'
 
-# Representacion del pronostico del tiempo 
+# Representacion del pronostico del tiempo
 class Pronostico
 
   EMOJIS_CLIMA = {
@@ -23,12 +23,17 @@ class Pronostico
 
   attr_reader :ciudad
 
+  # Construccion del Pronostico
+  # Args:
+  #   ciudad:: String  La ciudad donde se localiza
+  #   api_key:: La clave api usada para el proceso
+  # Usage:
+  #    Pronostico.new("Barcelona","XXXXXXX")
   def initialize(ciudad, api_key)
     @ciudad = ciudad
     @api_key = api_key
     @url = URI("http://api.openweathermap.org/data/2.5/weather")
-    @url.query = URI.encode_www_form(
-      {
+    @url.query = URI.encode_www_form({
         q: @ciudad,
         appid: @api_key,
         units: 'metric',

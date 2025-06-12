@@ -142,7 +142,17 @@
 	// ││││ │├┬┘├┴┐└─┐├─┘├─┤│  ├┤ └─┐
 	// └┴┘└─┘┴└─┴ ┴└─┘┴  ┴ ┴└─┘└─┘└─┘
 
-
+    "hyprland/workspaces": {
+        "rotate": 0,
+        "class": "no-margin-padding",
+        "all-outputs": true,
+        "active-only": false,
+        "on-click": "activate",
+        "disable-scroll": false,
+        "on-scroll-up": "hyprctl dispatch workspace -1",
+        "on-scroll-down": "hyprctl dispatch workspace +1",
+        "persistent-workspaces": {}
+    },
 
 	// PACMAN Style/
 	"hyprland/workspaces#pacman": {
@@ -345,7 +355,14 @@
 	// ┌─┐┬─┐┌─┐┬ ┬┌─┐┌─┐
 	// │ ┬├┬┘│ ││ │├─┘└─┐
 	// └─┘┴└─└─┘└─┘┴  └─┘
-
+	"group/workspace_block": {
+  	"orientation": "horizontal",
+  	"modules": [
+    		   "custom/launcher#arch",  // logo Arch
+		   "custom/three-dots-seperator",
+		   "hyprland/workspaces"
+		]
+	},
 	"group/brightness": {
 		"drawer": {
 			"children-class": "brightness",
@@ -408,8 +425,8 @@
 
 	"image": {
 		"tooltip": false,
-		"path": "/home/oscar/.face.icon",
-		"size": 47
+		"path": "/home/oscar/.face",
+		"size": 20
 	},
 
 
@@ -493,5 +510,33 @@
  	   "return-type": "json",
            "exec": "~/.config/waybar/scripts/weather.rb",
            "interval": 240,
-}
+},
+"custom/space": {
+  "format": " ",
+  "tooltip": false
+},
+
+"cava": {
+        //"cava_config": "~/.config/cava/config",
+        "framerate": 60,
+        "autosens": 0,
+        "sensitivity": 100,
+        "bars": 12,
+        "lower_cutoff_freq": 50,
+       	"higher_cutoff_freq": 10000,
+        "method": "pipewire",
+        "source": "auto",
+        "stereo": false,
+        "reverse": false,
+        "bar_delimiter": 0,
+        "monstercat": false,
+        "waves": true,
+	"sleep_timer": 2,
+        "noise_reduction": 0.77,
+        "input_delay": 4,
+        "format-icons" : ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" ],
+        "actions": {
+                   "on-click-right": "mode"
+                   }
+    },
 }

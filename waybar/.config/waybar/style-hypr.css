@@ -4,7 +4,7 @@ window#waybar {
 }
 
 window > box {
-	background-color: @background;
+	background-color: transparent;
 	margin: 8px 8px 0px 8px;
 	padding: 0px 10px;
 	color: @text
@@ -16,21 +16,47 @@ window > box {
 	padding: 0;
 	border-radius: 20px;
 }
-
- 
-
-.modules-left, .modules-center, .modules-right {
-	
+#custom-space {
+  background-color: transparent;
+  margin: 0px 20px; /* este es el hueco */
+  padding: 0;
 }
+
+#workspace_block {
+  background-color: @background;
+  border-radius: 20px;
+  margin: 6px 2px;
+  padding: 0px 5px;
+}
+
+#window {
+  background-color: @surface_container;
+  border-radius: 20px;
+  padding: 0px 15px;
+  margin: 6px 30px; /* ¡Aquí está la separación! */
+  color: @text;
+}
+.modules-left {
+    background-color: transparent;
+}
+.modules-center, .modules-right {
+	background-color: @background;
+	border-radius: 20px;
+	padding: 0px 8px;
+	margin: 6px 30px;
+	margin-left: 0;
+	margin-right: 0;
+}
+
 #cpu,
 #memory,
 #disk,
 #custom-updates,
 #pulseaudio,
-#workspaces,
 #clock,
 #pownet,
 #tray,
+#workspaces,
 #custom-updates
 #bluetooth.connected,
 #custom-spotify,
@@ -203,6 +229,14 @@ tooltip {
     color: @text;
     font-family: JetbrainsMono Nerd Font;
 }
+#cava {
+	background-color: @surface_container;
+	color: @primary;
+	border-radius: 100px;
+        padding: 0px 10px;
+        margin: 6px 2px;
+}
+#custom-notification,
 #backlight,
 #custom-weather {
 	background-color: @surface_container;
