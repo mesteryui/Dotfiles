@@ -1,0 +1,14 @@
+# BEGIN_KITTY_THEME
+# Catppuccin-Mocha
+include colors.conf
+# END_KITTY_THEME
+font_family      JetBrainsMono NF
+bold_font        JetBrainsMono NFM Bold
+italic_font      JetBrainsMono NFM Italic
+bold_italic_font JetBrainsMono NFM Bold Italic
+font_size 11.5
+cursor_shape beam
+disable_ligatures never
+background_opacity 0.9
+tab_bar_style powerline
+shell fish
