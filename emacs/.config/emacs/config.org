@@ -26,7 +26,41 @@ Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gc
   :hook (elpaca-after-init-hook . gcmh-mode))
 #+end_src
 * Macros
-Proximamente....
+#+begin_src emacs-lisp
+(defmacro loadf (file) `(load-file ,file))
+#+end_src
+** GBind
+Esta macro es para facilitar el seteo de atajos personalizados de teclado a nivel global
+#+begin_src emacs-lisp
+(defmacro gbind (key func) 
+"Asigna atajos de teclado globales de forma más sencilla usando kbd"
+`(global-set-key (kbd ,key) ',func))
+#+end_src
+** Unbind 
+#+begin_src emacs-lisp
+(defmacro unbind (key)
+  "Unbind the global KEY sequence."
+  `(global-unset-key (kbd ,key)))
+#+end_src
+** Defmenu
+Nos permite definir un menu a partir de rofi que se ejecuta desde emacs
+#+begin_src emacs-lisp
+(defmacro defmenu (&optional is_elisp name &rest options)
+  "Define un menu en rofi desde Emacs, es compatible con scripts de bash y emacs lisp"
+  (let* ((options1 (mapconcat #'car options "\n")))
+    `(defun ,name ()
+       (interactive)
+	 (let* ((selected (string-trim (shell-command-to-string
+                                (concat "echo -e "
+                                        (shell-quote-argument ,options1)
+                                        " | rofi -dmenu -p "
+                                        (shell-quote-argument ,(symbol-name name)))))))
+         (if-let ((cmd (cdr (assoc selected ',options))))
+	 ,(if is_elisp
+              `(eval cmd)
+             `(message "%s" (shell-command-to-string cmd)))
+	 (message "No existe el comando"))))))
+#+end_src
 * Apariencia
 ** Ajustes de faces
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
@@ -60,7 +94,7 @@ Aquí introduciré los principales ajustes de faces para asegurar mayor compatib
 
 #+end_src
 ** Tema visual
-*** Algun ajuste que otro
+*** Algún ajuste que otro
 El ajuste custom-safe-themes es para que los temas personalizados carguen sin problema incluso si se me olvida el =:no-confirm=
 #+begin_src emacs-lisp
 (setq custom-safe-themes t)
@@ -104,6 +138,7 @@ Temas ef de Protesilaos es bastante chulo
 Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
 #+begin_src emacs-lisp
 (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+(add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
@@ -114,7 +149,6 @@ Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia
 (delete-selection-mode t)
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
 (setopt use-dialog-box nil)
-(display-time-mode 1)
 #+end_src
 **** Ajustes diversos
 Aqui estan los ajustes de tipografía, que utilizo
@@ -146,7 +180,6 @@ Aqui estan los ajustes de tipografía, que utilizo
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
-
 (add-hook 'text-mode-hook #'variable-pitch-mode)
 #+END_SRC
 **** Ajustes en otros aspectos
@@ -190,8 +223,8 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
 *** Configuración zoom
 La configuracion de los atajos de zoom
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-+") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
+(gbind "C-+" text-scale-increase)
+(gbind "C--" text-scale-decrease)
 #+end_src
 *** Ubicación custom file
 #+begin_src emacs-lisp :tangle no
@@ -226,27 +259,33 @@ make-backup-files nil                   ; No realiza backups de ficheros
 #+end_src
 **** Estableciendo configuraciones
 #+begin_src emacs-lisp :noweb yes
-    (setopt
-     <<formato hora>>
-     <<native auto save>>
-     load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
-     select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
-     vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
-     <<backup>>
-     )
-    ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
-  (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
-  ;;(setq european-calendar-style t) ;; estilo europeo
-  (setopt calendar-date-style 'iso)
-  (setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
-  			  (holiday-fixed 5 17 "Dia de las letras gallegas")
-  			  (holiday-fixed 10 12 "Día de la Hispanidad")
-  			  (holiday-fixed 11 01 "Todos los Santos")
-  			  (holiday-fixed 12 06 "Constitución")
-  			  (holiday-fixed 3 28 "Reconquista de Vigo")
-  			  (holiday-fixed 5 1 "Dia del Trabajo")
-  			  (holiday-fixed 12 24 "Nochebuena")
-  			  (holiday-fixed 12 25 "Navidad")))
+  (setopt
+   <<formato hora>>
+   <<native auto save>>
+   load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+   select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+   vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+   <<backup>>
+   frame-resize-pixelwise t ;; Para un resize fluido
+    select-enable-primary t)
+
+(setq enable-local-variables t)
+
+;; Evita glitches al redimensionar
+(setq frame-inhibit-implied-resize t)
+  ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
+(setopt calendar-week-start-day 1) ;; la semana empieza el lunes
+;;(setq european-calendar-style t) ;; estilo europeo
+(setopt calendar-date-style 'iso)
+(setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
+			  (holiday-fixed 5 17 "Dia de las letras gallegas")
+			  (holiday-fixed 10 12 "Día de la Hispanidad")
+			  (holiday-fixed 11 01 "Todos los Santos")
+			  (holiday-fixed 12 06 "Constitución")
+			  (holiday-fixed 3 28 "Reconquista de Vigo")
+			  (holiday-fixed 5 1 "Dia del Trabajo")
+			  (holiday-fixed 12 24 "Nochebuena")
+			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
 * Funciones propias
 ** Append to gitignore
@@ -298,9 +337,9 @@ en todos los casos hay veces que hay que cerrar el programa
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
-  (load-file (expand-file-name "init.el" user-emacs-directory))
+  (loadf (expand-file-name "init.el" user-emacs-directory))
   (ignore (elpaca-process-queues)))
-(global-set-key (kbd "C-c r") 'os/reload-config)
+(gbind "C-c r" os/reload-config)
 #+end_src
 ** Abrir configuración
 Abrir el archivo de configuración usado en este caso abro el README.org que se edita para obtener el archivo de configuracion
@@ -309,7 +348,8 @@ Abrir el archivo de configuración usado en este caso abro el README.org que se 
   "Abrir configuracion de emacs"
   (interactive)
   (find-file (expand-file-name "config.org" user-emacs-directory)))
-(global-set-key (kbd "C-x c") 'os/open-config)
+  (gbind "C-x c" os/open-config)
+(defmenu t config-menu ("Config" . (find-file "~/.config/emacs/config.org")) ("Init" . (find-file "~/.config/emacs/init.el")) ("Early Init" . (find-file "~/.config/emacs/early-init.el")))
 #+end_src
 ** Dictionary Switcher
 Función propia para cambiar entre mis diccionarios más usados
@@ -410,23 +450,25 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
    (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
    (require 'org-tempo)               
 (use-package org
-    :ensure nil
+  :ensure nil
     :hook
-          (org-mode . org-indent-mode)
           (org-mode . os/org-headers-setters)
+          (org-mode . org-indent-mode)
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . visual-line-mode)
 	  (org-mode . dynamic-language-change)
+    :custom 
+    (org-confirm-babel-evaluate nil)
+    (org-src-fontify-natively t)
+    (org-ellipsis "▼")
+    (org-startup-indented t)
+    (org-pretty-entities t)
+    (org-use-sub-superscripts "{}")
+    (org-hide-emphasis-markers t)
+    (org-startup-with-inline-images t)
+    (image-actual-width '(300))
     :config
-     <<org-babel>>
-    (setq org-src-fontify-natively t)
-    (setq org-ellipsis "▼")
-    (setq-default org-startup-indented t
-                    org-pretty-entities t
-                    org-use-sub-superscripts "{}"
-                    org-hide-emphasis-markers t
-                    org-startup-with-inline-images t
-                    image-actual-width '(300)))
+     <<org-babel>>)
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 
@@ -470,7 +512,6 @@ Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendient
 *** Org wild notifier
 Permite que se te notfique de las tareas y notas definidas mediante org
 #+begin_src emacs-lisp
-
   (use-package org-wild-notifier
     :ensure t
     :after org
@@ -649,6 +690,10 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
     :after (marginalia nerd-icons)
     :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
     :init (nerd-icons-completion-mode))
+
+#+end_src
+*** Nerd icons corfu
+#+begin_src emacs-lisp :tangle no
 (use-package nerd-icons-corfu
    :after (corfu nerd-icons)
    :config
@@ -731,7 +776,7 @@ Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
 #+end_src
 *** Dirvish
 Es un paquete que dota a dired de una gran funcionalidad para volverlo un gran explorador de archivos
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package dirvish
   :after dired
   :init  (dirvish-override-dired-mode) 
@@ -870,7 +915,7 @@ Habilita la correccion ortografica al vuelo.
      :bind(("M-<f7>" . flyspell-buffer)
            ("<f7>" . flyspell-word)))
 
-(global-set-key (kbd "M-<f7>") 'dictionary-switcher)
+(gbind "M-<f7>" dicitionary-switcher)
   (use-package flyspell-correct
     :after (flyspell)
     :bind (("C-;" . flyspell-auto-correct-previous-word)
@@ -878,13 +923,19 @@ Habilita la correccion ortografica al vuelo.
 #+end_src
 ** Undo-tree
 Hace que el sistema de desacer cambios use una estructura de arbol que se puede navegar
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package undo-tree
 :init
 (global-undo-tree-mode 1)
 :custom
 (undo-tree-visualizer-timestamps t)
 (undo-tree-auto-save-history nil))
+#+end_src
+** Vundo
+Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcionalidad undo de emacs y además no necesito nada tampoco tan complejo como undo-tree 
+#+begin_src emacs-lisp 
+(use-package vundo
+:bind ("C-x u" . vundo))
 #+end_src
 ** Treemacs
 #+begin_src emacs-lisp
@@ -936,6 +987,11 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
 #+end_src
 
 ** Hacer más estetico Emacs
+*** Custom modeline
+#+begin_src emacs-lisp :tangle no
+(add-to-list 'load-path (expand-file-name "modeline" user-emacs-directory))
+(require 'my-modeline)
+#+end_src
 *** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
 #+begin_src emacs-lisp :noweb yes
@@ -988,7 +1044,7 @@ El dashboard que me aparece al principio cuando abre el programa
                                      (agenda    . "nf-oct-calendar")
                                      (registers . "nf-oct-note")))
   (dashboard-setup-startup-hook))
-(global-set-key (kbd "<f10>") 'open-dashboard)
+(gbind "<f10>" open-dashboard)
   <<abrir dashboard>>
 #+end_src
 
@@ -999,9 +1055,37 @@ Para retocar la barra de abajo
     :after (nerd-icons)
     :hook (elpaca-after-init-hook . doom-modeline-mode)
     :custom
-    (doom-modeline-buffer-file-name-style 'truncate-with-project)
-    (doom-modeline-height 25)
-    (doom-modeline-icon t))
+    (doom-modeline-height 30)
+    (doom-modeline-bar-width 3)
+    (doom-modeline-icon t)
+    (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
+(doom-modeline-minor-modes nil)                   ; oculta modos menores
+(doom-modeline-enable-word-count nil)
+(doom-modeline-buffer-encoding nil))
+#+end_src
+*** Nano modeline
+#+begin_src emacs-lisp :tangle no
+ (use-package nano-modeline
+    :ensure t
+    :init
+    (nano-modeline-prog-mode t)
+    :custom
+    (nano-modeline-position 'nano-modeline-footer)
+    :hook
+    (prog-mode           . nano-modeline-prog-mode)
+    (text-mode           . nano-modeline-text-mode)
+    (org-mode            . nano-modeline-org-mode)
+    (pdf-view-mode       . nano-modeline-pdf-mode)
+    (mu4e-headers-mode   . nano-modeline-mu4e-headers-mode)
+    (mu4e-view-mode      . nano-modeline-mu4e-message-mode)
+    (elfeed-show-mode    . nano-modeline-elfeed-entry-mode)
+    (elfeed-search-mode  . nano-modeline-elfeed-search-mode)
+    (term-mode           . nano-modeline-term-mode)
+    (xwidget-webkit-mode . nano-modeline-xwidget-mode)
+    (messages-buffer-mode . nano-modeline-message-mode)
+    (org-capture-mode    . nano-modeline-org-capture-mode)
+    (org-agenda-mode     . nano-modeline-org-agenda-mode)
+    )
 #+end_src
 **** Clima en la modeline
 #+begin_src emacs-lisp
@@ -1121,7 +1205,12 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   :custom
   (doc-view-resolution 300)
   (doc-view-mupdf-use-svg t)
-  (large-file-warning-threshold (* 50 (expt 2 20))))
+  (large-file-warning-threshold (* 50 (expt 2 20)))
+  :config 
+  (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+
+(setq-default pdf-view-use-scaling t
+              pdf-view-use-imagemagick nil))
 
 (use-package nov
   :ensure t
@@ -1129,58 +1218,13 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   :init
   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 #+end_src
-** Elfeed
-Programa para lectura de fuentes rss
-#+begin_src emacs-lisp
-(use-package elfeed
-    :custom-face
-    (elfeed-search-unread-title-face ((t (:inherit fixed-pitch))))
-    :bind
-    ("C-x w" . elfeed))
-  #+end_src
-*** Elfeed protocol
-Esto permite leer feeds de servicios RSS externos al propio ordenador
-#+begin_src emacs-lisp
-    (use-package elfeed-protocol
-        :ensure t
-        :demand t
-        :after elfeed
-        :config
-        (elfeed-protocol-enable)
-        :custom
-        (elfeed-use-curl t)
-        (elfeed-set-timeout 36000)
-        (elfeed-log-level 'debug)
-        (elfeed-protocol-feeds (list
-                       (list "fever+https://Mester@rss.hostux.net"
-                             :api-url "https://Mester@rss.hostux.net/api/fever.php"
-                             :password (string-trim (shell-command-to-string "pass show freshrss"))))))
-#+end_src
-*** Elfeed goodies
-No lo estoy usando no me atrajo tanto
-#+begin_src emacs-lisp :tangle no
-    (use-package elfeed-goodies
-      :ensure t
-      :config (elfeed-goodies/setup))
-#+end_src
-*** Elfeed dashboard
-Permite tener un dashboard para organizarlo todo usando org-mode
-#+begin_src emacs-lisp
-(use-package elfeed-dashboard
-  :ensure t
-  :after (elfeed elfeed-protocol)
-  :config
-  (setopt elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
-  ;; update feed counts on elfeed-quit
-  (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
-#+end_src
 ** Supersave
 Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor
 deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad 
 #+begin_src emacs-lisp
 (use-package super-save
   :config
-  (setq super-save-triggers
+  (setopt super-save-triggers
   '(other-window  ; Al cambiar de ventana
     switch-to-buffer  ; Al cambiar de buffer
     mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
@@ -1200,6 +1244,7 @@ Modos extra para algunos archivos específicos
 Permitir el uso de Markdown en Emacs con cierto resaltado
 #+begin_src emacs-lisp
 (defun set-markdown-headers () 
+   "Setting the headers to a markdown file"
   (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
   (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
   (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
@@ -1211,13 +1256,13 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
 (use-package markdown-mode
   :demand t
   :commands (markdown-mode gfm-mode)
+  :hook ((markdown-mode . set-markdown-headers)
+         (gfm-mode . set-markdown-headers))
   :mode (("README\\.md\\'" . gfm-mode)
        ("\\.md\\'" . gfm-mode)
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
-  ;;(set-markdown-headers)
-  (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
 (use-package markdown-preview-eww
@@ -1246,6 +1291,12 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
   :config 
   (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
 (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
+#+end_src
+*** KDL
+#+begin_src emacs-lisp
+(use-package kdl-ts-mode 
+  :ensure (:host github :repo "dataphract/kdl-ts-mode"))
+
 #+end_src
 *** Fish mode
 Para abrir scripts para la shell fish
@@ -1352,7 +1403,8 @@ No es 100% imprescindible ni solo debe usarse para eso pero en la practica
 *** Eldoc
 #+begin_src emacs-lisp :tangle no
 (use-package eldoc 
-:ensure nil)
+:ensure nil
+(global-eldoc-mode))
 #+end_src
 **** Eldoc box
 Para que la documentación de funciones y demás mostradas por eldoc aparezca en caja
@@ -1362,19 +1414,19 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
   :defer t)
 #+end_src
 *** Corfu + Cape
-Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de autocompletado.
+Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de auto-completado.
 #+begin_src emacs-lisp
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
-  :bind (:map corfu-map ("TAB" . corfu-next)
-	      ([tab] . corfu-next))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.1)
+  (corfu-auto-delay 0.25)
+  (corfu-quit-at-boundary nil)
+  (corfu-preselect-first t)  
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
@@ -1428,7 +1480,7 @@ Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
 #+end_src
 **** Kind icon
 Actualmente estoy usando la alternativa nerd-icons-corfu porque como ya uso nerd-icons para lo demás no tengo tanto lio
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package kind-icon
   :after corfu
   :custom (kind-icon-default-face 'corfu-default)
@@ -1516,14 +1568,7 @@ Servidor lsp más minimalista lo voy a probar
 #+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
-  :hook ((python-mode . eglot-ensure)
-         (rust-mode . eglot-ensure)
-         (js-mode . eglot-ensure)
-         (html-mode . eglot-ensure)
-         (mhtml-mode . eglot-ensure)
-	 (java-mode . eglot-ensure)
-	 (c-mode . eglot-ensure)
-	 (ruby-mode . eglot-ensure))
+  :hook (prog-mode . eglot-ensure)
  :custom 
  (eglot-sync-connect 1)
  (eglot-autoshutdown t)
@@ -1532,21 +1577,34 @@ Servidor lsp más minimalista lo voy a probar
  :bind
   (:map eglot-mode-map
         ;; Cada binding incluye el prefijo C-c l de forma literal
-        ("C-c l r" . eglot-rename)
-        ("C-c l a" . eglot-code-actions)
-        ("C-c l f" . eglot-format-buffer)))
+         ("C-c c a" . eglot-code-actions)
+           ("C-c c o" . eglot-code-actions-organize-imports)
+           ("C-c c r" . eglot-rename)
+           ("C-c c f" . eglot-format)))
   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
+
   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
 #+end_src
 *** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
+**** JavaScript
+#+begin_src emacs-lisp
+(use-package js
+    :ensure nil
+    :custom
+    (js-indent-level 2)
+    :config
+    (add-to-list 'treesit-language-source-alist '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
+    (unbind-key "M-." js-base-mode-map))
+#+end_src
 **** Ruby
 #+begin_src emacs-lisp
-(use-package ruby-mode
-  :ensure t
-  :mode "\\.rb\\'"
-  :custom
-  (ruby-indent-level 2))
+(use-package ruby-mode :ensure nil)
+(use-package ruby-ts-mode
+  :ensure nil
+   :mode "\\.rb\\'"
+   :mode "Rakefile\\'"
+   :mode "Gemfile\\'")
 #+end_src
 **** Python
 
@@ -1561,25 +1619,14 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 ***** Trabajo con uv 
 Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
 #+begin_src emacs-lisp
-(defun uv-project-run (archivo)
-  "Ejecuta el archivo que desees de un proyecto con uv"
-  (interactive "fSeleccione un archivo: ")
-  (let ((dir default-directory))
-    (if (and (file-exists-p (expand-file-name "pyproject.toml" dir)) (file-exists-p (expand-file-name "README.md" dir)) (file-exists-p (expand-file-name "main.py" dir)))
-       (progn
-	(start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
-          (with-current-buffer "*uv-project-run*"
-               (setq-local comint-prompt-read-only t)
-               (setq-local comint-use-prompt-regexp t)
-               (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
-               (setq-local comint-move-point-for-output 'this)
-                (comint-mode))
-          (split-window-below)
-          (other-window 1)
-	  (switch-to-buffer "*uv-project-run*"))
-       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV"))))
-(use-package uv-mode
-  :hook (python-mode . uv-mode-auto-activate-hook))
+(use-package uv
+  :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
+  :init
+  (add-to-list 'treesit-language-source-alist '(toml "https://github.com/tree-sitter-grammars/tree-sitter-toml"))
+  (unless (treesit-language-available-p 'toml)
+    (treesit-install-language-grammar 'toml)))
+(use-package tomlparse
+  :ensure (:type git :host github :repo "johannes-mueller/tomlparse.el"))
 #+end_src
 **** Scheme
 Lenguaje de programacion bastante particular al que todavia no le he pillado todo
@@ -1629,6 +1676,11 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
   (use-package flymake-gradle
     :defer t)
 #+end_src
+**** Kotlin
+#+begin_src emacs-lisp
+(use-package kotlin-mode
+  :ensure t)
+#+end_src
 *** Iedit
 Permite cambiar todas las apariciones de las palabras, se podria llegar a aprovechar para 
 hacer algo parecido al refractor
@@ -1640,8 +1692,18 @@ hacer algo parecido al refractor
 *** Dape
 Herramienta de debug alternativa a dap-mode 
 #+begin_src emacs-lisp
-  (use-package dape
-    :defer t)
+(use-package dape
+  :defer t
+  :custom 
+   (dape-buffer-window-arrangement 'right)  ;; o 'bottom si prefieres
+   (dape-use-icons t)
+   :config
+    (global-set-key (kbd "<f5>") #'dape)
+  (global-set-key (kbd "<f9>") #'dape-breakpoint-toggle)
+  (global-set-key (kbd "<f6>") #'dape-step-over)
+  (global-set-key (kbd "<f11>") #'dape-step-in)
+  (global-set-key (kbd "S-<f11>") #'dape-step-out))
+
 #+end_src
 *** Projectile
 Gestion de proyectos cosa que puede ser util para el aspecto organizativo
@@ -1659,7 +1721,7 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 ;;   :config
 ;;   (global-treesit-auto-mode))
 (setq-default treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
-
+(add-to-list 'treesit-language-source-alist '(ruby "https://github.com/tree-sitter/tree-sitter-ruby"))
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
     

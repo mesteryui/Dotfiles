@@ -8,7 +8,7 @@
   (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq elpaca-core-date '(20250223)) ;; set to the build date of Emacs
+;;(setq elpaca-core-date '(20250223)) ;; set to the build date of Emacs
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/"  no-littering-var-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))

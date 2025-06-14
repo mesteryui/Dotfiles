@@ -11,6 +11,32 @@
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
 
+(defmacro loadf (file) `(load-file ,file))
+
+(defmacro gbind (key func) 
+"Asigna atajos de teclado globales de forma más sencilla usando kbd"
+`(global-set-key (kbd ,key) ',func))
+
+(defmacro unbind (key)
+  "Unbind the global KEY sequence."
+  `(global-unset-key (kbd ,key)))
+
+(defmacro defmenu (&optional is_elisp name &rest options)
+  "Define un menu en rofi desde Emacs, es compatible con scripts de bash y emacs lisp"
+  (let* ((options1 (mapconcat #'car options "\n")))
+    `(defun ,name ()
+       (interactive)
+	 (let* ((selected (string-trim (shell-command-to-string
+                                (concat "echo -e "
+                                        (shell-quote-argument ,options1)
+                                        " | rofi -dmenu -p "
+                                        (shell-quote-argument ,(symbol-name name)))))))
+         (if-let ((cmd (cdr (assoc selected ',options))))
+	 ,(if is_elisp
+              `(eval cmd)
+             `(message "%s" (shell-command-to-string cmd)))
+	 (message "No existe el comando"))))))
+
 (defun os/org-headers-setters () 
  (dolist (item '((org-level-1 . outline-1)
 		    (org-level-2 . outline-2)
@@ -45,6 +71,7 @@
   (load-theme 'catppuccin t))
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+(add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
@@ -55,7 +82,6 @@
 (delete-selection-mode t)
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
 (setopt use-dialog-box nil)
-(display-time-mode 1)
 
 (set-face-attribute 'default nil
   :font "Aporetic Sans Mono"
@@ -84,7 +110,6 @@
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
-
 (add-hook 'text-mode-hook #'variable-pitch-mode)
 
 (defun my/certain-use-fixed-pitch ()
@@ -110,8 +135,8 @@
         use-short-answers t
 	blink-matching-parent t)
 
-(global-set-key (kbd "C-+") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
+(gbind "C-+" text-scale-increase)
+(gbind "C--" text-scale-decrease)
 
 (setopt
    display-time-24hr-format t             ; Muestra el reloj en formato 24 hrs
@@ -121,7 +146,13 @@
    select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
    vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
    make-backup-files nil                   ; No realiza backups de ficheros
-   )
+   frame-resize-pixelwise t ;; Para un resize fluido
+    select-enable-primary t)
+
+(setq enable-local-variables t)
+
+;; Evita glitches al redimensionar
+(setq frame-inhibit-implied-resize t)
   ;; org-icalendar-timezone "Europe/Madrid") ;; timezone
 (setopt calendar-week-start-day 1) ;; la semana empieza el lunes
 ;;(setq european-calendar-style t) ;; estilo europeo
@@ -172,15 +203,16 @@ using what the result of 'get-local-language' function if the result is nil does
 (defun os/reload-config ()
   "Recargar configuracion Emacs"
   (interactive)
-  (load-file (expand-file-name "init.el" user-emacs-directory))
+  (loadf (expand-file-name "init.el" user-emacs-directory))
   (ignore (elpaca-process-queues)))
-(global-set-key (kbd "C-c r") 'os/reload-config)
+(gbind "C-c r" os/reload-config)
 
 (defun os/open-config ()
   "Abrir configuracion de emacs"
   (interactive)
   (find-file (expand-file-name "config.org" user-emacs-directory)))
-(global-set-key (kbd "C-x c") 'os/open-config)
+  (gbind "C-x c" os/open-config)
+(defmenu t config-menu ("Config" . (find-file "~/.config/emacs/config.org")) ("Init" . (find-file "~/.config/emacs/init.el")))
 
 (defun dictionary-switcher()
   "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
@@ -230,13 +262,23 @@ This function allow to activate the webserver when you use but if there is a pro
    (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
    (require 'org-tempo)               
 (use-package org
-    :ensure nil
+  :ensure nil
     :hook
-          (org-mode . org-indent-mode)
           (org-mode . os/org-headers-setters)
+          (org-mode . org-indent-mode)
           (org-mode . os/org-items-faces-setter)
 	  (org-mode . visual-line-mode)
 	  (org-mode . dynamic-language-change)
+    :custom 
+    (org-confirm-babel-evaluate nil)
+    (org-src-fontify-natively t)
+    (org-ellipsis "▼")
+    (org-startup-indented t)
+    (org-pretty-entities t)
+    (org-use-sub-superscripts "{}")
+    (org-hide-emphasis-markers t)
+    (org-startup-with-inline-images t)
+    (image-actual-width '(300))
     :config
      (org-babel-do-load-languages
       'org-babel-load-languages
@@ -244,15 +286,7 @@ This function allow to activate the webserver when you use but if there is a pro
         (scheme . t)
         (python . t)
         (shell . t)
-        ))
-    (setq org-src-fontify-natively t)
-    (setq org-ellipsis "▼")
-    (setq-default org-startup-indented t
-                    org-pretty-entities t
-                    org-use-sub-superscripts "{}"
-                    org-hide-emphasis-markers t
-                    org-startup-with-inline-images t
-                    image-actual-width '(300)))
+        )))
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
 
@@ -387,16 +421,12 @@ This function allow to activate the webserver when you use but if there is a pro
      'remote-direct-async-process))
 
 (use-package nerd-icons
-    :ensure t)
-  (use-package nerd-icons-completion
-    :ensure t
-    :after (marginalia nerd-icons)
-    :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
-    :init (nerd-icons-completion-mode))
-(use-package nerd-icons-corfu
-   :after (corfu nerd-icons)
-   :config
-   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+  :ensure t)
+(use-package nerd-icons-completion
+  :ensure t
+  :after (marginalia nerd-icons)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :init (nerd-icons-completion-mode))
 
 (use-package calfw
   :config
@@ -458,56 +488,6 @@ This function allow to activate the webserver when you use but if there is a pro
    (dirvish-directory-view-mode . diredfl-mode))
   :config
   (set-face-attribute 'diredfl-dir-name nil :bold t))
-
-(use-package dirvish
-  :after dired
-  :init  (dirvish-override-dired-mode) 
-   (setq dirvish-reuse-session 'open)
-  :custom
-  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
-   '(("h" "~/"                          "Home")
-     ("m" "/mnt/"                       "Drives")
-     ("s" "/ssh:root@192.168.0.84:/"     "SSH server")
-     ("e" "/sudo::/etc"  "Modify program settings")
-     ("t" "~/.local/share/Trash/files/" "TrashCan")))
-  :config
-  (setq dirvish-side-width 40
-        dirvish-side-display-alist '((side . left) (slot . -1))
-        dirvish-side-window-parameters
-        '((no-delete-other-windows . t)
-          (no-other-window . t)))
-  (setq dired-mouse-drag-files t)                   ; added in Emacs 29
-  (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
-    (setq dirvish-large-directory-threshold 20000)
-     (setq dirvish-attributes
-        '(nerd-icons
-	   vc-state        ; indicador VC
-          file-size       ; tamaño de archivo
-          file-time))     ; fecha de modificación
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --group-directories-first --no-group")
-(setq dirvish-preview-dispatchers (remove 'epub dirvish-preview-dispatchers))
-  :ensure t
-  :bind
-  (("C-c f" . dirvish)
-   :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
-   (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
-   ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
-   ("a"   . dirvish-setup-menu)        ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
-   ("f"   . dirvish-file-info-menu)    ; [f]ile info
-   ("o"   . dirvish-quick-access)      ; [o]pen `dirvish-quick-access-entries'
-   ("s"   . dirvish-quicksort)         ; [s]ort flie list
-   ("r"   . dirvish-history-jump)      ; [r]ecent visited
-   ("l"   . dirvish-ls-switches-menu)  ; [l]s command flags
-   ("v"   . dirvish-vc-menu)           ; [v]ersion control commands
-   ("*"   . dirvish-mark-menu)
-   ("y"   . dirvish-yank-menu)
-   ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
-   ("TAB" . dirvish-subtree-toggle)
-   ("M-f" . dirvish-history-go-forward)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-e" . dirvish-emerge-menu)))
 
 (use-package dired-sidebar
     :ensure t
@@ -586,12 +566,8 @@ This function allow to activate the webserver when you use but if there is a pro
     :bind (("C-;" . flyspell-auto-correct-previous-word)
            ("<f7>" . flyspell-correct-wrapper)))
 
-(use-package undo-tree
-:init
-(global-undo-tree-mode 1)
-:custom
-(undo-tree-visualizer-timestamps t)
-(undo-tree-auto-save-history nil))
+(use-package vundo
+:bind ("C-x u" . vundo))
 
 (use-package treemacs
  :config 
@@ -684,7 +660,7 @@ This function allow to activate the webserver when you use but if there is a pro
                                      (agenda    . "nf-oct-calendar")
                                      (registers . "nf-oct-note")))
   (dashboard-setup-startup-hook))
-(global-set-key (kbd "<f10>") 'open-dashboard)
+(gbind "<f10>" open-dashboard)
   (defun open-dashboard ()
     "Abre el buffer *dashboard* y salta al primer widget."
     (interactive)
@@ -699,9 +675,13 @@ This function allow to activate the webserver when you use but if there is a pro
     :after (nerd-icons)
     :hook (elpaca-after-init-hook . doom-modeline-mode)
     :custom
-    (doom-modeline-buffer-file-name-style 'truncate-with-project)
-    (doom-modeline-height 25)
-    (doom-modeline-icon t))
+    (doom-modeline-height 30)
+    (doom-modeline-bar-width 3)
+    (doom-modeline-icon t)
+    (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
+(doom-modeline-minor-modes nil)                   ; oculta modos menores
+(doom-modeline-enable-word-count nil)
+(doom-modeline-buffer-encoding nil))
 
 (use-package ewth
 :ensure (:type git :host github :repo "ISouthRain/ewth.el")
@@ -798,38 +778,9 @@ This function allow to activate the webserver when you use but if there is a pro
 (global-set-key (kbd "C-x r e") 'eradio-toggle)
 (global-set-key (kbd "C-x r p") 'eradio-play)
 
-(use-package elfeed
-    :custom-face
-    (elfeed-search-unread-title-face ((t (:inherit fixed-pitch))))
-    :bind
-    ("C-x w" . elfeed))
-
-(use-package elfeed-protocol
-    :ensure t
-    :demand t
-    :after elfeed
-    :config
-    (elfeed-protocol-enable)
-    :custom
-    (elfeed-use-curl t)
-    (elfeed-set-timeout 36000)
-    (elfeed-log-level 'debug)
-    (elfeed-protocol-feeds (list
-                   (list "fever+https://Mester@rss.hostux.net"
-                         :api-url "https://Mester@rss.hostux.net/api/fever.php"
-                         :password (string-trim (shell-command-to-string "pass show freshrss"))))))
-
-(use-package elfeed-dashboard
-  :ensure t
-  :after (elfeed elfeed-protocol)
-  :config
-  (setopt elfeed-dashboard-file (expand-file-name "elfeed-dashboard" user-emacs-directory))
-  ;; update feed counts on elfeed-quit
-  (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
-
 (use-package super-save
   :config
-  (setq super-save-triggers
+  (setopt super-save-triggers
   '(other-window  ; Al cambiar de ventana
     switch-to-buffer  ; Al cambiar de buffer
     mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
@@ -842,6 +793,7 @@ This function allow to activate the webserver when you use but if there is a pro
   (adaptive-wrap-prefix-mode))
 
 (defun set-markdown-headers () 
+   "Setting the headers to a markdown file"
   (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
   (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
   (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
@@ -853,13 +805,13 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package markdown-mode
   :demand t
   :commands (markdown-mode gfm-mode)
+  :hook ((markdown-mode . set-markdown-headers)
+         (gfm-mode . set-markdown-headers))
   :mode (("README\\.md\\'" . gfm-mode)
        ("\\.md\\'" . gfm-mode)
        ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
-  ;;(set-markdown-headers)
-  (setq visual-line-column 80)
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
 (use-package markdown-preview-eww
@@ -883,6 +835,9 @@ This function allow to activate the webserver when you use but if there is a pro
   :config 
   (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
 (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
+
+(use-package kdl-ts-mode 
+  :ensure (:host github :repo "dataphract/kdl-ts-mode"))
 
 (use-package fish-mode
   :ensure t
@@ -949,14 +904,14 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
-  :bind (:map corfu-map ("TAB" . corfu-next)
-	      ([tab] . corfu-next))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.1)
+  (corfu-auto-delay 0.25)
+  (corfu-quit-at-boundary nil)
+  (corfu-preselect-first t)  
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
@@ -1004,6 +959,12 @@ This function allow to activate the webserver when you use but if there is a pro
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p))
 
+(use-package kind-icon
+  :after corfu
+  :custom (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
@@ -1038,14 +999,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package eglot
   :ensure nil
-  :hook ((python-mode . eglot-ensure)
-         (rust-mode . eglot-ensure)
-         (js-mode . eglot-ensure)
-         (html-mode . eglot-ensure)
-         (mhtml-mode . eglot-ensure)
-	 (java-mode . eglot-ensure)
-	 (c-mode . eglot-ensure)
-	 (ruby-mode . eglot-ensure))
+  :hook (prog-mode . eglot-ensure)
  :custom 
  (eglot-sync-connect 1)
  (eglot-autoshutdown t)
@@ -1054,37 +1008,37 @@ This function allow to activate the webserver when you use but if there is a pro
  :bind
   (:map eglot-mode-map
         ;; Cada binding incluye el prefijo C-c l de forma literal
-        ("C-c l r" . eglot-rename)
-        ("C-c l a" . eglot-code-actions)
-        ("C-c l f" . eglot-format-buffer)))
+         ("C-c c a" . eglot-code-actions)
+           ("C-c c o" . eglot-code-actions-organize-imports)
+           ("C-c c r" . eglot-rename)
+           ("C-c c f" . eglot-format)))
   (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
+
   (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
 
-(use-package ruby-mode
-  :ensure t
-  :mode "\\.rb\\'"
-  :custom
-  (ruby-indent-level 2))
+(use-package js
+    :ensure nil
+    :custom
+    (js-indent-level 2)
+    :config
+    (add-to-list 'treesit-language-source-alist '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
+    (unbind-key "M-." js-base-mode-map))
 
-(defun uv-project-run (archivo)
-  "Ejecuta el archivo que desees de un proyecto con uv"
-  (interactive "fSeleccione un archivo: ")
-  (let ((dir default-directory))
-    (if (and (file-exists-p (expand-file-name "pyproject.toml" dir)) (file-exists-p (expand-file-name "README.md" dir)) (file-exists-p (expand-file-name "main.py" dir)))
-       (progn
-	(start-process-shell-command "uv-project-run" "*uv-project-run*" (concat "uv run " archivo))
-          (with-current-buffer "*uv-project-run*"
-               (setq-local comint-prompt-read-only t)
-               (setq-local comint-use-prompt-regexp t)
-               (setq-local comint-prompt-regexp "^[^#$%>\n]*[#$%>] *")
-               (setq-local comint-move-point-for-output 'this)
-                (comint-mode))
-          (split-window-below)
-          (other-window 1)
-	  (switch-to-buffer "*uv-project-run*"))
-       (message "Los archivos que indicas no son validos necesito archivos python y que se use el gestor de proyectos UV"))))
-(use-package uv-mode
-  :hook (python-mode . uv-mode-auto-activate-hook))
+(use-package ruby-mode :ensure nil)
+(use-package ruby-ts-mode
+  :ensure nil
+   :mode "\\.rb\\'"
+   :mode "Rakefile\\'"
+   :mode "Gemfile\\'")
+
+(use-package uv
+  :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
+  :init
+  (add-to-list 'treesit-language-source-alist '(toml "https://github.com/tree-sitter-grammars/tree-sitter-toml"))
+  (unless (treesit-language-available-p 'toml)
+    (treesit-install-language-grammar 'toml)))
+(use-package tomlparse
+  :ensure (:type git :host github :repo "johannes-mueller/tomlparse.el"))
 
 (use-package geiser
   :ensure t)
@@ -1121,12 +1075,24 @@ This function allow to activate the webserver when you use but if there is a pro
   (use-package flymake-gradle
     :defer t)
 
+(use-package kotlin-mode
+  :ensure t)
+
 (use-package iedit
   :ensure t)
 (global-set-key (kbd "C-v") 'iedit-mode)
 
 (use-package dape
-  :defer t)
+  :defer t
+  :custom 
+   (dape-buffer-window-arrangement 'right)  ;; o 'bottom si prefieres
+   (dape-use-icons t)
+   :config
+    (global-set-key (kbd "<f5>") #'dape)
+  (global-set-key (kbd "<f9>") #'dape-breakpoint-toggle)
+  (global-set-key (kbd "<f6>") #'dape-step-over)
+  (global-set-key (kbd "<f11>") #'dape-step-in)
+  (global-set-key (kbd "S-<f11>") #'dape-step-out))
 
 (use-package projectile
   :ensure t
@@ -1139,7 +1105,7 @@ This function allow to activate the webserver when you use but if there is a pro
 ;;   :config
 ;;   (global-treesit-auto-mode))
 (setq-default treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
-
+(add-to-list 'treesit-language-source-alist '(ruby "https://github.com/tree-sitter/tree-sitter-ruby"))
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
 
