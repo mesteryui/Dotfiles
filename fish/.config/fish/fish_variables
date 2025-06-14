@@ -2,9 +2,10 @@
 # VERSION: 3.0
 SETUVAR --export EDITOR:emacsclient\x20\x2dt\x20\x2da\x20\x27\x27
 SETUVAR --export FZF_DEFAULT_OPTS:\x2d\x2dcolor\x3dbg\x2b\x3a\x23313244\x2cbg\x3a\x231e1e2e\x2cspinner\x3a\x23f5e0dc\x2chl\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dfg\x3a\x23cdd6f4\x2cheader\x3a\x23f38ba8\x2cinfo\x3a\x23cba6f7\x2cpointer\x3a\x23f5e0dc\x20\x2d\x2dcolor\x3dmarker\x3a\x23b4befe\x2cfg\x2b\x3a\x23cdd6f4\x2cprompt\x3a\x23cba6f7\x2chl\x2b\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dselected\x2dbg\x3a\x2345475a\x20\x2d\x2dmulti
+SETUVAR --export GEM_HOME:/home/oscar/\x2egem/ruby/3\x2e4\x2e4
 SETUVAR --export GSETTINGS_SCHEMA_DIR:/usr/share/glib\x2d2\x2e0/schemas
 SETUVAR --export LOCALE:es_ES\x2eUTF\x2d8
-SETUVAR --export XDG_DATA_DIRS:/usr/local/share\x3a/usr/share\x3a/home/oscar/\x2elocal/share
+SETUVAR --export --path XDG_DATA_DIRS:/home/oscar/\x2elocal/share/flatpak/exports/share\x1e/var/lib/flatpak/exports/share\x1e/usr/local/share\x1e/usr/share\x1e/home/oscar/\x2elocal/share
 SETUVAR __fish_initialized:3800
 SETUVAR _fisher_upgraded_to_4_4:\x1d
 SETUVAR fish_color_autosuggestion:brblack
@@ -46,4 +47,4 @@ SETUVAR fish_pager_color_selected_background:\x2dr
 SETUVAR fish_pager_color_selected_completion:\x1d
 SETUVAR fish_pager_color_selected_description:\x1d
 SETUVAR fish_pager_color_selected_prefix:\x1d
-SETUVAR fish_user_paths:\x2dg\x1e/home/oscar/\x2ecargo/bin\x1e/home/oscar/\x2elocal/bin\x1e/home/oscar/\x1e/usr/local/bin\x1e/home/oscar/\x2elocal/share/pipx/venvs\x1e/home/oscar/\x2elocal/share/gem/ruby/3\x2e4\x2e0/bin
+SETUVAR fish_user_paths:\x2dg\x1e/home/oscar/\x2ecargo/bin\x1e/home/oscar/\x2elocal/bin\x1e/home/oscar/\x1e/usr/local/bin\x1e/home/oscar/\x2elocal/share/pipx/venvs\x1e/home/oscar/\x2egem/ruby/3\x2e4\x2e4/bin
