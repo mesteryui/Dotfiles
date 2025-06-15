@@ -1,8 +1,7 @@
 #+title: Configuración Propia
 #+author: Mester
 #+property: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
-#+startup: overview
-
+#+startup: content indent
 * Preámbulo
 Añado aqui alguna cosa
 #+begin_src emacs-lisp
@@ -1687,7 +1686,7 @@ hacer algo parecido al refractor
 #+begin_src emacs-lisp
   (use-package iedit
     :ensure t)
-  (global-set-key (kbd "C-v") 'iedit-mode)
+  (gbind "C-v" iedit-mode)
 #+end_src
 *** Dape
 Herramienta de debug alternativa a dap-mode 

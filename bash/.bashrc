@@ -17,7 +17,7 @@ alias ls='lsd'
 alias grep='grep --color=auto'
 export PASSWORD_STORE_DIR="/home/oscar/.local/share/pass"
 PS1='[\u@\h \W]\$ '
-
+alias emacsc="emacsclient -c -a emacs"
 
 [ -n "$EAT_SHELL_INTEGRATION_DIR" ] && \
   source "$EAT_SHELL_INTEGRATION_DIR/bash"

@@ -21,15 +21,15 @@ add_configs() {
     stow zathura
 }
 install_software_notAUR() {
-    echo "Instalando programas varios...."
-    sudo pacman -S waybar rofi-wayland hypr kitty yazi ly emacs-wayland --noconfirm
-    echo "Instalando packs de iconos y tipografias"
-    sudo pacman -S papirus-icon-theme ttf-jetbrains-mono-nerd ttf-font-awesome
+    echo "Instalando programas en el backup de paquetes"
+    sudo pacman -S --needed - < pkglists-repos.txt  
 }
 install_AUR_software() {
-    paru -S matugen-bin --noconfirm
+    echo "Instalando software de los repos AUR"
+    paru -S --needed - < pklist-aur.txt 
 }
-echo "Primero antes que nada colocaremos los archivos de configuracion"
+echo "Primero antes que nada colocaremos los archivos de configuracion e instalaremos los paquetes con pacman necesarios para que las cosas vayan"
+install_software_notAUR
 add_configs
 if ! pacman -Q paru &>/dev/null; then
     echo "Paru no esta instalado tenga en cuenta que para continuar, debera instalar cosas desde AUR si no las tiene se recomienda instalacion. Desea instalar paru /n"

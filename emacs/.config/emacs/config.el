@@ -212,7 +212,7 @@ using what the result of 'get-local-language' function if the result is nil does
   (interactive)
   (find-file (expand-file-name "config.org" user-emacs-directory)))
   (gbind "C-x c" os/open-config)
-(defmenu t config-menu ("Config" . (find-file "~/.config/emacs/config.org")) ("Init" . (find-file "~/.config/emacs/init.el")))
+(defmenu t config-menu ("Config" . (find-file "~/.config/emacs/config.org")) ("Init" . (find-file "~/.config/emacs/init.el")) ("Early Init" . (find-file "~/.config/emacs/early-init.el")))
 
 (defun dictionary-switcher()
   "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
@@ -560,7 +560,7 @@ This function allow to activate the webserver when you use but if there is a pro
      :bind(("M-<f7>" . flyspell-buffer)
            ("<f7>" . flyspell-word)))
 
-(global-set-key (kbd "M-<f7>") 'dictionary-switcher)
+(gbind "M-<f7>" dicitionary-switcher)
   (use-package flyspell-correct
     :after (flyspell)
     :bind (("C-;" . flyspell-auto-correct-previous-word)
@@ -1080,7 +1080,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package iedit
   :ensure t)
-(global-set-key (kbd "C-v") 'iedit-mode)
+(gbind "C-v" iedit-mode)
 
 (use-package dape
   :defer t
