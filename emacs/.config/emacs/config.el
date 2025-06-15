@@ -33,9 +33,10 @@
                                         (shell-quote-argument ,(symbol-name name)))))))
          (if-let ((cmd (cdr (assoc selected ',options))))
 	 ,(if is_elisp
-              `(eval cmd)
-             `(message "%s" (shell-command-to-string cmd)))
-	 (message "No existe el comando"))))))
+              `(condition-case err (eval (car cmd))
+                 (error (message "Error: %s" err)))
+             `(princ (shell-command-to-string (car cmd)))
+	 (message "No existe el comando")))))))
 
 (defun os/org-headers-setters () 
  (dolist (item '((org-level-1 . outline-1)
@@ -167,6 +168,14 @@
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 
+(defmenu t main-menu  ("📝 Org capture" (org-capture))  ("🔧 Magit status" (magit-status))  ("🖥️ Terminal" (vterm)))
+
+(defmenu nil system-menu
+  ("🔄 Reload Emacs" "pkill -USR2 emacs")
+  ("🌙 Toggle theme" "")  ; agregar comando para tema
+  ("📸 Screenshot" "hyprshot -m region")
+  ("🔒 Lock screen" "loginctl lock-session"))
+
 (defun append-to-gitignore (file)
   "Añade archivos al gitignore"
   (interactive "fSelect a file to append in the gitignore: ")
@@ -237,13 +246,21 @@ This function allow to activate the webserver when you use but if there is a pro
                  (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
                    (message " ✅ Webserver started")))))))
 
-(defun org-temp-buffer ()
+(defun org-temp-buffer (&optional template)
    "Acceder a un buffer temporal de orgmode"
    (interactive)
    (switch-to-buffer (get-buffer-create "*orgtemp*"))
    (if (get-buffer "*orgtemp*")
-         (progn (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
-	(org-mode))))
+         (progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n"   (or template "Temporal Buffer")
+                     (format-time-string "%Y-%m-%d") user-full-name))
+	(org-mode)
+        (goto-char (point-max)))))
+
+(defmenu t org-template-menu
+  ("📝 Nota rápida" (org-temp-buffer "Nota Rápida"))
+  ("📋 Lista TODO" (org-temp-buffer "Lista TODO"))
+  ("🧠 Brainstorm" (org-temp-buffer "Brainstorm"))
+  ("📊 Meeting Notes" (org-temp-buffer "Meeting Notes")))
 
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))

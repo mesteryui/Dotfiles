@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# This script is think to work with archlinux
+
 install_paru() {
     sudo pacman -S base-devel git
     cd /opt/
@@ -19,6 +21,9 @@ add_configs() {
     stow yazi
     stow matugen
     stow zathura
+    stow bat
+    stow lsd 
+    stow cava
 }
 install_software_notAUR() {
     echo "Instalando programas en el backup de paquetes"

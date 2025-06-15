@@ -56,9 +56,10 @@ Nos permite definir un menu a partir de rofi que se ejecuta desde emacs
                                         (shell-quote-argument ,(symbol-name name)))))))
          (if-let ((cmd (cdr (assoc selected ',options))))
 	 ,(if is_elisp
-              `(eval cmd)
-             `(message "%s" (shell-command-to-string cmd)))
-	 (message "No existe el comando"))))))
+              `(condition-case err (eval (car cmd))
+                 (error (message "Error: %s" err)))
+             `(princ (shell-command-to-string (car cmd)))
+	 (message "No existe el comando")))))))
 #+end_src
 * Apariencia
 ** Ajustes de faces
@@ -286,6 +287,18 @@ make-backup-files nil                   ; No realiza backups de ficheros
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 #+end_src
+** Menu principal
+#+begin_src emacs-lisp
+(defmenu t main-menu  ("📝 Org capture" (org-capture))  ("🔧 Magit status" (magit-status))  ("🖥️ Terminal" (vterm)))
+#+end_src
+** Menu de sistema
+#+begin_src emacs-lisp
+(defmenu nil system-menu
+  ("🔄 Reload Emacs" "pkill -USR2 emacs")
+  ("🌙 Toggle theme" "")  ; agregar comando para tema
+  ("📸 Screenshot" "hyprshot -m region")
+  ("🔒 Lock screen" "loginctl lock-session"))
+#+end_src
 * Funciones propias
 ** Append to gitignore
 Te permite seleccionar un archivo para añadir al gitignore
@@ -383,13 +396,23 @@ This function allow to activate the webserver when you use but if there is a pro
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
 #+begin_src emacs-lisp
-(defun org-temp-buffer ()
+(defun org-temp-buffer (&optional template)
    "Acceder a un buffer temporal de orgmode"
    (interactive)
    (switch-to-buffer (get-buffer-create "*orgtemp*"))
    (if (get-buffer "*orgtemp*")
-         (progn (insert (format "#+title: Org Temporal Buffer\n#+description: Espacio para la toma de notas temporales\n#+author: %s\n\n" user-full-name))
-	(org-mode))))
+         (progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n"   (or template "Temporal Buffer")
+                     (format-time-string "%Y-%m-%d") user-full-name))
+	(org-mode)
+        (goto-char (point-max)))))
+#+end_src
+*** Menu buffer temporal
+#+begin_src emacs-lisp
+(defmenu t org-template-menu
+  ("📝 Nota rápida" (org-temp-buffer "Nota Rápida"))
+  ("📋 Lista TODO" (org-temp-buffer "Lista TODO"))
+  ("🧠 Brainstorm" (org-temp-buffer "Brainstorm"))
+  ("📊 Meeting Notes" (org-temp-buffer "Meeting Notes")))
 #+end_src
 ** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
