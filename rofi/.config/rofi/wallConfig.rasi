@@ -5,6 +5,8 @@ configuration {
     show-icons: true;
     drun-display-format: "{name}";
     font: "JetBrainsMono NF 12";
+    display-dmenu: "🖼️ Wallpapers";
+    icon-theme: "Papirus";
 }
 
 * {
@@ -12,73 +14,131 @@ configuration {
     main-fg: @on-surface;
     select-bg: @primary;
     select-fg: @surface;
+    border-color: @primary;
+    accent-color: @secondary;
 }
 
 window {
     enabled: true;
     fullscreen: false;
-    width: 50%;
+    width: 1400px;
+    height: 800px;
     transparency: "off";
     cursor: "default";
-    spacing: 5px;
-    padding: 10px;
-    border: 2px;
-    border-radius: 10px;
-    border-color: @select-bg;
+    spacing: 0px;
+    padding: 0px;
+    border: 3px;
+    border-radius: 15px;
+    border-color: @border-color;
     background-color: @main-bg;
+    location: center;
+    anchor: center;
 }
 
 mainbox {
     enabled: true;
-    children: [ "listview" ];
-    background-color: @main-bg;
+    children: [ "inputbar", "listview" ];
+    background-color: transparent;
+    spacing: 20px;
+    padding: 25px;
+}
+
+inputbar {
+    enabled: true;
+    background-color: rgba(0, 0, 0, 0.1);
+    text-color: @main-fg;
+    border: 2px;
+    border-color: @accent-color;
+    border-radius: 10px;
+    padding: 12px 18px;
+    children: [ "textbox-prompt-colon", "entry" ];
+}
+
+textbox-prompt-colon {
+    enabled: true;
+    expand: false;
+    str: "Buscar:";
+    background-color: transparent;
+    text-color: @accent-color;
+    padding: 0px 12px 0px 0px;
+    font: "JetBrainsMono NF Bold 12";
+}
+
+entry {
+    enabled: true;
+    background-color: transparent;
+    text-color: @main-fg;
+    cursor: text;
+    placeholder: "Escribe para filtrar wallpapers...";
+    placeholder-color: rgba(255, 255, 255, 0.5);
 }
 
 listview {
     enabled: true;
-    columns: 1;
-    lines: 3;
-    spacing: 10px;
-    padding: 10px;
+    columns: 2;
+    lines: 2;
+    spacing: 35px;
+    padding: 25px;
     cycle: true;
-    dynamic: false;
+    dynamic: true;
     scrollbar: false;
     layout: vertical;
+    reverse: false;
     fixed-height: true;
+    fixed-columns: true;
     cursor: "default";
-    background-color: @main-bg;
+    background-color: transparent;
     text-color: @main-fg;
 }
 
 element {
     enabled: true;
-    orientation: horizontal;
-    spacing: 5px;
-    padding: 5px;
-    border-radius: 5px;
+    orientation: vertical;
+    spacing: 18px;
+    padding: 25px;
+    border: 2px;
+    border-color: transparent;
+    border-radius: 18px;
     cursor: pointer;
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.05);
+    text-color: @main-fg;
+}
+
+element normal.normal {
+    background-color: rgba(255, 255, 255, 0.05);
     text-color: @main-fg;
 }
 
 element selected.normal {
     background-color: @select-bg;
     text-color: @select-fg;
+    border-color: @select-bg;
+    padding: 30px;
+    border: 3px;
+}
+
+element alternate.normal {
+    background-color: rgba(255, 255, 255, 0.02);
+    text-color: @main-fg;
+}
+
+element-icon {
+    size: 280px;
+    cursor: inherit;
+    border-radius: 15px;
+    background-color: transparent;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    padding: 10px;
 }
 
 element-text {
-    vertical-align: 0.5;
+    font: "JetBrainsMono NF Bold 13";
+    cursor: inherit;
+    background-color: transparent;
+    text-color: inherit;
     horizontal-align: 0.5;
-    padding: 10px;
-    cursor: inherit;
-    background-color: transparent;
-    text-color: inherit;
+    vertical-align: 0.5;
+    padding: 12px;
+    font-weight: 600;
 }
-element-icon {
-    size: 20%;
-    cursor: inherit;
-    border-radius: 0px;
-    background-color: transparent;
-    text-color: inherit;
-}
-

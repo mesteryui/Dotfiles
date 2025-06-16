@@ -1,58 +1,169 @@
 [General]
-description=Refined Kvantum theme using Matugen colors
+description=Tema Kvantum refinado usando Matugen (Primary como color de énfasis)
 translucent=false
 
+# ---------------------------------------------------
+# DEFINICIÓN DE COLORES GENERALES
+# ---------------------------------------------------
 [Colors]
-window.color=$surface
-base.color=$background
-button.color=$surfaceVariant
-highlight.color=$primary
-selection.background=$primaryContainer
-selection.foreground=$onPrimaryContainer
-text.color=$onSurface
-window.text.color=$onSurface
-button.text.color=$onSurfaceVariant
-highlighted.text.color=$onPrimary
-tooltip.background=$surface
-tooltip.text=$onSurface
-link.color=$primary
-visited.link.color=$primary
+# Fondo principal de la ventana
+window.color={{ colors.surface.default.hex }}
+# Fondo “extra” (ej. detrás de áreas de texto/áreas en blanco)
+base.color={{ colors.background.default.hex }}
+# Color de botones por defecto
+button.color={{ colors.surface_variant.default.hex }}
+# Color de énfasis (destacado en textos, iconos activos, etc.)
+highlight.color={{ colors.primary.default.hex }}
+# Fondo y texto de selección en textos/menus
+selection.background={{ colors.primary_container.default.hex }}
+selection.foreground={{ colors.on_primary_container.default.hex }}
+# Texto principal
+text.color={{ colors.on_surface.default.hex }}
+window.text.color={{ colors.on_surface.default.hex }}
+button.text.color={{ colors.on_surface_variant.default.hex }}
+# Texto destacado (por ejemplo, enlaces, encabezados pequeños)
+highlighted.text.color={{ colors.primary.default.hex }}
+# Tooltip (caja de ayuda emergente)
+tooltip.background={{ colors.surface_variant.default.hex }}
+tooltip.text={{ colors.on_surface.default.hex }}
+# Enlaces
+link.color={{ colors.primary.default.hex }}
+visited.link.color={{ colors.primary_container.default.hex }}
+# Borde general (por defecto, línea delgada alrededor de ventanas)
+border.color={{ colors.outline_variant.default.hex }}
 
+# ---------------------------------------------------
+# VENTANAS Y BARRA DE TÍTULO
+# ---------------------------------------------------
 [Window]
+# Ancho de borde de ventana
 border.width=1
-border.color=$outlineVariant
-titlebar.active.bg=$primary
-titlebar.active.fg=$onPrimary
-titlebar.inactive.bg=$surfaceVariant
-titlebar.inactive.fg=$onSurfaceVariant
+# Color de borde
+border.color={{ colors.outline_variant.default.hex }}
+# Barra de título (activo/inactivo)
+titlebar.active.bg={{ colors.primary_container.default.hex }}
+titlebar.active.fg={{ colors.on_primary_container.default.hex }}
+titlebar.inactive.bg={{ colors.surface_variant.default.hex }}
+titlebar.inactive.fg={{ colors.on_surface_variant.default.hex }}
 
+# ---------------------------------------------------
+# BOTONES
+# ---------------------------------------------------
 [Buttons]
-default.button.color=$primary
-default.button.text.color=$onPrimary
-button.hover.color=$primaryContainer
-button.hover.text.color=$onPrimaryContainer
-button.pressed.color=$primary
-button.pressed.text.color=$onPrimary
-button.disabled.color=$surfaceVariant
-button.disabled.text.color=$onSurfaceVariant
+# Color por defecto de botón (estado normal)
+default.button.color={{ colors.primary.default.hex }}
+default.button.text.color={{ colors.on_primary.default.hex }}
+# Cuando el ratón está encima (hover)
+button.hover.color={{ colors.primary_container.default.hex }}
+button.hover.text.color={{ colors.on_primary_container.default.hex }}
+# Cuando se pulsa
+button.pressed.color={{ colors.primary.default.hex }}
+button.pressed.text.color={{ colors.on_primary.default.hex }}
+# Botón deshabilitado
+button.disabled.color={{ colors.surface_variant.default.hex }}
+button.disabled.text.color={{ colors.on_surface_variant.default.hex }}
 
+# ---------------------------------------------------
+# BARRAS DE DESPLAZAMIENTO (SCROLLBARS)
+# ---------------------------------------------------
 [Scrollbars]
-handle.color=$primaryContainer
-handle.hover.color=$primary
-bgnd.color=$surface
+# Fondo del track (donde se mueve el deslizador)
+bgnd.color={{ colors.surface.default.hex }}
+# Color del “mango” (handle)
+handle.color={{ colors.primary_container.default.hex }}
+handle.hover.color={{ colors.primary.default.hex }}
 
+# ---------------------------------------------------
+# PESTAÑAS (TABS)
+# ---------------------------------------------------
 [Tabs]
-tab.active.bg=$primaryContainer
-tab.active.fg=$onPrimaryContainer
-tab.inactive.bg=$surface
-tab.inactive.fg=$onSurfaceVariant
+# Pestaña activa
+tab.active.bg={{ colors.primary_container.default.hex }}
+tab.active.fg={{ colors.on_primary_container.default.hex }}
+# Pestaña inactiva
+tab.inactive.bg={{ colors.surface.default.hex }}
+tab.inactive.fg={{ colors.on_surface_variant.default.hex }}
 
+# ---------------------------------------------------
+# MENÚS
+# ---------------------------------------------------
 [Menu]
-menu.bg=$surface
-menu.fg=$onSurface
-menu.highlight.bg=$primaryContainer
-menu.highlight.fg=$onPrimaryContainer
+menu.bg={{ colors.surface.default.hex }}
+menu.fg={{ colors.on_surface.default.hex }}
+menu.highlight.bg={{ colors.primary_container.default.hex }}
+menu.highlight.fg={{ colors.on_primary_container.default.hex }}
 
+# ---------------------------------------------------
+# TOOLTIP (CUADROS DE AYUDA)
+# ---------------------------------------------------
 [ToolTip]
-tooltip.bg=$surfaceVariant
-tooltip.fg=$onSurface
+tooltip.bg={{ colors.surface_variant.default.hex }}
+tooltip.fg={{ colors.on_surface.default.hex }}
+
+# ---------------------------------------------------
+# BARRAS DE PROGRESO, CHECKBOX, RADIOBUTTON, ETC.
+# ---------------------------------------------------
+[ProgressBar]
+# Barra de progreso llena
+bar.color={{ colors.primary.default.hex }}
+# Fondo de la barra de progreso
+bar.bgnd.color={{ colors.surface_variant.default.hex }}
+bar.text.color={{ colors.on_surface.default.hex }}
+
+[CheckBox]
+# Casilla marcada
+checkbox.mark.color={{ colors.primary.default.hex }}
+# Casilla desmarcada
+checkbox.unmark.color={{ colors.on_surface_variant.default.hex }}
+# Fondo/contorno (opcional)
+checkbox.bgnd.color={{ colors.surface_variant.default.hex }}
+
+[RadioButton]
+radiobutton.mark.color={{ colors.primary.default.hex }}
+radiobutton.unmark.color={{ colors.on_surface_variant.default.hex }}
+radiobutton.bgnd.color={{ colors.surface_variant.default.hex }}
+
+# ---------------------------------------------------
+# BARRAS DE HERRAMIENTAS (TOOLBAR)
+# ---------------------------------------------------
+[ToolBar]
+toolbar.bg={{ colors.surface.default.hex }}
+toolbar.fg={{ colors.on_surface.default.hex }}
+toolbar.button.hover.bg={{ colors.primary_container.default.hex }}
+toolbar.button.hover.fg={{ colors.on_primary_container.default.hex }}
+
+# ---------------------------------------------------
+# BARRA DE ESTADO (STATUSBAR)
+# ---------------------------------------------------
+[StatusBar]
+statusbar.bg={{ colors.surface_variant.default.hex }}
+statusbar.fg={{ colors.on_surface_variant.default.hex }}
+
+# ---------------------------------------------------
+# DIÁLOGOS (DIALOGS)
+# ---------------------------------------------------
+[Dialog]
+dialog.bg={{ colors.surface.default.hex }}
+dialog.fg={{ colors.on_surface.default.hex }}
+dialog.button.color={{ colors.primary.default.hex }}
+dialog.button.text.color={{ colors.on_primary.default.hex }}
+
+# ---------------------------------------------------
+# BARRA DE TÍTULO PERSONALIZADA (WINDOWTITLE)
+# ---------------------------------------------------
+[WindowTitle]
+# Si usas título personalizado con icono y texto
+winbtn.close.bg={{ colors.error_container.default.hex }}
+winbtn.close.fg={{ colors.on_error_container.default.hex }}
+winbtn.minimize.bg={{ colors.primary_container.default.hex }}
+winbtn.minimize.fg={{ colors.on_primary_container.default.hex }}
+winbtn.maximize.bg={{ colors.primary_container.default.hex }}
+winbtn.maximize.fg={{ colors.on_primary_container.default.hex }}
+
+# ---------------------------------------------------
+# ICONOS (por si tienes definidos íconos específicos)
+# ---------------------------------------------------
+[Icons]
+# Ejemplo: icono activo/inactivo
+icon.active={{ colors.primary.default.hex }}
+icon.inactive={{ colors.on_surface_variant.default.hex }}

@@ -355,6 +355,7 @@
 	// ┌─┐┬─┐┌─┐┬ ┬┌─┐┌─┐
 	// │ ┬├┬┘│ ││ │├─┘└─┐
 	// └─┘┴└─└─┘└─┘┴  └─┘
+	// "hyprland/workspaces"
 	"group/workspace_block": {
   	"orientation": "horizontal",
   	"modules": [
@@ -417,6 +418,11 @@
 		"icon": true,
 		"max-length": 40,
 		"seperate-outputs": true,
+		"format": "{}",
+		"rewrite": {
+			"^$": "<span font='14px'></span>    <span font='12px'>Escritorio</span>",
+		},
+		"tooltip": false
 	},
 
 	// ┌┬┐┬┌─┐┌─┐
@@ -508,7 +514,7 @@
 	"custom/weather": {
 	   "format": "{}",
  	   "return-type": "json",
-           "exec": "~/.config/waybar/scripts/weather.rb",
+           "exec": "wttrbar -l es",
            "interval": 240,
 },
 "custom/space": {

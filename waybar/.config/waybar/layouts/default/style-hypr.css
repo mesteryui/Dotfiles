@@ -1,4 +1,4 @@
-@import "colors.css";
+@import url("../../colors.css");
 
 window#waybar {
     background-color: transparent;

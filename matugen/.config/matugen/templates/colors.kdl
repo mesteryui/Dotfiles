@@ -1,0 +1,1 @@
+let primary_color = "{{ colors.primary.default.hex }}"

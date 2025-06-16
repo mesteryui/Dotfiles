@@ -1,0 +1,304 @@
+/* Waybar CSS - GTK Compatible - Sin errores */
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 12px;
+    opacity: 0.95;
+}
+
+tooltip {
+    background-color: #1e1e2e;
+    border-radius: 8px;
+    border: 1px solid #45475a;
+    color: #cdd6f4;
+}
+
+tooltip label {
+    color: #cdd6f4;
+}
+
+#custom-launcher {
+    color: #89b4fa;
+    font-size: 18px;
+    padding: 0 12px;
+    margin: 4px 2px 4px 8px;
+    border-radius: 8px;
+    background-color: transparent;
+}
+
+#custom-launcher:hover {
+    background-color: #313244;
+}
+
+#workspaces {
+    background-color: #313244;
+    margin: 4px 8px;
+    padding: 2px 4px;
+    border-radius: 12px;
+}
+
+#workspaces button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: #6c7086;
+    background-color: transparent;
+    margin: 2px;
+    border: none;
+}
+
+#workspaces button:hover {
+    background-color: #45475a;
+    color: #89b4fa;
+}
+
+#workspaces button.active {
+    background-color: #89b4fa;
+    color: #1e1e2e;
+}
+
+#workspaces button.urgent {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+}
+
+#window {
+    background-color: #313244;
+    margin: 4px 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    color: #cdd6f4;
+    font-weight: normal;
+}
+
+#window.empty {
+    background-color: transparent;
+}
+
+#clock {
+    background-color: #fab387;
+    color: #1e1e2e;
+    margin: 4px 8px;
+    padding: 8px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#clock:hover {
+    background-color: #f9e2af;
+}
+
+#tray {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 8px;
+    border-radius: 10px;
+    color: #cdd6f4;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: #45475a;
+}
+
+#custom-weather {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #74c7ec;
+}
+
+#custom-weather:hover {
+    background-color: #45475a;
+}
+
+#memory {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #a6e3a1;
+}
+
+#memory:hover {
+    background-color: #45475a;
+}
+
+#memory.warning {
+    background-color: #fab387;
+    color: #1e1e2e;
+}
+
+#memory.critical {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+}
+
+#cpu {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #f9e2af;
+}
+
+#cpu:hover {
+    background-color: #45475a;
+}
+
+#cpu.warning {
+    background-color: #fab387;
+    color: #1e1e2e;
+}
+
+#cpu.critical {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+}
+
+#temperature {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #f38ba8;
+}
+
+#temperature:hover {
+    background-color: #45475a;
+}
+
+#temperature.critical {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+}
+
+#pulseaudio {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #cba6f7;
+}
+
+#pulseaudio:hover {
+    background-color: #45475a;
+}
+
+#pulseaudio.muted {
+    color: #6c7086;
+    background-color: #45475a;
+}
+
+#network {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #89b4fa;
+}
+
+#network:hover {
+    background-color: #45475a;
+}
+
+#network.disconnected {
+    color: #6c7086;
+    background-color: #45475a;
+}
+
+#network.linked {
+    color: #fab387;
+}
+
+#battery {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #a6e3a1;
+}
+
+#battery:hover {
+    background-color: #45475a;
+}
+
+#battery.charging {
+    background-color: #a6e3a1;
+    color: #1e1e2e;
+}
+
+#battery.plugged {
+    background-color: #f9e2af;
+    color: #1e1e2e;
+}
+
+#battery.warning:not(.charging) {
+    background-color: #fab387;
+    color: #1e1e2e;
+}
+
+#battery.critical:not(.charging) {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+}
+
+#custom-power {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+    margin: 4px 8px 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+#custom-power:hover {
+    background-color: #eba0ac;
+}
+
+#custom-notification {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #89b4fa;
+}
+
+#custom-notification:hover {
+    background-color: #45475a;
+}
+
+#custom-notification.dnd {
+    color: #6c7086;
+    background-color: #45475a;
+}
+
+#custom-media {
+    background-color: #313244;
+    margin: 4px 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #cba6f7;
+}
+
+#custom-media:hover {
+    background-color: #45475a;
+}
+
+#custom-media.custom-spotify {
+    color: #a6e3a1;
+}

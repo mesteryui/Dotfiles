@@ -1,0 +1,173 @@
+<svg width="450" height="1230" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <linearGradient id="linearGradient2643">
+      <stop offset="0" stop-color="#000" stop-opacity="0.431"/>
+      <stop offset="0.45" stop-color="#000" stop-opacity="0.216"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Botón normal -->
+  <g id="button-normal">
+    <path style="fill:{{ colors.surface.default.hex }}" d="M 7,55 H 4 C 2.5,55 2,54.5 2,53 v -1 h 5 z"/>
+  </g>
+
+  <!-- Botón activo -->
+  <g id="button-toggled">
+    <path style="fill:{{ colors.primary.default.hex }}" d="M 7,55 H 4 C 2.5,55 2,54.5 2,53 v -1 h 5 z"/>
+  </g>
+
+  <!-- Fondo de slider -->
+  <g id="slider-bg">
+    <path style="fill:{{ colors.background.default.hex }}" d="M 395,742.5 c ..."/>
+  </g>
+
+  <!-- Texto deshabilitado -->
+  <g id="text-disabled">
+    <path style="fill:{{ colors.on_surface_variant.default.hex }}" d="M 8,602.986 20,588 32,602.986 ..."/>
+  </g>
+
+  <!-- Sombra de menú -->
+  <g id="menu-shadow">
+    <path style="opacity:.3;fill:{{ colors.background.default.hex }}" d="m 17.5005,877 0,3 58,0 0,-3 z"/>
+  </g>
+
+  <!-- Fondo de tooltip -->
+  <g id="tooltip-bg">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 14.5,942 0,2 3,0 -3e-4,-2 z"/>
+  </g>
+
+  <!-- Indicador de checkbox activo -->
+  <g id="checkbox-checked">
+    <g style="fill:{{ colors.primary.default.hex }}">
+      <path d="M 8,602.986 20,588 32,602.986 Z"/>
+    </g>
+  </g>
+
+  <!-- Elementos dinámicos adicionales -->
+  <g id="dynamic-elements">
+    <path style="fill:{{ colors.primary.default.hex }}" d="M 179,52 V 20 h -32 v 32 z"/>
+    <path style="fill:{{ colors.surface.default.hex }}" d="m 285.5,883.5 0,32 32,0 0,-32 -32,0 z"/>
+  </g>
+
+  <!-- Fondo de progreso deshabilitado -->
+  <g id="progress-disabled">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 320,172 0,-32 -10,0 .0006,32 z"/>
+  </g>
+
+  <!-- Elementos con opacidad -->
+  <g id="opacity-elements">
+    <path style="opacity:.25;fill:{{ colors.background.default.hex }}" d="m 12.5005,796 0,60 5,0 0,-60 z"/>
+    <path style="opacity:.28;fill:{{ colors.background.default.hex }}" d="m 75.5003,796 0,60 5,0 0,-60 z"/>
+  </g>
+
+  <!-- Iconos deshabilitados -->
+  <g id="disabled-icons">
+    <path style="fill:{{ colors.on_surface_variant.default.hex }}" d="M 8,602.986 20,588 32,602.986 ..."/>
+  </g>
+
+  <!-- Resaltado de texto -->
+  <g id="text-highlight">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 225,460 r16 ..."/>
+  </g>
+
+  <!-- Fondo de línea de edición -->
+  <g id="lineedit-bg">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 322.5,95 h 10 v 10 h -10 z"/>
+  </g>
+
+  <!-- Elementos de foco -->
+  <g id="focus-indicators">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 90,109.5 20,0 0,-2 -20,0 z"/>
+  </g>
+
+  <!-- Elementos de menú -->
+  <g id="menu-items">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 252.5,835 0,-32.5 32.5,0 0,32.5 -32.5,0 z"/>
+  </g>
+
+  <!-- Indicadores de scroll -->
+  <g id="scroll-indicators">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 195,721.7499 c 6.648,0 12,5.352 12,12 h -12 v -12 z"/>
+  </g>
+
+  <!-- Iconos rotados -->
+  <g id="rotated-icons">
+    <use xlink:href="#arrow-up-normal" transform="matrix(1,0,0,-1,0,540)"/>
+  </g>
+
+  <!-- Elementos de barra de herramientas -->
+  <g id="toolbar">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 245,86.2484 a 5,5 0 0,1 -10,0 5,5 0 1,1 10,0 z"/>
+  </g>
+
+  <!-- Checkbox tristate -->
+  <g id="checkbox-tristate">
+    <ellipse cx="105.5" cy="208" rx="3" ry="3" style="fill:{{ colors.primary.default.hex }}"/>
+  </g>
+
+  <!-- Elementos de menú desplegable -->
+  <g id="dropdown-menu">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 252.5,835 0,-32.5 32.5,0 0,32.5 -32.5,0 z"/>
+  </g>
+
+  <!-- Botones enfocados -->
+  <g id="focused-buttons">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 53,54 h -3 c -1.5,0 -2,-0.5 -2,-2 h 5 z"/>
+  </g>
+
+  <!-- Elementos de progreso -->
+  <g id="progress-bars">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 320,172 0,-32 -10,0 .0006,32 z"/>
+  </g>
+
+  <!-- Iconos de flecha -->
+  <g id="arrows">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 225,460 r16 ..."/>
+  </g>
+
+  <!-- Elementos de barra de título -->
+  <g id="titlebar">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 397.5,622.5 0,32 32,0 0,-32 z"/>
+  </g>
+
+  <!-- Dock (barras laterales) -->
+  <g id="dock">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 347.5,1170 h 5 v 30 h -5 z"/>
+  </g>
+
+  <!-- Menú superior -->
+  <g id="menubar">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="m 305,805 h 20 v 20 h -20 z"/>
+  </g>
+
+  <!-- Indicadores de carga -->
+  <g id="loading-indicators">
+    <path style="fill:{{ colors.primary.default.hex }}" d="m 225,460 r16 ..."/>
+  </g>
+
+  <!-- Elementos de ventana activa -->
+  <g id="window-active">
+    <rect width="2.5" x="46.749313" y="856" height="5" style="fill:{{ colors.primary.default.hex }}"/>
+  </g>
+
+  <!-- Elementos de ventana desactiva -->
+  <g id="window-inactive">
+    <rect width="2.5" x="-825" y="75.50032" height="5" style="fill:{{ colors.primary.default.hex }}"/>
+  </g>
+
+  <!-- Botones primarios -->
+  <g id="primary-buttons">
+    <path style="fill:{{ colors.primary.default.hex }}" d="M 179,52 V 20 h -32 v 32 z"/>
+  </g>
+
+  <!-- Botones secundarios -->
+  <g id="secondary-buttons">
+    <path style="fill:{{ colors.surface_container.default.hex }}" d="M 322.5,95 h 10 v 10 h -10 z"/>
+  </g>
+
+  <!-- Elementos de fondo -->
+  <g id="background-elements">
+    <path style="fill:{{ colors.background.default.hex }}" d="M 0,0 0,1230 450,1230 450,0 z"/>
+  </g>
+</svg>
