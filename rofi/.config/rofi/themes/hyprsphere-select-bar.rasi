@@ -1,0 +1,53 @@
+@import "~/.config/rofi/matugen/matugen-rofi.rasi"
+* {
+  font: "JetBrainsMono Nerd Font 11";
+  background-color: @surface-container-high;
+  text-color: @on-surface;
+  border: 2px;
+  border-color: @primary;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+window {
+  background-color: @surface-container-highest;
+}
+
+mainbox {
+  children: [prompt, message, inputbar, listview];
+  spacing: 8px;
+}
+
+prompt {
+  padding: 6px;
+  background-color: @primary-container;
+  text-color: @on-primary-container;
+  border-radius: 6px;
+}
+
+inputbar {
+  background-color: @surface-container;
+  text-color: @on-surface;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+listview {
+  lines: 8;
+  spacing: 4px;
+  fixed-height: true;
+  scrollbar: true;
+  background-color: @surface-container-low;
+}
+
+element {
+  padding: 4px 10px;
+  background-color: transparent;
+  text-color: @on-surface;
+}
+
+element selected {
+  background-color: @primary;
+  text-color: @on-primary;
+  border-radius: 6px;
+}

@@ -1,0 +1,312 @@
+@import "~/.config/rofi/matugen/matugen-rofi.rasi"
+
+configuration {
+    modi: "drun";
+    display-drun: "󰍉";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    drun-display-format: "{name}";
+    disable-history: false;
+    hide-scrollbar: true;
+    sidebar-mode: false;
+    steal-focus: true;
+    matching: "fuzzy";
+    scroll-method: 0;
+    window-format: "{w} · {c} · {t}";
+    click-to-exit: true;
+    combi-hide-mode-prefix: false;
+    display-window: " 󰕰 ";
+    display-windowcd: " 󰕰 ";
+    display-run: " 󰅴 ";
+    display-ssh: " 󰢹 ";
+    display-combi: " 󰛡 ";
+    font: "JetBrainsMono Nerd Font Bold 12";
+}
+
+* {
+    /* Colores usando variables importadas */
+    main-bg: @surface;
+    main-fg: @on-surface;
+    select-bg: @primary;
+    select-fg: @on-primary;
+    container-bg: @surface-container;
+    container-low-bg: @surface-container-low;
+    container-high-bg: @surface-container-high;
+    border-color: @outline-variant;
+    accent-color: @primary;
+    error-bg: @error-container;
+    error-fg: @on-error-container;
+    
+    /* Configuración de espaciado */
+    spacing: 8px;
+    margin: 0px;
+    padding: 0px;
+}
+
+window {
+    enabled: true;
+    fullscreen: false;
+    width: 750px;
+    height: 500px;
+    location: center;
+    anchor: center;
+    transparency: "real";
+    cursor: "default";
+    background-color: @main-bg;
+    border: 2px;
+    border-color: @accent-color;
+    border-radius: 16px;
+}
+
+mainbox {
+    enabled: true;
+    spacing: 0px;
+    margin: 0px;
+    padding: 20px;
+    border: 0px;
+    border-radius: 0px;
+    border-color: transparent;
+    background-color: transparent;
+    children: [ "inputbar", "message", "listview", "mode-switcher" ];
+}
+
+inputbar {
+    enabled: true;
+    spacing: 12px;
+    margin: 0px 0px 20px 0px;
+    padding: 16px 20px;
+    border: 0px;
+    border-radius: 12px;
+    border-color: @border-color;
+    background-color: @container-bg;
+    text-color: @main-fg;
+    children: [ "prompt", "textbox-prompt-colon", "entry" ];
+}
+
+prompt {
+    enabled: true;
+    background-color: transparent;
+    text-color: @accent-color;
+    font: "JetBrainsMono Nerd Font Bold 14";
+}
+
+textbox-prompt-colon {
+    enabled: true;
+    expand: false;
+    str: "󰍉";
+    background-color: transparent;
+    text-color: @accent-color;
+    font: "JetBrainsMono Nerd Font Bold 16";
+}
+
+entry {
+    enabled: true;
+    background-color: transparent;
+    text-color: @main-fg;
+    cursor: text;
+    placeholder: "Buscar layout...";
+    placeholder-color: @on-surface-variant;
+}
+
+num-filtered-rows {
+    enabled: true;
+    expand: false;
+    background-color: transparent;
+    text-color: @on-surface-variant;
+}
+
+textbox-num-sep {
+    enabled: true;
+    expand: false;
+    str: "/";
+    background-color: transparent;
+    text-color: @on-surface-variant;
+}
+
+num-rows {
+    enabled: true;
+    expand: false;
+    background-color: transparent;
+    text-color: @on-surface-variant;
+}
+
+case-indicator {
+    enabled: true;
+    background-color: transparent;
+    text-color: @on-surface-variant;
+}
+
+listview {
+    enabled: true;
+    columns: 2;
+    lines: 6;
+    cycle: true;
+    dynamic: true;
+    scrollbar: false;
+    layout: vertical;
+    reverse: false;
+    fixed-height: true;
+    fixed-columns: true;
+    spacing: 8px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+    border-radius: 0px;
+    border-color: transparent;
+    background-color: transparent;
+    text-color: @main-fg;
+    cursor: "default";
+}
+
+scrollbar {
+    enabled: true;
+    width: 4px;
+    border: 0px;
+    border-radius: 2px;
+    background-color: @container-high-bg;
+    handle-color: @accent-color;
+    handle-width: 4px;
+}
+
+element {
+    enabled: true;
+    spacing: 12px;
+    margin: 0px;
+    padding: 16px;
+    border: 1px;
+    border-radius: 12px;
+    border-color: transparent;
+    background-color: @container-low-bg;
+    text-color: @main-fg;
+    cursor: pointer;
+}
+
+element normal.normal {
+    background-color: @container-low-bg;
+    text-color: @main-fg;
+    border-color: transparent;
+}
+
+element normal.urgent {
+    background-color: @error-bg;
+    text-color: @error-fg;
+    border-color: @error;
+}
+
+element normal.active {
+    background-color: @primary-container;
+    text-color: @on-primary-container;
+    border-color: @accent-color;
+}
+
+element selected.normal {
+    background-color: @select-bg;
+    text-color: @select-fg;
+    border-color: @accent-color;
+}
+
+element selected.urgent {
+    background-color: @error;
+    text-color: @on-error;
+    border-color: @error;
+}
+
+element selected.active {
+    background-color: @accent-color;
+    text-color: @select-fg;
+    border-color: @accent-color;
+}
+
+element alternate.normal {
+    background-color: @container-low-bg;
+    text-color: @main-fg;
+    border-color: transparent;
+}
+
+element alternate.urgent {
+    background-color: @error-bg;
+    text-color: @error-fg;
+    border-color: @error;
+}
+
+element alternate.active {
+    background-color: @primary-container;
+    text-color: @on-primary-container;
+    border-color: @accent-color;
+}
+
+element-icon {
+    background-color: transparent;
+    text-color: inherit;
+    size: 32px;
+    cursor: inherit;
+}
+
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    highlight: inherit;
+    cursor: inherit;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+    font: "JetBrainsMono Nerd Font Medium 13";
+}
+
+mode-switcher {
+    enabled: true;
+    spacing: 10px;
+    margin: 20px 0px 0px 0px;
+    padding: 0px;
+    border: 0px;
+    border-radius: 0px;
+    border-color: transparent;
+    background-color: transparent;
+    text-color: @main-fg;
+}
+
+button {
+    padding: 12px 20px;
+    border: 1px;
+    border-radius: 8px;
+    border-color: @border-color;
+    background-color: @container-bg;
+    text-color: @main-fg;
+    cursor: pointer;
+    font: "JetBrainsMono Nerd Font Medium 11";
+}
+
+button selected {
+    border-color: @accent-color;
+    background-color: @select-bg;
+    text-color: @select-fg;
+}
+
+message {
+    enabled: true;
+    margin: 0px 0px 16px 0px;
+    padding: 16px;
+    border: 0px;
+    border-radius: 12px;
+    border-color: transparent;
+    background-color: @container-bg;
+    text-color: @main-fg;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: inherit;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+    highlight: none;
+    blink: true;
+    markup: true;
+}
+
+error-message {
+    padding: 16px;
+    border: 2px;
+    border-radius: 12px;
+    border-color: @error;
+    background-color: @error-bg;
+    text-color: @error-fg;
+}

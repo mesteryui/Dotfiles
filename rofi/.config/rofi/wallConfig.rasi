@@ -6,7 +6,7 @@ configuration {
     drun-display-format: "{name}";
     font: "JetBrainsMono NF 12";
     display-dmenu: "🖼️ Wallpapers";
-    icon-theme: "Papirus";
+    matching: "fuzzy";
 }
 
 * {
@@ -21,8 +21,8 @@ configuration {
 window {
     enabled: true;
     fullscreen: false;
-    width: 1400px;
-    height: 800px;
+    width: 1000px;
+    height: 600px;
     transparency: "off";
     cursor: "default";
     spacing: 0px;
