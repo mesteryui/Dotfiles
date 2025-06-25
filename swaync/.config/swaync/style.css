@@ -1,4 +1,5 @@
 @import 'matugen/matugen-swaync.css';
+
 * {
   all: unset;
   font-size: 15px;
@@ -7,10 +8,7 @@
   transition: 200ms;
 }
 
-trough highlight {
-  background: #cdd6f4;
-}
-
+/* Elementos básicos de escala */
 scale trough {
   margin: 0rem 1rem;
   background-color: #313244;
@@ -18,12 +16,17 @@ scale trough {
   min-width: 70px;
 }
 
-slider {
+scale trough highlight {
+  background: #cdd6f4;
+}
+
+scale slider {
   background-color: #89b4fa;
 }
 
+/* Notificaciones flotantes */
 .floating-notifications.background .notification-row .notification-background {
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
   margin: 18px;
   background-color: @surface;
@@ -98,6 +101,7 @@ slider {
   color: #1e1e2e;
 }
 
+/* Centro de control */
 .control-center {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
   border-radius: 12.6px;
@@ -197,10 +201,6 @@ slider {
   background-color: #eba0ac;
 }
 
-.close-button {
-  border-radius: 6.3px;
-}
-
 .control-center .notification-row .notification-background .close-button:hover {
   background-color: #f38ba8;
   color: #1e1e2e;
@@ -223,15 +223,22 @@ slider {
   color: #cdd6f4;
 }
 
-.notification.critical progress {
+/* Botones de cierre */
+.close-button {
+  border-radius: 6.3px;
+}
+
+/* Barras de progreso para notificaciones */
+.notification.critical progressbar progress {
   background-color: #f38ba8;
 }
 
-.notification.low progress,
-.notification.normal progress {
+.notification.low progressbar progress,
+.notification.normal progressbar progress {
   background-color: #89b4fa;
 }
 
+/* Widget DND (Do Not Disturb) */
 .control-center-dnd {
   margin-top: 5px;
   border-radius: 8px;
@@ -272,6 +279,7 @@ slider {
   border: 1px solid @surface_container;
 }
 
+/* Widget MPRIS (Media Player) */
 .widget-mpris .widget-mpris-player {
   background: #313244;
   padding: 7px;
@@ -285,26 +293,30 @@ slider {
   font-size: 0.8rem;
 }
 
+/* Widget Menu Bar */
 .widget-menubar > box > .menu-button-bar > button > label {
   font-size: 3rem;
   padding: 0.5rem 2rem;
 }
 
-.widget-menubar > box > .menu-button-bar > :last-child {
+.widget-menubar > box > .menu-button-bar > button:last-child {
   color: #f38ba8;
 }
 
+/* Botones de poder y captura de pantalla */
 .power-buttons button:hover,
 .powermode-buttons button:hover,
 .screenshot-buttons button:hover {
   background: #313244;
 }
 
+/* Widget de etiquetas */
 .control-center .widget-label > label {
   color: @on_surface;
   font-size: 2rem;
 }
 
+/* Widget de botones en grid */
 .widget-buttons-grid {
   padding-top: 1rem;
 }
@@ -313,6 +325,7 @@ slider {
   font-size: 2.5rem;
 }
 
+/* Widget de volumen */
 .widget-volume {
   padding-top: 1rem;
 }
@@ -322,11 +335,12 @@ slider {
   color: #74c7ec;
 }
 
-.widget-volume trough highlight {
+.widget-volume scale trough highlight {
   background: #74c7ec;
 }
 
-.widget-backlight trough highlight {
+/* Widget de brillo */
+.widget-backlight scale trough highlight {
   background: #f9e2af;
 }
 
@@ -339,6 +353,7 @@ slider {
   padding-bottom: 1rem;
 }
 
+/* Imágenes */
 .image {
   padding-right: 0.5rem;
 }

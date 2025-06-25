@@ -75,7 +75,7 @@
 		"tooltip-format": "<span font='JetBrains Mono 11'><small>{calendar}</small></span>",
 		"calendar": {
 			"format": {
-				"today": "<b><i>{}</i></b>"
+				"today": "<span color='#ff6699'><b><u>{}</u></b></span>"
 			}
 		},
 		//"locale": "es_ES",
@@ -141,19 +141,16 @@
 	// ┬ ┬┌─┐┬─┐┬┌─┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
 	// ││││ │├┬┘├┴┐└─┐├─┘├─┤│  ├┤ └─┐
 	// └┴┘└─┘┴└─┴ ┴└─┘┴  ┴ ┴└─┘└─┘└─┘
-
-    "hyprland/workspaces": {
-        "rotate": 0,
-        "class": "no-margin-padding",
-        "all-outputs": true,
-        "active-only": false,
-        "on-click": "activate",
-        "disable-scroll": false,
-        "on-scroll-up": "hyprctl dispatch workspace -1",
-        "on-scroll-down": "hyprctl dispatch workspace +1",
-        "persistent-workspaces": {}
-    },
-
+"hyprland/workspaces": {
+    "all-outputs": true,
+    "active-only": false,
+    "on-click": "activate",
+    "disable-scroll": false,
+    "on-scroll-up": "hyprctl dispatch workspace -1",
+    "on-scroll-down": "hyprctl dispatch workspace +1",
+    "persistent-workspaces": {},
+    "format": "{name}"
+},
 	// PACMAN Style/
 	"hyprland/workspaces#pacman": {
 		"active-only":false,
@@ -175,27 +172,27 @@
 		},
 	},
 
-	"privacy": {
-	"icon-spacing": 4,
-	"icon-size": 18,
-	"transition-duration": 250,
-	"modules": [
-		{
-			"type": "screenshare",
-			"tooltip": true,
-			"tooltip-icon-size": 24
-		},
-		{
-			"type": "audio-out",
-			"tooltip": true,
-			"tooltip-icon-size": 24
-		},
-		{
-			"type": "audio-in",
-			"tooltip": true,
-			"tooltip-icon-size": 24
-		}
-	]
+  "privacy": {
+    "icon-spacing": 4,
+    "icon-size": 18,
+    "transition-duration": 250,
+    "modules": [
+      {
+	"type": "screenshare",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      },
+      {
+	"type": "audio-out",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      },
+      {
+	"type": "audio-in",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      }
+    ]
 },
 
 
@@ -268,7 +265,7 @@
 	"pulseaudio#icon": {
 	    "format": "<span color=\"#c6a0f6\">{icon}</span>  {volume}%",
 	    "format-bluetooth": "<span color=\"#c6a0f6\"> </span>{volume}%",
-	    "format-muted": "  ",
+	    "format-muted": " ",
 	    "format-icons": {
 		"bluetooth": "",
 	        "headphone": " ",
@@ -293,7 +290,12 @@
 		"device": "intel_backlight",
 		"format": "{icon}{percent}%",
 		"tooltip-format": "{percent}%",
-		"format-icons": ["󰃞  ","󰃝  ","󰃟  ","󰃠  "]
+			"format-icons": ["󰃞  ", "󰃟  ", "󰃝  ", "󰃠  ", "󰛨  "],
+	  "tooltip": true,
+	"tooltip-format": "🔆 Brillo: {percent}%",
+	"smooth-scrolling-threshold": 1,
+	"scroll-step": 5,
+
 	},
 
 	"backlight/slider": {
@@ -317,14 +319,46 @@
 		"on-click": "nwg-bar -x",
 		"tooltip": false
 	},
+// "custom/updates": {
+//     "format": "{} {icon}",
+//     "return-type": "json",
+//     "format-icons": {
+//         "has-updates": "󰏗",
+//         "updated": "󰄬",
+//         "checking": "󰄰",
+//         "error": "󰅖"
+//     },
+//     "exec-if": "/usr/bin/test -x /usr/bin/waybar-module-pacman-updates",
+//     "exec": "/usr/bin/waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
+//     "interval": 300,
+//     "restart-interval": 30,
+//     "max-length": 25,
+//     "min-length": 3,
+//     "tooltip": true,
+//     "tooltip-format": "Actualizaciones disponibles:\n{}",
+//     "on-click": "/usr/bin/kitty --class float_kitty -e /home/$USER/.config/hypr/scripts/update.sh",
+//     "on-click-right": "/usr/bin/kitty --class float_kitty -e /home/$USER/.config/hypr/scripts/check-updates.sh",
+//     "on-click-middle": "/usr/bin/notify-send 'Actualizaciones' 'Comprobando actualizaciones...'",
+//     "on-scroll-up": "/usr/bin/kitty --class float_kitty -e /home/$USER/.config/hypr/scripts/view-changelog.sh",
+//     "on-scroll-down": "/usr/bin/kitty --class float_kitty -e /home/$USER/.config/hypr/scripts/view-mirrors.sh",
+//     "signal": 8,
+//     "escape": true,
+//     "states": {
+//         "critical": 20,
+//         "warning": 10,
+//         "normal": 1
+//     },
+// },
 
 	"custom/updates": {
 		"format": "{} {icon}",
 		"return-type": "json",
-		"format-icons": {
-		   "has-updates": "<span color=\"#a6e3a1\">  </span>",
-		   "updated": "  "
-		},
+     	       "format-icons": {
+               "has-updates": " 󰏗",
+               		      "updated": " 󰄬",
+         		      "checking": " 󰄰",
+         		      "error": " 󰅖"
+    	        },
 		"exec-if": "which waybar-module-pacman-updates",
 		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
 		"on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",
@@ -356,6 +390,11 @@
 	// │ ┬├┬┘│ ││ │├─┘└─┐
 	// └─┘┴└─└─┘└─┘┴  └─┘
 	// "hyprland/workspaces"
+	"group/visualizer": {
+	
+	"modules": ["mpris","cava"],
+	"orientation": "horizontal",
+	},
 	"group/workspace_block": {
   	"orientation": "horizontal",
   	"modules": [
@@ -364,6 +403,13 @@
 		   "hyprland/workspaces"
 		]
 	},
+       "group/workwindow": {
+          "orientation": "horizontal",
+          "modules": [
+	    "hyprland/workspaces",
+            "hyprland/window"
+],
+       },
 	"group/brightness": {
 		"drawer": {
 			"children-class": "brightness",
@@ -399,15 +445,14 @@
 			"transition-duration": 500,
 			"transition-left-to-right": true
 		},
-		"modules": ["pulseaudio","pulseaudio/slider"],
+		"modules": ["pulseaudio#icon","pulseaudio#slider"],
 		"orientation": "horizontal"
 	},
 
 	
 	"tray": {
-		"icon-size": 16,
-		"icon-theme": "Papirus-Dark",
-		"spacing": 8
+		"icon-size": 14,
+		"spacing": 10
 	},
 
 	// ┬ ┬┬ ┬┌─┐┬─┐
@@ -420,9 +465,10 @@
 		"seperate-outputs": true,
 		"format": "{}",
 		"rewrite": {
-			"^$": "<span font='14px'></span>    <span font='12px'>Escritorio</span>",
+			// "^$": "<span font='14px'></span>    <span font='12px'>Escritorio</span>",
+			"^$": "󰧨  Escritorio"
 		},
-		"tooltip": false
+		// "tooltip": false
 	},
 
 	// ┌┬┐┬┌─┐┌─┐
@@ -439,36 +485,97 @@
 	"custom/three-dots-seperator": {
 		"format": "󰇙",
 	},
-
-	"mpris": {
-		"interval": 0,
-		"format": "<span color=\"#a6da95\">{player_icon} [</span> {title} <span color=\"#a6da95\">]</span>",
-		"format-paused": "<span color=\"#ee99a0\">{status_icon}</span> <i>{title}</i>",
-		"on-click": "playerctl play-pause",
-		"on-click-middle": "playerctl previous",
-		"on-click-right": "playerctl next",
-		"scroll-step": 5.0,
-		"on-scroll-up": "~/.config/hypr/scripts/Volume.sh --inc",
-		"on-scroll-down": "~/.config/hypr/scripts/Volume.sh --dec",
-		"smooth-scrolling-threshold": 1,
-		"player-icons": {
-			"chromium": " ",
-			"default": " ",
-			"firefox": " ",
-			"kdeconnect": " ",
-			"mopidy": " ",
-			"mpv": " ",
-			"spotify": " ",
-			"vlc": "󰕼 ",
-		},
-		"status-icons": {
-			"paused": "󰐎 ",
-			"playing": " ",
-			"stopped": " ",
-		},
-		// "ignored-players": ["firefox"]
-		"max-length": 20,
+  "mpris": {
+	"interval": 1,
+	"format": "<span color=\"#89b4fa\">󰝚</span> <span color=\"#a6e3a1\">{player_icon}</span> <span color=\"#cdd6f4\">{dynamic}</span>",
+	"format-paused": "<span color=\"#f38ba8\">󰏤</span> <span color=\"#fab387\">{player_icon}</span> <span color=\"#6c7086\"><i>{dynamic}</i></span>",
+	"format-stopped": "",
+	"dynamic-order": ["title", "artist"],
+	"dynamic-separator": " • ",
+	"dynamic-len": 25,
+	
+	// Controles principales
+	"on-click": "playerctl play-pause",
+	"on-click-middle": "playerctl stop",
+	"on-click-right": "playerctl next",
+	"on-double-click": "playerctl previous",
+	
+	// Control de volumen con scroll
+	"scroll-step": 5.0,
+	"on-scroll-up": "playerctl volume 0.05+",
+	"on-scroll-down": "playerctl volume 0.05-",
+	
+	// Configuración de visualización
+	"return-type": "json",
+	"escape": true,
+	"max-length": 30,
+	"ellipsis": "…",
+	"smooth-scrolling-threshold": 1,
+	
+	// Iconos modernos por reproductor
+	"player-icons": {
+		"brave": "󰖟",
+		"chromium": "󰊯",
+		"default": "󰝚",
+		"firefox": "󰈹",
+		"kdeconnect": "󰄡",
+		"mopidy": "󰓃",
+		"mpv": "󰐹",
+		"spotify": "󰓇",
+		"vlc": "󰕼",
+		"youtube": "󰗃",
+		"discord": "󰙯",
+		"telegram": "󰔗"
 	},
+	
+	// Estados de reproducción
+	"status-icons": {
+		"paused": "󰏤",
+		"playing": "󰐊",
+		"stopped": "󰓛"
+	},
+	
+	// Configuraciones avanzadas
+	"tooltip": true,
+	"tooltip-format": "{player}: {title}\nby {artist}\nfrom {album}\n\n{position}/{length}",
+	
+	// Reproductores ignorados (descomenta si necesitas)
+	// "ignored-players": ["firefox", "chromium"],
+	
+	// Longitud máxima por campo
+	"title-len": 15,
+	"artist-len": 12
+},
+	// "mpris": {
+	// 	"interval": 0,
+	// 	"format": "<span color=\"#a6da95\">{player_icon} [</span> {title} <span color=\"#a6da95\">]</span>",
+	// 	"format-paused": "<span color=\"#ee99a0\">{status_icon}</span> <i>{title}</i>",
+	// 	"on-click": "playerctl play-pause",
+	// 	"on-click-middle": "playerctl previous",
+	// 	"on-click-right": "playerctl next",
+	// 	"scroll-step": 5.0,
+	// 	"on-scroll-up": "~/.config/hypr/scripts/Volume.sh --inc",
+	// 	"on-scroll-down": "~/.config/hypr/scripts/Volume.sh --dec",		  "return-type": "empty",
+	// 	"escape": true,
+	// 	"smooth-scrolling-threshold": 1,
+	// 	"player-icons": {
+	// 		"chromium": " ",
+	// 		"default": " ",
+	// 		"firefox": " ",
+	// 		"kdeconnect": " ",
+	// 		"mopidy": " ",
+	// 		"mpv": " ",
+	// 		"spotify": " ",
+	// 		"vlc": "󰕼 ",
+	// 	},
+	// 	"status-icons": {
+	// 		"paused": "󰐎 ",
+	// 		"playing": " ",
+	// 		"stopped": " ",
+	// 	},
+	// 	// "ignored-players": ["firefox"]
+	// 	"max-length": 20,
+	// },
 
 	"mpris#close": {
 		"format": "<span color=\"#a6da95\">]</span>",
@@ -512,7 +619,7 @@
 	    "tooltip-format-disconnected": "MPD (disconnected)"
 	},
 	"custom/weather": {
-	   "format": "{}",
+	   "format": "{}ºC",
  	   "return-type": "json",
            "exec": "wttrbar -l es",
            "interval": 240,
@@ -536,10 +643,10 @@
         "reverse": false,
         "bar_delimiter": 0,
         "monstercat": false,
-        "waves": true,
-	"sleep_timer": 2,
+        "waves": false,
+	"sleep_timer": 1,
         "noise_reduction": 0.77,
-        "input_delay": 4,
+        "input_delay": 2,
         "format-icons" : ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" ],
         "actions": {
                    "on-click-right": "mode"

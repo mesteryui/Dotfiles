@@ -62,7 +62,7 @@ main() {
     add_configs
 
     if ! command -v paru &> /dev/null; then
-        echo -n "Paru no está instalado. ¿Quieres instalarlo ahora? (s/n): "
+        echo "Paru no está instalado. ¿Quieres instalarlo ahora? (s/n): "
         read -r respuesta
         if [[ "$respuesta" =~ ^[Ss]$ ]]; then
             install_paru

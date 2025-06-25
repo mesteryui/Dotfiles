@@ -1,0 +1,298 @@
+[
+ {
+	"layer": "bottom",
+	"position": "top",
+	"height": 48,
+	"margin-top": 4,
+	"margin-left": 6,
+	"margin-right": 6,
+	"width": "auto",
+	"output": ["eDP-1"],
+        "include": "~/.config/waybar/modules.jsonc",
+	"modules-left": [
+		"custom/launcher",
+		"group/workspace_block",
+		"hyprland/window"
+	],
+	"modules-center": [
+		"group/media_block"
+	],
+	"modules-right": [
+		"group/system_info",
+		"custom/separator",
+		"group/connectivity", 
+		"custom/separator",
+		"group/controls",
+		"custom/separator",
+		"group/status"
+	],
+	// Grupos reorganizados y optimizados
+	"group/workspace_block": {
+		"orientation": "horizontal",
+		"modules": [
+			"hyprland/workspaces"
+		]
+	},
+	"group/media_block": {
+		"orientation": "horizontal", 
+		"modules": [
+			"mpris"
+		]
+	},
+	"group/system_info": {
+		"orientation": "horizontal",
+		"modules": [
+			"cpu",
+			"memory", 
+			"temperature"
+		]
+	},
+	"group/connectivity": {
+		"orientation": "horizontal",
+		"modules": [
+			"network",
+			"bluetooth"
+		]
+	},
+	"group/controls": {
+		"orientation": "horizontal",
+		"modules": [
+			"pulseaudio",
+			"backlight"
+		]
+	},
+	"group/status": {
+		"orientation": "horizontal",
+		"modules": [
+			"custom/notification",
+			"tray",
+			"clock",
+			"battery",
+			"custom/power"
+		]
+	},
+	// Módulos específicos optimizados para espacio
+	"custom/launcher": {
+		"format": "<span size='14000'>󰣇</span>",
+		"tooltip": true,
+		"tooltip-format": "Abrir menú de aplicaciones\nClick: Lanzador",
+		"on-click": "rofi -show drun"
+	},
+	"hyprland/workspaces": {
+		"format": "<span size='13000'>{icon}</span>",
+		"format-icons": {
+			"1": "󰲠",
+			"2": "󰲢", 
+			"3": "󰲤",
+			"4": "󰲦",
+			"5": "󰲨",
+			"6": "󰲪",
+			"7": "󰲬",
+			"8": "󰲮",
+			"9": "󰲰",
+			"10": "󰿬"
+		},
+		"persistent-workspaces": {
+			"*": 4
+		},
+		"on-click": "activate",
+		"sort-by-number": true,
+		"tooltip": true,
+		"tooltip-format": "Escritorio {name}\n{windows} ventanas abiertas"
+	},
+	"hyprland/window": {
+		"format": "<span size='11000'>{}</span>",
+		"max-length": 35,
+		"separate-outputs": true,
+		"tooltip": true,
+		"tooltip-format": "Ventana activa: {title}\nClase: {class}",
+		"rewrite": {
+			"(.*) — Mozilla Firefox": "󰈹 $1",
+			"(.*) - Visual Studio Code": "󰨞 $1", 
+			"(.*) - vim": "󰕷 $1",
+			"(.*) - nvim": "󰕷 $1",
+			"(.*) - zsh": "󰆍 Term",
+			"": "󰇄 Desktop"
+		}
+	},
+	"mpris": {
+		"format": "<span size='12000'>{player_icon}</span> {dynamic}",
+		"format-paused": "<span size='12000'>{player_icon}</span> <i>{dynamic}</i>",
+		"player-icons": {
+			"default": "󰎆",
+			"mpv": "󰕼",
+			"spotify": "󰓇",
+			"firefox": "󰈹",
+			"chrome": "󰊯",
+			"vlc": "󰕼"
+		},
+		"status-icons": {
+			"paused": "󰏤",
+			"playing": "󰐊"
+		},
+		"max-length": 30,
+		"tooltip": true,
+		"tooltip-format": "Reproductor: {player}\nEstado: {status}\nTítulo: {title}\nArtista: {artist}\nÁlbum: {album}",
+		"on-click": "playerctl play-pause",
+		"on-click-right": "playerctl next",
+		"on-scroll-up": "playerctl previous",
+		"on-scroll-down": "playerctl next"
+	},
+	"cpu": {
+		"interval": 5,
+		"format": "<span size='12000'>󰍛</span> {usage}%",
+		"max-length": 12,
+		"tooltip": true,
+		"tooltip-format": "Uso de CPU: {usage}%\nFrecuencia: {avg_frequency} MHz\nNúcleos: {load}\nTemperatura: disponible en sensor térmico",
+		"states": {
+			"warning": 70,
+			"critical": 90
+		}
+	},
+	"memory": {
+		"interval": 10,
+		"format": "<span size='12000'>󰾆</span> {percentage}%",
+		"max-length": 12,
+		"tooltip": true,
+		"tooltip-format": "Memoria RAM:\n• Usada: {used:0.1f}GB de {total:0.1f}GB ({percentage}%)\n• Disponible: {avail:0.1f}GB\n• Swap: {swapUsed:0.1f}GB/{swapTotal:0.1f}GB",
+		"states": {
+			"warning": 70,
+			"critical": 90
+		}
+	},
+	"temperature": {
+		"interval": 10,
+		"hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+		"format": "<span size='12000'>󰔏</span> {temperatureC}°",
+		"critical-threshold": 80,
+		"format-critical": "<span size='12000'>󰸁</span> {temperatureC}°",
+		"tooltip": true,
+		"tooltip-format": "Temperatura del sistema:\n• Actual: {temperatureC}°C\n• Máxima: {temperatureF}°F\n• Estado: {temperatureC < 60 ? 'Normal' : temperatureC < 80 ? 'Caliente' : 'Crítico'}"
+	},
+	"network": {
+		"interval": 5,
+		"format-wifi": "<span size='12000'>󰤨</span> {signalStrength}%",
+		"format-ethernet": "<span size='12000'>󰈀</span> Conectado",
+		"format-linked": "<span size='12000'>󰤭</span> Vinculado",
+		"format-disconnected": "<span size='12000'>󰤭</span> Sin red",
+		"tooltip": true,
+		"tooltip-format-wifi": "Red WiFi:\n• SSID: {essid}\n• Señal: {signalStrength}% ({signalDbm} dBm)\n• Frecuencia: {frequency} MHz\n• IP: {ipaddr}\n• Velocidad: {bandwidthUpBits}/{bandwidthDownBits}",
+		"tooltip-format-ethernet": "Conexión por cable:\n• Interfaz: {ifname}\n• IP: {ipaddr}\n• Velocidad: {bandwidthUpBits}/{bandwidthDownBits}",
+		"tooltip-format-disconnected": "Red desconectada\nClick para abrir configuración",
+		"on-click": "nm-connection-editor"
+	},
+	"bluetooth": {
+		"format": "<span size='12000'>󰂯</span>",
+		"format-disabled": "<span size='12000'>󰂲</span>",
+		"format-off": "<span size='12000'>󰂲</span>",
+		"format-on": "<span size='12000'>󰂯</span>",
+		"format-connected": "<span size='12000'>󰂱</span> {num_connections}",
+		"tooltip": true,
+		"tooltip-format": "Bluetooth: {status}\nClick para abrir administrador",
+		"tooltip-format-connected": "Bluetooth conectado:\n• Dispositivos: {num_connections}\n• Dispositivo activo: {device_alias}\n• Batería: {device_battery_percentage}%",
+		"tooltip-format-enumerate-connected": "Dispositivos conectados:\n{device_enumerate}",
+		"tooltip-format-enumerate-connected-battery": "{device_alias}: {device_battery_percentage}%",
+		"on-click": "blueman-manager"
+	},
+	"pulseaudio": {
+		"scroll-step": 5,
+		"format": "<span size='12000'>{icon}</span> {volume}%",
+		"format-bluetooth": "<span size='12000'>󰂰</span> {volume}%",
+		"format-bluetooth-muted": "<span size='12000'>󰂲</span> Muted",
+		"format-muted": "<span size='12000'>󰖁</span> Silencio",
+		"format-icons": {
+			"headphone": "󰋋",
+			"hands-free": "󰋎",
+			"headset": "󰋎",
+			"phone": "󰏲",
+			"portable": "󰦧",
+			"car": "󰄋",
+			"default": ["󰕿", "󰖀", "󰕾"]
+		},
+		"tooltip": true,
+		"tooltip-format": "Audio del sistema:\n• Volumen: {volume}%\n• Dispositivo: {desc}\n• Puerto: {port_name}\n\nAcciones:\n• Click: Abrir mezclador\n• Click derecho: Silenciar\n• Scroll: Ajustar volumen",
+		"on-click": "pavucontrol",
+		"on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+		"on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+		"on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+	},
+	"backlight": {
+		"device": "intel_backlight",
+		"format": "<span size='12000'>{icon}</span> {percent}%",
+		"format-icons": ["󰃞", "󰃟", "󰃠"],
+		"tooltip": true,
+		"tooltip-format": "Brillo de pantalla:\n• Nivel: {percent}%\n• Dispositivo: {device}\n\nAcciones:\n• Scroll arriba: Aumentar 5%\n• Scroll abajo: Disminuir 5%",
+		"on-scroll-up": "brightnessctl set 5%+",
+		"on-scroll-down": "brightnessctl set 5%-"
+	},
+	"custom/notification": {
+		"tooltip": true,
+		"format": "<span size='12000'>{icon}</span>",
+		"format-icons": {
+			"notification": "󰂚",
+			"none": "󰂜",
+			"dnd-notification": "󰂛",
+			"dnd-none": "󰪑"
+		},
+		"return-type": "json",
+		"exec-if": "which swaync-client",
+		"exec": "swaync-client -swb",
+		"tooltip-format": "Centro de notificaciones:\n• Estado: {alt}\n• Notificaciones: {tooltip}\n\nAcciones:\n• Click: Abrir/cerrar panel\n• Click derecho: Modo no molestar",
+		"on-click": "swaync-client -t -sw",
+		"on-click-right": "swaync-client -d -sw",
+		"escape": true
+	},
+	"tray": {
+		"icon-size": 16,
+		"spacing": 6,
+		"show-passive-items": false
+	},
+	"clock": {
+		"interval": 60,
+		"format": "󰥔 {:%H:%M}",
+		"format-alt": "󰸗 {:%d/%m}",
+		"tooltip": true,
+		"tooltip-format": "<span size='large'>{:%Y-%m-%d %H:%M:%S}</span>\n{calendar}",
+		"calendar": {
+			"mode": "month",
+			"mode-mon-col": 3,
+			"weeks-pos": "right",
+			"on-scroll": 1,
+			"format": {
+				"months": "<span color='#ffead3'><b>{}</b></span>",
+				"days": "<span color='#ecc6d9'><b>{}</b></span>",
+				"weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+				"weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+				"today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+			}
+		},
+		"on-click": "gnome-calendar"
+	},
+	"battery": {
+		"interval": 30,
+		"states": {
+			"good": 80,
+			"warning": 30,
+			"critical": 15
+		},
+		"format": "{icon} {capacity}%",
+		"format-charging": "󰂄 {capacity}%",
+		"format-plugged": "󰚥 {capacity}%",
+		"format-alt": "{icon} {time}",
+		"format-full": "󰁹 Full",
+		"format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+		"tooltip": true,
+		"tooltip-format": "Battery: {capacity}%\nTime: {time}"
+	},
+	"custom/power": {
+		"format": "󰐥",
+		"tooltip": true,
+		"tooltip-format": "Power Menu",
+		"on-click": "wlogout"
+	},
+	"custom/separator": {
+		"format": "󰇙",
+		"tooltip": false
+	}
+ }
+]

@@ -21,7 +21,9 @@ icon_index=$((battery_percentage / 10))
 
 # Get the corresponding icon
 battery_icon=${battery_icons[icon_index]}
-
+if [ $battery_percentage -eq 100 ]; then 
+    battery_icon=""
+fi
 # Check if the battery is charging
 if [ "$battery_status" = "Charging" ]; then
 	battery_icon="$charging_icon"

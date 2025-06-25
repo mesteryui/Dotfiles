@@ -39,11 +39,11 @@ current_layout=$(cat "$CURRENT" 2>/dev/null || echo "$DEFAULT")
 
 # Usar rofi para seleccionar layout con prompt personalizado
 selected_layout=$(echo "$layout_list" | rofi -dmenu \
-    -p "Layout actual: $current_layout │ Seleccionar:" \
-    -theme-str 'window {width: 400px;}' \
-    -theme-str 'listview {lines: 8;}' \
+    -p "Layout actual: $current_layout" \
+    -theme "~/.config/rofi/hyprsphere-selector-layout.rasi" \
     -no-custom)
-
+#-theme-str 'window {width: 700px;}' \
+#    -theme-str 'listview {lines: 8;}' \
 # Procesar selección
 if [[ -n "$selected_layout" ]]; then
     # Verificar que el layout seleccionado existe
@@ -56,11 +56,11 @@ if [[ -n "$selected_layout" ]]; then
     
     # Mostrar notificación con información del cambio
     if [[ -f "$ICON_PATH" ]]; then
-        notify-send -t 3000 "HyprSphere" \
+        notify-send --app-name="HyprSphere" -t 3000 "HyprSphere" \
             "Layout cambiado: $current_layout → $selected_layout" \
             --icon="$ICON_PATH"
     else
-        notify-send -t 3000 "HyprSphere" \
+        notify-send --app-name="HyprSphere" -t 3000 "HyprSphere" \
             "Layout cambiado: $current_layout → $selected_layout" \
             --icon="preferences-desktop"
     fi

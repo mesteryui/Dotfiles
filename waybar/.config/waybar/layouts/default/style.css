@@ -30,20 +30,25 @@ window > box {
     margin: 6px 2px;
     padding: 0px 5px;
 }
+#visualizer {
+    background-color: @background;
+    margin: 6px 2px;
+    padding: 0px 5px;
+}
 
 #window {
-    background-color: @surface_container;
+    background-color: @background;
     border-radius: 20px;
     padding: 0px 15px;
     margin: 6px 30px;
     color: @text;
 }
 
-.modules-left {
+.modules-left, .modules-center {
     background-color: transparent;
 }
 
-.modules-center, .modules-right {
+.modules-right {
     background-color: @background;
     border-radius: 20px;
     padding: 0px 8px;
@@ -141,8 +146,8 @@ window > box {
     padding-left: 0.3em;
     padding-right: 0.3em;
     margin-right: 0em;
-    color: @on_surface_variant; /* texto inactivo suave pero legible */
-    background: transparent;
+    color: @on_surface;
+    background-color: transparent;
     animation: ws_normal 20s ease-in-out 1;
 }
 
@@ -243,8 +248,9 @@ window > box {
 }
 
 #tray {
-    margin: 5px 6px;
-    padding: 5px;
+    margin: 4px 2px;
+    padding: 8px 8px;
+    border-radius: 10px;
 }
 
 #tray > .passive {
@@ -253,14 +259,17 @@ window > box {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
+    background-color: @surface_container;
 }
-#tray menu * {
-    min-height: 1.6em;
 
+#tray menu * {
+    padding: 0px 5px;
+    transition: all .3s ease; 
 }
 
 #tray menu separator {
-    min-height: 0.1em;
+    padding: 0px 5px;
+    transition: all .3s ease; 
 }
 
 #cava {
@@ -285,19 +294,12 @@ window > box {
     padding: 0px 6px;
     margin: 6px 2px;
 }
-tooltip label {
-    padding: 15px;
-    color: @on_surface;
-}
-
-label:focus {
-    background-color: @surface;
-}
 tooltip {
-    padding: 25px;
-    background-color: @surface;
-    color: @on_surface;
-    border: 2px solid @tertiary;
-    border-width: 0.9pt;
-    font-family: JetbrainsMono Nerd Font;
+  background: @surface;
+  border: 1px solid @tertiary;
+  border-radius: 12px;
+}
+tooltip label {
+  color: @on_surface;
+  padding: 6px;
 }

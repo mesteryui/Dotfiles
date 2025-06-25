@@ -1,5 +1,5 @@
 /* Waybar CSS - GTK Compatible - Sin errores */
-
+@import url("../../colors.css");
 * {
     border: none;
     border-radius: 0;
@@ -9,25 +9,25 @@
 }
 
 window#waybar {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
+    background-color: @surface;
+    color: @on_surface;
     border-radius: 12px;
     opacity: 0.95;
 }
 
 tooltip {
-    background-color: #1e1e2e;
+    background-color: @surface;
     border-radius: 8px;
-    border: 1px solid #45475a;
-    color: #cdd6f4;
+    border: 1px solid @outline;
+    color: @on_surface;
 }
 
 tooltip label {
-    color: #cdd6f4;
+    color: @on_surface;
 }
 
 #custom-launcher {
-    color: #89b4fa;
+    color: @primary;
     font-size: 18px;
     padding: 0 12px;
     margin: 4px 2px 4px 8px;
@@ -36,11 +36,12 @@ tooltip label {
 }
 
 #custom-launcher:hover {
-    background-color: #313244;
+    background-color: @surface_container_high;
 }
 
 #workspaces {
-    background-color: #313244;
+    background-color: @surface_container_high;
+    color: @on_surface;
     margin: 4px 8px;
     padding: 2px 4px;
     border-radius: 12px;
@@ -49,33 +50,33 @@ tooltip label {
 #workspaces button {
     padding: 6px 10px;
     border-radius: 8px;
-    color: #6c7086;
+    color: @on_surface_variant;
     background-color: transparent;
     margin: 2px;
     border: none;
 }
 
 #workspaces button:hover {
-    background-color: #45475a;
-    color: #89b4fa;
+    background-color: @surface_container;
+    color: @primary;
 }
 
 #workspaces button.active {
-    background-color: #89b4fa;
-    color: #1e1e2e;
+    background-color: @primary;
+    color: @on_primary;
 }
 
 #workspaces button.urgent {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
 }
 
 #window {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 8px;
     padding: 8px 16px;
     border-radius: 12px;
-    color: #cdd6f4;
+    color: @on_surface;
     font-weight: normal;
 }
 
@@ -84,8 +85,8 @@ tooltip label {
 }
 
 #clock {
-    background-color: #fab387;
-    color: #1e1e2e;
+    background-color: @tertiary;
+    color: @on_tertiary;
     margin: 4px 8px;
     padding: 8px 20px;
     border-radius: 12px;
@@ -94,15 +95,15 @@ tooltip label {
 }
 
 #clock:hover {
-    background-color: #f9e2af;
+    background-color: @primary_fixed_dim;
 }
 
 #tray {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 8px;
     border-radius: 10px;
-    color: #cdd6f4;
+    color: @on_surface;
 }
 
 #tray > .passive {
@@ -111,155 +112,162 @@ tooltip label {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #45475a;
+    background-color: @surface_container;
+}
+#tray menu * {
+    min-height: 1.6em;
+}
+
+#tray menu separator {
+    min-height: 0.1em;
 }
 
 #custom-weather {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #74c7ec;
+    color: @secondary_fixed_dim;
 }
 
 #custom-weather:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #memory {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #a6e3a1;
+    color: @primary_fixed_dim;
 }
 
 #memory:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #memory.warning {
-    background-color: #fab387;
-    color: #1e1e2e;
+    background-color: @tertiary_fixed_dim;
+    color: @on_tertiary_fixed_dim;
 }
 
 #memory.critical {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
 }
 
 #cpu {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #f9e2af;
+    color: @tertiary_fixed_dim;
 }
 
 #cpu:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #cpu.warning {
-    background-color: #fab387;
-    color: #1e1e2e;
+    background-color: @tertiary_fixed_dim;
+    color: @on_tertiary_fixed_dim;
 }
 
 #cpu.critical {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
 }
 
 #temperature {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #f38ba8;
+    color: @error;
 }
 
 #temperature:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #temperature.critical {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
 }
 
 #pulseaudio {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #cba6f7;
+    color: @secondary_fixed;
 }
 
 #pulseaudio:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #pulseaudio.muted {
-    color: #6c7086;
-    background-color: #45475a;
+    color: @on_surface_variant;
+    background-color: @surface_container;
 }
 
 #network {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #89b4fa;
+    color: @primary_fixed_dim;
 }
 
 #network:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #network.disconnected {
-    color: #6c7086;
-    background-color: #45475a;
+    color: @on_surface_variant;
+    background-color: @surface_container;
 }
 
 #network.linked {
-    color: #fab387;
+    color: @tertiary_fixed_dim;
 }
 
 #battery {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #a6e3a1;
+    color: @primary_fixed_dim;
 }
 
 #battery:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #battery.charging {
-    background-color: #a6e3a1;
-    color: #1e1e2e;
+    background-color: @primary_fixed_dim;
+    color: @on_primary_fixed_dim;
 }
 
 #battery.plugged {
-    background-color: #f9e2af;
-    color: #1e1e2e;
+    background-color: @primary_fixed;
+    color: @on_primary_fixed;
 }
 
 #battery.warning:not(.charging) {
-    background-color: #fab387;
-    color: #1e1e2e;
+    background-color: @tertiary_fixed_dim;
+    color: @on_tertiary_fixed_dim;
 }
 
 #battery.critical:not(.charging) {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
 }
 
 #custom-power {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    background-color: @error;
+    color: @on_error;
     margin: 4px 8px 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
@@ -267,38 +275,38 @@ tooltip label {
 }
 
 #custom-power:hover {
-    background-color: #eba0ac;
+    background-color: @error_container;
 }
 
 #custom-notification {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #89b4fa;
+    color: @primary_fixed_dim;
 }
 
 #custom-notification:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #custom-notification.dnd {
-    color: #6c7086;
-    background-color: #45475a;
+    color: @on_surface_variant;
+    background-color: @surface_container;
 }
 
 #custom-media {
-    background-color: #313244;
+    background-color: @surface_container_high;
     margin: 4px 2px;
     padding: 8px 12px;
     border-radius: 10px;
-    color: #cba6f7;
+    color: @secondary_fixed;
 }
 
 #custom-media:hover {
-    background-color: #45475a;
+    background-color: @surface_container;
 }
 
 #custom-media.custom-spotify {
-    color: #a6e3a1;
+    color: @primary_fixed_dim;
 }

@@ -2,7 +2,7 @@
 
 THEME_DIR="$HOME/.config/rofi/layouts/applications_menu/"
 CURRENT="$THEME_DIR/current-theme.txt"
-DEFAULT="default_conf.rasi"
+DEFAULT="default.rasi"
 
 # Crear archivo si no existe
 [ ! -f "$CURRENT" ] && echo "$DEFAULT" > "$CURRENT"

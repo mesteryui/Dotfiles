@@ -1,10 +1,12 @@
 [config]
-version_checck = true
+version_check = true
 
 [config.wallpaper]
 command = "swww"
 arguments = ["img", "--transition-type", "center"]
 set = true
+
+
 [templates.gtk3]
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
@@ -13,19 +15,20 @@ output_path = '~/.config/gtk-3.0/gtk.css'
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/gtk.css'
 
-[templates.niri]
-input_path = '~/.config/matugen/templates/colors.kdl'
-output_path = '~/.config/niri/colors.kdl'
+# [templates.niri]
+# input_path = '~/.config/matugen/templates/colors.kdl'
+# output_path = '~/.config/niri/colors.kdl'
 
 [templates.kitty]
 input_path = '~/.config/matugen/templates/kitty-kolors.conf'
 output_path = '~/.config/kitty/colors.conf'
-post_hook = "kitty @ set-colors -a -c ~/.config/kitty/colors.conf"
+#post_hook = "kitty @ set-colors -a -c ~/.config/kitty/colors.conf"
 
 [templates.waybar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/waybar/colors.css'
-post_hook = '/home/oscar/.config/hypr/scripts/waybar_reload.sh'
+post_hook = '~/.config/waybar/scripts/launch.sh'
+
 [templates.nwgbar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/nwg-bar/colors.css'
@@ -33,10 +36,12 @@ output_path = '~/.config/nwg-bar/colors.css'
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swaync/matugen/matugen-swaync.css'
 post_hook = 'swaync-client -rs'
+
 [templates.swayosd]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swayosd/colors.css'
-post_hook = '~/.config/hypr/scripts/restart_osd.fish'
+post_hook = '~/.config/hypr/scripts/restart_osd.sh'
+
 [templates.hyprland]
 input_path = "~/.config/matugen/templates/hyprland_template.conf"
 output_path = "~/.config/hypr/colors.conf"
@@ -51,16 +56,18 @@ input_path = "~/.config/matugen/templates/matugen-starship.toml"
 output_path = "~/.config/starship.toml"
 
 # Qt6
-[templates.qt6]
-input_path = '~/.config/matugen/templates/qtct-colors.conf'
-output_path = '~/.config/qt6ct/colors/matugen-qt6ct.conf'
+# [templates.qt6]
+# input_path = '~/.config/matugen/templates/qtct-colors.conf'
+# output_path = '~/.config/qt6ct/colors/matugen-qt6ct.conf'
+
 [templates.color-scheme]
 input_path = '~/.config/matugen/templates/Matugen.colors'
 output_path = '~/.local/share/color-schemes/Matugen.colors'
+
 [templates.rofi]
 input_path = '~/.config/matugen/templates/matugen-rofi.rasi'
 output_path = '~/.config/rofi/matugen/matugen-rofi.rasi'
-post_hook = "~/.config/rofi/image-gen.sh"
+
 
 [templates.cava]
 input_path = '~/.config/matugen/templates/matugen-cava'
@@ -79,17 +86,17 @@ post_hook = 'pywalfox update'
 input_path = '~/.config/matugen/templates/matugen-zathurarc'
 output_path = '~/.config/zathura/matugen-zathurarc'
 
-[templates.zenUserChrome]
-input_path = '~/.config/matugen/templates/zen-userChrome.css'
-output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userChrome.css'
+# [templates.zenUserChrome]
+# input_path = '~/.config/matugen/templates/zen-userChrome.css'
+# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userChrome.css'
 
-[templates.zenLogo]
-input_path = '~/.config/matugen/templates/zen-logo.svg'
-output_path = '~/.zen/g2nrrthb.Default (release)/chrome/zen-logo-mocha.svg'
+# [templates.zenLogo]
+# input_path = '~/.config/matugen/templates/zen-logo.svg'
+# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/zen-logo-mocha.svg'
 
-[templates.zenUserContent]
-input_path = '~/.config/matugen/templates/zen-userContent.css'
-output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userContent.css'
+# [templates.zenUserContent]
+# input_path = '~/.config/matugen/templates/zen-userContent.css'
+# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userContent.css'
 
 [templates.yazi]
 input_path = '~/.config/matugen/templates/yazi-theme.toml'

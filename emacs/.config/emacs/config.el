@@ -1,6 +1,8 @@
 ;;; -*- lexical-binding: t; -*-
 
-(setenv "DISPLAY" ":0")
+(setq jit-lock-stealth-time 0.5)
+(setq jit-lock-chunk-size 1000)
+(setq jit-lock-defer-time 0.05)
 
 (use-package gcmh
   :init 
@@ -13,6 +15,21 @@
 
 (defmacro loadf (file) `(load-file ,file))
 
+(defmacro os/add-to-list (list &rest elements)
+   `(progn ,@(mapcar (lambda (e) `(add-to-list ',list ,e)) elements)))
+
+(defmacro os/after (package &rest body)
+"Execute the code after the load of a package if the package is loaded the code is executed directly if not the package will be charged"
+`(if (featurep ',package)
+     (progn ,@body)
+     (with-eval-after-load ',package
+        ,@body)))
+
+(defmacro when-system (system &rest body)
+  "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)"
+  `(when (eq system-type ',system)
+     ,@body))
+
 (defmacro gbind (key func) 
 "Asigna atajos de teclado globales de forma más sencilla usando kbd"
 `(global-set-key (kbd ,key) ',func))
@@ -21,22 +38,16 @@
   "Unbind the global KEY sequence."
   `(global-unset-key (kbd ,key)))
 
-(defmacro defmenu (&optional is_elisp name &rest options)
-  "Define un menu en rofi desde Emacs, es compatible con scripts de bash y emacs lisp"
-  (let* ((options1 (mapconcat #'car options "\n")))
-    `(defun ,name ()
-       (interactive)
-	 (let* ((selected (string-trim (shell-command-to-string
-                                (concat "echo -e "
-                                        (shell-quote-argument ,options1)
-                                        " | rofi -dmenu -p "
-                                        (shell-quote-argument ,(symbol-name name)))))))
-         (if-let ((cmd (cdr (assoc selected ',options))))
-	 ,(if is_elisp
-              `(condition-case err (eval (car cmd))
-                 (error (message "Error: %s" err)))
-             `(princ (shell-command-to-string (car cmd)))
-	 (message "No existe el comando")))))))
+(defmacro add-hooks (hook &rest funcs)
+"Añadir varias funciones a un hook"
+`(progn ,@(mapcar (lambda (f) `(add-hook ',hook ,f)) funcs)))
+
+(use-package mixed-pitch
+:ensure t
+:hook (text-mode . mixed-pitch-mode)
+:config 
+(add-to-list 'mixed-pitch-fixed-pitch-faces 'org-table
+))
 
 (defun os/org-headers-setters () 
  (dolist (item '((org-level-1 . outline-1)
@@ -50,13 +61,11 @@
 		    (org-level-4 . 1.1)
                   (org-document-title . 1.7)))
    (set-face-attribute (car item) nil :height (cdr item))))
-
 (defun os/org-items-faces-setter ()
      (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
      (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
      (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
      (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
-     (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
      (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
      (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
      (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
@@ -78,6 +87,7 @@
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
 (tooltip-mode -1)
 (pixel-scroll-precision-mode t)
+(setq pixel-scroll-precision-interpolate-page t)
 (set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
 (delete-selection-mode t)
@@ -111,7 +121,7 @@
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
-(add-hook 'text-mode-hook #'variable-pitch-mode)
+;;(add-hook 'text-mode-hook #'variable-pitch-mode)
 
 (defun my/certain-use-fixed-pitch ()
   "Usar fuente monoespaciada en ciertos modos."
@@ -168,13 +178,53 @@
 			  (holiday-fixed 12 24 "Nochebuena")
 			  (holiday-fixed 12 25 "Navidad")))
 
-(defmenu t main-menu  ("📝 Org capture" (org-capture))  ("🔧 Magit status" (magit-status))  ("🖥️ Terminal" (vterm)))
+(global-so-long-mode 1)
+ (os/after so-long
+    (when (boundp 'so-long-minor-modes)
+      (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
+      (add-to-list 'so-long-minor-modes 'hl-line-mode))
+    
+    ;; Only add mode replacements if the variable exists
+    (when (boundp 'so-long-action-alist)
+      (setq so-long-action-alist
+            (append so-long-action-alist
+                   '(("disable-indicator" . ((display-fill-column-indicator-mode . -1))))))))
 
-(defmenu nil system-menu
-  ("🔄 Reload Emacs" "pkill -USR2 emacs")
-  ("🌙 Toggle theme" "")  ; agregar comando para tema
-  ("📸 Screenshot" "hyprshot -m region")
-  ("🔒 Lock screen" "loginctl lock-session"))
+(defun create-uv-project (archivo)
+  "Crear un proyecto de uv personalizado y listo para empezar a editar"
+  (interactive "GIntroduzca la carpeta del proyecto: ")
+  (let ((dir (file-name-as-directory archivo))) ; asegura que termine con /
+    (unless (file-directory-p dir)
+      (make-directory dir t)
+      (message "Carpeta creada: %s" dir))
+    (activate-project dir)))
+
+(defun activate-project (dir)
+  "Activar un proyecto de uv"
+  (let ((default-directory dir))
+    (when (fboundp 'uv-init-cmd) ; solo si está definido
+      (uv-init-cmd dir))))
+
+(defun os/install-all-treesit-grammars ()
+"Install all treesit grammar if it's not installed"
+(interactive)
+(let ((langs (mapcar 'car treesit-language-source-alist)))
+     (dolist (lang langs)
+         (unless (treesit-language-available-p lang)
+              (message "Instalando gramatica tree-sitter para %s" lang)
+              (treesit-install-language-grammar lang)))
+          (message "Gramaticas instaladas")))
+
+(defun append-to-list (list-var elements)
+  "Append ELEMENTS to the end of LIST-VAR.
+	The return value is the new value of LIST-VAR."
+  (unless (consp elements)
+    (error "ELEMENTS must be a list"))
+  (let ((list (symbol-value list-var)))
+    (if list
+	(setcdr (last list) elements)
+      (set list-var elements)))
+  (symbol-value list-var))
 
 (defun append-to-gitignore (file)
   "Añade archivos al gitignore"
@@ -221,7 +271,6 @@ using what the result of 'get-local-language' function if the result is nil does
   (interactive)
   (find-file (expand-file-name "config.org" user-emacs-directory)))
   (gbind "C-x c" os/open-config)
-(defmenu t config-menu ("Config" . (find-file "~/.config/emacs/config.org")) ("Init" . (find-file "~/.config/emacs/init.el")) ("Early Init" . (find-file "~/.config/emacs/early-init.el")))
 
 (defun dictionary-switcher()
   "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
@@ -256,56 +305,56 @@ This function allow to activate the webserver when you use but if there is a pro
 	(org-mode)
         (goto-char (point-max)))))
 
-(defmenu t org-template-menu
-  ("📝 Nota rápida" (org-temp-buffer "Nota Rápida"))
-  ("📋 Lista TODO" (org-temp-buffer "Lista TODO"))
-  ("🧠 Brainstorm" (org-temp-buffer "Brainstorm"))
-  ("📊 Meeting Notes" (org-temp-buffer "Meeting Notes")))
-
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
 (setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 
-(setopt org-export-with-drawers nil
-        org-export-with-todo-keywords nil
-        org-export-with-broken-links t
-        org-export-with-toc nil
-        org-export-with-smart-quotes t
-        org-export-date-timestamp-format "%d %B %Y"
-        org-list-allow-alphabetical t)
-
-   (setopt org-return-follows-link  t) ;; Hace que pulsando Enter funcione el seguir el enlace
-   (require 'org-tempo)               
 (use-package org
   :ensure nil
-    :hook
-          (org-mode . os/org-headers-setters)
-          (org-mode . org-indent-mode)
-          (org-mode . os/org-items-faces-setter)
-	  (org-mode . visual-line-mode)
-	  (org-mode . dynamic-language-change)
-    :custom 
-    (org-confirm-babel-evaluate nil)
-    (org-src-fontify-natively t)
-    (org-ellipsis "▼")
-    (org-startup-indented t)
-    (org-pretty-entities t)
-    (org-use-sub-superscripts "{}")
-    (org-hide-emphasis-markers t)
-    (org-startup-with-inline-images t)
-    (image-actual-width '(300))
-    :config
-     (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-        (scheme . t)
-        (python . t)
-        (shell . t)
-        )))
-        (global-set-key (kbd "C-c c") 'org-capture)
-        (global-set-key (kbd "C-c a") 'org-agenda)
+  :hook ((org-mode . org-indent-mode)
+	 (org-mode . os/org-headers-setters)
+         ;;(org-mode . os/org-items-faces-setter)
+         (org-mode . visual-line-mode)
+         (org-mode . dynamic-language-change))
+  :custom
+  ;; Exportación
+  (org-export-with-drawers nil)
+  (org-export-with-todo-keywords nil)
+  (org-export-with-broken-links t)
+  (org-export-with-toc nil)
+  (org-export-with-smart-quotes t)
+  (org-export-date-timestamp-format "%d %B %Y")
+  ;; Apariencia
+  (org-ellipsis "▼")
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-fontify-done-headline t)
+  (org-use-sub-superscripts "{}")
+  (org-hide-emphasis-markers t)
+  ;; Imágenes
+  (org-startup-with-inline-images t)
+  (image-actual-width '(300))
+  ;; Babel
+  (org-confirm-babel-evaluate nil)
+  ;; Agenda
+  (org-agenda-skip-scheduled-if-done t)
+  ;; Listas
+  (org-list-allow-alphabetical t)
+  ;; Enlaces
+  (org-return-follows-link t)
+  :config
+  (require 'org-tempo)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)
+     )))
+        (gbind "C-c c" org-capture)
+        (gbind "C-c a" org-agenda)
 
 ;; disable electric pairing for angle bracket
 
@@ -427,6 +476,10 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package tramp
   :ensure nil
   :custom
+  (remote-file-name-inhibit-locks t)
+  (tramp-use-scp-direct-remote-copying t)
+  (tramp-copy-size-limit (* 1024 1024))
+  (tramp-verbose 2)
   (tramp-persistency-file-name
    (no-littering-expand-var-file-name "tramp/history.el"))
   :config 
@@ -726,9 +779,8 @@ This function allow to activate the webserver when you use but if there is a pro
   :defer t
   :custom
   (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
   (completion-category-overrides
-   '((file (styles partial-completion)))))
+   '((file (styles basic partial-completion)))))
 
 (use-package consult
   :demand t
@@ -808,6 +860,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package adaptive-wrap
   :config
   (adaptive-wrap-prefix-mode))
+
+(add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
 
 (defun set-markdown-headers () 
    "Setting the headers to a markdown file"
@@ -926,14 +980,15 @@ This function allow to activate the webserver when you use but if there is a pro
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.25)
+  (corfu-auto-delay 0.0)
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)  
+   (corfu-quit-at-boundary 'separator)
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
    :hook
-    (elpaca-after-init . (lambda()
+    (elpaca-after-init . (lambda ()
                            (global-corfu-mode)
                            (corfu-history-mode)
                            (corfu-popupinfo-mode))))      ; activación global
@@ -947,13 +1002,7 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package cape
   :ensure t
   :init
-  (add-hook 'completion-at-point-functions #'cape-abbrev)
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
-  (add-hook 'completion-at-point-functions #'cape-file)
-  (add-hook 'completion-at-point-functions #'cape-elisp-block)
-  (add-hook 'completion-at-point-functions #'cape-emoji)
-  (add-hook 'completion-at-point-functions #'cape-dict)
-  (add-hook 'completion-at-point-functions #'cape-keyword))
+  (add-hooks completion-at-point-functions #'cape-abbrev #'cape-dabbrev #'cape-file #'cape-emoji #'cape-dict #'cape-keyword #'cape-elisp-block))
 ;; Atajos prácticos
 ;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 
@@ -1038,7 +1087,6 @@ This function allow to activate the webserver when you use but if there is a pro
     :custom
     (js-indent-level 2)
     :config
-    (add-to-list 'treesit-language-source-alist '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
     (unbind-key "M-." js-base-mode-map))
 
 (use-package ruby-mode :ensure nil)
@@ -1122,13 +1170,46 @@ This function allow to activate the webserver when you use but if there is a pro
 ;;   :config
 ;;   (global-treesit-auto-mode))
 (setq-default treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
-(add-to-list 'treesit-language-source-alist '(ruby "https://github.com/tree-sitter/tree-sitter-ruby"))
+ (setq treesit-language-source-alist
+      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        (c "https://github.com/tree-sitter/tree-sitter-c")
+        (c++ "https://github.com/tree-sitter/tree-sitter-cpp")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
+        (go "https://github.com/tree-sitter/tree-sitter-go")
+        (html "https://github.com/tree-sitter/tree-sitter-html")
+        (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (lua "https://github.com/Azganoth/tree-sitter-lua")
+        (php "https://github.com/tree-sitter/tree-sitter-php")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
+        (rust "https://github.com/tree-sitter/tree-sitter-rust")
+        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
+(setq treesit-font-lock-level 4)  ;; Maximum highlighting
+     (setq major-mode-remap-alist
+        '((c-mode . c-ts-mode)
+          (c++-mode . c++-ts-mode)
+          (css-mode . css-ts-mode)
+          (js-mode . js-ts-mode)
+          (javascript-mode . js-ts-mode)
+          (js2-mode . js-ts-mode)
+          (typescript-mode . typescript-ts-mode)
+          (json-mode . json-ts-mode)
+          (python-mode . python-ts-mode)
+          (bash-mode . bash-ts-mode)
+          (sh-mode . bash-ts-mode)
+          (yaml-mode . yaml-ts-mode)
+          (go-mode . go-ts-mode)
+          (rust-mode . rust-ts-mode)
+          (lua-mode . lua-ts-mode)))
 
 (use-package rainbow-delimiters
-  :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
-         (prog-mode . rainbow-delimiters-mode)))
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package rainbow-mode
 :defer t

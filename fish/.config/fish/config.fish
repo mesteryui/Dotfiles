@@ -12,12 +12,14 @@ if status is-interactive
     thefuck --alias | source
     #syncthing
     #syncthing install-completions | source
-    fzf --fish | source
+    sk --shell fish | source
     # Television
     #tv init fish | source
 end
 set -Ux GEM_HOME $HOME/.gem/ruby/(ruby -e 'print RUBY_VERSION')
 set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs $GEM_HOME/bin
+set -gx XDG_RUNTIME_DIR "/run/user/$(id -u)"
+
 
 set VISUAL "emacsclient -c -a emacs"
 set EDITOR "emacsclient -t -a ''"

@@ -32,7 +32,7 @@
 
     // Left Modules Configuration
     "custom/launcher": {
-        "format": " ",
+        "format": "󰣇 ",
         "tooltip": false,
         "on-click": "rofi -show drun",
         "on-click-right": "killall rofi"
@@ -41,18 +41,18 @@
     "hyprland/workspaces": {
         "format": "{icon}",
         "format-icons": {
-            "1": "",
-            "2": "",
-            "3": "",
-            "4": "",
-            "5": "",
-            "6": "",
-            "7": "",
-            "8": "",
-            "9": "",
-            "10": "",
-            "active": "",
-            "default": ""
+            "1": "󰲠",
+            "2": "󰲢",
+            "3": "󰲤",
+            "4": "󰲦",
+            "5": "󰲨",
+            "6": "󰲪",
+            "7": "󰲬",
+            "8": "󰲮",
+            "9": "󰲰",
+            "10": "󰿬",
+            "active": "󰮯",
+            "default": "󰧞"
         },
         "persistent-workspaces": {
             "*": 5
@@ -70,19 +70,20 @@
         "max-length": 50,
         "separate-outputs": true,
         "rewrite": {
-            "(.*) — Mozilla Firefox": "🌐 $1",
-            "(.*) - Visual Studio Code": " $1",
-            "(.*) - vim": " $1",
-            "(.*) - nvim": " $1",
-            "(.*)Spotify": " $1",
-            "(.*)Discord": "💬 $1"
+            "(.*) — Mozilla Firefox": "󰈹 $1",
+            "(.*) - Visual Studio Code": "󰨞 $1",
+            "(.*) - vim": "󰕷 $1",
+            "(.*) - nvim": "󰕷 $1",
+            "(.*)Spotify": "󰓇 $1",
+            "(.*)Discord": "󰙯 $1",
+            "^$": "󰧨  Escritorio"
         }
     },
 
     // Center Module Configuration
     "clock": {
-        "format": "{:%H:%M}",
-        "format-alt": "{:%A, %B %d, %Y (%H:%M:%S)}",
+        "format": "󰥔 {:%H:%M}",
+        "format-alt": "󰃭 {:%A, %B %d, %Y (%H:%M:%S)}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "year",
@@ -114,7 +115,7 @@
     },
 
     "custom/weather": {
-        "format": "{}",
+        "format": "🌤️ {}",
         "tooltip": true,
         "interval": 1800,
         "exec": "~/.config/waybar/scripts/weather.py",
@@ -123,9 +124,9 @@
 
     "memory": {
         "interval": 10,
-        "format": " {used:0.1f}G",
+        "format": "󰍛 {used:0.1f}G",
         "tooltip": true,
-        "tooltip-format": "Memory\n{used:0.1f}GB used\n{avail:0.1f}GB available\n{total:0.1f}GB total\n{percentage}% used",
+        "tooltip-format": "Memoria\n{used:0.1f}GB usada\n{avail:0.1f}GB disponible\n{total:0.1f}GB total\n{percentage}% en uso",
         "on-click": "kitty -e htop",
         "states": {
             "warning": 70,
@@ -135,9 +136,9 @@
 
     "cpu": {
         "interval": 10,
-        "format": " {usage}%",
+        "format": "󰻠 {usage}%",
         "tooltip": true,
-        "tooltip-format": "CPU Usage: {usage}%\nLoad: {load}",
+        "tooltip-format": "Uso de CPU: {usage}%\nCarga: {load}",
         "on-click": "kitty -e htop",
         "states": {
             "warning": 70,
@@ -149,41 +150,41 @@
         "thermal-zone": 0,
         "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
         "critical-threshold": 80,
-        "format-critical": " {temperatureC}°C",
-        "format": " {temperatureC}°C",
+        "format-critical": "󰸁 {temperatureC}°C",
+        "format": "󰔏 {temperatureC}°C",
         "tooltip": true,
-        "tooltip-format": "Temperature: {temperatureC}°C ({temperatureF}°F)"
+        "tooltip-format": "Temperatura: {temperatureC}°C ({temperatureF}°F)"
     },
 
     "pulseaudio": {
         "format": "{icon} {volume}%",
-        "format-muted": " Muted",
+        "format-muted": "󰸈 Silenciado",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
+            "headphone": "󰋋",
+            "hands-free": "󰋎",
+            "headset": "󰋎",
+            "phone": "󰏲",
+            "portable": "󰦧",
+            "car": "󰄋",
+            "default": ["󰕿", "󰖀", "󰕾"]
         },
         "scroll-step": 5,
         "on-click": "pavucontrol",
         "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "tooltip": true,
-        "tooltip-format": "Volume: {volume}%\nDevice: {desc}"
+        "tooltip-format": "Volumen: {volume}%\nDispositivo: {desc}"
     },
 
     "network": {
-        "format-wifi": " {signalStrength}%",
-        "format-ethernet": " Connected",
-        "format-linked": " {ifname} (No IP)",
-        "format-disconnected": " Disconnected",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}",
+        "format-wifi": "󰤨 {signalStrength}%",
+        "format-ethernet": "󰈁 Conectado",
+        "format-linked": "󰈂 {ifname} (Sin IP)",
+        "format-disconnected": "󰤭 Desconectado",
+        "format-alt": "󰩟 {ifname}: {ipaddr}/{cidr}",
         "tooltip": true,
-        "tooltip-format": "Network: {essid}\nInterface: {ifname}\nIP: {ipaddr}\nStrength: {signalStrength}%\nFreq: {frequency}MHz\nUp: {bandwidthUpBits} Down: {bandwidthDownBits}",
-        "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}\nUp: {bandwidthUpBits} Down: {bandwidthDownBits}",
-        "tooltip-format-disconnected": "Disconnected",
+        "tooltip-format": "Red: {essid}\nInterfaz: {ifname}\nIP: {ipaddr}\nSeñal: {signalStrength}%\nFrec: {frequency}MHz\nSubida: {bandwidthUpBits} Bajada: {bandwidthDownBits}",
+        "tooltip-format-ethernet": "Interfaz: {ifname}\nIP: {ipaddr}\nSubida: {bandwidthUpBits} Bajada: {bandwidthDownBits}",
+        "tooltip-format-disconnected": "Desconectado",
         "max-length": 50,
         "on-click": "nm-connection-editor"
     },
@@ -195,34 +196,34 @@
             "critical": 15
         },
         "format": "{icon} {capacity}%",
-        "format-charging": " {capacity}%",
-        "format-plugged": " {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
         "format-alt": "{icon} {time}",
-        "format-icons": ["", "", "", "", ""],
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
         "tooltip": true,
-        "tooltip-format": "Battery: {capacity}%\nTime: {time}\nPower: {power}W\nHealth: {health}%"
+        "tooltip-format": "Batería: {capacity}%\nTiempo: {time}\nPotencia: {power}W\nSalud: {health}%"
     },
 
     "custom/power": {
-        "format": "⏻",
+        "format": "󰐥",
         "tooltip": false,
-        "on-click": "wlogout -p layer-shell",
-        "on-click-right": "wlogout -p layer-shell"
+        "on-click": "nwg-bar -x",
+        "on-click-right": "nwg-bar -x"
     },
 
-    // Custom Modules for Enhanced Functionality
+    // Custom Notification Module (opcional)
     "custom/notification": {
         "tooltip": false,
         "format": "{icon}",
         "format-icons": {
-            "notification": "<span foreground='red'><sup></sup></span>",
-            "none": "",
-            "dnd-notification": "<span foreground='red'><sup></sup></span>",
-            "dnd-none": "",
-            "inhibited-notification": "<span foreground='red'><sup></sup></span>",
-            "inhibited-none": "",
-            "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
-            "dnd-inhibited-none": ""
+            "notification": "󰂚<span foreground='red'><sup></sup></span>",
+            "none": "󰂚",
+            "dnd-notification": "󰂛<span foreground='red'><sup></sup></span>",
+            "dnd-none": "󰂛",
+            "inhibited-notification": "󰂚<span foreground='red'><sup></sup></span>",
+            "inhibited-none": "󰂚",
+            "dnd-inhibited-notification": "󰂛<span foreground='red'><sup></sup></span>",
+            "dnd-inhibited-none": "󰂛"
         },
         "return-type": "json",
         "exec-if": "which swaync-client",
@@ -230,17 +231,5 @@
         "on-click": "swaync-client -t -sw",
         "on-click-right": "swaync-client -d -sw",
         "escape": true
-    },
-
-    "custom/media": {
-        "format": "{icon} {}",
-        "return-type": "json",
-        "max-length": 40,
-        "format-icons": {
-            "spotify": "",
-            "default": "🎜"
-        },
-        "escape": true,
-        "exec": "~/.config/waybar/scripts/mediaplayer.py 2> /dev/null"
     }
 }
