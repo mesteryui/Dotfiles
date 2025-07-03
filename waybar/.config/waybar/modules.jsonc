@@ -215,7 +215,7 @@
 		"format-linked": "󰖩 ",
 		"format-wifi": "{icon}",
 		"interval": 30,
-		"on-click": "kitty --class float_kitty -e 'nmtui'",
+		"on-click": "kitty --class float_kitty -e 'impala'",
 		"on-click-right": "rfkill toggle wifi",
 		"tooltip": true,
 		"tooltip-format": "interface:\t{ifname}\n\nconnected to {essid} at {signalStrength}% strength",
@@ -278,7 +278,7 @@
 	        "default": [" ", "  "]
 	    },
 	    "scroll-step": 1,
-	    "on-click": "pavucontrol",
+	    "on-click": "kitty --class float_kitty -e 'wiremix'",
 	    "ignored-sinks": ["Easy Effects Sink"]
 	},
 

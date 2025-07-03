@@ -1,0 +1,178 @@
+/***
+ * Tema Rofi con placeholder "Aplicaciones" y barra de selección en color matugen
+ */
+
+@import '~/.config/rofi/matugen/matugen-rofi.rasi'
+
+* {
+    /* Configuración base */
+    font: "Inter 12";
+    background-color: transparent;
+    text-color: @on-surface;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 16px;
+}
+window {
+    background-color: @surface-container;
+    border: 2px;
+    border-color: @outline-variant;
+    border-radius: 20px;
+    width: 600px;
+    height: 500px;
+    padding: 20px;
+    location: center;
+    anchor: center;
+    x-offset: 0;
+    y-offset: 0;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing: 15px;
+    padding: 0;
+    children: ["inputbar", "listview" ];
+}
+
+inputbar {
+    background-color: @surface-container-high;
+    border: 2px;
+    border-color: @outline-variant;
+    border-radius: 12px;
+    padding: 12px 16px;
+    spacing: 8px;
+    children: [ "entry" ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color: @primary;
+    font: "Inter Bold 12";
+    padding: 0;
+    margin: 0;
+    enabled: false;
+}
+
+entry {
+    background-color: transparent;
+    border-radius: 0;
+    text-color: @on-surface;
+    placeholder: "Buscar Aplicaciones...";
+    placeholder-color: @on-surface-variant;
+    cursor: text;
+    expand: true;
+    font: "Inter 12";
+}
+
+listview {
+    background-color: transparent;
+    columns: 1;
+    lines: 8;
+    cycle: true;
+    dynamic: true;
+    scrollbar: true;
+    layout: vertical;
+    reverse: false;
+    fixed-height: true;
+    fixed-columns: true;
+    spacing: 4px;
+    padding: 8px 0;
+}
+
+scrollbar {
+    width: 4px;
+    border: 0;
+    handle-color: @primary;
+    handle-width: 4px;
+    padding: 0;
+    margin: 0 4px 0 0;
+    background-color: @surface-container-high;
+    border-radius: 2px;
+}
+
+element {
+    background-color: transparent;
+    text-color: @on-surface;
+    orientation: horizontal;
+    border-radius: 8px;
+    padding: 12px 16px;
+    spacing: 12px;
+    border: 0;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element normal.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+element normal.active {
+    background-color: @primary-container;
+    text-color: @on-primary-container;
+}
+
+element selected.normal {
+    background-color: @primary;
+    text-color: @on-primary;
+    border: 2px;
+    border-color: @primary-fixed;
+    border-radius: 8px;
+    padding: 14px 18px;
+}
+
+element selected.urgent {
+    background-color: @error;
+    text-color: @on-error;
+    border-radius: 8px;
+}
+
+element selected.active {
+    background-color: @primary-fixed;
+    text-color: @on-primary-fixed;
+    border-radius: 8px;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element alternate.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+element alternate.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+element-icon {
+    background-color: transparent;
+    size: 32px;
+    cursor: inherit;
+    border-radius: 0;
+}
+
+element-text {
+    background-color: transparent;
+    cursor: inherit;
+    highlight: bold;
+    vertical-align: 0.5;
+    font: "Inter 11";
+}
+
+element-text selected {
+    text-color: inherit;
+}
+
+/* Mejora visual del scrollbar */
+scrollbar handle {
+    background-color: @primary;
+    border-radius: 2px;
+}

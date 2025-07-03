@@ -1,0 +1,164 @@
+/*
+ *    ┳┳┓┏┓┏┳┓┳┳┏┓┏┓┳┓  ┳┓┏┓┏┓┳
+ *    ┃┃┃┣┫ ┃ ┃┃┃┓┣ ┃┃━━┣┫┃┃┣ ┃
+ *    ┛ ┗┛┗ ┻ ┗┛┗┛┗┛┛┗  ┛┗┗┛┻ ┻
+ *    
+ *    Window Switcher estilo macOS con colores dinámicos
+ *    Sintaxis compatible con Rofi
+ */
+
+@import "~/.config/rofi/matugen/matugen-rofi.rasi"
+
+configuration {
+    show-icons:                 true;
+    icon-theme:                 "Papirus";
+    display-window:             "";
+    window-format:              "{c}";
+    click-to-exit:              true;
+    disable-history:            false;
+    window-thumbnail:           true;
+}
+
+* {
+    background-color:           transparent;
+    text-color:                 @on-surface;
+    font:                       "JetBrains Mono Nerd Font 12";
+}
+
+window {
+    transparency:               "real";
+    background-color:           @surface-alpha;
+    border:                     2px solid;
+    border-color:               @primary;
+    border-radius:              25px;
+    width:                      60%;
+    height:                     200px;
+    location:                   center;
+    anchor:                     center;
+    padding:                    20px;
+}
+
+mainbox {
+    orientation:                vertical;
+    children:                   [ "listview" ];
+    spacing:                    25px;
+}
+
+message {
+    enabled:                    true;
+    margin:                     0px;
+    padding:                    15px;
+    border-radius:              10px;
+    background-color:           @surface-container;
+}
+
+textbox {
+    background-color:           transparent;
+    text-color:                 @on-surface;
+    vertical-align:             0.5;
+    horizontal-align:           0.5;
+    font:                       "JetBrains Mono Nerd Font Bold 14";
+}
+
+listview {
+    enabled:                    true;
+    columns:                    8;
+    lines:                      1;
+    cycle:                      true;
+    dynamic:                    true;
+    scrollbar-width:            0px;
+    layout:                     vertical;
+    reverse:                    false;
+    fixed-height:               true;
+    fixed-columns:              true;
+    spacing:                    15px;
+    padding:                    10px;
+    flow:                       horizontal;
+    require-input:              false;
+}
+
+scrollbar {
+    handle-width:               0px;
+    handle-color:               transparent;
+    border-radius:              0px;
+    margin:                     0px;
+    padding:                    0px;
+}
+
+element {
+    enabled:                    true;
+    orientation:                vertical;
+    children:                   [ "element-icon", "element-text" ];
+    background-color:           @surface-container-low;
+    border-radius:              15px;
+    padding:                    12px 8px;
+    spacing:                    8px;
+    cursor:                     pointer;
+    width:                      104px;
+    height:                     100px;
+}
+
+element normal.normal {
+    background-color:           @surface-container-low;
+    text-color:                 @on-surface;
+}
+
+element normal.urgent {
+    background-color:           @error-container;
+    text-color:                 @on-error-container;
+}
+
+element normal.active {
+    background-color:           @primary-container;
+    text-color:                 @on-primary-container;
+}
+
+element selected.normal {
+    background-color:           @primary;
+    text-color:                 @on-primary;
+    border:                     3px solid;
+    border-color:               @primary-fixed;
+    border-radius:              18px;
+    padding:                    10px 6px;
+}
+
+element selected.urgent {
+    background-color:           @error;
+    text-color:                 @on-error;
+    border:                     3px solid;
+    border-color:               @error-container;
+    border-radius:              18px;
+    padding:                    10px 6px;
+}
+
+element selected.active {
+    background-color:           @tertiary;
+    text-color:                 @on-tertiary;
+    border:                     3px solid;
+    border-color:               @tertiary-container;
+    border-radius:              18px;
+    padding:                    10px 6px;
+}
+
+element-icon {
+    background-color:           transparent;
+    text-color:                 inherit;
+    size:                       48px;
+    cursor:                     inherit;
+    horizontal-align:           0.5;
+    vertical-align:             0.5;
+}
+
+element-text {
+    background-color:           transparent;
+    text-color:                 inherit;
+    cursor:                     inherit;
+    vertical-align:             0.5;
+    horizontal-align:           0.5;
+    font:                       "JetBrains Mono Nerd Font Medium 9";
+    width:                      70px;
+}
+
+inputbar {
+    enabled:                    false;
+}
