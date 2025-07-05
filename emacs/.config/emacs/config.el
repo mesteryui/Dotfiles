@@ -1,4 +1,5 @@
 ;;; -*- lexical-binding: t; -*-
+;;(add-to-list 'org-src-lang-modes '("emacs-lisp" . emacs-lisp))
 
 (setq jit-lock-stealth-time 0.5)
 (setq jit-lock-chunk-size 1000)
@@ -16,10 +17,10 @@
 (defmacro loadf (file) `(load-file ,file))
 
 (defmacro os/add-to-list (list &rest elements)
-   `(progn ,@(mapcar (lambda (e) `(add-to-list ',list ,e)) elements)))
+   `(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
 
 (defmacro os/after (package &rest body)
-"Execute the code after the load of a package if the package is loaded the code is executed directly if not the package will be charged"
+"Execute the code after the load of a package if the package is loaded the code is executed directly if not the package will be charged, first the PACKAGE you want to verifyis loaded to execute code after that BODY is the code to execute."
 `(if (featurep ',package)
      (progn ,@body)
      (with-eval-after-load ',package
@@ -30,8 +31,9 @@
   `(when (eq system-type ',system)
      ,@body))
 
-(defmacro gbind (key func) 
-"Asigna atajos de teclado globales de forma más sencilla usando kbd"
+(defmacro gbind (key func)
+"Asigna atajos de teclado globales de forma más sencilla usando kbd:
+KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
 `(global-set-key (kbd ,key) ',func))
 
 (defmacro unbind (key)
@@ -39,8 +41,11 @@
   `(global-unset-key (kbd ,key)))
 
 (defmacro add-hooks (hook &rest funcs)
-"Añadir varias funciones a un hook"
-`(progn ,@(mapcar (lambda (f) `(add-hook ',hook ,f)) funcs)))
+"Añadir varias funciones a un hook
+Es decir si tengo org-mode-hook puedo añadir varias funciones
+siendo HOOK el hook que quiero añadir
+y FUNCS las funciones a añadir"
+`(progn ,@(seq-map (lambda (f) `(add-hook ',hook ,f)) funcs)))
 
 (use-package mixed-pitch
 :ensure t
@@ -50,6 +55,7 @@
 ))
 
 (defun os/org-headers-setters () 
+ "Ajusta de forma personalizada los encabezados del modo org"
  (dolist (item '((org-level-1 . outline-1)
 		    (org-level-2 . outline-2)
 		    (org-level-3 . outline-3)
@@ -61,17 +67,6 @@
 		    (org-level-4 . 1.1)
                   (org-document-title . 1.7)))
    (set-face-attribute (car item) nil :height (cdr item))))
-(defun os/org-items-faces-setter ()
-     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-     (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
-     (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
-     (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
-     (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-     (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-     (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-     (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-     (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (setq custom-safe-themes t)
 
@@ -117,7 +112,9 @@
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
-;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
+
+(add-to-list 'default-frame-alist '(font . "Aporetic Sans Mono-11"))
+
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
@@ -179,7 +176,7 @@
 			  (holiday-fixed 12 25 "Navidad")))
 
 (global-so-long-mode 1)
- (os/after so-long
+(os/after so-long
     (when (boundp 'so-long-minor-modes)
       (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
       (add-to-list 'so-long-minor-modes 'hl-line-mode))
@@ -315,7 +312,6 @@ This function allow to activate the webserver when you use but if there is a pro
   :ensure nil
   :hook ((org-mode . org-indent-mode)
 	 (org-mode . os/org-headers-setters)
-         ;;(org-mode . os/org-items-faces-setter)
          (org-mode . visual-line-mode)
          (org-mode . dynamic-language-change))
   :custom
@@ -345,14 +341,7 @@ This function allow to activate the webserver when you use but if there is a pro
   ;; Enlaces
   (org-return-follows-link t)
   :config
-  (require 'org-tempo)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (scheme . t)
-     (python . t)
-     (shell . t)
-     )))
+  (require 'org-tempo))
         (gbind "C-c c" org-capture)
         (gbind "C-c a" org-agenda)
 
@@ -396,7 +385,7 @@ This function allow to activate the webserver when you use but if there is a pro
 (setq org-edit-src-content-indentation 0
       org-src-preserve-indentation nil)
 
-(setq org-src-tab-acts-natively t
+(setopt org-src-tab-acts-natively t
       org-src-fontify-natively t)
 
 (use-package org-appear
@@ -450,6 +439,16 @@ This function allow to activate the webserver when you use but if there is a pro
            (file+headline "~/org/proyectos.org" "Proyectos")
            "*  %?\n")))
 
+(os/after org
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (scheme . t)
+   (python . t)
+   (shell . t))))
+(os/after org-contrib
+(org-babel-do-load-languages 'org-babel-load-languages '((ledger . t))))
+
 (use-package org-auto-tangle
   :defer t
   :hook (org-mode . org-auto-tangle-mode))
@@ -467,11 +466,12 @@ This function allow to activate the webserver when you use but if there is a pro
     (org-crypt-key "oscarodriguez56@gmail.com"))
 
 (use-package org-contrib
- :after org
- :config
- (org-babel-do-load-languages
-  'org-babel-load-languages
-  '((ledger . t))))
+ :after org)
+
+(use-package gptel
+:config
+(setq gptel-model 'gemini-2.5-pro 
+      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
 
 (use-package tramp
   :ensure nil
@@ -673,7 +673,7 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package embark
     :bind
-    (("C-." . embark-act)
+    (("C-c a" . embark-act)
      ("C-:" . embark-dwim)
      ("C-h B" . embark-bindings)))
 
@@ -761,11 +761,15 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package vertico
   :init
   (vertico-mode)
+  (vertico-multiform-mode)
   :custom
   (vertico-count 15)                    ; Número de candidatos a mostrar
   (vertico-resize t)
   (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha))
+  (vertico-sort-function 'vertico-sort-history-alpha)
+  :config 
+  (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
+;;(add-to-list 'vertico-multiform-categories '(embark-keybinding grid))
 
 (use-package marginalia
    :after vertico
@@ -805,7 +809,8 @@ This function allow to activate the webserver when you use but if there is a pro
  (setopt which-key-idle-delay 0.3
          which-key-dont-use-unicode nil
          which-key-separator " → " 
-         which-key-ellipsis "…"))
+         which-key-ellipsis "…")
+(setq prefix-help-command #'embark-prefix-help-command)) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 
 (use-package organizer
   :demand t
@@ -913,6 +918,8 @@ This function allow to activate the webserver when you use but if there is a pro
 (use-package fish-mode
   :ensure t
   :demand t)
+
+(use-package yuck-mode :ensure t)
 
 (use-package i3wm-config-mode
   :demand t
@@ -1065,22 +1072,28 @@ This function allow to activate the webserver when you use but if there is a pro
 
 (use-package eglot
   :ensure nil
-  :hook (prog-mode . eglot-ensure)
- :custom 
- (eglot-sync-connect 1)
- (eglot-autoshutdown t)
- (eglot-events-buffer-size 0)
- (eglot-auto-display-help-buffer nil)
- :bind
-  (:map eglot-mode-map
-        ;; Cada binding incluye el prefijo C-c l de forma literal
-         ("C-c c a" . eglot-code-actions)
-           ("C-c c o" . eglot-code-actions-organize-imports)
-           ("C-c c r" . eglot-rename)
-           ("C-c c f" . eglot-format)))
-  (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
-
-  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+  :hook ((prog-mode . eglot-ensure)
+         (eglot-managed-mode . eldoc-box-hover-mode))
+  :custom
+  (eglot-sync-connect 1)
+  (eglot-autoshutdown t)
+  (eglot-events-buffer-size 0)
+  (eglot-auto-display-help-buffer nil)
+  (eglot-confirm-server-initiated-edits nil)
+  :bind (:map eglot-mode-map
+              ("C-c l a" . eglot-code-actions)
+              ("C-c l i" . eglot-code-actions-organize-imports)
+              ("C-c l r" . eglot-rename)
+              ("C-c l f" . eglot-format)
+              ("C-c l n" . flymake-next-error)
+              ("C-c l p" . flymake-previous-error)
+              ("C-c l d" . eldoc))
+  :config
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((python-mode python-ts-mode) . ("pylsp")))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((c-mode c++-mode) . ("clangd")))
+  )
 
 (use-package js
     :ensure nil
@@ -1130,7 +1143,7 @@ This function allow to activate the webserver when you use but if there is a pro
 ;; TODO Do the java programation more useful
  (add-hook 'java-mode-hook 'eglot-java-mode)
 
- (with-eval-after-load 'eglot-java
+ (os/after eglot-java
     (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
     (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
     (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)

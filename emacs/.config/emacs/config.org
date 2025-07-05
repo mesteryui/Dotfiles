@@ -6,6 +6,7 @@
 Añado aqui alguna cosa
 #+begin_src emacs-lisp
 ;;; -*- lexical-binding: t; -*-
+;;(add-to-list 'org-src-lang-modes '("emacs-lisp" . emacs-lisp))
 #+end_src
 * Ajustes de rendimiento
 ** Better font lock performance
@@ -34,12 +35,12 @@ Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gc
 ** Add multiple
 #+begin_src emacs-lisp
 (defmacro os/add-to-list (list &rest elements)
-   `(progn ,@(mapcar (lambda (e) `(add-to-list ',list ,e)) elements)))
+   `(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
 #+end_src
 ** After
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle ./config.el
 (defmacro os/after (package &rest body)
-"Execute the code after the load of a package if the package is loaded the code is executed directly if not the package will be charged"
+"Execute the code after the load of a package if the package is loaded the code is executed directly if not the package will be charged, first the PACKAGE you want to verifyis loaded to execute code after that BODY is the code to execute."
 `(if (featurep ',package)
      (progn ,@body)
      (with-eval-after-load ',package
@@ -56,11 +57,13 @@ Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
 ** GBind
 Esta macro es para facilitar el seteo de atajos personalizados de teclado a nivel global
 #+begin_src emacs-lisp
-(defmacro gbind (key func) 
-"Asigna atajos de teclado globales de forma más sencilla usando kbd"
+(defmacro gbind (key func)
+"Asigna atajos de teclado globales de forma más sencilla usando kbd:
+KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
 `(global-set-key (kbd ,key) ',func))
 #+end_src
 ** Unbind 
+Como el nombre dice elimina los atajos de teclado pero usando una sintaxis simplificado
 #+begin_src emacs-lisp
 (defmacro unbind (key)
   "Unbind the global KEY sequence."
@@ -69,8 +72,11 @@ Esta macro es para facilitar el seteo de atajos personalizados de teclado a nive
 ** Add hooks
 #+begin_src emacs-lisp
 (defmacro add-hooks (hook &rest funcs)
-"Añadir varias funciones a un hook"
-`(progn ,@(mapcar (lambda (f) `(add-hook ',hook ,f)) funcs)))
+"Añadir varias funciones a un hook
+Es decir si tengo org-mode-hook puedo añadir varias funciones
+siendo HOOK el hook que quiero añadir
+y FUNCS las funciones a añadir"
+`(progn ,@(seq-map (lambda (f) `(add-hook ',hook ,f)) funcs)))
 #+end_src
 * Apariencia
 ** Ajustes de faces
@@ -86,8 +92,9 @@ Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combina
 ))
 #+end_src
 *** Ajustes a elementos del org-mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle ./config.el
   (defun os/org-headers-setters () 
+   "Ajusta de forma personalizada los encabezados del modo org"
    (dolist (item '((org-level-1 . outline-1)
   		    (org-level-2 . outline-2)
   		    (org-level-3 . outline-3)
@@ -99,18 +106,6 @@ Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combina
   		    (org-level-4 . 1.1)
                     (org-document-title . 1.7)))
      (set-face-attribute (car item) nil :height (cdr item))))
-  (defun os/org-items-faces-setter ()
-       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-       (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
-       (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
-       (set-face-attribute 'org-code nil  :inherit '(shadow fixed-pitch))
-       (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-       (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-       (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-       (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-       (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-       (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
-
 #+end_src
 ** Tema visual
 *** Algún ajuste que otro
@@ -196,7 +191,9 @@ Aqui estan los ajustes de tipografía, que utilizo
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
-;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono NerdFont-10"))
+
+(add-to-list 'default-frame-alist '(font . "Aporetic Sans Mono-11"))
+
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.3)
@@ -252,7 +249,7 @@ La configuracion de los atajos de zoom
 #+end_src
 *** Configuraciones diversas
 Aquí se tratan configuraciones especificas útiles para diversos aspectos
-**** Formato hora
+*** Formato hora
 Configura el formato de la hora
 #+name: formato hora
 #+begin_src emacs-lisp :tangle no
@@ -311,7 +308,7 @@ make-backup-files nil                   ; No realiza backups de ficheros
 Es una funcionalidad implementada en las ultimas versiones de Emacs muy util para los archivos muy largos
 #+begin_src emacs-lisp
 (global-so-long-mode 1)
- (os/after so-long
+(os/after so-long
     (when (boundp 'so-long-minor-modes)
       (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
       (add-to-list 'so-long-minor-modes 'hl-line-mode))
@@ -518,12 +515,11 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 #+end_src
 *** Añadiendo ajustes varios
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp
 (use-package org
   :ensure nil
   :hook ((org-mode . org-indent-mode)
 	 (org-mode . os/org-headers-setters)
-         ;;(org-mode . os/org-items-faces-setter)
          (org-mode . visual-line-mode)
          (org-mode . dynamic-language-change))
   :custom
@@ -553,8 +549,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
   ;; Enlaces
   (org-return-follows-link t)
   :config
-  (require 'org-tempo)
-  <<org-babel>>)
+  (require 'org-tempo))
         (gbind "C-c c" org-capture)
         (gbind "C-c a" org-agenda)
 
@@ -657,7 +652,7 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 #+end_src
 *** Ajustando otras cosas en relacion a indentacion
 #+begin_src emacs-lisp
-(setq org-src-tab-acts-natively t
+(setopt org-src-tab-acts-natively t
       org-src-fontify-natively t)
 #+end_src
 *** Cargándolo todo
@@ -696,15 +691,16 @@ Diversas utilidades de org mode para que se vea todo mejor
 #+end_src
 ** Configuración de Org Babel
 Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
-#+name: org-babel
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
+(os/after org
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
    (scheme . t)
    (python . t)
-   (shell . t)
-   ))
+   (shell . t))))
+(os/after org-contrib
+(org-babel-do-load-languages 'org-babel-load-languages '((ledger . t))))
 #+end_src
 *** Org auto tangle
 Hace que en según que caso el tangle sea automático
@@ -734,13 +730,16 @@ Encriptar entradas de archivos ~.org~ usando una clave GPG
 Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
 #+begin_src emacs-lisp
  (use-package org-contrib
-  :after org
-  :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((ledger . t))))
+  :after org)
 #+end_src
 * Paquetes
+** Gptel
+#+begin_src emacs-lisp
+(use-package gptel
+:config
+(setq gptel-model 'gemini-2.5-pro 
+      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+#+end_src
 ** Visual fill column
 #+begin_src emacs-lisp :tangle no
 (use-package visual-fill-column
@@ -954,7 +953,7 @@ Hace que un buffer modificado desde otro lugar se refresque solo
 :hook (after-init . global-auto-revert-mode))
 #+end_src
 ** Eshell
-Shell que permite usar comandos elisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
+Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
 #+begin_src emacs-lisp
 ;; 
 (setq eshell-prompt-function
@@ -1075,7 +1074,7 @@ Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcio
 #+begin_src emacs-lisp
 (use-package embark
     :bind
-    (("C-." . embark-act)
+    (("C-c a" . embark-act)
      ("C-:" . embark-dwim)
      ("C-h B" . embark-bindings)))
 
@@ -1198,11 +1197,15 @@ Completacion minimalista y más vistosa en el minibuffer
 (use-package vertico
   :init
   (vertico-mode)
+  (vertico-multiform-mode)
   :custom
   (vertico-count 15)                    ; Número de candidatos a mostrar
   (vertico-resize t)
   (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha))
+  (vertico-sort-function 'vertico-sort-history-alpha)
+  :config 
+  (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
+;;(add-to-list 'vertico-multiform-categories '(embark-keybinding grid))
 #+end_src
 *** Marginalia
 Provee anotaciones en el minibuffer para mejorar la experiencia de completado
@@ -1254,7 +1257,8 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuacion
  (setopt which-key-idle-delay 0.3
          which-key-dont-use-unicode nil
          which-key-separator " → " 
-         which-key-ellipsis "…"))
+         which-key-ellipsis "…")
+(setq prefix-help-command #'embark-prefix-help-command)) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 #+end_src
 ** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
@@ -1405,6 +1409,11 @@ Para abrir scripts para la shell fish
 (use-package fish-mode
   :ensure t
   :demand t)
+#+end_src
+*** Yuck
+Lo pongo aqui porque el proposito de esta cosa es hacer interfaces no tanto programar además la parte de lenguajes de programacion ya esta muy llena 
+#+begin_src emacs-lisp
+(use-package yuck-mode :ensure t)
 #+end_src
 *** I3wm mode
 Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algunas veces para asuntos cuando Wayland no me sirve sera util
@@ -1664,22 +1673,28 @@ Servidor lsp más minimalista lo voy a probar
 #+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
-  :hook (prog-mode . eglot-ensure)
- :custom 
- (eglot-sync-connect 1)
- (eglot-autoshutdown t)
- (eglot-events-buffer-size 0)
- (eglot-auto-display-help-buffer nil)
- :bind
-  (:map eglot-mode-map
-        ;; Cada binding incluye el prefijo C-c l de forma literal
-         ("C-c c a" . eglot-code-actions)
-           ("C-c c o" . eglot-code-actions-organize-imports)
-           ("C-c c r" . eglot-rename)
-           ("C-c c f" . eglot-format)))
-  (add-hook 'eglot-managed-mode-hook #'eldoc-mode)
-
-  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+  :hook ((prog-mode . eglot-ensure)
+         (eglot-managed-mode . eldoc-box-hover-mode))
+  :custom
+  (eglot-sync-connect 1)
+  (eglot-autoshutdown t)
+  (eglot-events-buffer-size 0)
+  (eglot-auto-display-help-buffer nil)
+  (eglot-confirm-server-initiated-edits nil)
+  :bind (:map eglot-mode-map
+              ("C-c l a" . eglot-code-actions)
+              ("C-c l i" . eglot-code-actions-organize-imports)
+              ("C-c l r" . eglot-rename)
+              ("C-c l f" . eglot-format)
+              ("C-c l n" . flymake-next-error)
+              ("C-c l p" . flymake-previous-error)
+              ("C-c l d" . eldoc))
+  :config
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((python-mode python-ts-mode) . ("pylsp")))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((c-mode c++-mode) . ("clangd")))
+  )
 #+end_src
 *** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
@@ -1702,10 +1717,7 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
    :mode "Gemfile\\'")
 #+end_src
 **** Python
-#+begin_src emacs-lisp :tangle no
-(use-package python
-  :ensure t
-  :custom (python-indent-offset 4))
+#+begin_src python :tangle no
  (use-package lsp-pyright
    :ensure t
    :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
@@ -1763,7 +1775,7 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 ;; TODO Do the java programation more useful
  (add-hook 'java-mode-hook 'eglot-java-mode)
 
- (with-eval-after-load 'eglot-java
+ (os/after eglot-java
     (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
     (define-key eglot-java-mode-map (kbd "C-c l x") #'eglot-java-run-main)
     (define-key eglot-java-mode-map (kbd "C-c l t") #'eglot-java-run-test)
