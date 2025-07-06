@@ -25,7 +25,7 @@ set EDITOR "emacsclient -t -a ''"
 set -x HYPRSHOT_DIR "~/Imágenes/Screenshots"
 set -x PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
-
+set -x GEMINI_API_KEY (pass geminiAPI)
 alias "emacsc" "emacsclient -c -a emacs"
 
 alias "ls" "lsd"

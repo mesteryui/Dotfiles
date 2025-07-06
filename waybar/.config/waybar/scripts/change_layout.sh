@@ -1,9 +1,14 @@
 #!/bin/bash
 
 # Configuración de directorios y archivos
+CACHE_DIR="$HOME/.cache/hyprsphere"
+if [[ ! -d $CACHE_DIR ]]; then
+    echo -e "Directorio de cache creado porque no existia"
+    mkdir -p $CACHE_DIR
+fi
 LAYOUT_DIR="$HOME/.config/waybar/layouts/"
 DEFAULT="default"
-CURRENT="$LAYOUT_DIR/current-layout.txt"
+CURRENT="$CACHE_DIR/waybar-layout.txt"
 DEFAULT_JSONC="$DEFAULT/config-hypr.jsonc"
 DEFAULT_CSS="$DEFAULT/style-hypr.css"
 ICON_PATH="$HOME/.dotfiles/logo-hyprsphere-min.png"

@@ -2,9 +2,13 @@
 
 # Script de lanzamiento de Waybar completamente asíncrono
 # Puede ser llamado directamente por matugen sin bloqueo
-
+CACHE_DIR="$HOME/.cache/hyprsphere"
+if [[ ! -d $CACHE_DIR ]]; then
+    echo -e "Directorio de cache creado porque no existia"
+    mkdir -p $CACHE_DIR
+fi
 LAYOUT_DIR="$HOME/.config/waybar/layouts"
-CURRENT="$LAYOUT_DIR/current-layout.txt"
+CURRENT="$CACHE_DIR/waybar-layout.txt"
 DEFAULT="default"
 LOGFILE="/tmp/waybar-launch.log"
 
