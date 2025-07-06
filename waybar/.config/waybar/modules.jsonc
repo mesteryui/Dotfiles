@@ -311,7 +311,7 @@
 
 	"custom/launcher#arch": {
 		"format": "󰣇",
-		"on-click": "rofi -show drun",
+		"on-click": "eww open control_panel_win",
 	},
 
 	"custom/power-button": {
