@@ -11,11 +11,12 @@ org-mode
 (title "#+title: " (r "Titulo por defecto"))
 (normal-author "#+author: " user-full-name q)
 (author "#+author: " (r "Introduzca nombre del autor") q)
-
-js-mode 
+(today (string-trim (shell-command-to-string "date +%Y/%m/%d")))
+js-mode
 (func "function " (r> "nombreFuncion") "(" r> ") {" n q n "}")
+(apiQuest "fetch(" r> ").then(" r> ")")
 
-html-mode mhtml-mode 
+html-mode mhtml-mode
 (html5-document "<!DOCTYPE html>" n "<html lang=\"en\">" n  "<head>" n "\t" "<meta charset=\"UTF-8\">" n
    "\t" "<meta name=\"viewport\"" "content=\"width=" (r> "device-width") ", initial-scale=" (r> "1.0\"") ">"  n "\t"
     "<title>" (r> "Introduzca titulo") "</title>" n "<head>" n "<body>" n q n "</body>")
@@ -27,3 +28,5 @@ html-mode mhtml-mode
 (input:btn "<input type=\"button\"" " value=" (r> "\"valor\"") ">")
 
 (input:text "<input type=\"text\"" " value=" (r> "\"valor\"") ">")
+emacs-lisp-mode
+(funct "(defun " (r> "nombre") "(" (r> "args") ")" n "\t" q ")")
