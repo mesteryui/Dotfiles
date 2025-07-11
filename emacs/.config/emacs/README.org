@@ -442,6 +442,13 @@ La configuracion de los atajos de zoom
 #+end_src
 *** Configuraciones diversas
 Aquí se tratan configuraciones especificas útiles para diversos aspectos
+**** Buffer scratch
+#+begin_src emacs-lisp 
+(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.\n\n" (propertize
+               (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
+               'face 'help-key-binding)))
+
+#+end_src
 **** Formato hora
 Configura el formato de la hora
 #+name: formato hora
@@ -479,6 +486,7 @@ select-enable-primary t)
                  (holiday-fixed 5 1 "Dia del Trabajo")
                  (holiday-fixed 12 24 "Nochebuena")
                  (holiday-fixed 12 25 "Navidad")))
+(provide 'personal)
 #+end_src
 ***** Archivos de bloqueo
 Impide la creación de ficheros de bloqueo que a veces son muy coñazo al menos para mi
@@ -1394,7 +1402,6 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
 #+begin_src emacs-lisp
 (use-package kdl-ts-mode 
   :ensure (:host github :repo "dataphract/kdl-ts-mode"))
-
 #+end_src
 **** Fish mode
 Para abrir scripts para la shell fish
@@ -2008,7 +2015,8 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
         (toml "https://github.com/tree-sitter/tree-sitter-toml")
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
         (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+        (kdl "https://github.com/tree-sitter-grammars/tree-sitter-kdl")))
 (add-to-list 'treesit-language-source-alist
         '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
@@ -2204,6 +2212,7 @@ Aqui defino el bloque de codigo que lleva a cabo la carga de todos los modulos q
   '(
     macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
+    personal
     ui          ;; Apariencia y UI
     functions   ;; Funciones propias desarrolladas por mi
     org-config  ;; Configuración de Org Mode
