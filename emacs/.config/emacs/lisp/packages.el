@@ -1,0 +1,506 @@
+(use-package package-lint)
+
+(use-package exec-path-from-shell
+  :ensure t
+  :init
+  (exec-path-from-shell-initialize))
+(os/after exec-path-from-shell
+(exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
+
+(use-package spacious-padding
+:ensure t
+:config 
+(setq spacious-padding-widths
+      '( :internal-border-width 15
+         :header-line-width 4
+         :mode-line-width 6
+         :tab-width 4
+         :right-divider-width 30
+         :scroll-bar-width 8
+         :fringe-width 8))
+(spacious-padding-mode))
+
+(use-package gptel
+:config
+(setq gptel-model 'gemini-2.5-pro 
+gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+
+(use-package tramp
+  :ensure nil
+  :custom
+  (remote-file-name-inhibit-locks t)
+  (tramp-use-scp-direct-remote-copying t)
+  (tramp-copy-size-limit (* 1024 1024))
+  (tramp-verbose 2)
+  (tramp-persistency-file-name
+   (no-littering-expand-var-file-name "tramp/history.el"))
+  :config
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "ssh")
+   'remote-direct-async-process))
+
+(use-package nerd-icons
+:ensure t)
+(use-package nerd-icons-completion
+:ensure t
+:after (marginalia nerd-icons)
+:hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+:init (nerd-icons-completion-mode))
+
+(use-package calfw
+:config
+(setopt cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
+(setopt cfw:display-calendar-holidays t) ;; para esconder fiestas calendario emacs
+(use-package calfw-org
+:after calfw
+:ensure t
+:config
+(setq cfw:org-overwrite-default-keybinding t)
+:bind ([f8] . cfw:open-org-calendar))
+
+(use-package vterm
+:defer t
+:bind
+(:map
+vterm-mode-map
+("C-y" . vterm-yank)
+("C-q" . vterm-send-next-key)))
+(use-package vterm-toggle
+:bind (("C-c g" . vterm-toggle)))
+
+;; ;; Aun no soportado en la shell de comandos que uso
+(use-package eat
+:ensure t)
+
+(use-package dired 
+:ensure nil 
+:config
+(when-let (cmd (cond ((equal system-type 'darwin) "open")
+              ((equal system-type 'gnu/linux) "xdg-open")
+              ((equal system-type 'windows-nt) "start")))
+(setopt dired-guess-shell-alist-user
+ `(("\\.\\(?:docx\\|pdf\\|djvu\\|eps\\)\\'" ,cmd)
+   ("\\.\\(?:jpe?g\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+   ("\\.\\(?:xcf\\)\\'" ,cmd)
+   ("\\.csv\\'" ,cmd)
+   ("\\.tex\\'" ,cmd)
+   ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+   ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
+   ("\\.html?\\'" ,cmd)
+   ("\\.md\\'" ,cmd))))
+(put 'dired-find-alternate-file 'disabled nil))
+(use-package dired-x
+:ensure nil
+:hook (dired-mode . dired-omit-mode)
+:config
+;; Make dired-omit-mode hide all "dotfiles"
+(setq dired-omit-verbose nil)
+(setq dired-omit-files
+(concat dired-omit-files "\\|^\\..*$")))
+
+;; Additional syntax highlighting for dired
+;(use-package diredfl
+;:hook
+;((dired-mode . diredfl-mode)
+;; highlight parent and directory preview as well
+;(dirvish-directory-view-mode . diredfl-mode)))
+
+(use-package dired-sidebar
+:ensure t
+:defer t
+:commands (dired-sidebar-toggle-sidebar)
+:init
+(setopt dired-sidebar-theme 'nerd)
+(setopt dired-sidebar-use-term-integration t)
+(setopt dired-sidebar-use-custom-font t))
+(use-package dired-git
+:ensure t)
+(global-set-key (kbd "C-c s") #'dirvish-side)
+
+(use-package autorevert
+:ensure nil
+:diminish
+:hook (after-init . global-auto-revert-mode))
+
+;; 
+(setq eshell-prompt-function
+(lambda ()
+(let ((status (if (= eshell-last-command-status 0)
+                 (propertize "✔" 'face '(:foreground "green"))
+               (propertize "✘" 'face '(:foreground "red")))))
+ (concat
+  (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
+  " "
+  (propertize (user-login-name))
+  "@"
+  (propertize (system-name) 'face '(:foreground "red"))
+  " "
+  (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
+  " " status "\n"
+  (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
+
+(defalias 'clean 'eshell/clear-scrollback)
+
+(use-package eshell
+:ensure nil
+:hook ((eshell-load . eat-eshell-mode)
+       (eshell-load . eat-eshell-visual-command-mode))
+:config
+(setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
+     eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
+ eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+ eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+)
+(use-package eshell-toggle
+:ensure t
+:custom
+(eshell-toggle-size-fraction 3))
+(use-package eshell-syntax-highlighting
+:after esh-mode
+:config
+(eshell-syntax-highlighting-global-mode +1))
+(global-set-key (kbd "C-c t") 'eshell-toggle)
+
+(use-package flyspell
+:ensure nil
+:defer t
+:init
+:config
+(setopt ispell-silently-savep t
+flyspell-case-fold-duplications t
+flyspell-issue-message-flag nil
+flyspell-default-dictionary "es_ES"
+ispell-program-name "hunspell"
+ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
+:hook (text-mode . flyspell-mode)
+:bind(("M-<f7>" . flyspell-buffer)
+  ("<f7>" . flyspell-word)))
+
+(gbind "M-<f7>" dicitionary-switcher)
+(use-package flyspell-correct
+:after (flyspell)
+:bind (("C-;" . flyspell-auto-correct-previous-word)
+  ("<f7>" . flyspell-correct-wrapper)))
+
+(use-package vundo
+:bind ("C-x u" . vundo))
+
+(use-package treemacs
+:config 
+(global-set-key (kbd "C-c d") 'treemacs)
+(setopt treemacs-hide-gitignored-files-mode t)
+treemacs-project-follow-cleanup t
+treemacs-width 45
+treemacs-width-is-initially-locked nil
+delete-by-moving-to-trash t
+treemacs-collapse-dirs 3
+treemacs-display-in-side-window t
+treemacs-is-never-other-window t
+treemacs-indentation 2
+treemacs-indentation-string " "
+treemacs-filewatch-mode t
+treemacs-git-mode 'deferred
+treemacs-text-scale 1
+treemacs-move-files-by-mouse-dragging nil
+treemacs-move-forward-on-expand t
+treemacs-pulse-on-success t
+treemacs-file-event-delay 0
+treemacs-deferred-git-apply-delay 0
+treemacs-git-commit-diff-mode 1)
+(add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode)
+(use-package treemacs-nerd-icons
+:after nerd-icons
+:config
+(treemacs-load-theme "nerd-icons"))
+(global-set-key (kbd "C-c f") 'treemacs)
+
+(use-package ledger-mode
+:ensure t)
+
+(use-package embark
+  :bind
+    (("C-c a" . embark-act)
+     ("C-:" . embark-dwim)
+     ("C-h B" . embark-bindings)))
+
+(use-package embark-consult
+:hook
+(embark-collect-mode . consult-preview-at-point-mode))
+
+;; use-package with package.el:
+(use-package dashboard
+:ensure t
+:hook 
+(elpaca-after-init-hook . dashboard-insert-startupify-lists)
+(elpaca-after-init-hook . dashboard-initialize)
+:custom
+(initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
+(dashboard-set-heading-icons t)
+(dashboard-set-file-icons t)
+(dashboard-icon-type 'nerd-icons)
+(dashboard-display-icons-p t)     ; display icons on both GUI and terminal
+(dashboard-vertically-center-content t)
+(dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+(dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
+(dashboard-items '((recents . 5)
+            (agenda . 5)
+            (bookmarks . 3)))
+(dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+                 ("Bookmarks:" . "Marcadores:")
+                  ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
+ (dashboard-navigator-buttons
+ `((
+    (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
+     "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
+     (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
+    (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
+     "WM Settings" "Hyprland settings"
+     (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
+    (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
+     "Index" "Index of my Org"
+     (lambda (&rest _) (organizer-index))))))
+(dashboard-startupify-list
+ '(dashboard-insert-banner ;; Banner
+   dashboard-insert-newline ;; Insertando nueva linea
+   dashboard-insert-banner-title ;; Insertando banner del titulo
+   dashboard-insert-newline
+   dashboard-insert-navigator
+   dashboard-insert-items
+   dashboard-insert-newline
+   dashboard-insert-footer
+   dashboard-insert-init-info)) ;; Insertando informacion de inicio
+:config
+(dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+				  (projects  . "nf-oct-rocket")
+				  (bookmarks . "nf-oct-bookmark")
+				  (agenda    . "nf-oct-calendar")
+				  (registers . "nf-oct-note")))
+(dashboard-setup-startup-hook))
+(gbind "<f10>" open-dashboard)
+(defun open-dashboard ()
+"Abre el buffer *dashboard* y salta al primer widget."
+(interactive)
+(delete-other-windows)
+;; Refresca  dashboard buffer
+(if (get-buffer dashboard-buffer-name)
+(kill-buffer dashboard-buffer-name))
+(dashboard-insert-startupify-lists)
+(switch-to-buffer dashboard-buffer-name))
+
+(use-package doom-modeline
+:after (nerd-icons)
+:hook (elpaca-after-init-hook . doom-modeline-mode)
+:custom
+(doom-modeline-height 30)
+  (doom-modeline-time-analogue-clock nil)
+  (doom-modeline-time-icon nil)
+  (doom-modeline-unicode-fallback nil)
+  (doom-modeline-buffer-encoding 'nondefault)
+ (display-time-load-average nil)
+(doom-modeline-bar-width 3)
+(doom-modeline-icon t)
+(doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
+(doom-modeline-minor-modes nil)                   ; oculta modos menores
+(doom-modeline-enable-word-count nil)
+(doom-modeline-buffer-encoding nil))
+
+(use-package vertico
+  :init
+  (vertico-mode)
+  (vertico-multiform-mode)
+  :custom
+  (vertico-count 15)                    ; Número de candidatos a mostrar
+  (vertico-resize t)
+  (vertico-cycle t)
+  (vertico-sort-function 'vertico-sort-history-alpha)
+  :config
+  (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
+
+(use-package marginalia
+:after vertico
+:custom
+(marginalia-annotators
+'(marginalia-annotators-heavy marginalia-annotators-lv))
+:init
+(marginalia-mode))
+
+(use-package orderless
+:defer t
+:custom
+(completion-styles '(orderless basic))
+(completion-category-overrides
+'((file (styles basic partial-completion)))))
+
+(use-package consult
+:demand t
+:bind (
+("C-c M-x" . consult-mode-command)
+;; ("C-c k" . consult-kmacro)
+("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+("M-y" . consult-yank-pop)                ;; orig. yank-pop
+("M-g o" . consult-outline)               ;; Alternativa: consult-org-heading
+("M-g i" . consult-imenu)
+("M-g I" . consult-imenu-multi)
+("M-s d" . consult-find)                  ;; Alternativa: consult-fd
+("M-s g" . consult-grep)
+("C-s" . consult-line)))
+
+(use-package which-key
+:ensure nil
+:delight
+:config
+(which-key-mode)
+(setopt prefix-help-command #'embark-prefix-help-command)
+(setopt which-key-idle-delay 0.3
+         which-key-dont-use-unicode nil
+         which-key-separator " → " 
+         which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
+
+(use-package organizer
+  :demand t
+  :ensure nil
+  :load-path "Organizer/"
+  :bind ("<f12>" . organizer-index)
+  :config
+  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
+
+(defun ews-distraction-free ()
+"Distraction-free writing environment using Olivetti package."
+(interactive)
+(if (equal olivetti-mode nil)
+(progn
+(window-configuration-to-register 1)
+(delete-other-windows)
+(text-scale-set 2)
+(olivetti-mode t))
+(progn
+(if (eq (length (window-list)) 1)
+ (jump-to-register 1))
+(olivetti-mode 0)
+(text-scale-set 0))))
+(use-package olivetti
+  :demand t
+  :bind
+  (("<f9>" . ews-distraction-free)))
+
+(use-package eradio
+  :defer t
+  :init
+  (setopt eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
+  :config
+  (setopt eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+                            ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+			    ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
+			    ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
+			    ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
+(gbind "C-x r e" eradio-toggle)
+(gbind "C-x r p" eradio-play)
+
+(use-package doc-view
+  :demand t
+  :ensure nil
+  :custom
+  (doc-view-resolution 300)
+  (doc-view-mupdf-use-svg t)
+  (large-file-warning-threshold (* 50 (expt 2 20)))
+  :config
+  (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+  (setq-default pdf-view-use-scaling t
+		pdf-view-use-imagemagick nil))
+
+(use-package nov
+  :ensure t
+  :demand t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+
+(use-package super-save
+  :config
+  (setopt super-save-triggers
+  '(other-window  ; Al cambiar de ventana
+    switch-to-buffer  ; Al cambiar de buffer
+    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
+  (super-save-mode 1)
+  (setopt super-save-idle-duration 1)  ; 0.3 segundos de inactividad
+  (setopt super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+
+(use-package adaptive-wrap
+  :config
+  (adaptive-wrap-prefix-mode))
+
+(add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
+
+(defun set-markdown-headers () 
+   "Setting the headers to a markdown file"
+  (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
+  (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
+  (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
+  (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
+  (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
+  (set-face-attribute 'markdown-header-face-6 nil :height 1.05)
+  (set-face-attribute 'markdown-code-face nil :inherit  'fixed-pitch))
+
+(use-package markdown-mode
+  :demand t
+  :commands (markdown-mode gfm-mode)
+  :hook ((markdown-mode . set-markdown-headers)
+         (gfm-mode . set-markdown-headers))
+  :mode (("README\\.md\\'" . gfm-mode)
+       ("\\.md\\'" . gfm-mode)
+       ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "markdown2")
+  :config
+  (setopt markdown-fontify-code-blocks-natively t)
+  (setopt markdown-enable-math t))
+(use-package markdown-preview-eww
+  :ensure t
+  :after markdown-mode)
+
+(use-package markdown-preview-mode
+  :ensure t)
+
+(use-package typst-mode
+  :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el")
+  :custom 
+  (typst-ts-mode-watch-options "--open")
+  (typst-ts-mode-enable-raw-blocks-highlight t)
+  (typst-ts-mode-highlight-raw-blocks-at-startup t))
+
+(use-package hyprlang-ts-mode
+  :ensure t
+  :if (eq system-type 'gnu/linux)
+  :custom
+  (hyprlang-ts-mode-indent-offset 4)
+  :config 
+  (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
+  (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
+
+(use-package kdl-ts-mode 
+  :ensure (:host github :repo "dataphract/kdl-ts-mode"))
+
+(use-package fish-mode
+  :ensure t
+  :demand t)
+
+(use-package yuck-mode :ensure t)
+
+(use-package i3wm-config-mode
+  :demand t
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
+(add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
+
+(use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
+  
+  (use-package jsonrpc
+    :ensure t)
+(provide 'packages)

@@ -103,7 +103,8 @@ linux-firmware
 linux-headers
 localsend-git
 lsd
-ly
+greetd
+nwg-hello
 man-db
 maven
 mediainfo
