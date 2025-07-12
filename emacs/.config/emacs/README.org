@@ -5,6 +5,7 @@
 #+property: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+auto_tangle: t
 #+startup: overview
+
 * Comienzo de la configuración
 ** Otras configs básicas
 *** Ajustes del recolector de basura 
@@ -142,6 +143,11 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 #+end_src
+* Variables y verbas diversas
+#+begin_src emacs-lisp 
+(defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+    "The languages to be used by word corrections")
+#+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/performance.el"
@@ -169,7 +175,8 @@ Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gc
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/macros.el"
 :END:
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle lisp/macros.el :noweb yes
+<<lexicalbind>>
 (defmacro loadf (file) "Simplified way to load a file in emacs lisp" `(load-file ,file))
 #+end_src
 ** Create window
@@ -214,11 +221,11 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
   (let ((packages (if (listp package) package (list package))))
     `(progn
        ,@(seq-map (lambda (p)
-                   `(if (featurep ',p)
-                        (progn ,@body)
-                        (with-eval-after-load ',p
-                        ,@body)))
-                 packages))))
+                    `(if (featurep ',p)
+                         (progn ,@body)
+                       (with-eval-after-load ',p
+                         ,@body)))
+                  packages))))
 #+end_src
 ** When system
 Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
@@ -319,7 +326,7 @@ Temas ef de Protesilaos es bastante chulo
 :ensure t
 :config
 (seq-do #'disable-theme custom-enabled-themes)
-(load-theme 'doom-moonlight :no-confirm))
+(load-theme 'doom-vibrant :no-confirm))
 #+end_src
 **** Doric themes
 #+begin_src emacs-lisp :tangle no
@@ -409,9 +416,10 @@ Esta es la opacidad que el editor aplica por defecto
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/tools.el" :noweb yes
 :END:
+Aqui introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
 ** Configuración de IRC
 Configuración del cliente erc
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle lisp/tools.el
 (setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
@@ -443,8 +451,9 @@ La configuracion de los atajos de zoom
 *** Configuraciones diversas
 Aquí se tratan configuraciones especificas útiles para diversos aspectos
 **** Buffer scratch
+Configuraciones del buffer scratch como el mensaje por defecto
 #+begin_src emacs-lisp 
-(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.\n\n" (propertize
+(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.Enjoy doing things here.\n\n" (propertize
                (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
                'face 'help-key-binding)))
 
@@ -527,59 +536,59 @@ Es una funcionalidad implementada en las ultimas versiones de Emacs muy util par
 :header-args:emacs-lisp: :tangle "lisp/functions.el" :noweb yes
 :END:
 *** Crear proyecto uv
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun create-uv-project (archivo)
-"Crear un proyecto de uv personalizado y listo para empezar a editar"
-(interactive "GIntroduzca la carpeta del proyecto: ")
-(let ((dir (file-name-as-directory archivo))) ; asegura que termine con /
-(unless (file-directory-p dir)
-(make-directory dir t)
-(message "Carpeta creada: %s" dir))
-(activate-project dir)))
+  "Crear un proyecto de uv personalizado pasando la carpeta del proyecto como ARCHIVO y listo para empezar a editar."
+  (interactive "GIntroduzca la carpeta del proyecto: ")
+  (let ((dir (file-name-as-directory archivo))) ; asegura que termine con /
+    (unless (file-directory-p dir)
+      (make-directory dir t)
+      (message "Carpeta creada: %s" dir))
+    (activate-project dir)))
 
 (defun activate-project (dir)
 "Activar un proyecto de uv"
 (let ((default-directory dir))
-(when (fboundp 'uv-init-cmd) ; solo si está definido
-(uv-init-cmd dir))))
+  (when (fboundp 'uv-init-cmd) ; solo si está definido
+    (uv-init-cmd dir))))
 
 #+end_src
 *** Treesit install languages
 Instalar todos los lenguajes de treesit que no esten instalados
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (defun os/install-all-treesit-grammars ()
 "Install all treesit grammar if it's not installed"
 (interactive)
 (let ((langs (seq-map 'car treesit-language-source-alist)))
-(dolist (lang langs)
-(unless (treesit-language-available-p lang)
-     (message "Instalando gramatica tree-sitter para %s" lang)
-     (treesit-install-language-grammar lang)))
- (message "Gramaticas instaladas")))
+  (dolist (lang langs)
+    (unless (treesit-language-available-p lang)
+      (message "Instalando gramatica tree-sitter para %s" lang)
+      (treesit-install-language-grammar lang)))
+  (message "Gramaticas instaladas")))
 #+end_src
 *** Append to list
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun append-to-list (list-var elements)
 "Append ELEMENTS to the end of LIST-VAR.
 The return value is the new value of LIST-VAR."
 (unless (consp elements)
-(error "ELEMENTS must be a list"))
+  (error "ELEMENTS must be a list"))
 (let ((list (symbol-value list-var)))
-(if list
-(setcdr (last list) elements)
-(set list-var elements)))
+  (if list
+      (setcdr (last list) elements)
+    (set list-var elements)))
 (symbol-value list-var)) 
 #+end_src
 *** Append to gitignore
 Te permite seleccionar un archivo para añadir al gitignore
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun append-to-gitignore (file)
 "Añade archivos al gitignore"
 (interactive "fSelect a file to append in the gitignore: ")
 (with-current-buffer (find-file-noselect (expand-file-name ".gitignore" doom-modeline--project-root))
-(end-of-buffer)
-(insert (format "\n%s" file))
-(save-buffer)))
+  (end-of-buffer)
+  (insert (format "\n%s" file))
+  (save-buffer)))
 #+end_src
 *** Grammar dynamic changer
 Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etiqueta =#+language:= que se le haya introducido, si no se introduce ninguna usa la por defecto del sistema
@@ -621,7 +630,7 @@ en todos los casos hay veces que hay que cerrar el programa
   (interactive)
   (loadf (expand-file-name "init.el" user-emacs-directory))
   (sleep-for 0.90)
-  (if (equal major-mode 'org-mode) (org-mode))
+  (if (eq major-mode 'org-mode) (org-mode))
   (ignore (elpaca-process-queues)))
 (gbind "C-c r" os/reload-config)
 #+end_src
@@ -642,9 +651,10 @@ Función propia para cambiar entre mis diccionarios más usados
 (interactive)
 (let* ((dic ispell-current-dictionary)
        (change
-	(completing-read "Seleccione el diccionario a usar: " '("eo" "es_ES" "en_US") nil t)))
-  (unless (string= dic change)
-    (ispell-change-dictionary change)
+	(completing-read "Seleccione el diccionario a usar: " os-languages nil t))
+       (result (cdr (assoc change os-languages))))
+  (unless (string= dic result)
+    (ispell-change-dictionary result)
     (message "Diccionario cambiado desde %s a %s" dic change))))
 #+end_src
 *** Toggle webserver
@@ -712,11 +722,9 @@ Me permite abrir el dashboard
 (switch-to-buffer dashboard-buffer-name))
 #+end_src
 ** Paquetes
-*** Package lint
-Para hacer pruebas con los paquetes y hacer revisiones antes de subirlos a Melpa
-#+begin_src emacs-lisp
-(use-package package-lint)
-#+end_src
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
+:END:
 *** Exec-path-from-shell
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
@@ -747,6 +755,20 @@ Para hacer pruebas con los paquetes y hacer revisiones antes de subirlos a Melpa
 :config
 (setq gptel-model 'gemini-2.5-pro 
 gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+#+end_src
+*** Ace window
+#+begin_src emacs-lisp 
+  (use-package ace-window
+    :ensure t
+    :defer t
+    :init
+    (global-set-key [remap other-window] 'ace-window)
+    (custom-set-faces
+     '(aw-leading-char-face
+       ((t (:inherit ace-jump-face-foreground :height 3.0)))))
+    ;; :custom
+    ;; (aw-dispatch-always t)                ;; Don't if you want change windows with only two windows
+    )
 #+end_src
 *** Visual fill column
 #+begin_src emacs-lisp :tangle no
@@ -795,7 +817,18 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
 :after (marginalia nerd-icons)
 :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
 :init (nerd-icons-completion-mode))
+(use-package nerd-icons-dired
+  :ensure t
+  :after (nerd-icons dired)
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 
+(use-package nerd-icons-xref
+  :ensure t
+  :if (display-graphic-p)
+  :after xref
+  :config
+  (nerd-icons-xref-mode 1))
 #+end_src
 **** Nerd icons corfu
 #+begin_src emacs-lisp :tangle no
@@ -844,6 +877,12 @@ Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
 #+begin_src emacs-lisp
 (use-package dired 
 :ensure nil 
+:custom ((dired-recursive-copies 'always)
+         (dired-recursive-deletes 'always)
+         (delete-by-moving-to-trash t)
+         (dired-dwim-target t))
+:hook ((dired-mode . dired-hide-details-mode)
+       (dired-mode . hl-line-mode))
 :config
 (when-let (cmd (cond ((equal system-type 'darwin) "open")
               ((equal system-type 'gnu/linux) "xdg-open")
@@ -867,13 +906,39 @@ Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
 (setq dired-omit-verbose nil)
 (setq dired-omit-files
 (concat dired-omit-files "\\|^\\..*$")))
-
 ;; Additional syntax highlighting for dired
-;(use-package diredfl
-;:hook
-;((dired-mode . diredfl-mode)
+(use-package diredfl
+:hook
+(dired-mode . diredfl-mode))
 ;; highlight parent and directory preview as well
-;(dirvish-directory-view-mode . diredfl-mode)))
+;(dirvish-directory-view-mode . diredfl-mode)
+#+end_src
+**** Dired subtree
+Nos permite obtener una vista rapida del directorio que queramos ver en forma de subarbol usando la tecla tab
+#+begin_src emacs-lisp
+(use-package dired-subtree
+  :ensure t
+  :after dired
+  :bind
+  ( :map dired-mode-map
+    ("<tab>" . dired-subtree-toggle)
+    ("TAB" . dired-subtree-toggle)
+    ("<backtab>" . dired-subtree-remove)
+    ("S-TAB" . dired-subtree-remove))
+  :config
+  (setq dired-subtree-use-backgrounds nil))
+#+end_src
+**** Trashed
+Provee una interfaz tipo dired para interactuar con la papelera del sistema
+#+begin_src emacs-lisp 
+(use-package trashed
+  :ensure t
+  :commands (trashed)
+  :config
+  (setq trashed-action-confirmer 'y-or-n-p)
+  (setq trashed-use-header-line t)
+  (setq trashed-sort-key '("Date deleted" . t))
+  (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
 #+end_src
 **** Dirvish
@@ -959,44 +1024,44 @@ Hace que un buffer modificado desde otro lugar se refresque solo
 #+end_src
 *** Eshell
 Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
-#+begin_src emacs-lisp
-;; 
+#+begin_src emacs-lisp 
+
 (setq eshell-prompt-function
-(lambda ()
-(let ((status (if (= eshell-last-command-status 0)
-                 (propertize "✔" 'face '(:foreground "green"))
-               (propertize "✘" 'face '(:foreground "red")))))
- (concat
-  (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
-  " "
-  (propertize (user-login-name))
-  "@"
-  (propertize (system-name) 'face '(:foreground "red"))
-  " "
-  (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
-  " " status "\n"
-  (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
+      (lambda ()
+	(let ((status (if (= eshell-last-command-status 0)
+			  (propertize "✔" 'face '(:foreground "green"))
+			(propertize "✘" 'face '(:foreground "red")))))
+	  (concat
+	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
+	   " "
+	   (propertize (user-login-name))
+	   "@"
+	   (propertize (system-name) 'face '(:foreground "red"))
+	   " "
+	   (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
+	   " " status "\n"
+	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
 (defalias 'clean 'eshell/clear-scrollback)
 
 (use-package eshell
-:ensure nil
-:hook ((eshell-load . eat-eshell-mode)
-       (eshell-load . eat-eshell-visual-command-mode))
-:config
-(setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
-     eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
- eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
- eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+  :ensure nil
+  :hook ((eshell-load . eat-eshell-mode)
+	 (eshell-load . eat-eshell-visual-command-mode))
+  :config
+  (setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
+	  eshell-buffer-maximum-lines 6000     ;; Limitar líneas en el buffer
+	  eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
 )
 (use-package eshell-toggle
-:ensure t
-:custom
-(eshell-toggle-size-fraction 3))
+  :ensure t
+  :custom
+  (eshell-toggle-size-fraction 3))
 (use-package eshell-syntax-highlighting
-:after esh-mode
-:config
-(eshell-syntax-highlighting-global-mode +1))
+  :after esh-mode
+  :config
+  (eshell-syntax-highlighting-global-mode +1))
 (global-set-key (kbd "C-c t") 'eshell-toggle)
 #+end_src
 *** Flyspell
@@ -1076,10 +1141,10 @@ treemacs-git-commit-diff-mode 1)
 :ensure t)
 #+end_src
 *** Embark
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package embark
   :bind
-    (("C-c a" . embark-act)
+    (("C-c A" . embark-act)
      ("C-:" . embark-dwim)
      ("C-h B" . embark-bindings)))
 
@@ -1096,96 +1161,78 @@ treemacs-git-commit-diff-mode 1)
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
 #+begin_src emacs-lisp :noweb yes
-  ;; use-package with package.el:
-  (use-package dashboard
-  :ensure t
-  :hook 
-  (elpaca-after-init-hook . dashboard-insert-startupify-lists)
-  (elpaca-after-init-hook . dashboard-initialize)
-  :custom
-  (initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
-  (dashboard-icon-type 'nerd-icons)
-  (dashboard-display-icons-p t)     ; display icons on both GUI and terminal
-  (dashboard-vertically-center-content t)
-  (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
-  (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
-  (dashboard-items '((recents . 5)
-              (agenda . 5)
-              (bookmarks . 3)))
-  (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
-                   ("Bookmarks:" . "Marcadores:")
-                    ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
-  ;; (dashboard-navigator-buttons
-  ;; `((
-  ;; (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
-  ;; "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
-  ;; (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
-  ;; (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
-  ;; "WM Settings" "Hyprland settings"
-  ;; (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
-  ;; (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
-  ;; "Index" "Index of my Org"
-  ;; (lambda (&rest _) (organizer-index))))))
-  (dashboard-startupify-list
-  '(dashboard-insert-banner ;; Banner
-  dashboard-insert-newline ;; Insertando nueva linea
-  dashboard-insert-banner-title ;; Insertando banner del titulo
-  dashboard-insert-newline
-  dashboard-insert-navigator
-  dashboard-insert-items
-  dashboard-insert-newline
-  dashboard-insert-footer
-  dashboard-insert-init-info)) ;; Insertando informacion de inicio
-  :config
-  (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
-                              (projects  . "nf-oct-rocket")
-                              (bookmarks . "nf-oct-bookmark")
-                              (agenda    . "nf-oct-calendar")
-                              (registers . "nf-oct-note")))
-  (dashboard-setup-startup-hook))
-  (gbind "<f10>" open-dashboard)
-  <<abrir dashboard>>
+;; use-package with package.el:
+(use-package dashboard
+:ensure t
+:hook 
+(elpaca-after-init-hook . dashboard-insert-startupify-lists)
+(elpaca-after-init-hook . dashboard-initialize)
+:custom
+(initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
+(dashboard-set-heading-icons t)
+(dashboard-set-file-icons t)
+(dashboard-icon-type 'nerd-icons)
+(dashboard-display-icons-p t)     ; display icons on both GUI and terminal
+(dashboard-vertically-center-content t)
+(dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+(dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
+(dashboard-items '((recents . 5)
+            (agenda . 5)
+            (bookmarks . 3)))
+(dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+                 ("Bookmarks:" . "Marcadores:")
+                  ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
+ (dashboard-navigator-buttons
+ `((
+    (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
+     "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
+     (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
+    (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
+     "WM Settings" "Hyprland settings"
+     (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
+    (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
+     "Index" "Index of my Org"
+     (lambda (&rest _) (organizer-index))))))
+(dashboard-startupify-list
+ '(dashboard-insert-banner ;; Banner
+   dashboard-insert-newline ;; Insertando nueva linea
+   dashboard-insert-banner-title ;; Insertando banner del titulo
+   dashboard-insert-newline
+   dashboard-insert-navigator
+   dashboard-insert-items
+   dashboard-insert-newline
+   dashboard-insert-footer
+   dashboard-insert-init-info)) ;; Insertando informacion de inicio
+:config
+(dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+				  (projects  . "nf-oct-rocket")
+				  (bookmarks . "nf-oct-bookmark")
+				  (agenda    . "nf-oct-calendar")
+				  (registers . "nf-oct-note")))
+(dashboard-setup-startup-hook))
+(gbind "<f10>" open-dashboard)
+<<abrir dashboard>>
 #+end_src
 **** Doom modeline
 Para retocar la barra de abajo
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package doom-modeline
-:after (nerd-icons)
-:hook (elpaca-after-init-hook . doom-modeline-mode)
-:custom
-(doom-modeline-height 30)
-(doom-modeline-bar-width 3)
-(doom-modeline-icon t)
-(doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
-(doom-modeline-minor-modes nil)                   ; oculta modos menores
-(doom-modeline-enable-word-count nil)
-(doom-modeline-buffer-encoding nil))
-#+end_src
-**** Nano modeline
-#+begin_src emacs-lisp :tangle no
-(use-package nano-modeline
-:ensure t
-:init
-(nano-modeline-prog-mode t)
-:custom
-(nano-modeline-position 'nano-modeline-footer)
-:hook
-(prog-mode           . nano-modeline-prog-mode)
-(text-mode           . nano-modeline-text-mode)
-(org-mode            . nano-modeline-org-mode)
-(pdf-view-mode       . nano-modeline-pdf-mode)
-(mu4e-headers-mode   . nano-modeline-mu4e-headers-mode)
-(mu4e-view-mode      . nano-modeline-mu4e-message-mode)
-(elfeed-show-mode    . nano-modeline-elfeed-entry-mode)
-(elfeed-search-mode  . nano-modeline-elfeed-search-mode)
-(term-mode           . nano-modeline-term-mode)
-(xwidget-webkit-mode . nano-modeline-xwidget-mode)
-(messages-buffer-mode . nano-modeline-message-mode)
-(org-capture-mode    . nano-modeline-org-capture-mode)
-(org-agenda-mode     . nano-modeline-org-agenda-mode)
-)
+  :after (nerd-icons)
+  :hook (elpaca-after-init-hook . doom-modeline-mode)
+  :custom
+  (doom-modeline-height 25)
+  ;; (doom-modeline-time-analogue-clock nil)
+  ;; (doom-modeline-time-icon nil)
+  ;; (doom-modeline-unicode-fallback nil)
+  ;; (doom-modeline-buffer-encoding 'nondefault)
+  ;; (display-time-load-average nil)
+  ;; (doom-modeline-bar-width 3)
+  ;; (doom-modeline-icon t)
+  ;; (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
+  ;; (doom-modeline-minor-modes nil)                   ; oculta modos menores
+  ;; (doom-modeline-enable-word-count nil)
+  ;; (doom-modeline-buffer-encoding nil)
+  )
 #+end_src
 ***** Clima en la modeline
 #+begin_src emacs-lisp :tangle no
@@ -1254,9 +1301,9 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuación
 (use-package which-key
 :ensure nil
 :delight
+:init (setopt prefix-help-command #'embark-prefix-help-command)
 :config
 (which-key-mode)
-(setopt prefix-help-command #'embark-prefix-help-command)
 (setopt which-key-idle-delay 0.3
          which-key-dont-use-unicode nil
          which-key-separator " → " 
@@ -1288,10 +1335,9 @@ Radio en Emacs
 #+begin_src emacs-lisp 
 (use-package eradio
   :defer t
-  :init
-  (setopt eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
-  :config
-  (setopt eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+  :custom
+  (eradio-player '("mpv" "--no-video" "--no-terminal"))
+  (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                             ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			    ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 			    ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
@@ -1426,16 +1472,17 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
 #+end_src
 *** Cosas más
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle lisp/packages.el
   (use-package savehist
     :ensure nil
-    :init
-    (savehist-mode))
+    :hook (after-init . savehist-mode))
   
   (use-package jsonrpc
     :ensure t)
+(provide 'packages)
 #+end_src
-#+begin_src emacs-lisp
+
+#+begin_src emacs-lisp :tangle lisp/tools.el
 (provide 'tools)
 #+end_src
 * Org Mode
@@ -1446,12 +1493,13 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 Ajustes de Org Mode
 *** Configurar archivos
 Aqui establezco los archivos tipo org que mi configuración va a requerir
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
 (setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
+(setq org-use-property-inheritance '("header-args"))
 #+end_src
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp
@@ -1505,14 +1553,13 @@ O algo asi
 #+end_src
 ** Configuración del calendario
 Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (setopt calendar-month-name-array
-["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-"Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+	["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+	 "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
 (setopt calendar-day-name-array
-["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
-
+	["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 #+end_src
 *** Ajustes del todo
 Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
@@ -1560,7 +1607,7 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 ;; ;; Modern Org mode interface
 (use-package org-modern
   :after org
-  :hook   (org-mode . org-modern-mode)
+  :hook (org-mode . org-modern-mode)
   (org-agenda-finalize . org-modern-agenda)
   :custom
   (org-modern-block-indent t)  ; to enable org-modern-indent when org-indent is active
@@ -1661,13 +1708,13 @@ Hace que en según que caso el tangle sea automático
 #+end_src
 ** Org Crypt
 Encriptar entradas de archivos ~.org~ usando una clave GPG
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package org-crypt
-:ensure nil
-:after org
-:custom
-(org-tags-exclude-from-inheritance (quote ("crypt")))
-(org-crypt-key "oscarodriguez56@gmail.com"))
+  :ensure nil
+  :after org
+  :custom
+  (org-tags-exclude-from-inheritance (quote ("crypt")))
+  (org-crypt-key "oscarodriguez56@gmail.com"))
 #+end_src
 ** Org contrib
 Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
@@ -1683,13 +1730,14 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
 :header-args:emacs-lisp: :tangle "lisp/programming.el"
 :END:
 Aquí están todos los paquetes y modos que utilizo para programar
+
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
-*** hl-todo
+** hl-todo
 Para resaltar palabras como todo en los comentarios que contengan tareas pendientes
 #+begin_src emacs-lisp
 (use-package hl-todo
@@ -1701,7 +1749,7 @@ Para resaltar palabras como todo en los comentarios que contengan tareas pendien
       ("DONE" org-done)
       ("NOTE" bold))))
 #+end_src
-*** Eglot tempel 
+** Eglot tempel 
 Según la descripción de su repostorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 
 #+begin_src emacs-lisp :tangle no
 (use-package eglot-tempel
@@ -1709,7 +1757,7 @@ Según la descripción de su repostorio de github es un adaptador para usar las 
   :init
   (eglot-tempel-mode t))
 #+end_src
-*** Flycheck
+** Flycheck
 #+begin_src emacs-lisp :tangle no
 (use-package flycheck-pycheckers)
 (use-package flycheck
@@ -1729,7 +1777,7 @@ Según la descripción de su repostorio de github es un adaptador para usar las 
 
 (add-hook 'python-mode-hook #'flycheck-mode)
 #+end_src
-*** Magit
+** Magit
 No es 100% imprescindible ni solo debe usarse para eso pero en la practica
 #+begin_src emacs-lisp
   (use-package transient)
@@ -1749,11 +1797,12 @@ No es 100% imprescindible ni solo debe usarse para eso pero en la practica
      :defer 1
      :delight)
 #+end_src
-*** Eldoc
+** Eldoc
 #+begin_src emacs-lisp :tangle no
 (use-package eldoc 
 :ensure nil
-(global-eldoc-mode))
+:hook (prog-mode . eldoc-mode)
+:custom (eldoc-message-function #'message))
 #+end_src
 **** Eldoc box
 Para que la documentación de funciones y demás mostradas por eldoc aparezca en caja
@@ -1762,24 +1811,29 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
   :ensure t
   :defer t)
 #+end_src
-*** Corfu + Cape
+** Corfu + Cape
 Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de auto-completado. 
 #+begin_src emacs-lisp :tangle lisp/completion.el
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :bind (:map corfu-map ("<tab>" . corfu-complete))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.0)
+  (corfu-auto-delay 0.1)
+  (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
   (corfu-quit-at-boundary 'separator)
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
+  :config 
+  (os/after savehist
+	    (add-to-list 'savehist-additional-variables 'corfu-history))
    :hook
     (elpaca-after-init . (lambda ()
                            (global-corfu-mode)
@@ -1836,7 +1890,7 @@ Actualmente estoy usando la alternativa nerd-icons-corfu porque como ya uso nerd
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
-*** Yasnippet
+** Yasnippet
 Habilita el uso de snippets
 #+begin_src emacs-lisp :tangle no
   (use-package yasnippet
@@ -1851,9 +1905,9 @@ Habilita el uso de snippets
   (add-to-list 'completion-at-point-functions #'yasnippet-capf)
   (setq yasnippet-capf-lookup-by 'name))
 #+end_src
-*** Tempel
-Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual
-#+begin_src emacs-lisp
+** Tempel
+Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual. 
+#+begin_src emacs-lisp 
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
@@ -1886,7 +1940,7 @@ Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs,
 
 (use-package tempel-collection :ensure t)
 #+end_src
-*** LSP
+** LSP
 Configuracion de LSP
 #+begin_src emacs-lisp :tangle no
   (use-package lsp-mode
@@ -1912,16 +1966,17 @@ Configuracion de LSP
       lsp-ui-peek-enable t
       lsp-ui-doc-show-with-cursor t))
 #+end_src
-*** Eglot
+** Eglot
 Servidor lsp más minimalista lo voy a probar
 #+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
-  :init (setq completion-category-overrides '((eglot (styles orderless))))
-  :hook ((prog-mode . eglot-ensure)
+  :init (add-to-list 'completion-category-overrides '((eglot (styles orderless))))
+  :hook ((python-ts-mode . eglot-ensure)
+         (rust-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :custom
-  (eglot-sync-connect 1)
+  (eglot-sync-connect nil)
   (eglot-autoshutdown t)
   (eglot-events-buffer-size 0)
   (eglot-auto-display-help-buffer nil)
@@ -1941,7 +1996,7 @@ Servidor lsp más minimalista lo voy a probar
   ;;              '((c-mode c++-mode) . ("clangd")))
   )
 #+end_src
-*** Iedit
+** Iedit
 Permite cambiar todas las apariciones de las palabras, se podria llegar a aprovechar para 
 hacer algo parecido al refractor
 #+begin_src emacs-lisp
@@ -1949,7 +2004,7 @@ hacer algo parecido al refractor
     :ensure t)
   (gbind "C-v" iedit-mode)
 #+end_src
-*** Dape
+** Dape
 Herramienta de debug alternativa a dap-mode 
 #+begin_src emacs-lisp
 (use-package dape
@@ -1984,7 +2039,7 @@ Herramienta de debug alternativa a dap-mode
                  :program ,(expand-file-name "target/debug/mi_crate"))))
 
 #+end_src
-*** Projectile
+** Projectile
 Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 #+begin_src emacs-lisp
 (use-package projectile
@@ -1994,48 +2049,24 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 
 (setopt projectile-project-root-files '(".git"))
 #+end_src
-*** Tressiter
-#+begin_src emacs-lisp
-;; (use-package treesit-auto
-;;   :config
-;;   (global-treesit-auto-mode))
-(setq-default treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
- (setq treesit-language-source-alist
-      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-        (c "https://github.com/tree-sitter/tree-sitter-c")
-        (css "https://github.com/tree-sitter/tree-sitter-css")
-        (html "https://github.com/tree-sitter/tree-sitter-html")
-        (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-        (json "https://github.com/tree-sitter/tree-sitter-json")
-        (lua "https://github.com/Azganoth/tree-sitter-lua")
-        (php "https://github.com/tree-sitter/tree-sitter-php")
-        (python "https://github.com/tree-sitter/tree-sitter-python")
-        (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
-        (rust "https://github.com/tree-sitter/tree-sitter-rust")
-        (toml "https://github.com/tree-sitter/tree-sitter-toml")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-        (kdl "https://github.com/tree-sitter-grammars/tree-sitter-kdl")))
-(add-to-list 'treesit-language-source-alist
-        '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
+** Tressiter
+#+begin_src emacs-lisp 
+(setq treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
+  (use-package treesit-auto
+    :ensure t
+    :init
+    (message "Init treesit-auto")
+    :custom
+    (treesit-auto-install 'prompt)
+    :config
+    ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
+    (treesit-auto-add-to-auto-mode-alist 'all)
+    (global-treesit-auto-mode))
+
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
-     (setopt major-mode-remap-alist
-        '((c-mode . c-ts-mode)
-          (css-mode . css-ts-mode)
-          (js-mode . js-ts-mode)
-          (javascript-mode . js-ts-mode)
-          (js2-mode . js-ts-mode)
-          (typescript-mode . typescript-ts-mode)
-          (json-mode . json-ts-mode)
-          (python-mode . python-ts-mode)
-          (bash-mode . bash-ts-mode)
-          (sh-mode . bash-ts-mode)
-          (yaml-mode . yaml-ts-mode)
-          (rust-mode . rust-ts-mode)
-          (lua-mode . lua-ts-mode)))
+    
 #+end_src
-*** Rainbow mode y Rainbow delimiters
+** Rainbow mode y Rainbow delimiters
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -2044,7 +2075,7 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 :defer t
 :hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
 #+end_src
-*** Flymake
+** Flymake
 #+begin_src emacs-lisp
   (use-package flymake
     :ensure t
@@ -2069,16 +2100,6 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
   (with-eval-after-load 'flymake-mode
     (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 #+end_src
-**** Flyover
-#+begin_src emacs-lisp
-(use-package flyover
-:ensure (flyover :type git :host github :repo "konrad1977/flyover")
-:hook (flymake-mode . flyover-mode)
-:config 
-(setq flyover-levels '(error warning info))  ; Show all levels
-
-)
-#+end_src
 #+begin_src emacs-lisp
 (provide 'programming)
 #+end_src
@@ -2102,13 +2123,13 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/lang/ruby.el" :mkdirp yes
 :END:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package ruby-mode :ensure nil)
 (use-package ruby-ts-mode
   :ensure nil
-   :mode "\\.rb\\'"
-   :mode "Rakefile\\'"
-   :mode "Gemfile\\'")
+  :mode "\\.rb\\'"
+  :mode "Rakefile\\'"
+  :mode "Gemfile\\'")
 (provide 'ruby)
 #+end_src
 *** Python
@@ -2125,7 +2146,7 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 #+end_src
 **** Trabajo con uv 
 Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
-#+begin_src emacs-lisp :tangle lisp/lang/pythonlang.el
+#+begin_src emacs-lisp :tangle lisp/lang/pythonlang.el 
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
   :init
@@ -2199,50 +2220,71 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
     :defer t)
 (provide 'java)
 #+end_src
+*** Common Lisp
+#+begin_src emacs-lisp :tangle lisp/lang/common-lisp.el
+  (use-package sly
+    :ensure t
+    :commands sly
+    :config
+    (setq inferior-lisp-program "/usr/bin/sbcl"))
+(provide 'common-lisp)
+#+end_src
+*** Emacs Lisp
+Utilidades para desarrollar paquetes para emacs.
+#+begin_src emacs-lisp :tangle lisp/lang/emacs-lisp.el
+(use-package package-lint)
+
+(use-package package-lint-flymake
+  :ensure t
+  :after flymake
+  :config
+  (add-hook 'flymake-diagnostic-functions #'package-lint-flymake))
+
+(provide 'emacs-lisp)
+#+end_src
 * Carga de archivos
-Aqui defino el bloque de codigo que lleva a cabo la carga de todos los modulos que componen esta config
-#+name: cargar
-#+begin_src emacs-lisp :tangle no
+Aquí defino el bloque de codigo que lleva a cabo la carga de todos los modulos que componen esta config
+#+begin_src emacs-lisp :tangle init.el
 ;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
 (defvar my/enabled-modules
-  '(
-    macros      ;; Macros personalizadas
+  '(macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
-    personal
+    personal    ;; Ajustes personales diversos
     ui          ;; Apariencia y UI
     functions   ;; Funciones propias desarrolladas por mi
     org-config  ;; Configuración de Org Mode
-    tools       ;; Paquetes y herramientas generales
+    tools       ;; Herramientas generales
+    packages    ;; Paquetes que utilizo
     completion ;; Cosas de autocompletado
     programming ;; Configuraciones base de programación
     ;; Módulos de lenguajes específicos
     javascript
     scheme
-    pythonlang
+    emacs-lisp ;; Desarrollo de paquetes para Emacs
+    pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
+    common-lisp
     lua
-    java
-    ))
-
-;; ;; ;; 
+    java)
+"Lista de modulos a cargar en la configuracion.") 
 ;; Cargar los módulos habilitados
 (dolist (module my/enabled-modules)
-  (require module))
+  (unless (featurep module)
+  (require module)))
 #+end_src
 * Finalización del fichero
 Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con alguna que otra cosa
-#+begin_src emacs-lisp :noweb yes
-<<cargar>>
-(provide 'init)
-;;; init.el ends here
+#+begin_src emacs-lisp
+  (provide 'init)
+  ;;; init.el ends here
 #+end_src
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
-- [[https://protesilaos.com/][Protesilaos]]
+- [[https://protesilaos.com/][Protesilaos]] ultimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios.
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 

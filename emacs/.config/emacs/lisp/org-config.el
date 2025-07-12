@@ -3,6 +3,7 @@
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
 (setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
+(setq org-use-property-inheritance '("header-args"))
 
 (use-package org
 :ensure nil
@@ -50,11 +51,11 @@
 (global-set-key [escape] 'keyboard-escape-quit)
 
 (setopt calendar-month-name-array
-["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
-"Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
+	["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
+	 "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
 (setopt calendar-day-name-array
-["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
+	["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
 (setopt org-todo-keywords
 	'((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -89,7 +90,7 @@ org-src-fontify-natively t)
 ;; ;; Modern Org mode interface
 (use-package org-modern
   :after org
-  :hook   (org-mode . org-modern-mode)
+  :hook (org-mode . org-modern-mode)
   (org-agenda-finalize . org-modern-agenda)
   :custom
   (org-modern-block-indent t)  ; to enable org-modern-indent when org-indent is active
@@ -159,11 +160,11 @@ org-src-fontify-natively t)
 :init (add-hook 'org-mode-hook 'toc-org-enable))
 
 (use-package org-crypt
-:ensure nil
-:after org
-:custom
-(org-tags-exclude-from-inheritance (quote ("crypt")))
-(org-crypt-key "oscarodriguez56@gmail.com"))
+  :ensure nil
+  :after org
+  :custom
+  (org-tags-exclude-from-inheritance (quote ("crypt")))
+  (org-crypt-key "oscarodriguez56@gmail.com"))
 
 (use-package org-contrib
 :after org)

@@ -88,16 +88,39 @@
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 
-(let ((config-el (expand-file-name "config.el" user-emacs-directory))
-      (config-org (expand-file-name "config.org" user-emacs-directory)))
-  (if (and (file-exists-p config-el)
-           (file-exists-p config-org)
-           (time-less-p (file-attribute-modification-time (file-attributes config-org))
-                        (file-attribute-modification-time (file-attributes config-el)))) ;; Comprueba si el archivo .org es más viejo en el sistema en cuyo caso el archivo .el ya ha sido tangleado ya que la edicion que eso causa es posterior
-; debido a eso si el archivo .org es más viejo ya esta tangleado y cargamos el archivo .el y en caso contrario verificamos si existe y lo tangleamos
-      (load-file config-el)
-    (if (file-exists-p config-org)
-        (org-babel-load-file config-org)
-      (error "No file `%s' found!! No configuration loaded!!" config-org))))
+(defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+    "The languages to be used by word corrections")
+
+;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
+(add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
+
+;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
+(defvar my/enabled-modules
+  '(macros      ;; Macros personalizadas
+    performance ;; Ajustes del rendimiento
+    personal    ;; Ajustes personales diversos
+    ui          ;; Apariencia y UI
+    functions   ;; Funciones propias desarrolladas por mi
+    org-config  ;; Configuración de Org Mode
+    tools       ;; Herramientas generales
+    packages    ;; Paquetes que utilizo
+    completion ;; Cosas de autocompletado
+    programming ;; Configuraciones base de programación
+    ;; Módulos de lenguajes específicos
+    javascript
+    scheme
+    emacs-lisp ;; Desarrollo de paquetes para Emacs
+    pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+    rust
+    common-lisp
+    lua
+    java)
+"Lista de modulos a cargar en la configuracion.") 
+;; Cargar los módulos habilitados
+(dolist (module my/enabled-modules)
+  (unless (featurep module)
+  (require module)))
+
 (provide 'init)
 ;;; init.el ends here

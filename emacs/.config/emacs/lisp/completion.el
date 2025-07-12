@@ -1,18 +1,23 @@
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :bind (:map corfu-map ("<tab>" . corfu-complete))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.0)
+  (corfu-auto-delay 0.1)
+  (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
   (corfu-quit-at-boundary 'separator)
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
+  :config 
+  (os/after savehist
+	    (add-to-list 'savehist-additional-variables 'corfu-history))
    :hook
     (elpaca-after-init . (lambda ()
                            (global-corfu-mode)

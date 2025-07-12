@@ -13,16 +13,6 @@
   (when (fboundp 'uv-init-cmd) ; solo si está definido
     (uv-init-cmd dir))))
 
-(defun os/install-all-treesit-grammars ()
-"Install all treesit grammar if it's not installed"
-(interactive)
-(let ((langs (seq-map 'car treesit-language-source-alist)))
-  (dolist (lang langs)
-    (unless (treesit-language-available-p lang)
-      (message "Instalando gramatica tree-sitter para %s" lang)
-      (treesit-install-language-grammar lang)))
-  (message "Gramaticas instaladas")))
-
 (defun append-to-list (list-var elements)
 "Append ELEMENTS to the end of LIST-VAR.
 The return value is the new value of LIST-VAR."
@@ -87,9 +77,10 @@ using what the result of 'get-local-language' function if the result is nil does
 (interactive)
 (let* ((dic ispell-current-dictionary)
        (change
-	(completing-read "Seleccione el diccionario a usar: " '("eo" "es_ES" "en_US") nil t)))
-  (unless (string= dic change)
-    (ispell-change-dictionary change)
+	(completing-read "Seleccione el diccionario a usar: " os-languages nil t))
+       (result (cdr (assoc change os-languages))))
+  (unless (string= dic result)
+    (ispell-change-dictionary result)
     (message "Diccionario cambiado desde %s a %s" dic change))))
 
 (defun toggle-webserver ()

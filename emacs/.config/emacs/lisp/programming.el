@@ -73,11 +73,12 @@
 
 (use-package eglot
   :ensure nil
-  :init (setq completion-category-overrides '((eglot (styles orderless))))
-  :hook ((prog-mode . eglot-ensure)
+  :init (add-to-list 'completion-category-overrides '((eglot (styles orderless))))
+  :hook ((python-ts-mode . eglot-ensure)
+         (rust-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :custom
-  (eglot-sync-connect 1)
+  (eglot-sync-connect nil)
   (eglot-autoshutdown t)
   (eglot-events-buffer-size 0)
   (eglot-auto-display-help-buffer nil)
@@ -139,44 +140,19 @@
 
 (setopt projectile-project-root-files '(".git"))
 
-;; (use-package treesit-auto
-;;   :config
-;;   (global-treesit-auto-mode))
-(setq-default treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
- (setq treesit-language-source-alist
-      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-        (c "https://github.com/tree-sitter/tree-sitter-c")
-        (css "https://github.com/tree-sitter/tree-sitter-css")
-        (html "https://github.com/tree-sitter/tree-sitter-html")
-        (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-        (json "https://github.com/tree-sitter/tree-sitter-json")
-        (lua "https://github.com/Azganoth/tree-sitter-lua")
-        (php "https://github.com/tree-sitter/tree-sitter-php")
-        (python "https://github.com/tree-sitter/tree-sitter-python")
-        (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
-        (rust "https://github.com/tree-sitter/tree-sitter-rust")
-        (toml "https://github.com/tree-sitter/tree-sitter-toml")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-        (kdl "https://github.com/tree-sitter-grammars/tree-sitter-kdl")))
-(add-to-list 'treesit-language-source-alist
-        '(hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang"))
+(setq treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
+  (use-package treesit-auto
+    :ensure t
+    :init
+    (message "Init treesit-auto")
+    :custom
+    (treesit-auto-install 'prompt)
+    :config
+    ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
+    (treesit-auto-add-to-auto-mode-alist 'all)
+    (global-treesit-auto-mode))
+
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
-     (setopt major-mode-remap-alist
-        '((c-mode . c-ts-mode)
-          (css-mode . css-ts-mode)
-          (js-mode . js-ts-mode)
-          (javascript-mode . js-ts-mode)
-          (js2-mode . js-ts-mode)
-          (typescript-mode . typescript-ts-mode)
-          (json-mode . json-ts-mode)
-          (python-mode . python-ts-mode)
-          (bash-mode . bash-ts-mode)
-          (sh-mode . bash-ts-mode)
-          (yaml-mode . yaml-ts-mode)
-          (rust-mode . rust-ts-mode)
-          (lua-mode . lua-ts-mode)))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -207,13 +183,5 @@
     (flymake-mode-hook . flymake-flycheck-auto))
   (with-eval-after-load 'flymake-mode
     (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
-
-(use-package flyover
-:ensure (flyover :type git :host github :repo "konrad1977/flyover")
-:hook (flymake-mode . flyover-mode)
-:config 
-(setq flyover-levels '(error warning info))  ; Show all levels
-
-)
 
 (provide 'programming)

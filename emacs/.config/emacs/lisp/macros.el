@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (defmacro loadf (file) "Simplified way to load a file in emacs lisp" `(load-file ,file))
 
 (defun os-window-delete-popup-frame (&rest _)
@@ -34,11 +35,11 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
   (let ((packages (if (listp package) package (list package))))
     `(progn
        ,@(seq-map (lambda (p)
-                   `(if (featurep ',p)
-                        (progn ,@body)
-                        (with-eval-after-load ',p
-                        ,@body)))
-                 packages))))
+                    `(if (featurep ',p)
+                         (progn ,@body)
+                       (with-eval-after-load ',p
+                         ,@body)))
+                  packages))))
 
 (defmacro when-system (system &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."

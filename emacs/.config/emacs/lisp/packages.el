@@ -1,5 +1,3 @@
-(use-package package-lint)
-
 (use-package exec-path-from-shell
   :ensure t
   :init
@@ -25,6 +23,18 @@
 (setq gptel-model 'gemini-2.5-pro 
 gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
 
+(use-package ace-window
+  :ensure t
+  :defer t
+  :init
+  (global-set-key [remap other-window] 'ace-window)
+  (custom-set-faces
+   '(aw-leading-char-face
+     ((t (:inherit ace-jump-face-foreground :height 3.0)))))
+  ;; :custom
+  ;; (aw-dispatch-always t)                ;; Don't if you want change windows with only two windows
+  )
+
 (use-package tramp
   :ensure nil
   :custom
@@ -49,6 +59,18 @@ gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-st
 :after (marginalia nerd-icons)
 :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
 :init (nerd-icons-completion-mode))
+(use-package nerd-icons-dired
+  :ensure t
+  :after (nerd-icons dired)
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
+
+(use-package nerd-icons-xref
+  :ensure t
+  :if (display-graphic-p)
+  :after xref
+  :config
+  (nerd-icons-xref-mode 1))
 
 (use-package calfw
 :config
@@ -77,6 +99,12 @@ vterm-mode-map
 
 (use-package dired 
 :ensure nil 
+:custom ((dired-recursive-copies 'always)
+         (dired-recursive-deletes 'always)
+         (delete-by-moving-to-trash t)
+         (dired-dwim-target t))
+:hook ((dired-mode . dired-hide-details-mode)
+       (dired-mode . hl-line-mode))
 :config
 (when-let (cmd (cond ((equal system-type 'darwin) "open")
               ((equal system-type 'gnu/linux) "xdg-open")
@@ -100,13 +128,33 @@ vterm-mode-map
 (setq dired-omit-verbose nil)
 (setq dired-omit-files
 (concat dired-omit-files "\\|^\\..*$")))
-
 ;; Additional syntax highlighting for dired
-;(use-package diredfl
-;:hook
-;((dired-mode . diredfl-mode)
+(use-package diredfl
+:hook
+(dired-mode . diredfl-mode))
 ;; highlight parent and directory preview as well
-;(dirvish-directory-view-mode . diredfl-mode)))
+;(dirvish-directory-view-mode . diredfl-mode)
+
+(use-package dired-subtree
+  :ensure t
+  :after dired
+  :bind
+  ( :map dired-mode-map
+    ("<tab>" . dired-subtree-toggle)
+    ("TAB" . dired-subtree-toggle)
+    ("<backtab>" . dired-subtree-remove)
+    ("S-TAB" . dired-subtree-remove))
+  :config
+  (setq dired-subtree-use-backgrounds nil))
+
+(use-package trashed
+  :ensure t
+  :commands (trashed)
+  :config
+  (setq trashed-action-confirmer 'y-or-n-p)
+  (setq trashed-use-header-line t)
+  (setq trashed-sort-key '("Date deleted" . t))
+  (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
 (use-package dired-sidebar
 :ensure t
@@ -125,43 +173,42 @@ vterm-mode-map
 :diminish
 :hook (after-init . global-auto-revert-mode))
 
-;; 
 (setq eshell-prompt-function
-(lambda ()
-(let ((status (if (= eshell-last-command-status 0)
-                 (propertize "✔" 'face '(:foreground "green"))
-               (propertize "✘" 'face '(:foreground "red")))))
- (concat
-  (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
-  " "
-  (propertize (user-login-name))
-  "@"
-  (propertize (system-name) 'face '(:foreground "red"))
-  " "
-  (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
-  " " status "\n"
-  (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
+      (lambda ()
+	(let ((status (if (= eshell-last-command-status 0)
+			  (propertize "✔" 'face '(:foreground "green"))
+			(propertize "✘" 'face '(:foreground "red")))))
+	  (concat
+	   (propertize (nerd-icons-devicon "nf-dev-emacs" :v-adjust -0.14)  'face '(:foreground "purple" :height 1.5))
+	   " "
+	   (propertize (user-login-name))
+	   "@"
+	   (propertize (system-name) 'face '(:foreground "red"))
+	   " "
+	   (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:foreground "green"))
+	   " " status "\n"
+	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
 (defalias 'clean 'eshell/clear-scrollback)
 
 (use-package eshell
-:ensure nil
-:hook ((eshell-load . eat-eshell-mode)
-       (eshell-load . eat-eshell-visual-command-mode))
-:config
-(setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
-     eshell-buffer-maximum-lines 5000     ;; Limitar líneas en el buffer
- eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
- eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
+  :ensure nil
+  :hook ((eshell-load . eat-eshell-mode)
+	 (eshell-load . eat-eshell-visual-command-mode))
+  :config
+  (setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
+	  eshell-buffer-maximum-lines 6000     ;; Limitar líneas en el buffer
+	  eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
+	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
 )
 (use-package eshell-toggle
-:ensure t
-:custom
-(eshell-toggle-size-fraction 3))
+  :ensure t
+  :custom
+  (eshell-toggle-size-fraction 3))
 (use-package eshell-syntax-highlighting
-:after esh-mode
-:config
-(eshell-syntax-highlighting-global-mode +1))
+  :after esh-mode
+  :config
+  (eshell-syntax-highlighting-global-mode +1))
 (global-set-key (kbd "C-c t") 'eshell-toggle)
 
 (use-package flyspell
@@ -222,7 +269,7 @@ treemacs-git-commit-diff-mode 1)
 
 (use-package embark
   :bind
-    (("C-c a" . embark-act)
+    (("C-c A" . embark-act)
      ("C-:" . embark-dwim)
      ("C-h B" . embark-bindings)))
 
@@ -291,21 +338,22 @@ treemacs-git-commit-diff-mode 1)
 (switch-to-buffer dashboard-buffer-name))
 
 (use-package doom-modeline
-:after (nerd-icons)
-:hook (elpaca-after-init-hook . doom-modeline-mode)
-:custom
-(doom-modeline-height 30)
-  (doom-modeline-time-analogue-clock nil)
-  (doom-modeline-time-icon nil)
-  (doom-modeline-unicode-fallback nil)
-  (doom-modeline-buffer-encoding 'nondefault)
- (display-time-load-average nil)
-(doom-modeline-bar-width 3)
-(doom-modeline-icon t)
-(doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
-(doom-modeline-minor-modes nil)                   ; oculta modos menores
-(doom-modeline-enable-word-count nil)
-(doom-modeline-buffer-encoding nil))
+  :after (nerd-icons)
+  :hook (elpaca-after-init-hook . doom-modeline-mode)
+  :custom
+  (doom-modeline-height 25)
+  ;; (doom-modeline-time-analogue-clock nil)
+  ;; (doom-modeline-time-icon nil)
+  ;; (doom-modeline-unicode-fallback nil)
+  ;; (doom-modeline-buffer-encoding 'nondefault)
+  ;; (display-time-load-average nil)
+  ;; (doom-modeline-bar-width 3)
+  ;; (doom-modeline-icon t)
+  ;; (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
+  ;; (doom-modeline-minor-modes nil)                   ; oculta modos menores
+  ;; (doom-modeline-enable-word-count nil)
+  ;; (doom-modeline-buffer-encoding nil)
+  )
 
 (use-package vertico
   :init
@@ -352,9 +400,9 @@ treemacs-git-commit-diff-mode 1)
 (use-package which-key
 :ensure nil
 :delight
+:init (setopt prefix-help-command #'embark-prefix-help-command)
 :config
 (which-key-mode)
-(setopt prefix-help-command #'embark-prefix-help-command)
 (setopt which-key-idle-delay 0.3
          which-key-dont-use-unicode nil
          which-key-separator " → " 
@@ -390,10 +438,9 @@ treemacs-git-commit-diff-mode 1)
 
 (use-package eradio
   :defer t
-  :init
-  (setopt eradio-player '("mpv" "--no-video" "--no-terminal" "--force-seekable"))
-  :config
-  (setopt eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
+  :custom
+  (eradio-player '("mpv" "--no-video" "--no-terminal"))
+  (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
                             ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 			    ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 			    ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
@@ -498,8 +545,7 @@ treemacs-git-commit-diff-mode 1)
 
 (use-package savehist
     :ensure nil
-    :init
-    (savehist-mode))
+    :hook (after-init . savehist-mode))
   
   (use-package jsonrpc
     :ensure t)
