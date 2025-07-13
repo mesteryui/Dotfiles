@@ -190,19 +190,33 @@ vterm-mode-map
 	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
 (defalias 'clean 'eshell/clear-scrollback)
-
+(defun eshell-close-toggle ()
+  "Cierra la ventana de eshell."
+  (let* ((buf (current-buffer)) (win (get-buffer-window buf)))
+    (when (and (not (eq (selected-window) (next-window)))
+      (delete-window win)))))
+(defun unable-completion-eshell ()
+"Disable completion system in eahell"
+(corfu-mode -1)
+(completion-preview-mode -1))
 (use-package eshell
   :ensure nil
-  :hook ((eshell-load . eat-eshell-mode)
+  :hook ((eshell-exit . eshell-close-toggle)
+	 (eshell-mode . unable-completion-eshell)
+	 (eshell-load . eat-eshell-mode)
 	 (eshell-load . eat-eshell-visual-command-mode))
   :config
+  (defun eshell/clear ()
+    (eshell/clear-scrollback))
   (setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
 	  eshell-buffer-maximum-lines 6000     ;; Limitar líneas en el buffer
-	  eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
-	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
-)
+	  eshell-hist-ignoredups t          ;; Evitar duplicados en el historial
+	  eshell-destroy-buffer-when-process-dies t)) ;; Cerrar buffer si el proceso muere
+;;(add-hook 'eshell-exit-hook #'eshell-close-toggle) ;; Añadiendo un hook para cerrar la terminal de eshell-toggle
+;;(add-hook 'eshell-mode-hook #'unable-corfu-eshell)
 (use-package eshell-toggle
   :ensure t
+  :after (eshell)
   :custom
   (eshell-toggle-size-fraction 3))
 (use-package eshell-syntax-highlighting

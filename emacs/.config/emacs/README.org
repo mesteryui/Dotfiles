@@ -721,6 +721,34 @@ Me permite abrir el dashboard
 (dashboard-insert-startupify-lists)
 (switch-to-buffer dashboard-buffer-name))
 #+end_src
+*** Better keyboard quit
+#+begin_src emacs-lisp
+(defun prot/keyboard-quit-dwim ()
+  "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+
+(define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
+#+end_src
 ** Paquetes
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
@@ -866,7 +894,7 @@ vterm-mode-map
 #+end_src
 *** Eat
 Actualmente la uso por la integracion que proporciona con Eshell.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
 :ensure t)
@@ -1025,7 +1053,6 @@ Hace que un buffer modificado desde otro lugar se refresque solo
 *** Eshell
 Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usando eat gracias al eat-eshell-mode
 #+begin_src emacs-lisp 
-
 (setq eshell-prompt-function
       (lambda ()
 	(let ((status (if (= eshell-last-command-status 0)
@@ -1043,19 +1070,33 @@ Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usan
 	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
 (defalias 'clean 'eshell/clear-scrollback)
-
+(defun eshell-close-toggle ()
+  "Cierra la ventana de eshell."
+  (let* ((buf (current-buffer)) (win (get-buffer-window buf)))
+    (when (and (not (eq (selected-window) (next-window)))
+      (delete-window win)))))
+(defun unable-completion-eshell ()
+"Disable completion system in eahell"
+(corfu-mode -1)
+(completion-preview-mode -1))
 (use-package eshell
   :ensure nil
-  :hook ((eshell-load . eat-eshell-mode)
+  :hook ((eshell-exit . eshell-close-toggle)
+	 (eshell-mode . unable-completion-eshell)
+	 (eshell-load . eat-eshell-mode)
 	 (eshell-load . eat-eshell-visual-command-mode))
   :config
+  (defun eshell/clear ()
+    (eshell/clear-scrollback))
   (setopt eshell-scroll-to-bottom-on-input 'this   ;; Desplazar abajo al escribir
 	  eshell-buffer-maximum-lines 6000     ;; Limitar líneas en el buffer
-	  eshell-hist-ignoredups t             ;; Evitar duplicados en el historial
-	  eshell-destroy-buffer-when-process-dies t) ;; Cerrar buffer si el proceso muere
-)
+	  eshell-hist-ignoredups t          ;; Evitar duplicados en el historial
+	  eshell-destroy-buffer-when-process-dies t)) ;; Cerrar buffer si el proceso muere
+;;(add-hook 'eshell-exit-hook #'eshell-close-toggle) ;; Añadiendo un hook para cerrar la terminal de eshell-toggle
+;;(add-hook 'eshell-mode-hook #'unable-corfu-eshell)
 (use-package eshell-toggle
   :ensure t
+  :after (eshell)
   :custom
   (eshell-toggle-size-fraction 3))
 (use-package eshell-syntax-highlighting
