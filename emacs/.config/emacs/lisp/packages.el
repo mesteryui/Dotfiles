@@ -72,6 +72,11 @@ gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-st
   :config
   (nerd-icons-xref-mode 1))
 
+(use-package nerd-icons-corfu
+:after (corfu nerd-icons)
+:config
+(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
 (use-package calfw
 :config
 (setopt cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
@@ -147,6 +152,24 @@ vterm-mode-map
   :config
   (setq dired-subtree-use-backgrounds nil))
 
+(use-package dired-preview
+  :ensure t
+  :hook (dired-mode . dired-preview-mode)
+  :config
+  (setq dired-preview-delay 0.7
+	dired-preview-max-size (expt 2 20)
+	 dired-preview-ignored-extensions-regexp
+        (concat "\\."
+                "\\(gz\\|"
+                "zst\\|"
+                "tar\\|"
+                "xz\\|"
+                "rar\\|"
+                "zip\\|"
+                "iso\\|"
+                "epub"
+                "\\)")))
+
 (use-package trashed
   :ensure t
   :commands (trashed)
@@ -189,7 +212,6 @@ vterm-mode-map
 	   " " status "\n"
 	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
-(defalias 'clean 'eshell/clear-scrollback)
 (defun eshell-close-toggle ()
   "Cierra la ventana de eshell."
   (let* ((buf (current-buffer)) (win (get-buffer-window buf)))
@@ -291,6 +313,9 @@ treemacs-git-commit-diff-mode 1)
 :hook
 (embark-collect-mode . consult-preview-at-point-mode))
 
+(add-to-list 'load-path (expand-file-name "modeline" user-emacs-directory))
+(require 'os-modeline)
+
 ;; use-package with package.el:
 (use-package dashboard
 :ensure t
@@ -350,24 +375,6 @@ treemacs-git-commit-diff-mode 1)
 (kill-buffer dashboard-buffer-name))
 (dashboard-insert-startupify-lists)
 (switch-to-buffer dashboard-buffer-name))
-
-(use-package doom-modeline
-  :after (nerd-icons)
-  :hook (elpaca-after-init-hook . doom-modeline-mode)
-  :custom
-  (doom-modeline-height 25)
-  ;; (doom-modeline-time-analogue-clock nil)
-  ;; (doom-modeline-time-icon nil)
-  ;; (doom-modeline-unicode-fallback nil)
-  ;; (doom-modeline-buffer-encoding 'nondefault)
-  ;; (display-time-load-average nil)
-  ;; (doom-modeline-bar-width 3)
-  ;; (doom-modeline-icon t)
-  ;; (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
-  ;; (doom-modeline-minor-modes nil)                   ; oculta modos menores
-  ;; (doom-modeline-enable-word-count nil)
-  ;; (doom-modeline-buffer-encoding nil)
-  )
 
 (use-package vertico
   :init

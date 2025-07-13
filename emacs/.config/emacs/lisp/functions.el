@@ -24,14 +24,6 @@ The return value is the new value of LIST-VAR."
     (set list-var elements)))
 (symbol-value list-var))
 
-(defun append-to-gitignore (file)
-"Añade archivos al gitignore"
-(interactive "fSelect a file to append in the gitignore: ")
-(with-current-buffer (find-file-noselect (expand-file-name ".gitignore" doom-modeline--project-root))
-  (end-of-buffer)
-  (insert (format "\n%s" file))
-  (save-buffer)))
-
 (defun get-local-language ()
 "Retrieve the definition the language org variable."
 (save-excursion
@@ -105,7 +97,6 @@ This function allow to activate the webserver when you use but if there is a pro
             (format-time-string "%Y-%m-%d") user-full-name))
 (org-mode)
 (goto-char (point-max)))))
-(provide 'functions)
 
 (defun prot/keyboard-quit-dwim ()
   "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -132,3 +123,5 @@ The DWIM behaviour of this command is as follows:
     (keyboard-quit))))
 
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
+
+(provide 'functions)

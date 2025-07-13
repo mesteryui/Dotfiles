@@ -37,5 +37,4 @@ html-mode mhtml-mode
 
 emacs-lisp-mode
 (funct "(defun " (r> "nombre") "(" (r> "args") ")" n "\t" q ")")
-(macroexpr "(defmacro " (r> "nombre") "(" (r> "args") ")" n "\t" q ")")
 

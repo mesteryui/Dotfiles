@@ -142,13 +142,14 @@ org-src-fontify-natively t)
   "*  %?\n")))
 
 (org-babel-do-load-languages
-'org-babel-load-languages
-'((emacs-lisp . t)
-(scheme . t)
-(python . t)
-(shell . t)))
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (scheme . t)
+   (python . t)
+   (shell . t)))
 (os/after org-contrib
-(org-babel-do-load-languages 'org-babel-load-languages '((ledger . t))))
+	  (org-babel-do-load-languages 'org-babel-load-languages 
+				       '((ledger . t))))
 
 (use-package org-auto-tangle
 :defer t

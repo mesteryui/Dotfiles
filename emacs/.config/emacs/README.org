@@ -553,19 +553,6 @@ Es una funcionalidad implementada en las ultimas versiones de Emacs muy util par
     (uv-init-cmd dir))))
 
 #+end_src
-*** Treesit install languages
-Instalar todos los lenguajes de treesit que no esten instalados
-#+begin_src emacs-lisp :tangle no
-(defun os/install-all-treesit-grammars ()
-"Install all treesit grammar if it's not installed"
-(interactive)
-(let ((langs (seq-map 'car treesit-language-source-alist)))
-  (dolist (lang langs)
-    (unless (treesit-language-available-p lang)
-      (message "Instalando gramatica tree-sitter para %s" lang)
-      (treesit-install-language-grammar lang)))
-  (message "Gramaticas instaladas")))
-#+end_src
 *** Append to list
 #+begin_src emacs-lisp 
 (defun append-to-list (list-var elements)
@@ -581,7 +568,7 @@ The return value is the new value of LIST-VAR."
 #+end_src
 *** Append to gitignore
 Te permite seleccionar un archivo para añadir al gitignore
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no
 (defun append-to-gitignore (file)
 "Añade archivos al gitignore"
 (interactive "fSelect a file to append in the gitignore: ")
@@ -676,7 +663,7 @@ This function allow to activate the webserver when you use but if there is a pro
 *** Buffer temporal en modo Org
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle lisp/functions.el
   (defun org-temp-buffer (&optional template)
   "Acceder a un buffer temporal de orgmode"
   (interactive)
@@ -686,7 +673,6 @@ cuando necesitas crear notas para algo puntual simplemente organizando informaci
               (format-time-string "%Y-%m-%d") user-full-name))
   (org-mode)
   (goto-char (point-max)))))
-  (provide 'functions)
 #+end_src
 *** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
@@ -722,6 +708,7 @@ Me permite abrir el dashboard
 (switch-to-buffer dashboard-buffer-name))
 #+end_src
 *** Better keyboard quit
+Función originalmente creada por protesilaos la uso en el atajo ~C-g~ para sustituir a la alternativa nativa de Emacs ya que ofrece un mejor comportamiento al permitirme salir del minibuffer.
 #+begin_src emacs-lisp
 (defun prot/keyboard-quit-dwim ()
   "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -748,6 +735,10 @@ The DWIM behaviour of this command is as follows:
     (keyboard-quit))))
 
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
+#+end_src
+
+#+begin_src emacs-lisp :tangle lisp/functions.el
+  (provide 'functions)
 #+end_src
 ** Paquetes
 :PROPERTIES:
@@ -859,7 +850,7 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
   (nerd-icons-xref-mode 1))
 #+end_src
 **** Nerd icons corfu
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package nerd-icons-corfu
 :after (corfu nerd-icons)
 :config
@@ -955,6 +946,27 @@ Nos permite obtener una vista rapida del directorio que queramos ver en forma de
     ("S-TAB" . dired-subtree-remove))
   :config
   (setq dired-subtree-use-backgrounds nil))
+#+end_src
+**** Dired preview 
+Paquete para tener previsualización de ficheros en dired
+#+begin_src emacs-lisp 
+(use-package dired-preview
+  :ensure t
+  :hook (dired-mode . dired-preview-mode)
+  :config
+  (setq dired-preview-delay 0.7
+	dired-preview-max-size (expt 2 20)
+	 dired-preview-ignored-extensions-regexp
+        (concat "\\."
+                "\\(gz\\|"
+                "zst\\|"
+                "tar\\|"
+                "xz\\|"
+                "rar\\|"
+                "zip\\|"
+                "iso\\|"
+                "epub"
+                "\\)")))
 #+end_src
 **** Trashed
 Provee una interfaz tipo dired para interactuar con la papelera del sistema
@@ -1069,7 +1081,6 @@ Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usan
 	   " " status "\n"
 	   (nerd-icons-faicon "nf-fa-arrow_right_long") " "))))
 
-(defalias 'clean 'eshell/clear-scrollback)
 (defun eshell-close-toggle ()
   "Cierra la ventana de eshell."
   (let* ((buf (current-buffer)) (win (get-buffer-window buf)))
@@ -1195,13 +1206,13 @@ treemacs-git-commit-diff-mode 1)
 #+end_src
 *** Hacer más estetico Emacs
 **** Custom modeline
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (add-to-list 'load-path (expand-file-name "modeline" user-emacs-directory))
-(require 'my-modeline)
+(require 'os-modeline)
 #+end_src
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :tangle lisp/packages.el
 ;; use-package with package.el:
 (use-package dashboard
 :ensure t
@@ -1256,7 +1267,7 @@ El dashboard que me aparece al principio cuando abre el programa
 #+end_src
 **** Doom modeline
 Para retocar la barra de abajo
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no 
 (use-package doom-modeline
   :after (nerd-icons)
   :hook (elpaca-after-init-hook . doom-modeline-mode)
@@ -1543,7 +1554,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 (setq org-use-property-inheritance '("header-args"))
 #+end_src
 *** Añadiendo ajustes varios
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package org
 :ensure nil
 :hook ((org-mode . org-indent-mode)
@@ -1723,15 +1734,16 @@ Diversas utilidades de org mode para que se vea todo mejor
 #+end_src
 ** Configuración de Org Babel
 Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (org-babel-do-load-languages
-'org-babel-load-languages
-'((emacs-lisp . t)
-(scheme . t)
-(python . t)
-(shell . t)))
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (scheme . t)
+   (python . t)
+   (shell . t)))
 (os/after org-contrib
-(org-babel-do-load-languages 'org-babel-load-languages '((ledger . t))))
+	  (org-babel-do-load-languages 'org-babel-load-languages 
+				       '((ledger . t))))
 #+end_src
 *** Org auto tangle
 Hace que en según que caso el tangle sea automático
@@ -1770,8 +1782,7 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/programming.el"
 :END:
-Aquí están todos los paquetes y modos que utilizo para programar
-
+Aquí están todos los paquetes y modos que utilizo para programar.
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
@@ -2225,7 +2236,7 @@ Lenguaje de programacion conocido por su velocidad y caracteristicas de segurida
 (use-package cargo-mode
     :defer t
     :hook
-    (rust-mode . cargo-minor-mode)    
+    (rust-ts-mode . cargo-minor-mode)    
     :config
     (setq compilation-scroll-output t))
 (provide 'rust)

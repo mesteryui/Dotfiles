@@ -3,7 +3,7 @@
 (use-package cargo-mode
     :defer t
     :hook
-    (rust-mode . cargo-minor-mode)    
+    (rust-ts-mode . cargo-minor-mode)    
     :config
     (setq compilation-scroll-output t))
 (provide 'rust)
