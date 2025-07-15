@@ -1,6 +1,7 @@
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :commands (corfu-mode global-corfu-mode)
   :bind (:map corfu-map ("<tab>" . corfu-complete))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
@@ -8,6 +9,7 @@
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.1)
+  (corfu-quit-no-match 'separator)
   (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
@@ -32,6 +34,8 @@
 ;; Cape: extensiones para completion-at-point
 (use-package cape
   :ensure t
+  :commands (cape-file cape-dabbrev cpae-elisp-block cape-dict cape-emoji)
+  :bind ("C-c p" . cape-prefix-map)
   :init
   (add-hooks completion-at-point-functions #'cape-abbrev #'cape-dabbrev #'cape-file #'cape-emoji #'cape-dict #'cape-keyword #'cape-elisp-block))
 ;; Atajos prácticos

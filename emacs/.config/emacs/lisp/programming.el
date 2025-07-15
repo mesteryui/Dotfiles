@@ -3,6 +3,37 @@
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
+(use-package outline
+  :ensure nil
+  :commands outline-minor-mode
+  :hook
+  ((emacs-lisp-mode . outline-minor-mode)
+   ;; Use " ▼" instead of the default ellipsis "..." for folded text to make
+   ;; folds more visually distinctive and readable.
+   (outline-minor-mode
+    .
+    (lambda()
+      (let* ((display-table (or buffer-display-table (make-display-table)))
+             (face-offset (* (face-id 'shadow) (ash 1 22)))
+             (value (vconcat (mapcar (lambda (c) (+ face-offset c)) " ▼"))))
+        (set-display-table-slot display-table 'selective-display value)
+        (setq buffer-display-table display-table))))))
+
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
+  :custom
+  (outline-indent-ellipsis " ▼")
+
+  :init
+  ;; The minor mode can also be automatically activated for a certain modes.
+  (add-hook 'python-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'python-ts-mode-hook #'outline-indent-minor-mode)
+
+  (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode))
+
 (use-package hl-todo
   :hook (prog-mode . hl-todo-mode)
   :config
@@ -73,10 +104,27 @@
 
 (use-package eglot
   :ensure nil
-  :init (add-to-list 'completion-category-overrides '((eglot (styles orderless))))
+  :commands (eglot-ensure eglor-rename eglot-format-buffer)
   :hook ((python-ts-mode . eglot-ensure)
          (rust-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
+  :config
+  (setq-default eglot-workspace-configuration
+              `(:pylsp (:plugins
+                        (;; Fix imports and syntax using `eglot-format-buffer`
+                         :isort (:enabled t)
+                         :autopep8 (:enabled t)
+
+                         ;; Syntax checkers (works with Flymake)
+                         :pylint (:enabled t)
+                         :pycodestyle (:enabled t)
+                         :flake8 (:enabled t)
+                         :pyflakes (:enabled t)
+                         :pydocstyle (:enabled t)
+                         :mccabe (:enabled t)
+
+                         :yapf (:enabled :json-false)
+                         :rope_autoimport (:enabled :json-false)))))
   :custom
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)

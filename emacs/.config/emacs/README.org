@@ -177,7 +177,6 @@ Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gc
 :END:
 #+begin_src emacs-lisp :tangle lisp/macros.el :noweb yes
 <<lexicalbind>>
-(defmacro loadf (file) "Simplified way to load a file in emacs lisp" `(load-file ,file))
 #+end_src
 ** Create window
 Crear un frame para ejecutar un comando
@@ -615,7 +614,7 @@ en todos los casos hay veces que hay que cerrar el programa
 (defun os/reload-config ()
   "Recargar configuracion Emacs."
   (interactive)
-  (loadf (expand-file-name "init.el" user-emacs-directory))
+  (load-file (expand-file-name "init.el" user-emacs-directory))
   (sleep-for 0.90)
   (if (eq major-mode 'org-mode) (org-mode))
   (ignore (elpaca-process-queues)))
@@ -744,6 +743,28 @@ The DWIM behaviour of this command is as follows:
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
 :END:
+*** Helpful
+Mejora la ayuda incorporada en Emacs
+#+begin_src emacs-lisp 
+;; Helpful is an alternative to the built-in Emacs help that provides much more
+;; contextual information.
+(use-package helpful
+  :ensure t
+  :commands (helpful-callable
+             helpful-variable
+             helpful-key
+             helpful-command
+             helpful-at-point
+             helpful-function)
+  :bind
+  ([remap describe-command] . helpful-command)
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-key] . helpful-key)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  :custom
+  (helpful-max-buffers 7))
+#+end_src
 *** Exec-path-from-shell
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
@@ -828,14 +849,14 @@ Es un reproductor de musica desde Emacs permite usar mpv para reproducir musica 
 #+end_src
 *** Nerd Icons
 Hace que emacs tenga iconos chulos y que además funcione en terminal con esos iconos
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package nerd-icons
-:ensure t)
+  :ensure t)
 (use-package nerd-icons-completion
-:ensure t
-:after (marginalia nerd-icons)
-:hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
-:init (nerd-icons-completion-mode))
+  :ensure t
+  :after (marginalia nerd-icons)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :init (nerd-icons-completion-mode))
 (use-package nerd-icons-dired
   :ensure t
   :after (nerd-icons dired)
@@ -850,11 +871,11 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
   (nerd-icons-xref-mode 1))
 #+end_src
 **** Nerd icons corfu
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package nerd-icons-corfu
-:after (corfu nerd-icons)
-:config
-(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+  :after (corfu nerd-icons)
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 #+end_src
 *** Calfw
 Hace que el calendario pueda verse bonito, y la verdad me gusta
@@ -1195,6 +1216,12 @@ treemacs-git-commit-diff-mode 1)
 *** Embark
 #+begin_src emacs-lisp 
 (use-package embark
+  :init (setopt prefix-help-command #'embark-prefix-help-command)
+  :config
+   (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none))))
   :bind
     (("C-c A" . embark-act)
      ("C-:" . embark-dwim)
@@ -1206,9 +1233,35 @@ treemacs-git-commit-diff-mode 1)
 #+end_src
 *** Hacer más estetico Emacs
 **** Custom modeline
-#+begin_src emacs-lisp
-(add-to-list 'load-path (expand-file-name "modeline" user-emacs-directory))
-(require 'os-modeline)
+Mi modeline personalizada en la que estoy trabajando.
+#+begin_src emacs-lisp 
+(use-package os-modeline
+  :load-path "os-lisp/"
+  :config
+  (setq mode-line-compact nil) ; Emacs 28
+  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
+  (setq-default mode-line-format
+		'("%e"
+		  os-modeline-input-method
+                  os-modeline-kbd-macro
+                  os-modeline-buffer-status
+	          os-modeline-buffer-name
+                  "   "
+                  (:eval (when (buffer-file-name) "%p"))
+                  "   "
+                  os-modeline-current-time
+                  "   "
+		  os-modeline-major-mode
+		  "   "
+                  os-modeline-vc-branch
+		  "   "
+		  os-modeline-eglot
+		  "   "
+                  os-modeline-flymake
+                  "   "
+		  mode-line-format-right-align ; Emacs 30
+		  os-modeline-misc-info)))
+
 #+end_src
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
@@ -1313,6 +1366,7 @@ Provee anotaciones en el minibuffer para mejorar la experiencia de completado
 #+begin_src emacs-lisp
 (use-package marginalia
 :after vertico
+:commands (marginalia-mode marginalia-cycle)
 :custom
 (marginalia-annotators
 '(marginalia-annotators-heavy marginalia-annotators-lv))
@@ -1325,6 +1379,7 @@ Provee anotaciones en el minibuffer para mejorar la experiencia de completado
 :defer t
 :custom
 (completion-styles '(orderless basic))
+(completion-category-defaults nil)
 (completion-category-overrides
 '((file (styles basic partial-completion)))))
 #+end_src
@@ -1334,6 +1389,22 @@ potente
 #+begin_src emacs-lisp
 (use-package consult
 :demand t
+:hook (completion-list-mode . consult-preview-at-point-mode)
+:init 
+(setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+:config
+ (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+  (setq consult-narrow-key "<")
 :bind (
 ("C-c M-x" . consult-mode-command)
 ;; ("C-c k" . consult-kmacro)
@@ -1352,14 +1423,17 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuación
 #+begin_src emacs-lisp
 (use-package which-key
 :ensure nil
-:delight
-:init (setopt prefix-help-command #'embark-prefix-help-command)
-:config
-(which-key-mode)
-(setopt which-key-idle-delay 0.3
-         which-key-dont-use-unicode nil
-         which-key-separator " → " 
-         which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
+:after embark
+:commands which-key-mode
+:hook (elpaca-after-init-hook . which-key-mode)
+:custom
+(which-key-idle-delay 1.3)
+(which-key-max-description-length 40)
+(which-key-idle-secondary-delay 0.25)
+ (which-key-add-column-padding 1)
+(which-key-dont-use-unicode nil)
+(which-key-separator " → ") 
+(which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 #+end_src
 *** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
@@ -1557,6 +1631,7 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 #+begin_src emacs-lisp 
 (use-package org
 :ensure nil
+:commands (org-mode org-version)
 :hook ((org-mode . org-indent-mode)
 (org-mode . os/org-headers-setters)
 (org-mode . visual-line-mode)
@@ -1576,6 +1651,8 @@ Aqui establezco los archivos tipo org que mi configuración va a requerir
 (org-fontify-done-headline t)
 (org-use-sub-superscripts "{}")
 (org-hide-emphasis-markers t)
+(org-hide-leading-stars t)
+(org-startup-truncated t)
 ;; Imágenes
 (org-startup-with-inline-images t)
 (image-actual-width '(300))
@@ -1789,6 +1866,40 @@ Aquí están todos los paquetes y modos que utilizo para programar.
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
+** Outline
+Permite estructurar el codigo en estructuras plegables siendo practico para codigo largo, con outline-indent puedo plegar el codigo en base a indentaciones.
+#+begin_src emacs-lisp
+(use-package outline
+  :ensure nil
+  :commands outline-minor-mode
+  :hook
+  ((emacs-lisp-mode . outline-minor-mode)
+   ;; Use " ▼" instead of the default ellipsis "..." for folded text to make
+   ;; folds more visually distinctive and readable.
+   (outline-minor-mode
+    .
+    (lambda()
+      (let* ((display-table (or buffer-display-table (make-display-table)))
+             (face-offset (* (face-id 'shadow) (ash 1 22)))
+             (value (vconcat (mapcar (lambda (c) (+ face-offset c)) " ▼"))))
+        (set-display-table-slot display-table 'selective-display value)
+        (setq buffer-display-table display-table))))))
+
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
+  :custom
+  (outline-indent-ellipsis " ▼")
+
+  :init
+  ;; The minor mode can also be automatically activated for a certain modes.
+  (add-hook 'python-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'python-ts-mode-hook #'outline-indent-minor-mode)
+
+  (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode))
+#+end_src
 ** hl-todo
 Para resaltar palabras como todo en los comentarios que contengan tareas pendientes
 #+begin_src emacs-lisp
@@ -1869,6 +1980,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
+  :commands (corfu-mode global-corfu-mode)
   :bind (:map corfu-map ("<tab>" . corfu-complete))
   :custom
   (corfu-separator ?\s)  ; separador de palabra
@@ -1876,6 +1988,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
   (corfu-auto t)                  ; Enable auto completion
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.1)
+  (corfu-quit-no-match 'separator)
   (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
@@ -1900,6 +2013,8 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 ;; Cape: extensiones para completion-at-point
 (use-package cape
   :ensure t
+  :commands (cape-file cape-dabbrev cpae-elisp-block cape-dict cape-emoji)
+  :bind ("C-c p" . cape-prefix-map)
   :init
   (add-hooks completion-at-point-functions #'cape-abbrev #'cape-dabbrev #'cape-file #'cape-emoji #'cape-dict #'cape-keyword #'cape-elisp-block))
 ;; Atajos prácticos
@@ -2023,10 +2138,27 @@ Servidor lsp más minimalista lo voy a probar
 #+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
-  :init (add-to-list 'completion-category-overrides '((eglot (styles orderless))))
+  :commands (eglot-ensure eglor-rename eglot-format-buffer)
   :hook ((python-ts-mode . eglot-ensure)
          (rust-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
+  :config
+  (setq-default eglot-workspace-configuration
+              `(:pylsp (:plugins
+                        (;; Fix imports and syntax using `eglot-format-buffer`
+                         :isort (:enabled t)
+                         :autopep8 (:enabled t)
+
+                         ;; Syntax checkers (works with Flymake)
+                         :pylint (:enabled t)
+                         :pycodestyle (:enabled t)
+                         :flake8 (:enabled t)
+                         :pyflakes (:enabled t)
+                         :pydocstyle (:enabled t)
+                         :mccabe (:enabled t)
+
+                         :yapf (:enabled :json-false)
+                         :rope_autoimport (:enabled :json-false)))))
   :custom
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
@@ -2116,7 +2248,6 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
     (global-treesit-auto-mode))
 
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
-    
 #+end_src
 ** Rainbow mode y Rainbow delimiters
 #+begin_src emacs-lisp
@@ -2291,6 +2422,29 @@ Utilidades para desarrollar paquetes para emacs.
   :after flymake
   :config
   (add-hook 'flymake-diagnostic-functions #'package-lint-flymake))
+;; Enables automatic indentation of code while typing
+(use-package aggressive-indent
+  :ensure t
+  :commands aggressive-indent-mode
+  :hook
+  (emacs-lisp-mode . aggressive-indent-mode))
+
+;; Highlights function and variable definitions in Emacs Lisp mode
+(use-package highlight-defined
+  :ensure t
+  :commands highlight-defined-mode
+  :hook
+  (emacs-lisp-mode . highlight-defined-mode))
+
+;; Provides functions to find references to functions, macros, variables,
+;; special forms, and symbols in Emacs Lisp
+(use-package elisp-refs
+  :ensure t
+  :commands (elisp-refs-function
+             elisp-refs-macro
+             elisp-refs-variable
+             elisp-refs-special
+             elisp-refs-symbol))
 
 (provide 'emacs-lisp)
 #+end_src

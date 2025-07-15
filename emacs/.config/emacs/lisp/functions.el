@@ -52,7 +52,7 @@ using what the result of 'get-local-language' function if the result is nil does
 (defun os/reload-config ()
   "Recargar configuracion Emacs."
   (interactive)
-  (loadf (expand-file-name "init.el" user-emacs-directory))
+  (load-file (expand-file-name "init.el" user-emacs-directory))
   (sleep-for 0.90)
   (if (eq major-mode 'org-mode) (org-mode))
   (ignore (elpaca-process-queues)))

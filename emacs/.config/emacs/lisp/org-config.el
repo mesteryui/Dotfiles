@@ -7,6 +7,7 @@
 
 (use-package org
 :ensure nil
+:commands (org-mode org-version)
 :hook ((org-mode . org-indent-mode)
 (org-mode . os/org-headers-setters)
 (org-mode . visual-line-mode)
@@ -26,6 +27,8 @@
 (org-fontify-done-headline t)
 (org-use-sub-superscripts "{}")
 (org-hide-emphasis-markers t)
+(org-hide-leading-stars t)
+(org-startup-truncated t)
 ;; Imágenes
 (org-startup-with-inline-images t)
 (image-actual-width '(300))

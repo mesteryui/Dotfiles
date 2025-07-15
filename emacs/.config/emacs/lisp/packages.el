@@ -1,3 +1,22 @@
+;; Helpful is an alternative to the built-in Emacs help that provides much more
+;; contextual information.
+(use-package helpful
+  :ensure t
+  :commands (helpful-callable
+             helpful-variable
+             helpful-key
+             helpful-command
+             helpful-at-point
+             helpful-function)
+  :bind
+  ([remap describe-command] . helpful-command)
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-key] . helpful-key)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  :custom
+  (helpful-max-buffers 7))
+
 (use-package exec-path-from-shell
   :ensure t
   :init
@@ -53,12 +72,12 @@ gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-st
    'remote-direct-async-process))
 
 (use-package nerd-icons
-:ensure t)
+  :ensure t)
 (use-package nerd-icons-completion
-:ensure t
-:after (marginalia nerd-icons)
-:hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
-:init (nerd-icons-completion-mode))
+  :ensure t
+  :after (marginalia nerd-icons)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :init (nerd-icons-completion-mode))
 (use-package nerd-icons-dired
   :ensure t
   :after (nerd-icons dired)
@@ -73,9 +92,9 @@ gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-st
   (nerd-icons-xref-mode 1))
 
 (use-package nerd-icons-corfu
-:after (corfu nerd-icons)
-:config
-(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+  :after (corfu nerd-icons)
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 (use-package calfw
 :config
@@ -304,6 +323,12 @@ treemacs-git-commit-diff-mode 1)
 :ensure t)
 
 (use-package embark
+  :init (setopt prefix-help-command #'embark-prefix-help-command)
+  :config
+   (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none))))
   :bind
     (("C-c A" . embark-act)
      ("C-:" . embark-dwim)
@@ -313,8 +338,32 @@ treemacs-git-commit-diff-mode 1)
 :hook
 (embark-collect-mode . consult-preview-at-point-mode))
 
-(add-to-list 'load-path (expand-file-name "modeline" user-emacs-directory))
-(require 'os-modeline)
+(use-package os-modeline
+  :load-path "os-lisp/"
+  :config
+  (setq mode-line-compact nil) ; Emacs 28
+  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
+  (setq-default mode-line-format
+		'("%e"
+		  os-modeline-input-method
+                  os-modeline-kbd-macro
+                  os-modeline-buffer-status
+	          os-modeline-buffer-name
+                  "   "
+                  (:eval (when (buffer-file-name) "%p"))
+                  "   "
+                  os-modeline-current-time
+                  "   "
+		  os-modeline-major-mode
+		  "   "
+                  os-modeline-vc-branch
+		  "   "
+		  os-modeline-eglot
+		  "   "
+                  os-modeline-flymake
+                  "   "
+		  mode-line-format-right-align ; Emacs 30
+		  os-modeline-misc-info)))
 
 ;; use-package with package.el:
 (use-package dashboard
@@ -390,6 +439,7 @@ treemacs-git-commit-diff-mode 1)
 
 (use-package marginalia
 :after vertico
+:commands (marginalia-mode marginalia-cycle)
 :custom
 (marginalia-annotators
 '(marginalia-annotators-heavy marginalia-annotators-lv))
@@ -400,11 +450,28 @@ treemacs-git-commit-diff-mode 1)
 :defer t
 :custom
 (completion-styles '(orderless basic))
+(completion-category-defaults nil)
 (completion-category-overrides
 '((file (styles basic partial-completion)))))
 
 (use-package consult
 :demand t
+:hook (completion-list-mode . consult-preview-at-point-mode)
+:init 
+(setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+:config
+ (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+  (setq consult-narrow-key "<")
 :bind (
 ("C-c M-x" . consult-mode-command)
 ;; ("C-c k" . consult-kmacro)
@@ -420,14 +487,17 @@ treemacs-git-commit-diff-mode 1)
 
 (use-package which-key
 :ensure nil
-:delight
-:init (setopt prefix-help-command #'embark-prefix-help-command)
-:config
-(which-key-mode)
-(setopt which-key-idle-delay 0.3
-         which-key-dont-use-unicode nil
-         which-key-separator " → " 
-         which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
+:after embark
+:commands which-key-mode
+:hook (elpaca-after-init-hook . which-key-mode)
+:custom
+(which-key-idle-delay 1.3)
+(which-key-max-description-length 40)
+(which-key-idle-secondary-delay 0.25)
+ (which-key-add-column-padding 1)
+(which-key-dont-use-unicode nil)
+(which-key-separator " → ") 
+(which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 
 (use-package organizer
   :demand t

@@ -1,5 +1,4 @@
 ;; -*- lexical-binding: t; -*-
-(defmacro loadf (file) "Simplified way to load a file in emacs lisp" `(load-file ,file))
 
 (defun os-window-delete-popup-frame (&rest _)
   "Kill selected selected frame if it has parameter `prot-window-popup-frame'.
