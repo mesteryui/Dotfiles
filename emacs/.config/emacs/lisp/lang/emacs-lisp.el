@@ -5,6 +5,7 @@
   :after flymake
   :config
   (add-hook 'flymake-diagnostic-functions #'package-lint-flymake))
+
 ;; Enables automatic indentation of code while typing
 (use-package aggressive-indent
   :ensure t

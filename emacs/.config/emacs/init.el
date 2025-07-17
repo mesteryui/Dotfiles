@@ -89,14 +89,16 @@
 ;;(elpaca nil (message "deferred"))
 
 (defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-    "The languages to be used by word corrections")
+  "The languages to be used by word corrections")
+(defvar my/enabled-modules nil
+"Lista de modulos a cargar.")
 
 ;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
-(defvar my/enabled-modules
+(setq my/enabled-modules
   '(macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
     personal    ;; Ajustes personales diversos
@@ -115,8 +117,7 @@
     rust
     common-lisp
     lua
-    java)
-"Lista de modulos a cargar en la configuracion.") 
+    java))
 ;; Cargar los módulos habilitados
 (dolist (module my/enabled-modules)
   (unless (featurep module)

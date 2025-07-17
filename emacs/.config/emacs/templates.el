@@ -2,23 +2,25 @@
 ;; flymake-mode: nil
 ;; End:
 
+
 java-mode
+(class "public class" (p (file-name-base (or (buffer-file-name) (buffer-name))) " {" n> r> n "}"))
 (sout "System.out.println(" r> ");")
 (syserr "System.err.println(" r> ");")
 (souf "System.out.printf(" r> ");")
-(method (r> (completing-read "Introduzca tipo funcion: " '("public" "private" "protected" "") nil t)) " " (r> "returnType") " " (r> "methodName") "() " "{" n q n "}")
-(static-method (r> (completing-read "Introduzca tipo funcion: " '("public" "private" "protected" "") nil t)) " static " (r> "returnType") " " (r> "methodName") "() " "{" n q n "}")
+(method (r> (completing-read "Introduzca tipo función: " '("public" "private" "protected" "") nil t)) " " (r> "returnType") " " (r> "methodName") "(" (r> ) ") " "{" n> r> n "}")
+(static-method (r> (completing-read "Introduzca tipo función: " '("public" "private" "protected" "") nil t)) " static " (r> "returnType") " " (r> "methodName") "(" (r> ) ") " "{" n> q n "}")
 (javadoc "/**" n "* " q n "*" n "*" n "**/")
 (javadocClass "/**" n "* " n "* " "@author: " user-full-name n "* " "@version: " r> n "*" n "**/")
-(trycatch "try {" n (r> "Codigo a comprobar") n "}" "catch (" (r> "Tipo de excecpcion") " " (r> "Nombre en el try catch") ") {" n q n "}")
+(trycatch "try {" n> (r> "Bodigo a comprobar") n "} " "catch (" (r> "Tipo de excepcion") " " (r> "Nombre en el try catch") ") {" n> q n "}")
 
 org-mode
 (title "#+title: " (r "Titulo por defecto"))
 (normal-author "#+author: " user-full-name q)
 (author "#+author: " (r "Introduzca nombre del autor") q)
-
+(table "|  " r>  " |")
 js-mode
-(func "function " (r> "nombreFuncion") "(" r> ") {" n q n "}")
+(func "function " (r> "nombreFuncion") "(" r> ") {" n "\t" q n "}")
 (apiQuest "fetch(" r> ").then(" r> ")")
 
 html-mode mhtml-mode
@@ -35,4 +37,6 @@ html-mode mhtml-mode
 (input:text "<input type=\"text\"" " value=" (r> "\"valor\"") ">")
 
 emacs-lisp-mode
-(funct "(defun " (r> "nombre") "(" (r> "args") ")" n "\t" q ")")
+(macro "(defmacro " p " (" p ")\n  \"" p "\"" n> r> ")")
+(alias "(defalias '" p " '" p ")")
+(fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")

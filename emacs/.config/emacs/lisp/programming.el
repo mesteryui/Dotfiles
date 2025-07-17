@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
@@ -6,6 +7,7 @@
 (use-package outline
   :ensure nil
   :commands outline-minor-mode
+  :bind (:map outline-minor-mode-map ("M-TAB" . outline-cycle))
   :hook
   ((emacs-lisp-mode . outline-minor-mode)
    ;; Use " ▼" instead of the default ellipsis "..." for folded text to make
@@ -64,17 +66,12 @@
   :ensure t
   :defer t)
 
-(use-package kind-icon
-  :after corfu
-  :custom (kind-icon-default-face 'corfu-default)
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
   :custom
   (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
+  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
   :init
     (defun tempel-setup-capf ()
     ;; Add the Tempel Capf to `completion-at-point-functions'.
@@ -87,11 +84,6 @@
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand (cons #'tempel-complete
                       completion-at-point-functions))))
-  (add-hook 'conf-mode-hook 'tempel-setup-capf)
-  (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf)
-  (add-hook 'org-mode-hook 'tempel-setup-capf)
-  (add-hook 'eglot-managed-mode-hook 'tempel-setup-capf)
 ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
@@ -105,8 +97,7 @@
 (use-package eglot
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook ((python-ts-mode . eglot-ensure)
-         (rust-ts-mode . eglot-ensure)
+  :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :config
   (setq-default eglot-workspace-configuration
@@ -131,6 +122,8 @@
   (eglot-events-buffer-size 0)
   (eglot-auto-display-help-buffer nil)
   (eglot-confirm-server-initiated-edits nil)
+  (eglot-extend-to-xref t)
+  (eglot-send-changes-idle-time 0.1)
   :bind (:map eglot-mode-map
               ("C-c l a" . eglot-code-actions)
               ("C-c l i" . eglot-code-actions-organize-imports)

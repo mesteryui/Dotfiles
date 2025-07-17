@@ -91,6 +91,10 @@ org-src-fontify-natively t)
 :hook
 (org-mode . org-appear-mode))
 ;; ;; Modern Org mode interface
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 (use-package org-modern
   :after org
   :hook (org-mode . org-modern-mode)
@@ -127,22 +131,22 @@ org-src-fontify-natively t)
 :ensure t)
 
 (setq org-capture-templates
-`(("t" "Tarea" entry
-  (file+headline "~/org/agenda.org" "Tareas")
-  "* TODO %?\n %i\n  %a")
- ("n" "Nota" entry
-  (file+headline "~/org/notes.org" "Notas")
-  "* %? :nota:\n %i\n %a")
- ("e" "Evento" entry
-  (file+headline "~/org/agenda.org" "Evento")
-  "* WAITING %?\n"
-  )
- ("j" "Diario" entry
-  (file+datetree "~/org/diario.org")
-  "* Titulo de Entrada: %?\n")
-  ("p" "Project" entry
-  (file+headline "~/org/proyectos.org" "Proyectos")
-  "*  %?\n")))
+      `(("t" "Tarea" entry
+	 (file+headline "~/org/agenda.org" "Tareas")
+	 "* TODO %?\n %i\n  %a")
+	("n" "Nota" entry
+	 (file+headline "~/org/notes.org" "Notas")
+	 "* %? :nota:\n %i\n %a")
+	("e" "Evento" entry
+	 (file+headline "~/org/agenda.org" "Evento")
+	 "* WAITING %?\n"
+	 )
+	("j" "Diario" entry
+	 (file+datetree "~/org/diario.org")
+	 "* Titulo de Entrada: %?\n")
+	("p" "Project" entry
+	 (file+headline "~/org/proyectos.org" "Proyectos")
+	 "*  %?\n")))
 
 (org-babel-do-load-languages
  'org-babel-load-languages

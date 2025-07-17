@@ -9,7 +9,7 @@
 * Comienzo de la configuración
 ** Otras configs básicas
 *** Ajustes del recolector de basura 
-Aqui definimos ajustes al recolector de basura el plan es que esto se añada a las cosas del early-init.el para de esa manera,
+Aquí definimos ajustes al recolector de basura el plan es que esto se añada a las cosas del early-init.el para de esa manera,
 configurar esos detalles antes de que cargue lo demás, son más que nada optimizaciones
 #+name: Recolector de basura
 #+begin_src emacs-lisp :tangle no
@@ -20,7 +20,7 @@ configurar esos detalles antes de que cargue lo demás, son más que nada optimi
 (setopt comp-async-jobs-number 8)
 #+end_src
 *** Ajustes del early-init.el
-Aqui añadimos algunas configuraciones basicas para el uso de elpaca como desabilitar el gestor de paquetes por defecto, es lo que va normalmente en el archivo [[file:early-init.el][early-init.el]]
+Aquí añadimos algunas configuraciones básicas para el uso de Elpaca como deshabilitar el gestor de paquetes por defecto, es lo que va normalmente en el archivo [[file:early-init.el][early-init.el]]
 #+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes :noweb yes
 <<lexicalbind>>
 (setq package-enable-at-startup nil) ;; Desactivamos el gestor de paquetes de Emacs para poder usar elpaca
@@ -45,13 +45,13 @@ Esto es para hacer que algunos scripts de uso propio sean utilizables
 ;;(add-to-list 'load-path "~/.config/emacs/scripts/")
 #+end_src
 ** Ajustes No littering
-He decidido aplicarlo debido a que es más practico para tener cosas en relacion a los paquetes y demás fuera del directorio de configuracion y evitar que se metan ahi cosas que no deberian estar
+He decidido aplicarlo debido a que es más practico para tener cosas en relación a los paquetes y demás fuera del directorio de configuración y evitar que se metan ahí cosas que no deberían estar
 #+begin_src emacs-lisp :tangle init.el
 (defvar no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/"))
 (defvar no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/"))
 #+end_src
 *** No littering
-Permite hacer que Emacs deje los archivos en una ruta diferente y organizando más facil los archivos de configuracion
+Permite hacer que Emacs deje los archivos en una ruta diferente y organizando más fácil los archivos de configuración
 #+name: no littering
 #+begin_src emacs-lisp :tangle no 
 (use-package no-littering
@@ -146,7 +146,9 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 * Variables y verbas diversas
 #+begin_src emacs-lisp 
 (defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-    "The languages to be used by word corrections")
+  "The languages to be used by word corrections")
+(defvar my/enabled-modules nil
+"Lista de modulos a cargar.")
 #+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
@@ -252,12 +254,15 @@ Como el nombre dice elimina los atajos de teclado pero usando una sintaxis simpl
 ** Add hooks
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (defmacro add-hooks (hook &rest funcs)
-"Añadir varias funciones a un hook.
+  "Añadir varias funciones a un hook.
 Es decir si tengo 'org-mode-hook' puedo añadir varias funciones
 siendo HOOK el hook que quiero añadir
 y FUNCS las funciones a añadir"
-`(progn ,@(seq-map (lambda (f) `(add-hook ',hook ,f)) funcs)))
+  `(progn ,@(seq-map
+	     (lambda (f) `(add-hook ',hook ,f))
+	     funcs)))
 #+end_src
+
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (provide 'macros)
 #+end_src
@@ -269,29 +274,28 @@ y FUNCS las funciones a añadir"
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
 ** Mixed pitch
 Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combinado con fixed-ptich junto a otras cosas
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package mixed-pitch
-:ensure t
-:hook (text-mode . mixed-pitch-mode)
-:config 
-(add-to-list 'mixed-pitch-fixed-pitch-faces 'org-table
-))
+  :ensure t
+  :hook (text-mode . mixed-pitch-mode)
+  :config
+  (add-to-list 'mixed-pitch-fixed-pitch-faces 'org-table))
 #+end_src
 *** Ajustes a elementos del org-mode
-#+begin_src emacs-lisp
-(defun os/org-headers-setters () 
-"Ajusta de forma personalizada los encabezados del modo org"
-(dolist (item '((org-level-1 . outline-1)
-           (org-level-2 . outline-2)
-           (org-level-3 . outline-3)
-            (org-level-4 . outline-4)))
-(set-face-attribute (car item) nil :inherit (cdr item)))
-(dolist (item '((org-level-1 . 1.5)
-           (org-level-2 . 1.4)
-           (org-level-3 . 1.25)
-           (org-level-4 . 1.1)
-           (org-document-title . 1.7)))
-(set-face-attribute (car item) nil :height (cdr item))))
+#+begin_src emacs-lisp 
+(defun os/org-headers-setters ()
+  "Ajusta de forma personalizada los encabezados del modo org"
+  (dolist (item '((org-level-1 . outline-1)
+		  (org-level-2 . outline-2)
+		  (org-level-3 . outline-3)
+		  (org-level-4 . outline-4)))
+    (set-face-attribute (car item) nil :inherit (cdr item)))
+  (dolist (item '((org-level-1 . 1.5)
+		  (org-level-2 . 1.4)
+		  (org-level-3 . 1.25)
+		  (org-level-4 . 1.1)
+		  (org-document-title . 1.7)))
+    (set-face-attribute (car item) nil :height (cdr item))))
 #+end_src
 ** Tema visual
 *** Algún ajuste que otro
@@ -303,21 +307,21 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
 El tema visual a utilizar estando disponible aqui la configuracion
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package catppuccin-theme
-:config 
-(seq-do #'disable-theme custom-enabled-themes)
-(load-theme 'catppuccin t))
+  :config
+  (seq-do #'disable-theme custom-enabled-themes)
+  (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
 Temas ef de Protesilaos es bastante chulo
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp 
 (use-package ef-themes
-:ensure t
-:custom (ef-themes-mixed-fonts t)
-:config
-(seq-do #'disable-theme custom-enabled-themes)
-(ef-themes-select 'ef-trio-dark))
+  :ensure t
+  :custom (ef-themes-mixed-fonts t)
+  :config
+  (seq-do #'disable-theme custom-enabled-themes)
+  (ef-themes-select 'ef-trio-dark))
 #+end_src
 **** Doom themes
 #+begin_src emacs-lisp :tangle no
@@ -345,6 +349,7 @@ Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia
 (scroll-bar-mode -1)                                          ; Desactivar la barra de desplazamiento visible
 (tooltip-mode -1)
 (pixel-scroll-precision-mode t)
+(blink-cursor-mode -1)                                ; Steady cursor
 (setq pixel-scroll-precision-interpolate-page t)
 (set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
@@ -408,6 +413,7 @@ Esta es la opacidad que el editor aplica por defecto
 #+begin_src emacs-lisp
 (electric-pair-mode t)
 #+end_src
+
 #+begin_src emacs-lisp
 (provide 'ui)
 #+end_src
@@ -431,11 +437,11 @@ erc-fill-static-center 20)
 :header-args:emacs-lisp: :tangle "lisp/personal.el" :noweb yes
 :END:
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp 
 (setopt user-full-name "Oscar")
 (setopt inhibit-startup-message t
-use-short-answers t
-blink-matching-parent t)
+	use-short-answers t
+	blink-matching-parent t)
 #+end_src
 *** Configuración zoom
 La configuracion de los atajos de zoom
@@ -452,9 +458,10 @@ Aquí se tratan configuraciones especificas útiles para diversos aspectos
 **** Buffer scratch
 Configuraciones del buffer scratch como el mensaje por defecto
 #+begin_src emacs-lisp 
-(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.Enjoy doing things here.\n\n" (propertize
-               (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
-               'face 'help-key-binding)))
+(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` forajido eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.Enjoy doing things here.\n\n"
+				      (propertize
+				       (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
+				       'face 'help-key-binding)))
 
 #+end_src
 **** Formato hora
@@ -468,15 +475,15 @@ display-time-format "%H:%M"             ; Le da formato a la hora
 Aqui se configuran varias cosas como si activar el sistema de portapapeles y demás.
 #+begin_src emacs-lisp :noweb yes
 (setopt
-<<formato hora>>
-<<native auto save>>
-load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
-select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
-vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
-<<backup>>
-frame-resize-pixelwise t ;; Para un resize fluido
-select-enable-primary t)
-
+ <<formato hora>>
+ <<native auto save>>
+ load-prefer-newer t                     ; Prefiere la versión más reciente de un archivo.
+ select-enable-clipboard t               ; Sistema de fusión y portapapeles de Emacs.
+ vc-follow-symlinks t                    ; Siempre sigue los enlaces simbólicos.
+ <<backup>>
+ frame-resize-pixelwise t ;; Para un resize fluido
+ select-enable-primary t)
+;;(auto-save-visited-mode 1)
 (setq enable-local-variables t)
 
 ;; Evita glitches al redimensionar
@@ -486,14 +493,14 @@ select-enable-primary t)
 ;;(setq european-calendar-style t) ;; estilo europeo
 (setopt calendar-date-style 'iso)
 (setopt calendar-holidays '((holiday-fixed 1 1 "Año nuevo")
-                 (holiday-fixed 5 17 "Dia de las letras gallegas")
-                 (holiday-fixed 10 12 "Día de la Hispanidad")
-                 (holiday-fixed 11 01 "Todos los Santos")
-                 (holiday-fixed 12 06 "Constitución")
-                 (holiday-fixed 3 28 "Reconquista de Vigo")
-                 (holiday-fixed 5 1 "Dia del Trabajo")
-                 (holiday-fixed 12 24 "Nochebuena")
-                 (holiday-fixed 12 25 "Navidad")))
+			    (holiday-fixed 5 17 "Dia de las letras gallegas")
+			    (holiday-fixed 10 12 "Día de la Hispanidad")
+			    (holiday-fixed 11 01 "Todos los Santos")
+			    (holiday-fixed 12 06 "Constitución")
+			    (holiday-fixed 3 28 "Reconquista de Vigo")
+			    (holiday-fixed 5 1 "Dia del Trabajo")
+			    (holiday-fixed 12 24 "Nochebuena")
+			    (holiday-fixed 12 25 "Navidad")))
 (provide 'personal)
 #+end_src
 ***** Archivos de bloqueo
@@ -506,7 +513,8 @@ create-lockfiles nil                    ; Impido la creación de ficheros .#
 Este sistema de auto guardado es muy coñazo por los archivos que genera así que lo quito, y lo cambio por [[*Supersave][SuperSave]]
 #+name: native auto save
 #+begin_src emacs-lisp :tangle no
-auto-save-default nil                   ; Deshabilita #file#
+auto-save-default nil                 ; Deshabilita #file#
+;;auto-save-visited-interval 3
 #+end_src
 ***** Archivos de copia de seguridad
 Configura la creación de archivos de backup para mantener las cosas más simples y practicas
@@ -517,18 +525,24 @@ make-backup-files nil                   ; No realiza backups de ficheros
 ** So-long
 Es una funcionalidad implementada en las ultimas versiones de Emacs muy util para los archivos muy largos
 #+begin_src emacs-lisp :tangle lisp/performance.el
-  (global-so-long-mode 1)
-  (os/after so-long
-  (when (boundp 'so-long-minor-modes)
-  (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
-  (add-to-list 'so-long-minor-modes 'hl-line-mode))
+(global-so-long-mode 1)
+(os/after so-long
+	  (when (boundp 'so-long-minor-modes)
+	    (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
+	    (add-to-list 'so-long-minor-modes 'hl-line-mode))
 
-  ;; Only add mode replacements if the variable exists
-  (when (boundp 'so-long-action-alist)
-  (setq so-long-action-alist
-     (append so-long-action-alist
-            '(("disable-indicator" . ((display-fill-column-indicator-mode . -1))))))))
-  (provide 'performance)
+;; Only add mode replacements if the variable exists
+	  (when (boundp 'so-long-action-alist)
+	    (setq so-long-action-alist
+		  (append so-long-action-alist
+			  '(("disable-indicator" . ((display-fill-column-indicator-mode . -1))))))))
+(provide 'performance)
+#+end_src
+** Visual wrap prefix mode
+Permite hacer que el texto se envuelva digamos lo así si es muy largo
+#+begin_src emacs-lisp :tangle no
+(when (>= emacs-major-version 30)       ; compat test
+  (add-hook 'text-mode-hook 'visual-wrap-prefix-mode))
 #+end_src
 ** Funciones propias
 :PROPERTIES:
@@ -563,7 +577,7 @@ The return value is the new value of LIST-VAR."
   (if list
       (setcdr (last list) elements)
     (set list-var elements)))
-(symbol-value list-var)) 
+(symbol-value list-var))
 #+end_src
 *** Append to gitignore
 Te permite seleccionar un archivo para añadir al gitignore
@@ -578,34 +592,34 @@ Te permite seleccionar un archivo para añadir al gitignore
 #+end_src
 *** Grammar dynamic changer
 Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etiqueta =#+language:= que se le haya introducido, si no se introduce ninguna usa la por defecto del sistema
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun get-local-language ()
 "Retrieve the definition the language org variable."
 (save-excursion
-(goto-char (point-min))
-(when (re-search-forward
-  "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
-(let ((lang (match-string-no-properties 1)))
-(cond 
-((equal lang "es") "es_ES")
-((equal lang "en") "en_US")
-(t lang))))))
+  (goto-char (point-min))
+  (when (re-search-forward
+	 "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
+    (let ((lang (match-string-no-properties 1)))
+      (cond
+       ((equal lang "es") "es_ES")
+       ((equal lang "en") "en_US")
+       (t lang))))))
 
 (defun dynamic-language-change ()
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
 (when-let ((lang (get-local-language)))
-(setq ispell-local-dictionary lang)))
+  (setq ispell-local-dictionary lang)))
 #+end_src
 *** Obtener valor de una macro org
 Este codigo es útil ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun get-local-macro-definition (macro-name)
 "Retrieve the definition of a local Org mode macro."
 (save-excursion
-(goto-char (point-min))
-(when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
-(match-string 1))))
+  (goto-char (point-min))
+  (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
+    (match-string 1))))
 #+end_src
 *** Recargar la configuración
 Esta función sirve para recargar la configuración activa sin cerrar Emacs, no funciona
@@ -663,15 +677,14 @@ This function allow to activate the webserver when you use but if there is a pro
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
 #+begin_src emacs-lisp :tangle lisp/functions.el
-  (defun org-temp-buffer (&optional template)
-  "Acceder a un buffer temporal de orgmode"
+(defun org-temp-buffer (&optional template)
+  "Acceder a un buffer temporal de orgmode."
   (interactive)
-  (switch-to-buffer (get-buffer-create "*orgtemp*"))
-  (if (get-buffer "*orgtemp*")
-  (progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n"   (or template "Temporal Buffer")
-              (format-time-string "%Y-%m-%d") user-full-name))
-  (org-mode)
-  (goto-char (point-max)))))
+  (with-current-buffer (pop-to-buffer "*orgtemp*")
+      (progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n" (or template "Temporal Buffer")
+			       (format-time-string "%Y-%m-%d") user-full-name))
+	     (org-mode)
+	     (goto-char (point-max)))))
 #+end_src
 *** Modo sin distracciones
 No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
@@ -743,6 +756,25 @@ The DWIM behaviour of this command is as follows:
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
 :END:
+*** Buffer terminator
+Permite matar buffers de forma segura y automatica, asegurando un espacio de trabajo limpio y eficiente y es posible definir reglas para configurar todo eso.
+#+begin_src emacs-lisp
+(use-package buffer-terminator
+  :ensure t
+  :custom
+  ;; Enable/Disable verbose mode to log buffer cleanup events
+  (buffer-terminator-verbose nil)
+  ;; Set the inactivity timeout (in seconds) after which buffers are considered
+  ;; inactive (default is 30 minutes):
+  (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+  ;; Define how frequently the cleanup process should run (default is every 10
+  ;; minutes):
+  (buffer-terminator-interval (* 10 60)) ; 10 minutes
+
+  :config
+  (buffer-terminator-mode 1))
+#+end_src
 *** Helpful
 Mejora la ayuda incorporada en Emacs
 #+begin_src emacs-lisp 
@@ -775,6 +807,7 @@ Mejora la ayuda incorporada en Emacs
 (exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
 #+end_src
 *** Spacious padding
+Paquete de Protesilaos que permite mantener cierto espacio.
 #+begin_src emacs-lisp 
 (use-package spacious-padding
 :ensure t
@@ -1138,28 +1171,44 @@ Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usan
 (global-set-key (kbd "C-c t") 'eshell-toggle)
 #+end_src
 *** Flyspell
-Habilita la correccion ortografica al vuelo.
-#+begin_src emacs-lisp
+Habilita la corrección ortográfica al vuelo.
+#+begin_src emacs-lisp :tangle no
 (use-package flyspell
-:ensure nil
-:defer t
-:init
-:config
-(setopt ispell-silently-savep t
-flyspell-case-fold-duplications t
-flyspell-issue-message-flag nil
-flyspell-default-dictionary "es_ES"
-ispell-program-name "hunspell"
-ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
-:hook (text-mode . flyspell-mode)
-:bind(("M-<f7>" . flyspell-buffer)
-  ("<f7>" . flyspell-word)))
+  :ensure nil
+  :defer t
+  :init
+  :config
+  (setopt ispell-silently-savep t
+	  flyspell-case-fold-duplications t
+	  flyspell-issue-message-flag nil
+	  flyspell-default-dictionary "es_ES"
+	  ispell-program-name "hunspell"
+	  ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
+  :hook (text-mode . flyspell-mode)
+  :bind(("M-<f7>" . flyspell-buffer)
+	("<f7>" . flyspell-word)))
 
-(gbind "M-<f7>" dicitionary-switcher)
+
+
 (use-package flyspell-correct
-:after (flyspell)
-:bind (("C-;" . flyspell-auto-correct-previous-word)
-  ("<f7>" . flyspell-correct-wrapper)))
+  :after (flyspell)
+  :bind (("C-;" . flyspell-auto-correct-previous-word)
+	 ("<f7>" . flyspell-correct-wrapper)))
+#+end_src
+*** Jinx
+Corrector ortográfico para Emacs usando la librería enchant
+#+begin_src emacs-lisp
+(use-package jinx
+  :ensure t
+  :hook (((text-mode prog-mode) . jinx-mode))
+  :bind (("<f7>" . jinx-correct))
+  :custom
+  (jinx-delay 0.01))
+#+end_src
+**** Dictionary
+#+begin_src emacs-lisp 
+(setopt dictionary-use-single-buffer t)
+(setopt dictionary-server "dict.org")
 #+end_src
 *** Undo-tree
 Hace que el sistema de desacer cambios use una estructura de arbol que se puede navegar
@@ -1178,34 +1227,34 @@ Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcio
 :bind ("C-x u" . vundo))
 #+end_src
 *** Treemacs
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package treemacs
-:config 
-(global-set-key (kbd "C-c d") 'treemacs)
-(setopt treemacs-hide-gitignored-files-mode t)
-treemacs-project-follow-cleanup t
-treemacs-width 45
-treemacs-width-is-initially-locked nil
-delete-by-moving-to-trash t
-treemacs-collapse-dirs 3
-treemacs-display-in-side-window t
-treemacs-is-never-other-window t
-treemacs-indentation 2
-treemacs-indentation-string " "
-treemacs-filewatch-mode t
-treemacs-git-mode 'deferred
-treemacs-text-scale 1
-treemacs-move-files-by-mouse-dragging nil
-treemacs-move-forward-on-expand t
-treemacs-pulse-on-success t
-treemacs-file-event-delay 0
-treemacs-deferred-git-apply-delay 0
-treemacs-git-commit-diff-mode 1)
+  :config
+  (global-set-key (kbd "C-c d") 'treemacs)
+  (setopt treemacs-hide-gitignored-files-mode t)
+  treemacs-project-follow-cleanup t
+  treemacs-width 45
+  treemacs-width-is-initially-locked nil
+  delete-by-moving-to-trash t
+  treemacs-collapse-dirs 3
+  treemacs-display-in-side-window t
+  treemacs-is-never-other-window t
+  treemacs-indentation 2
+  treemacs-indentation-string " "
+  treemacs-filewatch-mode t
+  treemacs-git-mode 'deferred
+  treemacs-text-scale 1
+  treemacs-move-files-by-mouse-dragging nil
+  treemacs-move-forward-on-expand t
+  treemacs-pulse-on-success t
+  treemacs-file-event-delay 0
+  treemacs-deferred-git-apply-delay 0
+  treemacs-git-commit-diff-mode 1)
 (add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode)
 (use-package treemacs-nerd-icons
-:after nerd-icons
-:config
-(treemacs-load-theme "nerd-icons"))
+  :after nerd-icons
+  :config
+  (treemacs-load-theme "nerd-icons"))
 (global-set-key (kbd "C-c f") 'treemacs)
 #+end_src
 *** Ledger
@@ -1216,20 +1265,21 @@ treemacs-git-commit-diff-mode 1)
 *** Embark
 #+begin_src emacs-lisp 
 (use-package embark
+  :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
   :init (setopt prefix-help-command #'embark-prefix-help-command)
   :config
-   (add-to-list 'display-buffer-alist
+  (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none))))
   :bind
-    (("C-c A" . embark-act)
-     ("C-:" . embark-dwim)
-     ("C-h B" . embark-bindings)))
+  (("C-c A" . embark-act)
+   ("C-:" . embark-dwim)
+   ("C-h B" . embark-bindings)))
 
 (use-package embark-consult
-:hook
-(embark-collect-mode . consult-preview-at-point-mode))
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 *** Hacer más estetico Emacs
 **** Custom modeline
@@ -1237,6 +1287,7 @@ Mi modeline personalizada en la que estoy trabajando.
 #+begin_src emacs-lisp 
 (use-package os-modeline
   :load-path "os-lisp/"
+  :custom (os-modeline-bar-height 120)
   :config
   (setq mode-line-compact nil) ; Emacs 28
   (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
@@ -1247,12 +1298,10 @@ Mi modeline personalizada en la que estoy trabajando.
                   os-modeline-buffer-status
 	          os-modeline-buffer-name
                   "   "
+                  os-modeline-major-mode
+                  "   "
                   (:eval (when (buffer-file-name) "%p"))
                   "   "
-                  os-modeline-current-time
-                  "   "
-		  os-modeline-major-mode
-		  "   "
                   os-modeline-vc-branch
 		  "   "
 		  os-modeline-eglot
@@ -1261,7 +1310,6 @@ Mi modeline personalizada en la que estoy trabajando.
                   "   "
 		  mode-line-format-right-align ; Emacs 30
 		  os-modeline-misc-info)))
-
 #+end_src
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
@@ -1439,8 +1487,6 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuación
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
 #+begin_src emacs-lisp 
 (use-package organizer
-  :demand t
-  :ensure nil
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
   :config
@@ -1464,10 +1510,10 @@ Radio en Emacs
   :custom
   (eradio-player '("mpv" "--no-video" "--no-terminal"))
   (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
-                            ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
-			    ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
-			    ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
-			    ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
+                     ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+		     ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
+		     ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
+		     ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
 (gbind "C-x r e" eradio-toggle)
 (gbind "C-x r p" eradio-play)
 #+end_src
@@ -1485,7 +1531,6 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   (add-hook 'doc-view-mode-hook 'pdf-tools-install)
   (setq-default pdf-view-use-scaling t
 		pdf-view-use-imagemagick nil))
-
 (use-package nov
   :ensure t
   :demand t
@@ -1493,17 +1538,17 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 #+end_src
 *** Supersave
-Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad 
-#+begin_src emacs-lisp
+Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad.
+#+begin_src emacs-lisp 
 (use-package super-save
   :config
   (setopt super-save-triggers
-  '(other-window  ; Al cambiar de ventana
-    switch-to-buffer  ; Al cambiar de buffer
-    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
-  (super-save-mode 1)
-  (setopt super-save-idle-duration 1)  ; 0.3 segundos de inactividad
-  (setopt super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+	  '(other-window  ; Al cambiar de ventana
+	    switch-to-buffer  ; Al cambiar de buffer
+	    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
+  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
+  (setopt super-save-auto-save-when-idle t)
+ (super-save-mode 1)) ; Opcional: guardar también en inactividad
 #+end_src
 *** Adaptative wrap
 #+begin_src emacs-lisp 
@@ -1519,16 +1564,15 @@ Modos extra para algunos archivos específicos
 #+end_src
 **** Markdown
 Permitir el uso de Markdown en Emacs con cierto resaltado
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (defun set-markdown-headers () 
-   "Setting the headers to a markdown file"
+  "Setting the headers to a markdown file"
   (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
   (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
   (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
   (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
   (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
-  (set-face-attribute 'markdown-header-face-6 nil :height 1.05)
-  (set-face-attribute 'markdown-code-face nil :inherit  'fixed-pitch))
+  (set-face-attribute 'markdown-header-face-6 nil :height 1.05))
 
 (use-package markdown-mode
   :demand t
@@ -1536,8 +1580,8 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
   :hook ((markdown-mode . set-markdown-headers)
          (gfm-mode . set-markdown-headers))
   :mode (("README\\.md\\'" . gfm-mode)
-       ("\\.md\\'" . gfm-mode)
-       ("\\.markdown\\'" . markdown-mode))
+	 ("\\.md\\'" . markdown-mode)
+	 ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
   (setopt markdown-fontify-code-blocks-natively t)
@@ -1583,19 +1627,19 @@ Para abrir scripts para la shell fish
   :demand t)
 #+end_src
 **** Yuck
-Lo pongo aqui porque el proposito de esta cosa es hacer interfaces no tanto programar además la parte de lenguajes de programacion ya esta muy llena 
+Lo pongo aquí porque el propósito de esta cosa es hacer interfaces no tanto programar además la parte de lenguajes de programación ya esta muy llena 
 #+begin_src emacs-lisp
 (use-package yuck-mode :ensure t)
 #+end_src
 **** I3wm mode
-Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algunas veces para asuntos cuando Wayland no me sirve sera util
-#+begin_src emacs-lisp
+Para abrir la confió de i3 o sway, ahora que he tenido que volver a usar i3 algunas veces para asuntos cuando Wayland no me sirve sera útil
+#+begin_src emacs-lisp 
 (use-package i3wm-config-mode
   :demand t
   :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
-(add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
+  :mode
+  ("/sway/.*config.*/" . i3wm-config-mode)
+  ("/sway/config\\'" . i3wm-config-mode))
 #+end_src
 *** Cosas más
 #+begin_src emacs-lisp :tangle lisp/packages.el
@@ -1618,7 +1662,7 @@ Para abrir la config de i3 o sway, ahora que he tenido que volver a usar i3 algu
 ** Ajustes generales
 Ajustes de Org Mode
 *** Configurar archivos
-Aqui establezco los archivos tipo org que mi configuración va a requerir
+Aquí establezco los archivos tipo org que mi configuración va a requerir
 #+begin_src emacs-lisp 
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
@@ -1681,7 +1725,7 @@ O algo asi
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 ** Configuración del calendario
-Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del calendario. 📆
+Ajustes del calendario días de la semana, meses los festivos y otros ajustes del calendario. 📆
 #+begin_src emacs-lisp 
 (setopt calendar-month-name-array
 	["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
@@ -1691,7 +1735,7 @@ Ajustes del calendario dias de la semana, meses los festivos y otros ajustes del
 	["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 #+end_src
 *** Ajustes del todo
-Ajustes en relacion al sistema de gestión de tareas en cuanto a tareas pendientes
+Ajustes en relación al sistema de gestión de tareas en cuanto a tareas pendientes
 #+begin_src emacs-lisp
 (setopt org-todo-keywords
 	'((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -1734,6 +1778,10 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 #+name: org modern
 #+begin_src emacs-lisp :tangle no :noweb yes
 ;; ;; Modern Org mode interface
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 (use-package org-modern
   :after org
   :hook (org-mode . org-modern-mode)
@@ -1771,7 +1819,7 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 org-src-preserve-indentation nil) 
 #+end_src
 *** Ajustando otras cosas en relacion a indentacion
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (setopt org-src-tab-acts-natively t
 org-src-fontify-natively t)
 #+end_src
@@ -1790,24 +1838,24 @@ Diversas utilidades de org mode para que se vea todo mejor
 
 #+end_src 
 ** Configuración de org-capture
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (setq org-capture-templates
-`(("t" "Tarea" entry
-  (file+headline "~/org/agenda.org" "Tareas")
-  "* TODO %?\n %i\n  %a")
- ("n" "Nota" entry
-  (file+headline "~/org/notes.org" "Notas")
-  "* %? :nota:\n %i\n %a")
- ("e" "Evento" entry
-  (file+headline "~/org/agenda.org" "Evento")
-  "* WAITING %?\n"
-  )
- ("j" "Diario" entry
-  (file+datetree "~/org/diario.org")
-  "* Titulo de Entrada: %?\n")
-  ("p" "Project" entry
-  (file+headline "~/org/proyectos.org" "Proyectos")
-  "*  %?\n")))
+      `(("t" "Tarea" entry
+	 (file+headline "~/org/agenda.org" "Tareas")
+	 "* TODO %?\n %i\n  %a")
+	("n" "Nota" entry
+	 (file+headline "~/org/notes.org" "Notas")
+	 "* %? :nota:\n %i\n %a")
+	("e" "Evento" entry
+	 (file+headline "~/org/agenda.org" "Evento")
+	 "* WAITING %?\n"
+	 )
+	("j" "Diario" entry
+	 (file+datetree "~/org/diario.org")
+	 "* Titulo de Entrada: %?\n")
+	("p" "Project" entry
+	 (file+headline "~/org/proyectos.org" "Proyectos")
+	 "*  %?\n")))
 #+end_src
 ** Configuración de Org Babel
 Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo eso
@@ -1860,18 +1908,20 @@ Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilida
 :header-args:emacs-lisp: :tangle "lisp/programming.el"
 :END:
 Aquí están todos los paquetes y modos que utilizo para programar.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
 ** Outline
-Permite estructurar el codigo en estructuras plegables siendo practico para codigo largo, con outline-indent puedo plegar el codigo en base a indentaciones.
+Permite estructurar el código en estructuras plegables siendo practico para código largo, con outline-indent puedo plegar el código en base a nanoindentaciones.
 #+begin_src emacs-lisp
 (use-package outline
   :ensure nil
   :commands outline-minor-mode
+  :bind (:map outline-minor-mode-map ("M-TAB" . outline-cycle))
   :hook
   ((emacs-lisp-mode . outline-minor-mode)
    ;; Use " ▼" instead of the default ellipsis "..." for folded text to make
@@ -1913,7 +1963,7 @@ Para resaltar palabras como todo en los comentarios que contengan tareas pendien
       ("NOTE" bold))))
 #+end_src
 ** Eglot tempel 
-Según la descripción de su repostorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 
+Según la descripción de su repositorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 
 #+begin_src emacs-lisp :tangle no
 (use-package eglot-tempel
   :preface (eglot-tempel-mode)
@@ -2050,7 +2100,7 @@ Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
 #+end_src
 **** Kind icon
 Actualmente estoy usando la alternativa nerd-icons-corfu porque como ya uso nerd-icons para lo demás no tengo tanto lio
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package kind-icon
   :after corfu
   :custom (kind-icon-default-face 'corfu-default)
@@ -2073,13 +2123,14 @@ Habilita el uso de snippets
   (setq yasnippet-capf-lookup-by 'name))
 #+end_src
 ** Tempel
-Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual. 
+Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs, es mi alternativa actual se integra bien con =completion-at-point= capf .
 #+begin_src emacs-lisp 
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
   :custom
   (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
+  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
   :init
     (defun tempel-setup-capf ()
     ;; Add the Tempel Capf to `completion-at-point-functions'.
@@ -2092,11 +2143,6 @@ Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs,
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand (cons #'tempel-complete
                       completion-at-point-functions))))
-  (add-hook 'conf-mode-hook 'tempel-setup-capf)
-  (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf)
-  (add-hook 'org-mode-hook 'tempel-setup-capf)
-  (add-hook 'eglot-managed-mode-hook 'tempel-setup-capf)
 ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
@@ -2139,8 +2185,7 @@ Servidor lsp más minimalista lo voy a probar
 (use-package eglot
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook ((python-ts-mode . eglot-ensure)
-         (rust-ts-mode . eglot-ensure)
+  :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :config
   (setq-default eglot-workspace-configuration
@@ -2165,6 +2210,8 @@ Servidor lsp más minimalista lo voy a probar
   (eglot-events-buffer-size 0)
   (eglot-auto-display-help-buffer nil)
   (eglot-confirm-server-initiated-edits nil)
+  (eglot-extend-to-xref t)
+  (eglot-send-changes-idle-time 0.1)
   :bind (:map eglot-mode-map
               ("C-c l a" . eglot-code-actions)
               ("C-c l i" . eglot-code-actions-organize-imports)
@@ -2181,8 +2228,7 @@ Servidor lsp más minimalista lo voy a probar
   )
 #+end_src
 ** Iedit
-Permite cambiar todas las apariciones de las palabras, se podria llegar a aprovechar para 
-hacer algo parecido al refractor
+Permite cambiar todas las apariciones de las palabras, se podría llegar a aprovechar para hacer algo parecido al refractor
 #+begin_src emacs-lisp
   (use-package iedit
     :ensure t)
@@ -2250,7 +2296,7 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
 #+end_src
 ** Rainbow mode y Rainbow delimiters
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -2422,6 +2468,7 @@ Utilidades para desarrollar paquetes para emacs.
   :after flymake
   :config
   (add-hook 'flymake-diagnostic-functions #'package-lint-flymake))
+
 ;; Enables automatic indentation of code while typing
 (use-package aggressive-indent
   :ensure t
@@ -2449,14 +2496,14 @@ Utilidades para desarrollar paquetes para emacs.
 (provide 'emacs-lisp)
 #+end_src
 * Carga de archivos
-Aquí defino el bloque de codigo que lleva a cabo la carga de todos los modulos que componen esta config
+Aquí defino el bloque de código que lleva a cabo la carga de todos los módulos que componen esta config.
 #+begin_src emacs-lisp :tangle init.el
 ;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
-(defvar my/enabled-modules
+(setq my/enabled-modules
   '(macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
     personal    ;; Ajustes personales diversos
@@ -2475,8 +2522,7 @@ Aquí defino el bloque de codigo que lleva a cabo la carga de todos los modulos 
     rust
     common-lisp
     lua
-    java)
-"Lista de modulos a cargar en la configuracion.") 
+    java))
 ;; Cargar los módulos habilitados
 (dolist (module my/enabled-modules)
   (unless (featurep module)
@@ -2490,10 +2536,9 @@ Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con
 #+end_src
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
-- [[https://protesilaos.com/][Protesilaos]] ultimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios.
+- [[https://protesilaos.com/][Protesilaos]] últimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios.
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 
 - [[https://elblogdelazaro.org/posts/2024-04-15-mi-fichero-configuracion-emacs-2024/][El blog de lazaro 2024]]
-También hay algunos más como el mitico [[https://notxor.nueva-actitud.org/][Notxor]]
-
+También hay algunos más como el mítico [[https://notxor.nueva-actitud.org/][Notxor]]

@@ -55,10 +55,12 @@ KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
 `(global-unset-key (kbd ,key)))
 
 (defmacro add-hooks (hook &rest funcs)
-"Añadir varias funciones a un hook.
+  "Añadir varias funciones a un hook.
 Es decir si tengo 'org-mode-hook' puedo añadir varias funciones
 siendo HOOK el hook que quiero añadir
 y FUNCS las funciones a añadir"
-`(progn ,@(seq-map (lambda (f) `(add-hook ',hook ,f)) funcs)))
+  `(progn ,@(seq-map
+	     (lambda (f) `(add-hook ',hook ,f))
+	     funcs)))
 
 (provide 'macros)

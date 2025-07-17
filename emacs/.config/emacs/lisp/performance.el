@@ -13,13 +13,13 @@
 
 (global-so-long-mode 1)
 (os/after so-long
-(when (boundp 'so-long-minor-modes)
-(add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
-(add-to-list 'so-long-minor-modes 'hl-line-mode))
+	  (when (boundp 'so-long-minor-modes)
+	    (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
+	    (add-to-list 'so-long-minor-modes 'hl-line-mode))
 
 ;; Only add mode replacements if the variable exists
-(when (boundp 'so-long-action-alist)
-(setq so-long-action-alist
-   (append so-long-action-alist
-          '(("disable-indicator" . ((display-fill-column-indicator-mode . -1))))))))
+	  (when (boundp 'so-long-action-alist)
+	    (setq so-long-action-alist
+		  (append so-long-action-alist
+			  '(("disable-indicator" . ((display-fill-column-indicator-mode . -1))))))))
 (provide 'performance)

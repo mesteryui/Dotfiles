@@ -1,3 +1,19 @@
+(use-package buffer-terminator
+  :ensure t
+  :custom
+  ;; Enable/Disable verbose mode to log buffer cleanup events
+  (buffer-terminator-verbose nil)
+  ;; Set the inactivity timeout (in seconds) after which buffers are considered
+  ;; inactive (default is 30 minutes):
+  (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+  ;; Define how frequently the cleanup process should run (default is every 10
+  ;; minutes):
+  (buffer-terminator-interval (* 10 60)) ; 10 minutes
+
+  :config
+  (buffer-terminator-mode 1))
+
 ;; Helpful is an alternative to the built-in Emacs help that provides much more
 ;; contextual information.
 (use-package helpful
@@ -266,80 +282,71 @@ vterm-mode-map
   (eshell-syntax-highlighting-global-mode +1))
 (global-set-key (kbd "C-c t") 'eshell-toggle)
 
-(use-package flyspell
-:ensure nil
-:defer t
-:init
-:config
-(setopt ispell-silently-savep t
-flyspell-case-fold-duplications t
-flyspell-issue-message-flag nil
-flyspell-default-dictionary "es_ES"
-ispell-program-name "hunspell"
-ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
-:hook (text-mode . flyspell-mode)
-:bind(("M-<f7>" . flyspell-buffer)
-  ("<f7>" . flyspell-word)))
+(use-package jinx
+  :ensure t
+  :hook (((text-mode prog-mode) . jinx-mode))
+  :bind (("<f7>" . jinx-correct))
+  :custom
+  (jinx-delay 0.01))
 
-(gbind "M-<f7>" dicitionary-switcher)
-(use-package flyspell-correct
-:after (flyspell)
-:bind (("C-;" . flyspell-auto-correct-previous-word)
-  ("<f7>" . flyspell-correct-wrapper)))
+(setopt dictionary-use-single-buffer t)
+(setopt dictionary-server "dict.org")
 
 (use-package vundo
 :bind ("C-x u" . vundo))
 
 (use-package treemacs
-:config 
-(global-set-key (kbd "C-c d") 'treemacs)
-(setopt treemacs-hide-gitignored-files-mode t)
-treemacs-project-follow-cleanup t
-treemacs-width 45
-treemacs-width-is-initially-locked nil
-delete-by-moving-to-trash t
-treemacs-collapse-dirs 3
-treemacs-display-in-side-window t
-treemacs-is-never-other-window t
-treemacs-indentation 2
-treemacs-indentation-string " "
-treemacs-filewatch-mode t
-treemacs-git-mode 'deferred
-treemacs-text-scale 1
-treemacs-move-files-by-mouse-dragging nil
-treemacs-move-forward-on-expand t
-treemacs-pulse-on-success t
-treemacs-file-event-delay 0
-treemacs-deferred-git-apply-delay 0
-treemacs-git-commit-diff-mode 1)
+  :config
+  (global-set-key (kbd "C-c d") 'treemacs)
+  (setopt treemacs-hide-gitignored-files-mode t)
+  treemacs-project-follow-cleanup t
+  treemacs-width 45
+  treemacs-width-is-initially-locked nil
+  delete-by-moving-to-trash t
+  treemacs-collapse-dirs 3
+  treemacs-display-in-side-window t
+  treemacs-is-never-other-window t
+  treemacs-indentation 2
+  treemacs-indentation-string " "
+  treemacs-filewatch-mode t
+  treemacs-git-mode 'deferred
+  treemacs-text-scale 1
+  treemacs-move-files-by-mouse-dragging nil
+  treemacs-move-forward-on-expand t
+  treemacs-pulse-on-success t
+  treemacs-file-event-delay 0
+  treemacs-deferred-git-apply-delay 0
+  treemacs-git-commit-diff-mode 1)
 (add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode)
 (use-package treemacs-nerd-icons
-:after nerd-icons
-:config
-(treemacs-load-theme "nerd-icons"))
+  :after nerd-icons
+  :config
+  (treemacs-load-theme "nerd-icons"))
 (global-set-key (kbd "C-c f") 'treemacs)
 
 (use-package ledger-mode
 :ensure t)
 
 (use-package embark
+  :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
   :init (setopt prefix-help-command #'embark-prefix-help-command)
   :config
-   (add-to-list 'display-buffer-alist
+  (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none))))
   :bind
-    (("C-c A" . embark-act)
-     ("C-:" . embark-dwim)
-     ("C-h B" . embark-bindings)))
+  (("C-c A" . embark-act)
+   ("C-:" . embark-dwim)
+   ("C-h B" . embark-bindings)))
 
 (use-package embark-consult
-:hook
-(embark-collect-mode . consult-preview-at-point-mode))
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package os-modeline
   :load-path "os-lisp/"
+  :custom (os-modeline-bar-height 120)
   :config
   (setq mode-line-compact nil) ; Emacs 28
   (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
@@ -350,12 +357,10 @@ treemacs-git-commit-diff-mode 1)
                   os-modeline-buffer-status
 	          os-modeline-buffer-name
                   "   "
+                  os-modeline-major-mode
+                  "   "
                   (:eval (when (buffer-file-name) "%p"))
                   "   "
-                  os-modeline-current-time
-                  "   "
-		  os-modeline-major-mode
-		  "   "
                   os-modeline-vc-branch
 		  "   "
 		  os-modeline-eglot
@@ -500,8 +505,6 @@ treemacs-git-commit-diff-mode 1)
 (which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 
 (use-package organizer
-  :demand t
-  :ensure nil
   :load-path "Organizer/"
   :bind ("<f12>" . organizer-index)
   :config
@@ -532,10 +535,10 @@ treemacs-git-commit-diff-mode 1)
   :custom
   (eradio-player '("mpv" "--no-video" "--no-terminal"))
   (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
-                            ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
-			    ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
-			    ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
-			    ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
+                     ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+		     ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
+		     ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
+		     ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
 (gbind "C-x r e" eradio-toggle)
 (gbind "C-x r p" eradio-play)
 
@@ -550,7 +553,6 @@ treemacs-git-commit-diff-mode 1)
   (add-hook 'doc-view-mode-hook 'pdf-tools-install)
   (setq-default pdf-view-use-scaling t
 		pdf-view-use-imagemagick nil))
-
 (use-package nov
   :ensure t
   :demand t
@@ -560,12 +562,12 @@ treemacs-git-commit-diff-mode 1)
 (use-package super-save
   :config
   (setopt super-save-triggers
-  '(other-window  ; Al cambiar de ventana
-    switch-to-buffer  ; Al cambiar de buffer
-    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
-  (super-save-mode 1)
-  (setopt super-save-idle-duration 1)  ; 0.3 segundos de inactividad
-  (setopt super-save-auto-save-when-idle t)) ; Opcional: guardar también en inactividad
+	  '(other-window  ; Al cambiar de ventana
+	    switch-to-buffer  ; Al cambiar de buffer
+	    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
+  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
+  (setopt super-save-auto-save-when-idle t)
+ (super-save-mode 1)) ; Opcional: guardar también en inactividad
 
 (use-package adaptive-wrap
   :config
@@ -574,14 +576,13 @@ treemacs-git-commit-diff-mode 1)
 (add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
 
 (defun set-markdown-headers () 
-   "Setting the headers to a markdown file"
+  "Setting the headers to a markdown file"
   (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
   (set-face-attribute 'markdown-header-face-2 nil :height 1.75)
   (set-face-attribute 'markdown-header-face-3 nil :height 1.5)
   (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
   (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
-  (set-face-attribute 'markdown-header-face-6 nil :height 1.05)
-  (set-face-attribute 'markdown-code-face nil :inherit  'fixed-pitch))
+  (set-face-attribute 'markdown-header-face-6 nil :height 1.05))
 
 (use-package markdown-mode
   :demand t
@@ -589,8 +590,8 @@ treemacs-git-commit-diff-mode 1)
   :hook ((markdown-mode . set-markdown-headers)
          (gfm-mode . set-markdown-headers))
   :mode (("README\\.md\\'" . gfm-mode)
-       ("\\.md\\'" . gfm-mode)
-       ("\\.markdown\\'" . markdown-mode))
+	 ("\\.md\\'" . markdown-mode)
+	 ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
   (setopt markdown-fontify-code-blocks-natively t)
@@ -630,9 +631,9 @@ treemacs-git-commit-diff-mode 1)
 (use-package i3wm-config-mode
   :demand t
   :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
-(add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode)))
+  :mode
+  ("/sway/.*config.*/" . i3wm-config-mode)
+  ("/sway/config\\'" . i3wm-config-mode))
 
 (use-package savehist
     :ensure nil

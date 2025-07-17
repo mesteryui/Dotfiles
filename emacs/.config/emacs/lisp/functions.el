@@ -27,27 +27,27 @@ The return value is the new value of LIST-VAR."
 (defun get-local-language ()
 "Retrieve the definition the language org variable."
 (save-excursion
-(goto-char (point-min))
-(when (re-search-forward
-  "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
-(let ((lang (match-string-no-properties 1)))
-(cond 
-((equal lang "es") "es_ES")
-((equal lang "en") "en_US")
-(t lang))))))
+  (goto-char (point-min))
+  (when (re-search-forward
+	 "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
+    (let ((lang (match-string-no-properties 1)))
+      (cond
+       ((equal lang "es") "es_ES")
+       ((equal lang "en") "en_US")
+       (t lang))))))
 
 (defun dynamic-language-change ()
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
 (when-let ((lang (get-local-language)))
-(setq ispell-local-dictionary lang)))
+  (setq ispell-local-dictionary lang)))
 
 (defun get-local-macro-definition (macro-name)
 "Retrieve the definition of a local Org mode macro."
 (save-excursion
-(goto-char (point-min))
-(when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
-(match-string 1))))
+  (goto-char (point-min))
+  (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
+    (match-string 1))))
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs."
@@ -89,14 +89,13 @@ This function allow to activate the webserver when you use but if there is a pro
           (message " ✅ Webserver started")))))))
 
 (defun org-temp-buffer (&optional template)
-"Acceder a un buffer temporal de orgmode"
-(interactive)
-(switch-to-buffer (get-buffer-create "*orgtemp*"))
-(if (get-buffer "*orgtemp*")
-(progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n"   (or template "Temporal Buffer")
-            (format-time-string "%Y-%m-%d") user-full-name))
-(org-mode)
-(goto-char (point-max)))))
+  "Acceder a un buffer temporal de orgmode."
+  (interactive)
+  (with-current-buffer (pop-to-buffer "*orgtemp*")
+      (progn (insert (format "#+title: %s\n#+description:%s\n#+author: %s\n\n" (or template "Temporal Buffer")
+			       (format-time-string "%Y-%m-%d") user-full-name))
+	     (org-mode)
+	     (goto-char (point-max)))))
 
 (defun prot/keyboard-quit-dwim ()
   "Do-What-I-Mean behaviour for a general `keyboard-quit'.
