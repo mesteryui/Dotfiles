@@ -145,10 +145,13 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 #+end_src
 * Variables y verbas diversas
 #+begin_src emacs-lisp 
-(defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-  "The languages to be used by word corrections")
-(defvar my/enabled-modules nil
-"Lista de modulos a cargar.")
+  (defgroup os nil
+    "Group to my custom configs"
+    :group 'convenience)
+  (defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+    "The languages to be used by word corrections")
+  (defvar my/enabled-modules nil
+  "Lista de modulos a cargar.")
 #+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
@@ -219,14 +222,25 @@ Una macro que permite ejecutar codigo despues de que cargue un paquete para eso 
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
 Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue."
-  (let ((packages (if (listp package) package (list package))))
-    `(progn
-       ,@(seq-map (lambda (p)
-                    `(if (featurep ',p)
-                         (progn ,@body)
-                       (with-eval-after-load ',p
-                         ,@body)))
-                  packages))))
+  (let* ((condt (cl-getf body :if))
+         (sleeper (cl-getf body :sleep))
+	 (body (let ((b (copy-sequence body)))
+		 (cl-remf b :if)
+                 (cl-remf b :sleep)
+		 b)))
+	 `(let ((exec (lambda () 
+			,(if sleeper 
+			     `(run-at-time ,sleeper nil (lambda () ,@body)) `(progn ,@body)))))
+	    ,(if condt
+		`(when ,condt
+                     (if (featurep ',package)
+                         (funcall exec)
+                       (with-eval-after-load ',package
+                         (funcall exec))))
+                    `(if (featurep ',package)
+                         (funcall exec)
+                       (with-eval-after-load ',package
+                          (funcall exec)))))))
 #+end_src
 ** When system
 Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
@@ -274,7 +288,8 @@ y FUNCS las funciones a añadir"
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
 ** Mixed pitch
 Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combinado con fixed-ptich junto a otras cosas
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (use-package mixed-pitch
   :ensure t
   :hook (text-mode . mixed-pitch-mode)
@@ -424,7 +439,8 @@ Esta es la opacidad que el editor aplica por defecto
 Aqui introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
 ** Configuración de IRC
 Configuración del cliente erc
-#+BEGIN_SRC emacs-lisp :tangle lisp/tools.el
+#+BEGIN_SRC emacs-lisp :tangle lisp/tools.el :noweb yes
+<<lexicalbind>>
 (setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
@@ -437,7 +453,8 @@ Configuración del cliente erc
 :header-args:emacs-lisp: :tangle "lisp/personal.el" :noweb yes
 :END:
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp :noweb yes
+<<lexicalbind>>
 (setopt user-full-name "Oscar")
 (setopt inhibit-startup-message t
 	use-short-answers t
@@ -608,7 +625,7 @@ Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etique
 (defun dynamic-language-change ()
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
-(when-let ((lang (get-local-language)))
+(when-let* ((lang (get-local-language)))
   (jinx-languages lang)))
 #+end_src
 *** Obtener valor de una macro org
@@ -756,13 +773,33 @@ The DWIM behaviour of this command is as follows:
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
 :END:
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
+#+end_src
 *** Mis paquetes
-Aqui ire introduciendo paquetes creados por mi persona, para mi propio uso así los tengo separados del resto de paquetes
+Aqui ire introduciendo paquetes, e intentos de paquetes, creados por mi persona, para mi propio uso así los tengo separados del resto de paquetes
+**** Pasvortilo
+Paquete que intento que me acepten en el melpa voy a intentar usarlo para ver que errores puedo solventar, es una pequeña interfaz para pass o para gopass, pass es un gestor de contraseña para terminal y gopass es una version moderna de ello, informo que este paquete no soportara todo lo de gopass ya que trata de ser lo más compatible entre pass y gopass, lo hago para sí alguien tiene gopass y no quiere usar pass no tenga que hacerlo.
+#+begin_src emacs-lisp 
+(use-package pasvortilo
+:ensure (:host codeberg :repo "mester/pasvortilo"))
+#+end_src
 **** Os scratch
+Configuraciones para crear buffers a los que me gusta decir custom-scratch te permite crear buffers temporales de un modo en especifico 
 #+begin_src emacs-lisp
 (use-package os-scratch
   :load-path "os-lisp/"
 )
+#+end_src
+**** Organizer
+Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
+#+begin_src emacs-lisp 
+(use-package organizer
+  :load-path "os-lisp/Organizer/"
+  :bind ("<f12>" . organizer-index)
+  :config
+  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 #+end_src
 **** Os modeline
 Mi modeline personalizada en la que estoy trabajando.
@@ -867,7 +904,7 @@ Un sistema que permite usar modelos de lenguaje grandes la mal llamada IA, porqu
 (use-package gptel
 :config
 (setq gptel-model 'gemini-2.5-pro
-      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+      gptel-backend (gptel-make-gemini "Gemini" :key (pasvortilo-obtain-password "geminiAPI") :stream t)))
 #+end_src
 *** Ace window
 #+begin_src emacs-lisp 
@@ -997,9 +1034,9 @@ Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
 :hook ((dired-mode . dired-hide-details-mode)
        (dired-mode . hl-line-mode))
 :config
-(when-let (cmd (cond ((equal system-type 'darwin) "open")
+(when-let* ((cmd (cond ((equal system-type 'darwin) "open")
               ((equal system-type 'gnu/linux) "xdg-open")
-              ((equal system-type 'windows-nt) "start")))
+              ((equal system-type 'windows-nt) "start"))))
 (setopt dired-guess-shell-alist-user
  `(("\\.\\(?:docx\\|pdf\\|djvu\\|eps\\)\\'" ,cmd)
    ("\\.\\(?:jpe?g\\|png\\|gif\\|xpm\\)\\'" ,cmd)
@@ -1228,8 +1265,6 @@ Habilita la corrección ortográfica al vuelo.
   :bind(("M-<f7>" . flyspell-buffer)
 	("<f7>" . flyspell-word)))
 
-
-
 (use-package flyspell-correct
   :after (flyspell)
   :bind (("C-;" . flyspell-auto-correct-previous-word)
@@ -1422,9 +1457,8 @@ Completacion minimalista y más vistosa en el minibuffer
 #+end_src
 **** Marginalia
 Provee anotaciones en el minibuffer para mejorar la experiencia de completado
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package marginalia
-:after vertico
 :commands (marginalia-mode marginalia-cycle)
 :custom
 (marginalia-annotators
@@ -1494,16 +1528,7 @@ Muestra de una mejor forma las opciones de teclas a pulsar a continuación
 (which-key-separator " → ") 
 (which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 #+end_src
-*** Organizer
-Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
-#+begin_src emacs-lisp 
-(use-package organizer
-  :load-path "Organizer/"
-  :bind ("<f12>" . organizer-index)
-  :config
-  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
-  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
-#+end_src
+
 *** Olivetti
 En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
 #+begin_src emacs-lisp :noweb yes
@@ -2066,6 +2091,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
                            (corfu-popupinfo-mode))))      ; activación global
 (use-package corfu-terminal
    :after corfu
+   :if (< emacs-major-version 31)
    :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
    :config
    (unless (display-graphic-p)
@@ -2349,7 +2375,8 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/lang/javascript.el" :mkdirp yes
 :END:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (use-package js
     :ensure nil
     :custom
@@ -2362,7 +2389,8 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/lang/ruby.el" :mkdirp yes
 :END:
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (use-package ruby-mode :ensure nil)
 (use-package ruby-ts-mode
   :ensure nil
@@ -2385,7 +2413,8 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 #+end_src
 **** Trabajo con uv 
 Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
-#+begin_src emacs-lisp :tangle lisp/lang/pythonlang.el 
+#+begin_src emacs-lisp :tangle lisp/lang/pythonlang.el :noweb yes
+<<lexicalbind>>
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
   :init
@@ -2398,11 +2427,12 @@ Aqui voy a definir algunas funciones para trabajar con el gestor de complementos
 #+end_src
 *** Scheme
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/scheme.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "lisp/lang/schemelang.el" :mkdirp yes
 :END:
-Lenguaje de programacion bastante particular al que todavia no le he pillado todo
-el potencial
-#+begin_src emacs-lisp
+Lenguaje de programación bastante particular al que todavía no le he pillado todo
+el potencial.
+#+begin_src emacs-lisp :tangle lisp/lang/schemelang.el :noweb yes
+<<lexicalbind>>
   (use-package geiser
   :ensure t)
 
@@ -2410,14 +2440,15 @@ el potencial
   :ensure t)
   (use-package flymake-guile
     :defer t)
-(provide 'scheme)
+(provide 'schemelang)
 #+end_src
 *** Rust
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/lang/rust.el" :mkdirp yes
 :END:
-Lenguaje de programacion conocido por su velocidad y caracteristicas de seguridad en memoria
-#+begin_src emacs-lisp
+Lenguaje de programación conocido por su velocidad y caracteristicas de seguridad en memoria
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (use-package rust-mode) ;; Rust
 
 (use-package cargo-mode
@@ -2432,7 +2463,8 @@ Lenguaje de programacion conocido por su velocidad y caracteristicas de segurida
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/lang/lua.el" :mkdirp yes
 :END:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (use-package lua-mode)
 (provide 'lua)
 #+end_src
@@ -2441,7 +2473,8 @@ Lenguaje de programacion conocido por su velocidad y caracteristicas de segurida
 :header-args:emacs-lisp: :tangle "lisp/lang/java.el" :mkdirp yes
 :END:
 Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui es un poco complicado
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 ;;  (use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
   (use-package eglot-java
     :defer t)
@@ -2460,7 +2493,8 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 (provide 'java)
 #+end_src
 *** Common Lisp
-#+begin_src emacs-lisp :tangle lisp/lang/common-lisp.el
+#+begin_src emacs-lisp :tangle lisp/lang/common-lisp.el :noweb yes
+<<lexicalbind>>
   (use-package sly
     :ensure t
     :commands sly
@@ -2470,7 +2504,8 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 #+end_src
 *** Emacs Lisp
 Utilidades para desarrollar paquetes para emacs.
-#+begin_src emacs-lisp :tangle lisp/lang/emacs-lisp.el
+#+begin_src emacs-lisp :tangle lisp/lang/emacs-lisp.el :noweb yes
+<<lexicalbind>>
 (use-package package-lint)
 
 (use-package package-lint-flymake
@@ -2526,7 +2561,7 @@ Aquí defino el bloque de código que lleva a cabo la carga de todos los módulo
     programming ;; Configuraciones base de programación
     ;; Módulos de lenguajes específicos
     javascript
-    scheme
+    schemelang
     emacs-lisp ;; Desarrollo de paquetes para Emacs
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
@@ -2550,7 +2585,7 @@ Configuraciones que he tenido en cuenta:
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 
-- [[https://elblogdelazaro.org/posts/2024-04-15-mi-fichero-configuracion-emacs-2024/][El blog de lazaro 2024]]
+- [[https://elblogdelazaro.org/emacs-mi-fichero-configuraci%C3%B3n-2024/][El blog de lázaro 2024]]
 También hay algunos más como el mítico [[https://notxor.nueva-actitud.org/][Notxor]]
 
 # Local Variables:

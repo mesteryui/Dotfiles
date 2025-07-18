@@ -31,14 +31,25 @@ Use this function via a hook."
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
 Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue."
-  (let ((packages (if (listp package) package (list package))))
-    `(progn
-       ,@(seq-map (lambda (p)
-                    `(if (featurep ',p)
-                         (progn ,@body)
-                       (with-eval-after-load ',p
-                         ,@body)))
-                  packages))))
+  (let* ((condt (cl-getf body :if))
+         (sleeper (cl-getf body :sleep))
+	 (body (let ((b (copy-sequence body)))
+		 (cl-remf b :if)
+                 (cl-remf b :sleep)
+		 b)))
+	 `(let ((exec (lambda () 
+			,(if sleeper 
+			     `(run-at-time ,sleeper nil (lambda () ,@body)) `(progn ,@body)))))
+	    ,(if condt
+		`(when ,condt
+                     (if (featurep ',package)
+                         (funcall exec)
+                       (with-eval-after-load ',package
+                         (funcall exec))))
+                    `(if (featurep ',package)
+                         (funcall exec)
+                       (with-eval-after-load ',package
+                          (funcall exec)))))))
 
 (defmacro when-system (system &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
