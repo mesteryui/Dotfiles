@@ -1,0 +1,22 @@
+* Organizer ¿Para que?
+
+Muchos os preguntarías para que un sistema como este teniendo en cuenta todo lo que *Emacs* trae incluido por defecto
+pero si que es cierto que yo tengo el indice para organizarme y poner algunas cosas que no tienen demasiado sentido en la agenda o las notas
+junto con acceso directo a los archivos de la agenda y algunas funciones para asi mostrar su existencia por si hay algun olvido haciendo además algo más
+visual. Además organizer ha sido expandido para ayudarme a colocar checkboxes en orgmode y el contenido de los mismos usando la función *organizar-ítem*, además recientemente se ha integrado una nueva funcionalidad
+llamada **organizer-files-selector** que es un selector de archivos que selecciona la agenda por defecto ya que la filosofia de organizer en este momento se basa en eso no quita que luego 
+decida cambiarla para permitir yo que se una agenda laboral y personal separada que a lo mejor funcionaria mejor para alguno
+
+
+Esto se puede añadir con organizer-item en un documento en Emacs
+- [ ] Estos checkboxes fueron hechos usando organizer-item  
+** Uso con elpaca y use-package
+Esto es un ejemplo usando el gestor de paquetes elpaca, que es el que uso para usarlo con
+use-package pudiendo hacer esto
+#+begin_src emacs-lisp
+ (use-package organizer
+  :demand t
+  :ensure (:host codeberg :repo "mester/Organizer")
+  :config
+  (global-set-key (kbd "<f12>")  'organizer-index))
+#+end_src
