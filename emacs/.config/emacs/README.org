@@ -429,8 +429,8 @@ Configuración del cliente erc
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
 (setq erc-track-enable-keybindings t)
 (setopt erc-fill-column 120
-erc-fill-function 'erc-fill-static
-erc-fill-static-center 20)
+	erc-fill-function 'erc-fill-static
+	erc-fill-static-center 20)
 #+END_SRC
 ** Configuraciones personales varias
 :PROPERTIES:
@@ -444,13 +444,13 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
 	blink-matching-parent t)
 #+end_src
 *** Configuración zoom
-La configuracion de los atajos de zoom
+La configuración de los atajos de zoom
 #+begin_src emacs-lisp
 (gbind "C-+" text-scale-increase)
 (gbind "C--" text-scale-decrease)
 #+end_src
 *** Ubicación custom file
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (load custom-file 'noerror 'nomessage)
 #+end_src
 *** Configuraciones diversas
@@ -523,7 +523,7 @@ Configura la creación de archivos de backup para mantener las cosas más simple
 make-backup-files nil                   ; No realiza backups de ficheros
 #+end_src
 ** So-long
-Es una funcionalidad implementada en las ultimas versiones de Emacs muy util para los archivos muy largos
+Es una funcionalidad implementada en las ultimas versiones de Emacs muy útil para los archivos muy largos
 #+begin_src emacs-lisp :tangle lisp/performance.el
 (global-so-long-mode 1)
 (os/after so-long
@@ -581,11 +581,11 @@ The return value is the new value of LIST-VAR."
 #+end_src
 *** Append to gitignore
 Te permite seleccionar un archivo para añadir al gitignore
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (defun append-to-gitignore (file)
 "Añade archivos al gitignore"
 (interactive "fSelect a file to append in the gitignore: ")
-(with-current-buffer (find-file-noselect (expand-file-name ".gitignore" doom-modeline--project-root))
+(with-current-buffer (find-file-noselect (expand-file-name ".gitignore" (vc-root-dir)))
   (end-of-buffer)
   (insert (format "\n%s" file))
   (save-buffer)))
@@ -609,7 +609,7 @@ Cambia el idioma de autocorrectivo, de un documento org dependiendo de la etique
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
 (when-let ((lang (get-local-language)))
-  (setq ispell-local-dictionary lang)))
+  (jinx-languages lang)))
 #+end_src
 *** Obtener valor de una macro org
 Este codigo es útil ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
@@ -756,6 +756,45 @@ The DWIM behaviour of this command is as follows:
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
 :END:
+*** Mis paquetes
+Aqui ire introduciendo paquetes creados por mi persona, para mi propio uso así los tengo separados del resto de paquetes
+**** Os scratch
+#+begin_src emacs-lisp
+(use-package os-scratch
+  :load-path "os-lisp/"
+)
+#+end_src
+**** Os modeline
+Mi modeline personalizada en la que estoy trabajando.
+#+begin_src emacs-lisp 
+(use-package os-modeline
+  :load-path "os-lisp/"
+  :custom (os-modeline-bar-height 120)
+  :config
+  (setq mode-line-compact nil) ; Emacs 28
+  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
+  (setq-default mode-line-format
+		'("%e"
+		  os-modeline-input-method
+                  os-modeline-kbd-macro
+                  os-modeline-buffer-status
+	          os-modeline-buffer-name
+                  "   "
+                  os-modeline-major-mode
+		  "   "
+		  os-modeline-zoom
+                  "   "
+                  (:eval (when (buffer-file-name) "%p"))
+                  "   "
+                  os-modeline-vc-branch
+		  "   "
+		  os-modeline-eglot
+		  "   "
+                  os-modeline-flymake
+                  "   "
+		  mode-line-format-right-align ; Emacs 30
+		  os-modeline-misc-info)))
+#+end_src
 *** Buffer terminator
 Permite matar buffers de forma segura y automatica, asegurando un espacio de trabajo limpio y eficiente y es posible definir reglas para configurar todo eso.
 #+begin_src emacs-lisp
@@ -813,7 +852,7 @@ Paquete de Protesilaos que permite mantener cierto espacio.
 :ensure t
 :config 
 (setq spacious-padding-widths
-      '( :internal-border-width 15
+      '(:internal-border-width 15
          :header-line-width 4
          :mode-line-width 6
          :tab-width 4
@@ -823,11 +862,12 @@ Paquete de Protesilaos que permite mantener cierto espacio.
 (spacious-padding-mode))
 #+end_src
 *** Gptel
-#+begin_src emacs-lisp
+Un sistema que permite usar modelos de lenguaje grandes la mal llamada IA, porque tiene más A de artificial que I de inteligencia. Pero independientemente de eso es útil.
+#+begin_src emacs-lisp 
 (use-package gptel
 :config
-(setq gptel-model 'gemini-2.5-pro 
-gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+(setq gptel-model 'gemini-2.5-pro
+      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
 #+end_src
 *** Ace window
 #+begin_src emacs-lisp 
@@ -1282,35 +1322,6 @@ Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcio
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 *** Hacer más estetico Emacs
-**** Custom modeline
-Mi modeline personalizada en la que estoy trabajando.
-#+begin_src emacs-lisp 
-(use-package os-modeline
-  :load-path "os-lisp/"
-  :custom (os-modeline-bar-height 120)
-  :config
-  (setq mode-line-compact nil) ; Emacs 28
-  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
-  (setq-default mode-line-format
-		'("%e"
-		  os-modeline-input-method
-                  os-modeline-kbd-macro
-                  os-modeline-buffer-status
-	          os-modeline-buffer-name
-                  "   "
-                  os-modeline-major-mode
-                  "   "
-                  (:eval (when (buffer-file-name) "%p"))
-                  "   "
-                  os-modeline-vc-branch
-		  "   "
-		  os-modeline-eglot
-		  "   "
-                  os-modeline-flymake
-                  "   "
-		  mode-line-format-right-align ; Emacs 30
-		  os-modeline-misc-info)))
-#+end_src
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
 #+begin_src emacs-lisp :noweb yes :tangle lisp/packages.el
@@ -1921,7 +1932,6 @@ Permite estructurar el código en estructuras plegables siendo practico para có
 (use-package outline
   :ensure nil
   :commands outline-minor-mode
-  :bind (:map outline-minor-mode-map ("M-TAB" . outline-cycle))
   :hook
   ((emacs-lisp-mode . outline-minor-mode)
    ;; Use " ▼" instead of the default ellipsis "..." for folded text to make
@@ -2542,3 +2552,7 @@ Configuraciones que he tenido en cuenta:
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 
 - [[https://elblogdelazaro.org/posts/2024-04-15-mi-fichero-configuracion-emacs-2024/][El blog de lazaro 2024]]
 También hay algunos más como el mítico [[https://notxor.nueva-actitud.org/][Notxor]]
+
+# Local Variables:
+# jinx-local-words: "scripts"
+# End:

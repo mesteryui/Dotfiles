@@ -6,6 +6,8 @@
 (gbind "C-+" text-scale-increase)
 (gbind "C--" text-scale-decrease)
 
+(load custom-file 'noerror 'nomessage)
+
 (setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` forajido eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.Enjoy doing things here.\n\n"
 				      (propertize
 				       (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")

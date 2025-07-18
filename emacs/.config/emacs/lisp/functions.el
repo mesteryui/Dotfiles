@@ -24,6 +24,14 @@ The return value is the new value of LIST-VAR."
     (set list-var elements)))
 (symbol-value list-var))
 
+(defun append-to-gitignore (file)
+"Añade archivos al gitignore"
+(interactive "fSelect a file to append in the gitignore: ")
+(with-current-buffer (find-file-noselect (expand-file-name ".gitignore" (vc-root-dir)))
+  (end-of-buffer)
+  (insert (format "\n%s" file))
+  (save-buffer)))
+
 (defun get-local-language ()
 "Retrieve the definition the language org variable."
 (save-excursion
@@ -40,7 +48,7 @@ The return value is the new value of LIST-VAR."
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
 (when-let ((lang (get-local-language)))
-  (setq ispell-local-dictionary lang)))
+  (jinx-languages lang)))
 
 (defun get-local-macro-definition (macro-name)
 "Retrieve the definition of a local Org mode macro."

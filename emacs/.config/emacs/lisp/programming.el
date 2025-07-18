@@ -7,7 +7,6 @@
 (use-package outline
   :ensure nil
   :commands outline-minor-mode
-  :bind (:map outline-minor-mode-map ("M-TAB" . outline-cycle))
   :hook
   ((emacs-lisp-mode . outline-minor-mode)
    ;; Use " ▼" instead of the default ellipsis "..." for folded text to make

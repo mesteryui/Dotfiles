@@ -1,3 +1,35 @@
+(use-package os-scratch
+  :load-path "os-lisp/"
+)
+
+(use-package os-modeline
+  :load-path "os-lisp/"
+  :custom (os-modeline-bar-height 120)
+  :config
+  (setq mode-line-compact nil) ; Emacs 28
+  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
+  (setq-default mode-line-format
+		'("%e"
+		  os-modeline-input-method
+                  os-modeline-kbd-macro
+                  os-modeline-buffer-status
+	          os-modeline-buffer-name
+                  "   "
+                  os-modeline-major-mode
+		  "   "
+		  os-modeline-zoom
+                  "   "
+                  (:eval (when (buffer-file-name) "%p"))
+                  "   "
+                  os-modeline-vc-branch
+		  "   "
+		  os-modeline-eglot
+		  "   "
+                  os-modeline-flymake
+                  "   "
+		  mode-line-format-right-align ; Emacs 30
+		  os-modeline-misc-info)))
+
 (use-package buffer-terminator
   :ensure t
   :custom
@@ -44,7 +76,7 @@
 :ensure t
 :config 
 (setq spacious-padding-widths
-      '( :internal-border-width 15
+      '(:internal-border-width 15
          :header-line-width 4
          :mode-line-width 6
          :tab-width 4
@@ -55,8 +87,8 @@
 
 (use-package gptel
 :config
-(setq gptel-model 'gemini-2.5-pro 
-gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+(setq gptel-model 'gemini-2.5-pro
+      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
 
 (use-package ace-window
   :ensure t
@@ -343,32 +375,6 @@ vterm-mode-map
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
-
-(use-package os-modeline
-  :load-path "os-lisp/"
-  :custom (os-modeline-bar-height 120)
-  :config
-  (setq mode-line-compact nil) ; Emacs 28
-  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
-  (setq-default mode-line-format
-		'("%e"
-		  os-modeline-input-method
-                  os-modeline-kbd-macro
-                  os-modeline-buffer-status
-	          os-modeline-buffer-name
-                  "   "
-                  os-modeline-major-mode
-                  "   "
-                  (:eval (when (buffer-file-name) "%p"))
-                  "   "
-                  os-modeline-vc-branch
-		  "   "
-		  os-modeline-eglot
-		  "   "
-                  os-modeline-flymake
-                  "   "
-		  mode-line-format-right-align ; Emacs 30
-		  os-modeline-misc-info)))
 
 ;; use-package with package.el:
 (use-package dashboard
