@@ -6,44 +6,45 @@
 (setq org-use-property-inheritance '("header-args"))
 
 (use-package org
-:ensure nil
-:commands (org-mode org-version)
-:hook ((org-mode . org-indent-mode)
-(org-mode . os/org-headers-setters)
-(org-mode . visual-line-mode)
-(org-mode . dynamic-language-change))
-:custom
-;; Exportación
-(org-export-with-drawers nil)
-(org-export-with-todo-keywords nil)
-(org-export-with-broken-links t)
-(org-export-with-toc nil)
-(org-export-with-smart-quotes t)
-(org-export-date-timestamp-format "%d %B %Y")
-;; Apariencia
-(org-ellipsis "▼")
-(org-startup-indented t)
-(org-pretty-entities t)
-(org-fontify-done-headline t)
-(org-use-sub-superscripts "{}")
-(org-hide-emphasis-markers t)
-(org-hide-leading-stars t)
-(org-startup-truncated t)
-;; Imágenes
-(org-startup-with-inline-images t)
-(image-actual-width '(300))
-;; Babel
-(org-confirm-babel-evaluate nil)
-;; Agenda
-(org-agenda-skip-scheduled-if-done t)
-;; Listas
-(org-list-allow-alphabetical t)
-;; Enlaces
-(org-return-follows-link t)
-:config
-(require 'org-tempo))
-(gbind "C-c c" org-capture)
-(gbind "C-c a" org-agenda)
+  :ensure nil
+  :commands (org-mode org-version)
+  :hook ((org-mode . org-indent-mode)
+	 ;;(org-mode . os/org-headers-setters)
+	 (org-mode . visual-line-mode)
+	 (org-mode . dynamic-language-change))
+  :custom
+  ;; Exportación
+  (org-export-with-drawers nil)
+  (org-export-with-todo-keywords nil)
+  (org-export-with-broken-links t)
+  (org-export-with-toc nil)
+  (org-export-with-smart-quotes t)
+  (org-export-date-timestamp-format "%d %B %Y")
+  ;; Apariencia
+  (org-ellipsis "▼")
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-fontify-done-headline t)
+  (org-use-sub-superscripts "{}")
+  (org-hide-emphasis-markers t)
+  (org-hide-leading-stars t)
+  (org-startup-truncated t)
+  ;; Imágenes
+  (org-startup-with-inline-images t)
+  (image-actual-width '(300))
+  ;; Babel
+  (org-confirm-babel-evaluate nil)
+  ;; Agenda
+  (org-agenda-skip-scheduled-if-done t)
+  ;; Listas
+  (org-list-allow-alphabetical t)
+  ;; Enlaces
+  (org-return-follows-link t)
+  :config
+  (require 'org-tempo))
+(gbind-multiple 
+("C-c c" . org-capture)
+("C-c a" . org-agenda))
 ;; disable electric pairing for angle bracket
 
 (add-hook 'org-mode-hook (lambda ()
@@ -155,6 +156,7 @@ org-src-fontify-natively t)
    (python . t)
    (shell . t)))
 (os/after org-contrib
+	  :if (fboundp 'ledger-mode)
 	  (org-babel-do-load-languages 'org-babel-load-languages 
 				       '((ledger . t))))
 

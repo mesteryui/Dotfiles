@@ -31,11 +31,15 @@
   "Managing custom scratch."
   :group 'convenience)
 
-(defvar os-scratch-messages `((org-mode . ,(format "#+title: Org Temporal buffer\n#+author: %s\n#+description: %s" user-full-name (string-trim (shell-command-to-string "date +%Y/%m/%d"))))
-			      (emacs-lisp-mode . ";; Temporal buffer in Emacs Lisp Mode")
-			      (bash-ts-mode . "#!/usr/bin/bash")
-			      (gfm-mode . "# Try of a Markdown Github Readme"))
-  "Messages for 'os-scratch'.")
+
+(defvar os-scratch-messages `((org . ,(format "#+title: Org Temporal buffer\n#+author: %s\n#+description: %s" user-full-name (string-trim (shell-command-to-string "date +%Y/%m/%d"))))
+			      (emacs-lisp . ";; Temporal buffer in Emacs Lisp Mode")
+			      (bash-ts . "#!/usr/bin/bash")
+			      (gfm . "# Try of a Markdown Github Readme")
+			      (python-ts . "# Temporal python buffer that you can use to write code and see or save it")
+			      (common-lisp . ";; Welcome to Common Lisp Scratch.")
+			      (lisp-interaction . ,(string-replace "\n\n" "" initial-scratch-message)))
+  "Messages for 'os-scratch'.You only need to put the mode name without -mode.")
 
 (defun os-scratch--scratch-list-modes ()
   "List known major modes."
@@ -44,7 +48,7 @@
      (lambda (symbol)
        (when (and (functionp symbol)
                   (or (provided-mode-derived-p symbol 'text-mode)
-                      (provided-mode-derived-p symbol 'prog-mode)))
+		      (provided-mode-derived-p symbol 'prog-mode)))
          (push symbol symbols))))
     symbols))
 
@@ -77,6 +81,7 @@
 
 (defun os-scratch-switch-to-buffer ()
   "Switch to a scratch buffer created by 'os-scratch'."
+  (interactive)
   (let* ((buff (os-scratch-select-buffer)))
     (switch-to-buffer buff)))
 
@@ -86,7 +91,7 @@
 
 (defun os-scratch--message-for-mode (mode)
   "Return the initial message for MODE."
-  (or (cdr (assoc mode os-scratch-messages)) ""))
+  (or (cdr (assoc (intern (string-replace "-mode" "" (symbol-name mode))) os-scratch-messages)) ""))
 
 (defun os-scratch-create-buffer (mode)
   "Create a custom scratch buffer using a MODE."
@@ -96,8 +101,13 @@
       (add-hook 'kill-buffer-hook (lambda () (when (not (one-window-p :no-minibuffer)) (delete-window))) nil t)
       (when (= (point-min) (point-max))
 	(insert (os-scratch--message-for-mode mode))
-	(if (string= (buffer-string) (os-scratch--message-for-mode mode))
-	    (insert "\n\n")))
+	(when (and (string= (buffer-string) (os-scratch--message-for-mode mode)) (not (string= (buffer-string) "")))
+	  (insert "\n\n")))
       (pop-to-buffer buf))))
+
 (provide 'os-scratch)
 ;;; os-scratch.el ends here
+
+;; Local Variables:
+;; jinx-languages: "en_US"
+;; End:

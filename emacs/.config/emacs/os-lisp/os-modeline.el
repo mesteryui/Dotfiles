@@ -2,7 +2,7 @@
 
 ;; Author: Oscar
 ;; Version: 1.0
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "30.1"))
 ;; Homepage: https://codeberg.org/mester
 ;; Keywords: extensions
 
@@ -129,7 +129,7 @@ TYPE is usually keyword `:error', `:warning' or `:note'."
 
 (os-modeline-flymake-type error " ") ;;☣
 (os-modeline-flymake-type warning " ");;!
-(os-modeline-flymake-type note "·" success)
+(os-modeline-flymake-type note "    " success) ;; ·
 
 
 (defvar-local os-modeline-flymake
@@ -380,7 +380,7 @@ Specific to the current window's mode line.")
 Specific to the current window's mode line.")
 ;; End of Miscellaneous
 (defun os-modeline--zoom (face)
-  "Defines the amount of zoom relative to normal text-scale you must pass the FACE you want the text of zoom uses."
+  "Define the amount of zoom relative to normal text-scale you must pass the FACE you want the text of zoom uses."
   (and (boundp 'text-scale-mode-amount)
        (/= text-scale-mode-amount 0)
        (propertize

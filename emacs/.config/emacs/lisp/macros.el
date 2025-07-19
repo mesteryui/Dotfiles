@@ -30,26 +30,23 @@ Use this function via a hook."
 
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
-Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue."
+Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue.
+:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada.
+:sleep permite retrasar la ejecucion una cantidad de tiempo dada"
   (let* ((condt (cl-getf body :if))
-         (sleeper (cl-getf body :sleep))
 	 (body (let ((b (copy-sequence body)))
 		 (cl-remf b :if)
-                 (cl-remf b :sleep)
-		 b)))
-	 `(let ((exec (lambda () 
-			,(if sleeper 
-			     `(run-at-time ,sleeper nil (lambda () ,@body)) `(progn ,@body)))))
-	    ,(if condt
-		`(when ,condt
-                     (if (featurep ',package)
-                         (funcall exec)
-                       (with-eval-after-load ',package
-                         (funcall exec))))
-                    `(if (featurep ',package)
-                         (funcall exec)
-                       (with-eval-after-load ',package
-                          (funcall exec)))))))
+		 )))
+    (if condt
+	`(when ,condt
+           (if (featurep ',package)
+	       (progn ,@body)
+             (with-eval-after-load ',package
+               (progn ,@body))))
+      `(if (featurep ',package)
+           (progn ,@body)
+         (with-eval-after-load ',package
+           (progn ,@body))))))
 
 (defmacro when-system (system &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
@@ -59,7 +56,12 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
 (defmacro gbind (key func)
 "Asigna atajos de teclado globales de forma más sencilla usando kbd:
 KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
-`(global-set-key (kbd ,key) ',func))
+`(global-set-key (kbd ,key) #',func))
+
+(defmacro gbind-multiple (&rest binds)
+    "Bind globally multiple keys"
+    `(progn
+       ,@(mapcar (lambda (bind) `(global-set-key (kbd ,(car bind)) #',(cdr bind))) binds)))
 
 (defmacro unbind (key)
 "Unbind the global KEY sequence."
@@ -71,7 +73,7 @@ Es decir si tengo 'org-mode-hook' puedo añadir varias funciones
 siendo HOOK el hook que quiero añadir
 y FUNCS las funciones a añadir"
   `(progn ,@(seq-map
-	     (lambda (f) `(add-hook ',hook ,f))
+	     (lambda (f) `(add-hook ',hook #',f))
 	     funcs)))
 
 (provide 'macros)

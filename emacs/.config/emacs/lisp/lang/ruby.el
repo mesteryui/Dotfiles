@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package ruby-mode :ensure nil)
 (use-package ruby-ts-mode
   :ensure nil

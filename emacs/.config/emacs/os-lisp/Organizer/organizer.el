@@ -27,16 +27,6 @@
 
 ;;; Code:
 
-(defvar-keymap organizer-opts
-  :doc "Keyboard binds for organizer options"
-  :name "Organizer"
-  "f" '("Organizer files selector" . organizer-files-selector)
-  "i" '("Organizer index" . organizer-index)
-  "a" '("Organizer agenda" . organizer-agenda)
-  "b" '("Organizer item" . organizer-item))
-
-(keymap-global-set "C-x j" organizer-opts)
-
 (require 'organizer-dashboard-mode)
 
 (defgroup organizer nil
@@ -46,6 +36,15 @@
   :prefix "organizer-"
   :link '(url-link :tag "Website" "https://codeberg.org/mester/Organizer"))
 
+(defvar-keymap organizer-opts
+  :doc "Keyboard binds for organizer options"
+  :name "Organizer"
+  "f" '("Organizer files selector" . organizer-files-selector)
+  "i" '("Organizer index" . organizer-index)
+  "a" '("Organizer agenda" . organizer-agenda)
+  "b" '("Organizer item" . organizer-item))
+
+(keymap-global-set "C-x j" organizer-opts)
 
 (defcustom organizer-directory org-directory
   "The organizer directory by default is the org directory but that yoy can change if you need."

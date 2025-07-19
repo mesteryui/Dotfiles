@@ -14,7 +14,7 @@
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
   (corfu-quit-at-boundary 'separator)
-  (corfu-popupinfo-delay '(0.4 . 0.2))
+  (corfu-popupinfo-delay '(1.25 . 0.5))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
   :config 
@@ -27,7 +27,8 @@
                            (corfu-popupinfo-mode))))      ; activación global
 (use-package corfu-terminal
    :after corfu
-   :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
+   :if (< emacs-major-version 31)
+   :ensure (:type git :repo   "https://codeberg.org/akib/emacs-corfu-terminal.git")
    :config
    (unless (display-graphic-p)
       (corfu-terminal-mode)))
@@ -37,7 +38,7 @@
   :commands (cape-file cape-dabbrev cpae-elisp-block cape-dict cape-emoji)
   :bind ("C-c p" . cape-prefix-map)
   :init
-  (add-hooks completion-at-point-functions #'cape-abbrev #'cape-dabbrev #'cape-file #'cape-emoji #'cape-dict #'cape-keyword #'cape-elisp-block))
+  (add-hooks completion-at-point-functions cape-abbrev cape-dabbrev cape-file cape-emoji cape-dict cape-keyword cape-elisp-block))
 ;; Atajos prácticos
 ;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 

@@ -1,6 +1,16 @@
+;; -*- lexical-binding: t; -*-
+
 (use-package os-scratch
   :load-path "os-lisp/"
-)
+  :config
+(add-to-list 'os-scratch-messages `(text . ,(format "Welcome to text-mode %s." user-full-name))))
+
+(use-package organizer
+  :load-path "os-lisp/Organizer/"
+  :bind ("<f12>" . organizer-index)
+  :config
+  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
+  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 
 (use-package os-modeline
   :load-path "os-lisp/"
@@ -30,21 +40,18 @@
 		  mode-line-format-right-align ; Emacs 30
 		  os-modeline-misc-info)))
 
-(use-package buffer-terminator
+;;; Pass interface (password-store)
+(use-package password-store
   :ensure t
-  :custom
-  ;; Enable/Disable verbose mode to log buffer cleanup events
-  (buffer-terminator-verbose nil)
-  ;; Set the inactivity timeout (in seconds) after which buffers are considered
-  ;; inactive (default is 30 minutes):
-  (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
-
-  ;; Define how frequently the cleanup process should run (default is every 10
-  ;; minutes):
-  (buffer-terminator-interval (* 10 60)) ; 10 minutes
-
+  ;; Mnemonic is the root of the "code" word (κώδικας).  But also to add
+  ;; the password to the kill-ring.  Other options are already taken.
+  :bind ("C-c k" . password-store-copy)
   :config
-  (buffer-terminator-mode 1))
+  (setq password-store-time-before-clipboard-restore 30))
+
+(use-package pass
+ :ensure t
+ :commands (pass))
 
 ;; Helpful is an alternative to the built-in Emacs help that provides much more
 ;; contextual information.
@@ -74,21 +81,22 @@
 
 (use-package spacious-padding
 :ensure t
+:hook (elpaca-after-init . spacious-padding-mode)
+:bind ("<f6>" . spacious-padding-mode)
 :config 
 (setq spacious-padding-widths
       '(:internal-border-width 15
          :header-line-width 4
-         :mode-line-width 6
+         :mode-line-width 5
          :tab-width 4
          :right-divider-width 30
          :scroll-bar-width 8
-         :fringe-width 8))
-(spacious-padding-mode))
+         :fringe-width 8)))
 
 (use-package gptel
 :config
 (setq gptel-model 'gemini-2.5-pro
-      gptel-backend (gptel-make-gemini "Gemini" :key (string-trim (shell-command-to-string "pass show geminiAPI")) :stream t)))
+      gptel-backend (gptel-make-gemini "Gemini" :key (password-store-get "geminiAPI") :stream t)))
 
 (use-package ace-window
   :ensure t
@@ -178,9 +186,9 @@ vterm-mode-map
 :hook ((dired-mode . dired-hide-details-mode)
        (dired-mode . hl-line-mode))
 :config
-(when-let (cmd (cond ((equal system-type 'darwin) "open")
+(when-let* ((cmd (cond ((equal system-type 'darwin) "open")
               ((equal system-type 'gnu/linux) "xdg-open")
-              ((equal system-type 'windows-nt) "start")))
+              ((equal system-type 'windows-nt) "start"))))
 (setopt dired-guess-shell-alist-user
  `(("\\.\\(?:docx\\|pdf\\|djvu\\|eps\\)\\'" ,cmd)
    ("\\.\\(?:jpe?g\\|png\\|gif\\|xpm\\)\\'" ,cmd)
@@ -449,7 +457,6 @@ vterm-mode-map
   (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
 
 (use-package marginalia
-:after vertico
 :commands (marginalia-mode marginalia-cycle)
 :custom
 (marginalia-annotators
@@ -510,13 +517,6 @@ vterm-mode-map
 (which-key-separator " → ") 
 (which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 
-(use-package organizer
-  :load-path "Organizer/"
-  :bind ("<f12>" . organizer-index)
-  :config
-  (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
-  (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
-
 (defun ews-distraction-free ()
 "Distraction-free writing environment using Olivetti package."
 (interactive)
@@ -545,8 +545,8 @@ vterm-mode-map
 		     ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 		     ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
 		     ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
-(gbind "C-x r e" eradio-toggle)
-(gbind "C-x r p" eradio-play)
+(gbind-multiple ("C-x r e" . eradio-toggle)
+		("C-x r p" . eradio-play))
 
 (use-package doc-view
   :demand t
@@ -562,8 +562,7 @@ vterm-mode-map
 (use-package nov
   :ensure t
   :demand t
-  :init
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+  :mode ("\\.epub\\'" . nov-mode))
 
 (use-package super-save
   :config

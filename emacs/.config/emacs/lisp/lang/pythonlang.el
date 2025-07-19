@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
   :init

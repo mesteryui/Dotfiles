@@ -1,4 +1,5 @@
-(use-package sly
+;; -*- lexical-binding: t; -*-
+  (use-package sly
     :ensure t
     :commands sly
     :config

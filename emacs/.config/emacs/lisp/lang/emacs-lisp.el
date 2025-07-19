@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package package-lint)
 
 (use-package package-lint-flymake

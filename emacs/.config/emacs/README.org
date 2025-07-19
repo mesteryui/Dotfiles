@@ -10,7 +10,7 @@
 ** Otras configs básicas
 *** Ajustes del recolector de basura 
 Aquí definimos ajustes al recolector de basura el plan es que esto se añada a las cosas del early-init.el para de esa manera,
-configurar esos detalles antes de que cargue lo demás, son más que nada optimizaciones
+configurar esos detalles antes de que cargue lo demás, son más que nada optimizaciones.
 #+name: Recolector de basura
 #+begin_src emacs-lisp :tangle no
 ;; Garbage collector optimization
@@ -165,7 +165,7 @@ Mejorar el rendimiento del font-lock
 (setq jit-lock-defer-time 0.05)
 #+end_src
 ** Recolector de basura
-Aqui hago ajustes adicionales al recolector de basura mediante la herramienta gcmh la cual permite hacer la configuracion del recolector de basura algo más automatica ya que la herramienta, decide cuando ejecutar el recolector de basura para no activarlo por ejemplo mientras escribes sino que lo hace cuando estes un tiempo sin usar el editor
+Aquí hago ajustes adicionales al recolector de basura mediante la herramienta gcmh la cual permite hacer la configuración del recolector de basura algo más automática ya que la herramienta, decide cuando ejecutar el recolector de basura para no activarlo por ejemplo mientras escribes sino que lo hace cuando estés un tiempo sin usar el editor
 #+begin_src emacs-lisp 
 (use-package gcmh
   :init
@@ -221,26 +221,23 @@ Una macro que permite ejecutar codigo despues de que cargue un paquete para eso 
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
-Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue."
+Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue.
+:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada.
+:sleep permite retrasar la ejecucion una cantidad de tiempo dada"
   (let* ((condt (cl-getf body :if))
-         (sleeper (cl-getf body :sleep))
 	 (body (let ((b (copy-sequence body)))
 		 (cl-remf b :if)
-                 (cl-remf b :sleep)
-		 b)))
-	 `(let ((exec (lambda () 
-			,(if sleeper 
-			     `(run-at-time ,sleeper nil (lambda () ,@body)) `(progn ,@body)))))
-	    ,(if condt
-		`(when ,condt
-                     (if (featurep ',package)
-                         (funcall exec)
-                       (with-eval-after-load ',package
-                         (funcall exec))))
-                    `(if (featurep ',package)
-                         (funcall exec)
-                       (with-eval-after-load ',package
-                          (funcall exec)))))))
+		 )))
+    (if condt
+	`(when ,condt
+           (if (featurep ',package)
+	       (progn ,@body)
+             (with-eval-after-load ',package
+               (progn ,@body))))
+      `(if (featurep ',package)
+           (progn ,@body)
+         (with-eval-after-load ',package
+           (progn ,@body))))))
 #+end_src
 ** When system
 Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
@@ -256,7 +253,15 @@ Esta macro es para facilitar el seteo de atajos personalizados de teclado a nive
 (defmacro gbind (key func)
 "Asigna atajos de teclado globales de forma más sencilla usando kbd:
 KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
-`(global-set-key (kbd ,key) ',func))
+`(global-set-key (kbd ,key) #',func))
+#+end_src
+*** Gbind multiple
+Mientras que la anterior permite escribir la función para poner atajos de tecla más fáciles, esta macro permite poner varios atajos de teclado de forma fácil sin tener que escribir cada vez.
+#+begin_src emacs-lisp 
+(defmacro gbind-multiple (&rest binds)
+    "Bind globally multiple keys"
+    `(progn
+       ,@(mapcar (lambda (bind) `(global-set-key (kbd ,(car bind)) #',(cdr bind))) binds)))
 #+end_src
 ** Unbind 
 Como el nombre dice elimina los atajos de teclado pero usando una sintaxis simplificado
@@ -273,7 +278,7 @@ Es decir si tengo 'org-mode-hook' puedo añadir varias funciones
 siendo HOOK el hook que quiero añadir
 y FUNCS las funciones a añadir"
   `(progn ,@(seq-map
-	     (lambda (f) `(add-hook ',hook ,f))
+	     (lambda (f) `(add-hook ',hook #',f))
 	     funcs)))
 #+end_src
 
@@ -287,17 +292,17 @@ y FUNCS las funciones a añadir"
 ** Ajustes de faces
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
 ** Mixed pitch
-Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combinado con fixed-ptich junto a otras cosas
+Mixed pitch nos permite conseguir tener una letra de tipo variable pitch combinado con fixed-ptich junto a otras cosas, estoy usando ahora ef-themes que ya tiene un sistema de mixed fonts
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
-(use-package mixed-pitch
-  :ensure t
-  :hook (text-mode . mixed-pitch-mode)
-  :config
-  (add-to-list 'mixed-pitch-fixed-pitch-faces 'org-table))
+;; (use-package mixed-pitch
+;;   :ensure t
+;;   :hook (text-mode . mixed-pitch-mode)
+;;   :config
+;;   (add-to-list 'mixed-pitch-fixed-pitch-faces 'org-table))
 #+end_src
 *** Ajustes a elementos del org-mode
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no
 (defun os/org-headers-setters ()
   "Ajusta de forma personalizada los encabezados del modo org"
   (dolist (item '((org-level-1 . outline-1)
@@ -321,7 +326,7 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 *** Configuraciones de temas
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
-El tema visual a utilizar estando disponible aqui la configuracion
+Tema bastante chulo aunque los temas de protesilaos tambien molan bastante.
 #+begin_src emacs-lisp :tangle no
 (use-package catppuccin-theme
   :config
@@ -329,14 +334,24 @@ El tema visual a utilizar estando disponible aqui la configuracion
   (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
-Temas ef de Protesilaos es bastante chulo
+Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven genial en general. Además tiene opciones de personalización bastante buenas al poder configurar cosas como los encabezados en documentos org.
 #+begin_src emacs-lisp 
 (use-package ef-themes
   :ensure t
-  :custom (ef-themes-mixed-fonts t)
-  :config
+  :demand t
+  :init (add-hook 'text-mode-hook #'variable-pitch-mode)
+  :config (setq ef-themes-variable-pitch-ui t
+	        ef-themes-mixed-fonts t
+		ef-themes-headings '((agenda-date . (1.3))
+				     (agenda-structure . (variable-pitch light 1.8))
+				     (0 . (variable-pitch 1.7))
+				     (1 . (variable-pitch 1.5))
+				     (2 . (variable-pitch 1.4))
+				     (3 . (variable-pitch 1.25))
+				     (4 . (variable-pitch 1.1))
+				     (t . (variable-pitch 1.1))))
   (seq-do #'disable-theme custom-enabled-themes)
-  (ef-themes-select 'ef-trio-dark))
+  (ef-themes-select 'ef-cherie))
 #+end_src
 **** Doom themes
 #+begin_src emacs-lisp :tangle no
@@ -373,27 +388,28 @@ Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia
 (setopt use-dialog-box nil)
 #+end_src
 **** Fuentes tipograficas
-Aquí estan los ajustes de tipografía, que utilizo, actualmente uso la tipografía [[https://github.com/protesilaos/aporetic][Aporetic]] aquí dejo imágenes de como se ven [[https://protesilaos.com/emacs/aporetic-fonts-pictures][Imágenes]]
-#+begin_src emacs-lisp
-(set-face-attribute 'default nil
-:font "Aporetic Sans Mono"
-:height 110
-:weight 'medium)
-(set-face-attribute 'variable-pitch nil
-:font "Aporetic Sans"
-:height 110
-:weight 'medium)
-(set-face-attribute 'fixed-pitch nil
-:font "Aporetic Sans Mono"
-:height 1.0
-:weight 'medium)
+Aquí están los ajustes de tipografía, que utilizo, actualmente uso la tipografía [[https://github.com/protesilaos/aporetic][Aporetic]] aquí dejo imágenes de como se ven [[https://protesilaos.com/emacs/aporetic-fonts-pictures][Imágenes]]
+#+begin_src emacs-lisp :noweb yes
+<<Fontaine>>
+;; (set-face-attribute 'default nil
+;; 		    :font "Aporetic Sans Mono"
+;; 		    :height 110
+;; 		    :weight 'medium)
+;; (set-face-attribute 'variable-pitch nil
+;; 		    :font "Aporetic Sans"
+;; 		    :height 110
+;; 		    :weight 'medium)
+;; (set-face-attribute 'fixed-pitch nil
+;; 		    :font "Aporetic Sans Mono"
+;; 		    :height 1.0
+;; 		    :weight 'medium)
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
 (set-face-attribute 'font-lock-comment-face nil
-:slant 'italic)
+		    :slant 'italic)
 (set-face-attribute 'font-lock-keyword-face nil
-:slant 'italic)
+		    :slant 'italic)
 
 
 ;; This sets the default font on all graphical frames created after restarting Emacs.
@@ -404,9 +420,9 @@ Aquí estan los ajustes de tipografía, que utilizo, actualmente uso la tipograf
 
 
 ;; Uncomment the following line if line spacing needs adjusting.
-(setq-default line-spacing 0.3)
+;;(setq-default line-spacing 0.3)
 
-;;(add-hook 'text-mode-hook #'variable-pitch-mode)
+
 #+END_SRC
 **** Ajustes en otros aspectos
 Pendiente de implementar es para asegurarse que el modo HTML tenga monoespacido para mayor
@@ -436,7 +452,7 @@ Esta es la opacidad que el editor aplica por defecto
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/tools.el" :noweb yes
 :END:
-Aqui introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
+Aquí introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
 ** Configuración de IRC
 Configuración del cliente erc
 #+BEGIN_SRC emacs-lisp :tangle lisp/tools.el :noweb yes
@@ -462,9 +478,10 @@ Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y
 #+end_src
 *** Configuración zoom
 La configuración de los atajos de zoom
-#+begin_src emacs-lisp
-(gbind "C-+" text-scale-increase)
-(gbind "C--" text-scale-decrease)
+#+begin_src emacs-lisp 
+(gbind-multiple
+ ("C-+" . text-scale-increase)
+ ("C--" . text-scale-decrease))
 #+end_src
 *** Ubicación custom file
 #+begin_src emacs-lisp
@@ -475,7 +492,7 @@ Aquí se tratan configuraciones especificas útiles para diversos aspectos
 **** Buffer scratch
 Configuraciones del buffer scratch como el mensaje por defecto
 #+begin_src emacs-lisp 
-(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` forajido eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions.Enjoy doing things here.\n\n"
+(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions in any buffer.Enjoy doing things here.\n\n"
 				      (propertize
 				       (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
 				       'face 'help-key-binding)))
@@ -561,6 +578,57 @@ Permite hacer que el texto se envuelva digamos lo así si es muy largo
 (when (>= emacs-major-version 30)       ; compat test
   (add-hook 'text-mode-hook 'visual-wrap-prefix-mode))
 #+end_src
+** Ajustes a diversas herramientas y otras cosas
+Aqui pongo ajustes a ciertas herramientas nativas de Emacs que a lo mejor no es muy bueno poner con otras herramientas
+*** Time
+Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de la hora en otras zonas horarias es util si haces necesitas comunicarte con gente de diferentes zonas horarias.
+#+begin_src emacs-lisp
+;;;; World clock (M-x world-clock)
+(use-package time
+  :ensure nil
+  :commands (world-clock)
+  :config
+  (setq display-time-world-list t)
+  (setq zoneinfo-style-world-list ; M-x shell RET timedatectl list-timezones
+        '(
+          ("Europe/Athens" "Athens")
+          ("Europe/Madrid" "Madrid")))
+
+  ;; All of the following variables are for Emacs 28
+  (setq world-clock-list t)
+  (setq world-clock-time-format "%z %R	%a %d %b (%Z)")
+  (setq world-clock-buffer-name "*world-clock*") ; Placement handled by `display-buffer-alist'
+  (setq world-clock-timer-enable t)
+  (setq world-clock-timer-second 60))
+#+end_src
+*** Comint y Compile
+#+begin_src emacs-lisp
+;;; Generic interface for shells or REPLs (comint)
+(use-package comint
+  :ensure nil
+  ;; Support for OS-specific escape sequences such as what `ls
+  ;; --hyperlink' uses.  I normally don't use those, but I am checking
+  ;; this to see if there are any obvious advantages/disadvantages.
+  :hook
+  (comint-output-filter-functions . comint-osc-process-output)
+  :config
+  (setq ansi-color-for-comint-mode t) ; also see `ansi-color-for-compilation-mode'
+  (setq comint-prompt-read-only t)
+  (setq comint-buffer-maximum-size 9999)
+  (setq comint-completion-autolist t)
+  (setq comint-input-ignoredups t)
+  (setq-default comint-scroll-to-bottom-on-input t)
+  (setq-default comint-scroll-to-bottom-on-output nil)
+  (setq-default comint-input-autoexpand 'input))
+;;; Compilation interface (M-x compile)
+(use-package compile
+  :ensure nil
+  :hook
+  (compilation-filter . ansi-color-compilation-filter)
+  :config
+  (setq ansi-color-for-compilation-mode t)) ; also see `ansi-color-for-comint-mode'
+#+end_src
+*** 
 ** Funciones propias
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/functions.el" :noweb yes
@@ -776,20 +844,45 @@ The DWIM behaviour of this command is as follows:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
 #+end_src
+*** Fontaine
+Configuración de fontaine lo voy a poner en la misma etapa de setear las fuentes
+#+name: Fontaine
+#+begin_src emacs-lisp :tangle no
+(use-package fontaine
+  :ensure t
+  :hook ((elpaca-after-init . fontaine-mode)
+	 (elpaca-after-init . (lambda ()
+				;; Set last preset or fall back to desired style from `fontaine-presets'.
+				(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular)))))
+  :config
+  (setq fontaine-latest-state-file (locate-user-emacs-file "fontaine-latest-state.eld"))
+  (setq-default text-scale-remap-header-line t)
+  (setq fontaine-presets
+	'((small :default-height 105 :variable-pitch-height 105)
+	  (regular)
+	  (coder :default-family "JetBrainsMono" :default-weight regular)
+	  (t  :default-family "Aporetic Sans Mono"
+              :default-height 110
+              :default-weight medium
+
+              :variable-pitch-family "Aporetic Sans"
+              :variable-pitch-height 110
+              :variable-pitch-weight medium
+
+              :fixed-pitch-family "Aporetic Sans Mono"
+              :fixed-pitch-height 1.0
+              :fixed-pitch-weight medium
+	      :line-spacing 0.3))))
+#+end_src
 *** Mis paquetes
 Aqui ire introduciendo paquetes, e intentos de paquetes, creados por mi persona, para mi propio uso así los tengo separados del resto de paquetes
-**** Pasvortilo
-Paquete que intento que me acepten en el melpa voy a intentar usarlo para ver que errores puedo solventar, es una pequeña interfaz para pass o para gopass, pass es un gestor de contraseña para terminal y gopass es una version moderna de ello, informo que este paquete no soportara todo lo de gopass ya que trata de ser lo más compatible entre pass y gopass, lo hago para sí alguien tiene gopass y no quiere usar pass no tenga que hacerlo.
-#+begin_src emacs-lisp 
-(use-package pasvortilo
-:ensure (:host codeberg :repo "mester/pasvortilo"))
-#+end_src
 **** Os scratch
 Configuraciones para crear buffers a los que me gusta decir custom-scratch te permite crear buffers temporales de un modo en especifico 
 #+begin_src emacs-lisp
 (use-package os-scratch
   :load-path "os-lisp/"
-)
+  :config
+(add-to-list 'os-scratch-messages `(text . ,(format "Welcome to text-mode %s." user-full-name))))
 #+end_src
 **** Organizer
 Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel personal
@@ -832,24 +925,21 @@ Mi modeline personalizada en la que estoy trabajando.
 		  mode-line-format-right-align ; Emacs 30
 		  os-modeline-misc-info)))
 #+end_src
-*** Buffer terminator
-Permite matar buffers de forma segura y automatica, asegurando un espacio de trabajo limpio y eficiente y es posible definir reglas para configurar todo eso.
-#+begin_src emacs-lisp
-(use-package buffer-terminator
+*** Password store
+Aqui utilizo la interfaz más ortodoxa de Emacs para manejar pass cosa que puede estar bien de usar y probar en lo que se refiere a que a lo mejor es mejor para acceder a los datos
+#+begin_src emacs-lisp 
+;;; Pass interface (password-store)
+(use-package password-store
   :ensure t
-  :custom
-  ;; Enable/Disable verbose mode to log buffer cleanup events
-  (buffer-terminator-verbose nil)
-  ;; Set the inactivity timeout (in seconds) after which buffers are considered
-  ;; inactive (default is 30 minutes):
-  (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
-
-  ;; Define how frequently the cleanup process should run (default is every 10
-  ;; minutes):
-  (buffer-terminator-interval (* 10 60)) ; 10 minutes
-
+  ;; Mnemonic is the root of the "code" word (κώδικας).  But also to add
+  ;; the password to the kill-ring.  Other options are already taken.
+  :bind ("C-c k" . password-store-copy)
   :config
-  (buffer-terminator-mode 1))
+  (setq password-store-time-before-clipboard-restore 30))
+
+(use-package pass
+ :ensure t
+ :commands (pass))
 #+end_src
 *** Helpful
 Mejora la ayuda incorporada en Emacs
@@ -887,16 +977,17 @@ Paquete de Protesilaos que permite mantener cierto espacio.
 #+begin_src emacs-lisp 
 (use-package spacious-padding
 :ensure t
+:hook (elpaca-after-init . spacious-padding-mode)
+:bind ("<f6>" . spacious-padding-mode)
 :config 
 (setq spacious-padding-widths
       '(:internal-border-width 15
          :header-line-width 4
-         :mode-line-width 6
+         :mode-line-width 5
          :tab-width 4
          :right-divider-width 30
          :scroll-bar-width 8
-         :fringe-width 8))
-(spacious-padding-mode))
+         :fringe-width 8)))
 #+end_src
 *** Gptel
 Un sistema que permite usar modelos de lenguaje grandes la mal llamada IA, porque tiene más A de artificial que I de inteligencia. Pero independientemente de eso es útil.
@@ -904,7 +995,7 @@ Un sistema que permite usar modelos de lenguaje grandes la mal llamada IA, porqu
 (use-package gptel
 :config
 (setq gptel-model 'gemini-2.5-pro
-      gptel-backend (gptel-make-gemini "Gemini" :key (pasvortilo-obtain-password "geminiAPI") :stream t)))
+      gptel-backend (gptel-make-gemini "Gemini" :key (password-store-get "geminiAPI") :stream t)))
 #+end_src
 *** Ace window
 #+begin_src emacs-lisp 
@@ -1550,8 +1641,8 @@ Radio en Emacs
 		     ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 		     ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
 		     ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
-(gbind "C-x r e" eradio-toggle)
-(gbind "C-x r p" eradio-play)
+(gbind-multiple ("C-x r e" . eradio-toggle)
+		("C-x r p" . eradio-play))
 #+end_src
 *** Doc View, Nov
 Esto no lo uso al menos ahora por eso he desactivado el tangle
@@ -1570,8 +1661,7 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
 (use-package nov
   :ensure t
   :demand t
-  :init
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+  :mode ("\\.epub\\'" . nov-mode))
 #+end_src
 *** Supersave
 Herramienta para el auto guardado, me permite guardar de forma automatica si el cursor deja Emacs si cambio de buffer en emacs y tambien esta configurado para guardar en inactividad.
@@ -1710,44 +1800,45 @@ Aquí establezco los archivos tipo org que mi configuración va a requerir
 *** Añadiendo ajustes varios
 #+begin_src emacs-lisp 
 (use-package org
-:ensure nil
-:commands (org-mode org-version)
-:hook ((org-mode . org-indent-mode)
-(org-mode . os/org-headers-setters)
-(org-mode . visual-line-mode)
-(org-mode . dynamic-language-change))
-:custom
-;; Exportación
-(org-export-with-drawers nil)
-(org-export-with-todo-keywords nil)
-(org-export-with-broken-links t)
-(org-export-with-toc nil)
-(org-export-with-smart-quotes t)
-(org-export-date-timestamp-format "%d %B %Y")
-;; Apariencia
-(org-ellipsis "▼")
-(org-startup-indented t)
-(org-pretty-entities t)
-(org-fontify-done-headline t)
-(org-use-sub-superscripts "{}")
-(org-hide-emphasis-markers t)
-(org-hide-leading-stars t)
-(org-startup-truncated t)
-;; Imágenes
-(org-startup-with-inline-images t)
-(image-actual-width '(300))
-;; Babel
-(org-confirm-babel-evaluate nil)
-;; Agenda
-(org-agenda-skip-scheduled-if-done t)
-;; Listas
-(org-list-allow-alphabetical t)
-;; Enlaces
-(org-return-follows-link t)
-:config
-(require 'org-tempo))
-(gbind "C-c c" org-capture)
-(gbind "C-c a" org-agenda)
+  :ensure nil
+  :commands (org-mode org-version)
+  :hook ((org-mode . org-indent-mode)
+	 ;;(org-mode . os/org-headers-setters)
+	 (org-mode . visual-line-mode)
+	 (org-mode . dynamic-language-change))
+  :custom
+  ;; Exportación
+  (org-export-with-drawers nil)
+  (org-export-with-todo-keywords nil)
+  (org-export-with-broken-links t)
+  (org-export-with-toc nil)
+  (org-export-with-smart-quotes t)
+  (org-export-date-timestamp-format "%d %B %Y")
+  ;; Apariencia
+  (org-ellipsis "▼")
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-fontify-done-headline t)
+  (org-use-sub-superscripts "{}")
+  (org-hide-emphasis-markers t)
+  (org-hide-leading-stars t)
+  (org-startup-truncated t)
+  ;; Imágenes
+  (org-startup-with-inline-images t)
+  (image-actual-width '(300))
+  ;; Babel
+  (org-confirm-babel-evaluate nil)
+  ;; Agenda
+  (org-agenda-skip-scheduled-if-done t)
+  ;; Listas
+  (org-list-allow-alphabetical t)
+  ;; Enlaces
+  (org-return-follows-link t)
+  :config
+  (require 'org-tempo))
+(gbind-multiple 
+("C-c c" . org-capture)
+("C-c a" . org-agenda))
 ;; disable electric pairing for angle bracket
 
 (add-hook 'org-mode-hook (lambda ()
@@ -1903,6 +1994,7 @@ Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo e
    (python . t)
    (shell . t)))
 (os/after org-contrib
+	  :if (fboundp 'ledger-mode)
 	  (org-babel-do-load-languages 'org-babel-load-languages 
 				       '((ledger . t))))
 #+end_src
@@ -2078,7 +2170,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
   (corfu-quit-at-boundary nil)
   (corfu-preselect-first t)
   (corfu-quit-at-boundary 'separator)
-  (corfu-popupinfo-delay '(0.4 . 0.2))
+  (corfu-popupinfo-delay '(1.25 . 0.5))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
   :config 
@@ -2092,7 +2184,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 (use-package corfu-terminal
    :after corfu
    :if (< emacs-major-version 31)
-   :ensure (:type git :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
+   :ensure (:type git :repo   "https://codeberg.org/akib/emacs-corfu-terminal.git")
    :config
    (unless (display-graphic-p)
       (corfu-terminal-mode)))
@@ -2102,10 +2194,14 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
   :commands (cape-file cape-dabbrev cpae-elisp-block cape-dict cape-emoji)
   :bind ("C-c p" . cape-prefix-map)
   :init
-  (add-hooks completion-at-point-functions #'cape-abbrev #'cape-dabbrev #'cape-file #'cape-emoji #'cape-dict #'cape-keyword #'cape-elisp-block))
+  (add-hooks completion-at-point-functions cape-abbrev cape-dabbrev cape-file cape-emoji cape-dict cape-keyword cape-elisp-block))
 ;; Atajos prácticos
 ;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 #+end_src
+
+#+RESULTS:
+: [nil 26747 58584 101239 nil elpaca-process-queues nil nil 730000 nil]
+
 **** Configuraciones extra para corfu
 Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
 #+begin_src emacs-lisp :tangle lisp/completion.el
@@ -2566,7 +2662,6 @@ Aquí defino el bloque de código que lleva a cabo la carga de todos los módulo
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    lua
     java))
 ;; Cargar los módulos habilitados
 (dolist (module my/enabled-modules)

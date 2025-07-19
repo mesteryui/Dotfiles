@@ -88,6 +88,9 @@
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 
+(defgroup os nil
+  "Group to my custom configs"
+  :group 'convenience)
 (defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
   "The languages to be used by word corrections")
 (defvar my/enabled-modules nil
@@ -111,12 +114,11 @@
     programming ;; Configuraciones base de programación
     ;; Módulos de lenguajes específicos
     javascript
-    scheme
+    schemelang
     emacs-lisp ;; Desarrollo de paquetes para Emacs
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    lua
     java))
 ;; Cargar los módulos habilitados
 (dolist (module my/enabled-modules)

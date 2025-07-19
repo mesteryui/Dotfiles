@@ -47,7 +47,7 @@ The return value is the new value of LIST-VAR."
 (defun dynamic-language-change ()
 "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
-(when-let ((lang (get-local-language)))
+(when-let* ((lang (get-local-language)))
   (jinx-languages lang)))
 
 (defun get-local-macro-definition (macro-name)
