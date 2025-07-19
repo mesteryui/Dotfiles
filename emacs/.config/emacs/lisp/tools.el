@@ -15,7 +15,8 @@
   (setq zoneinfo-style-world-list ; M-x shell RET timedatectl list-timezones
         '(
           ("Europe/Athens" "Athens")
-          ("Europe/Madrid" "Madrid")))
+          ("Europe/Madrid" "Madrid")
+          ("Asia/Tokyo" "Tokio")))
 
   ;; All of the following variables are for Emacs 28
   (setq world-clock-list t)

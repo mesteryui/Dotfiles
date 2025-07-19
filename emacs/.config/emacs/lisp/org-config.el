@@ -156,7 +156,6 @@ org-src-fontify-natively t)
    (python . t)
    (shell . t)))
 (os/after org-contrib
-	  :if (fboundp 'ledger-mode)
 	  (org-babel-do-load-languages 'org-babel-load-languages 
 				       '((ledger . t))))
 

@@ -31,12 +31,11 @@ Use this function via a hook."
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
 Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue.
-:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada.
-:sleep permite retrasar la ejecucion una cantidad de tiempo dada"
+:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada."
   (let* ((condt (cl-getf body :if))
 	 (body (let ((b (copy-sequence body)))
 		 (cl-remf b :if)
-		 )))
+		 b)))
     (if condt
 	`(when ,condt
            (if (featurep ',package)
@@ -48,9 +47,9 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
          (with-eval-after-load ',package
            (progn ,@body))))))
 
-(defmacro when-system (system &rest body)
+(defmacro when-system (sys &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
-`(when (eq system-type ',system)
+`(when (eq system-type ',sys)
 ,@body))
 
 (defmacro gbind (key func)

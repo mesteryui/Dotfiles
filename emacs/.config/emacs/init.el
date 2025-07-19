@@ -72,6 +72,10 @@
         custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package eldoc 
+:ensure nil
+:hook (prog-mode . eldoc-mode)
+:custom (eldoc-message-function #'message))
 (elpaca-wait)
 ;;When installing a package which modifies a form used at the top-level
 ;;(e.g. a package which adds a use-package key word),

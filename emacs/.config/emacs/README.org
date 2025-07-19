@@ -127,6 +127,7 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 
 ;; Block until current queue processed.
 <<no littering>>
+<<eldoc>>
 (elpaca-wait)
 ;;When installing a package which modifies a form used at the top-level
 ;;(e.g. a package which adds a use-package key word),
@@ -211,23 +212,23 @@ Use this function via a hook."
 
 (add-hook 'org-capture-after-finalize-hook #'os-window-delete-popup-frame)
 #+end_src
+
 ** Add multiple
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (defmacro os/add-to-list (list &rest elements)
 `(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
 #+end_src
 ** After
-Una macro que permite ejecutar codigo despues de que cargue un paquete para eso comprobamos que esta cargado en cuyo caso ejecutamos el codigo y si no le decimos que cargue y ejecute
+Una macro que permite ejecutar código después de que cargue un paquete para eso comprobamos que esta cargado en cuyo caso ejecutamos el código y si no le decimos que cargue y ejecute
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
 Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue.
-:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada.
-:sleep permite retrasar la ejecucion una cantidad de tiempo dada"
+:if permite usar una sentencia condicional haciendo que la carga dependa de una condicion dada."
   (let* ((condt (cl-getf body :if))
 	 (body (let ((b (copy-sequence body)))
 		 (cl-remf b :if)
-		 )))
+		 b)))
     (if condt
 	`(when ,condt
            (if (featurep ',package)
@@ -242,9 +243,9 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
 ** When system
 Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
 #+begin_src emacs-lisp
-(defmacro when-system (system &rest body)
+(defmacro when-system (sys &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
-`(when (eq system-type ',system)
+`(when (eq system-type ',sys)
 ,@body))
 #+end_src
 ** GBind
@@ -270,6 +271,7 @@ Como el nombre dice elimina los atajos de teclado pero usando una sintaxis simpl
 "Unbind the global KEY sequence."
 `(global-unset-key (kbd ,key)))
 #+end_src
+
 ** Add hooks
 #+begin_src emacs-lisp :tangle lisp/macros.el
 (defmacro add-hooks (hook &rest funcs)
@@ -326,7 +328,7 @@ El ajuste custom-safe-themes es para que los temas personalizados carguen sin pr
 *** Configuraciones de temas
 Guardo esto aqui por si acaso
 **** Tema Catppuccin
-Tema bastante chulo aunque los temas de protesilaos tambien molan bastante.
+Tema bastante chulo aunque los temas de protesilaos también molan bastante.
 #+begin_src emacs-lisp :tangle no
 (use-package catppuccin-theme
   :config
@@ -334,7 +336,7 @@ Tema bastante chulo aunque los temas de protesilaos tambien molan bastante.
   (load-theme 'catppuccin t))
 #+end_src
 **** Tema ef
-Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven genial en general. Además tiene opciones de personalización bastante buenas al poder configurar cosas como los encabezados en documentos org.
+Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven genial en general. Además tiene opciones de personalización bastante buenas al poder configurar cosas como los encabezados en documentos org o el uso de fuentes mixtas.
 #+begin_src emacs-lisp 
 (use-package ef-themes
   :ensure t
@@ -344,7 +346,7 @@ Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven gen
 	        ef-themes-mixed-fonts t
 		ef-themes-headings '((agenda-date . (1.3))
 				     (agenda-structure . (variable-pitch light 1.8))
-				     (0 . (variable-pitch 1.7))
+				     (0 . (variable-pitch light 1.7))
 				     (1 . (variable-pitch 1.5))
 				     (2 . (variable-pitch 1.4))
 				     (3 . (variable-pitch 1.25))
@@ -372,7 +374,7 @@ Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven gen
 **** Diversos ajustes de apariencia
 Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia estar aquí
 #+begin_src emacs-lisp
-(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
@@ -381,7 +383,7 @@ Esto incluye todo ajustes relacionados a la apariencia así que creo que deberia
 (pixel-scroll-precision-mode t)
 (blink-cursor-mode -1)                                ; Steady cursor
 (setq pixel-scroll-precision-interpolate-page t)
-(set-fringe-mode 10)        ; Give some breathing room
+;;(set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
 (delete-selection-mode t)
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
@@ -426,7 +428,7 @@ Aquí están los ajustes de tipografía, que utilizo, actualmente uso la tipogra
 #+END_SRC
 **** Ajustes en otros aspectos
 Pendiente de implementar es para asegurarse que el modo HTML tenga monoespacido para mayor
-comodidad tambien puede llegar a servir para otras cosas
+comodidad también puede llegar a servir para otras cosas
 #+begin_src emacs-lisp :tangle no
 (defun my/certain-use-fixed-pitch ()
 "Usar fuente monoespaciada en ciertos modos."
@@ -455,7 +457,7 @@ Esta es la opacidad que el editor aplica por defecto
 Aquí introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
 ** Configuración de IRC
 Configuración del cliente erc
-#+BEGIN_SRC emacs-lisp :tangle lisp/tools.el :noweb yes
+#+begin_src emacs-lisp :tangle lisp/tools.el :noweb yes
 <<lexicalbind>>
 (setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
@@ -463,7 +465,7 @@ Configuración del cliente erc
 (setopt erc-fill-column 120
 	erc-fill-function 'erc-fill-static
 	erc-fill-static-center 20)
-#+END_SRC
+#+end_src
 ** Configuraciones personales varias
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/personal.el" :noweb yes
@@ -592,7 +594,8 @@ Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de
   (setq zoneinfo-style-world-list ; M-x shell RET timedatectl list-timezones
         '(
           ("Europe/Athens" "Athens")
-          ("Europe/Madrid" "Madrid")))
+          ("Europe/Madrid" "Madrid")
+          ("Asia/Tokyo" "Tokio")))
 
   ;; All of the following variables are for Emacs 28
   (setq world-clock-list t)
@@ -628,7 +631,6 @@ Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de
   :config
   (setq ansi-color-for-compilation-mode t)) ; also see `ansi-color-for-comint-mode'
 #+end_src
-*** 
 ** Funciones propias
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "lisp/functions.el" :noweb yes
@@ -889,8 +891,8 @@ Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel pers
 #+begin_src emacs-lisp 
 (use-package organizer
   :load-path "os-lisp/Organizer/"
-  :bind ("<f12>" . organizer-index)
   :config
+  (gbind "<f12>" organizer-index)
   (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
   (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 #+end_src
@@ -1139,6 +1141,7 @@ Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
    ("\\.html?\\'" ,cmd)
    ("\\.md\\'" ,cmd))))
 (put 'dired-find-alternate-file 'disabled nil))
+
 (use-package dired-x
 :ensure nil
 :hook (dired-mode . dired-omit-mode)
@@ -1362,7 +1365,7 @@ Habilita la corrección ortográfica al vuelo.
 	 ("<f7>" . flyspell-correct-wrapper)))
 #+end_src
 *** Jinx
-Corrector ortográfico para Emacs usando la librería enchant
+Corrector ortográfico para Emacs usando la librería enchant, tambien permite la corrección al vuelo y es mejor que Flyspell.
 #+begin_src emacs-lisp
 (use-package jinx
   :ensure t
@@ -1572,7 +1575,6 @@ Sustituye cosas como la tipica busqueda el cambio de buffer o así con una alter
 potente
 #+begin_src emacs-lisp
 (use-package consult
-:demand t
 :hook (completion-list-mode . consult-preview-at-point-mode)
 :init 
 (setq register-preview-delay 0.5
@@ -1625,7 +1627,6 @@ En el caso de olivetti tambien le añado encima la función que me activa una es
 #+begin_src emacs-lisp :noweb yes
   <<sin distracciones>>
   (use-package olivetti
-    :demand t
     :bind
     (("<f9>" . ews-distraction-free)))
 #+end_src
@@ -1633,7 +1634,7 @@ En el caso de olivetti tambien le añado encima la función que me activa una es
 Radio en Emacs
 #+begin_src emacs-lisp 
 (use-package eradio
-  :defer t
+  :defer 2
   :custom
   (eradio-player '("mpv" "--no-video" "--no-terminal"))
   (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
@@ -1644,6 +1645,10 @@ Radio en Emacs
 (gbind-multiple ("C-x r e" . eradio-toggle)
 		("C-x r p" . eradio-play))
 #+end_src
+
+#+RESULTS:
+: eradio-play
+
 *** Doc View, Nov
 Esto no lo uso al menos ahora por eso he desactivado el tangle
 #+begin_src emacs-lisp 
@@ -1660,7 +1665,6 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
 		pdf-view-use-imagemagick nil))
 (use-package nov
   :ensure t
-  :demand t
   :mode ("\\.epub\\'" . nov-mode))
 #+end_src
 *** Supersave
@@ -1701,7 +1705,6 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
   (set-face-attribute 'markdown-header-face-6 nil :height 1.05))
 
 (use-package markdown-mode
-  :demand t
   :commands (markdown-mode gfm-mode)
   :hook ((markdown-mode . set-markdown-headers)
          (gfm-mode . set-markdown-headers))
@@ -1730,15 +1733,14 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
   (typst-ts-mode-highlight-raw-blocks-at-startup t))
 #+end_src
 **** Hyprland
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package hyprlang-ts-mode
   :ensure t
   :if (eq system-type 'gnu/linux)
   :custom
   (hyprlang-ts-mode-indent-offset 4)
-  :config 
-  (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
-  (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
+  :mode (("/hypr/.*config.*/" . hyprlang-ts-mode)
+	 ("/hypr/config\\'" . hyprlang-ts-mode)))
 #+end_src
 **** KDL
 #+begin_src emacs-lisp
@@ -1749,8 +1751,7 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
 Para abrir scripts para la shell fish
 #+begin_src emacs-lisp
 (use-package fish-mode
-  :ensure t
-  :demand t)
+  :ensure t)
 #+end_src
 **** Yuck
 Lo pongo aquí porque el propósito de esta cosa es hacer interfaces no tanto programar además la parte de lenguajes de programación ya esta muy llena 
@@ -1761,7 +1762,6 @@ Lo pongo aquí porque el propósito de esta cosa es hacer interfaces no tanto pr
 Para abrir la confió de i3 o sway, ahora que he tenido que volver a usar i3 algunas veces para asuntos cuando Wayland no me sirve sera útil
 #+begin_src emacs-lisp 
 (use-package i3wm-config-mode
-  :demand t
   :ensure t
   :mode
   ("/sway/.*config.*/" . i3wm-config-mode)
@@ -1994,7 +1994,6 @@ Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo e
    (python . t)
    (shell . t)))
 (os/after org-contrib
-	  :if (fboundp 'ledger-mode)
 	  (org-babel-do-load-languages 'org-babel-load-languages 
 				       '((ledger . t))))
 #+end_src
@@ -2138,6 +2137,8 @@ No es 100% imprescindible ni solo debe usarse para eso pero en la practica
      :delight)
 #+end_src
 ** Eldoc
+Es el sistema que usa Emacs para mostrar documentacion por ejemplo de las funciones en un programa.
+#+name: eldoc
 #+begin_src emacs-lisp :tangle no
 (use-package eldoc 
 :ensure nil
@@ -2152,7 +2153,7 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
   :defer t)
 #+end_src
 ** Corfu + Cape
-Soporte para el auto completado de una manera más 🐱 cape proporciona los backends que se pueden aprovechar para las labores de auto-completado. 
+Soporte para el auto completado de una manera más 🐱 cape proporciona los backends, en si funciones para completion at point, que se pueden aprovechar para las labores de auto-completado.
 #+begin_src emacs-lisp :tangle lisp/completion.el
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
@@ -2198,10 +2199,6 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 ;; Atajos prácticos
 ;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 #+end_src
-
-#+RESULTS:
-: [nil 26747 58584 101239 nil elpaca-process-queues nil nil 730000 nil]
-
 **** Configuraciones extra para corfu
 Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
 #+begin_src emacs-lisp :tangle lisp/completion.el
@@ -2676,7 +2673,7 @@ Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con
 #+end_src
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
-- [[https://protesilaos.com/][Protesilaos]] últimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios.
+- [[https://protesilaos.com/][Protesilaos]] últimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios tambien estoy usando fontaine y tengo cierto interes en tmr y logos.
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 
@@ -2684,5 +2681,5 @@ Configuraciones que he tenido en cuenta:
 También hay algunos más como el mítico [[https://notxor.nueva-actitud.org/][Notxor]]
 
 # Local Variables:
-# jinx-local-words: "scripts"
+# jinx-local-words: "monoespacido scripts"
 # End:

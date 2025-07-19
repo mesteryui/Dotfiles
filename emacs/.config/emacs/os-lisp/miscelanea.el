@@ -13,5 +13,3 @@
   (let ((tmp (make-temp-file "emacs-img-" nil)))
     (url-copy-file url tmp t)
     (show-image tmp)))
-
-

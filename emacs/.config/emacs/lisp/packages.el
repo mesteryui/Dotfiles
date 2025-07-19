@@ -7,8 +7,8 @@
 
 (use-package organizer
   :load-path "os-lisp/Organizer/"
-  :bind ("<f12>" . organizer-index)
   :config
+  (gbind "<f12>" organizer-index)
   (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
   (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
 
@@ -200,6 +200,7 @@ vterm-mode-map
    ("\\.html?\\'" ,cmd)
    ("\\.md\\'" ,cmd))))
 (put 'dired-find-alternate-file 'disabled nil))
+
 (use-package dired-x
 :ensure nil
 :hook (dired-mode . dired-omit-mode)
@@ -473,7 +474,6 @@ vterm-mode-map
 '((file (styles basic partial-completion)))))
 
 (use-package consult
-:demand t
 :hook (completion-list-mode . consult-preview-at-point-mode)
 :init 
 (setq register-preview-delay 0.5
@@ -532,12 +532,11 @@ vterm-mode-map
 (olivetti-mode 0)
 (text-scale-set 0))))
 (use-package olivetti
-  :demand t
   :bind
   (("<f9>" . ews-distraction-free)))
 
 (use-package eradio
-  :defer t
+  :defer 2
   :custom
   (eradio-player '("mpv" "--no-video" "--no-terminal"))
   (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
@@ -561,7 +560,6 @@ vterm-mode-map
 		pdf-view-use-imagemagick nil))
 (use-package nov
   :ensure t
-  :demand t
   :mode ("\\.epub\\'" . nov-mode))
 
 (use-package super-save
@@ -590,7 +588,6 @@ vterm-mode-map
   (set-face-attribute 'markdown-header-face-6 nil :height 1.05))
 
 (use-package markdown-mode
-  :demand t
   :commands (markdown-mode gfm-mode)
   :hook ((markdown-mode . set-markdown-headers)
          (gfm-mode . set-markdown-headers))
@@ -620,21 +617,18 @@ vterm-mode-map
   :if (eq system-type 'gnu/linux)
   :custom
   (hyprlang-ts-mode-indent-offset 4)
-  :config 
-  (add-to-list 'auto-mode-alist '("/hypr/.*config.*/" . hyprlang-ts-mode))
-  (add-to-list 'auto-mode-alist '("/hypr/config\\'" . hyprlang-ts-mode)))
+  :mode (("/hypr/.*config.*/" . hyprlang-ts-mode)
+	 ("/hypr/config\\'" . hyprlang-ts-mode)))
 
 (use-package kdl-ts-mode 
   :ensure (:host github :repo "dataphract/kdl-ts-mode"))
 
 (use-package fish-mode
-  :ensure t
-  :demand t)
+  :ensure t)
 
 (use-package yuck-mode :ensure t)
 
 (use-package i3wm-config-mode
-  :demand t
   :ensure t
   :mode
   ("/sway/.*config.*/" . i3wm-config-mode)

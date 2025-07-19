@@ -15,7 +15,7 @@
 	        ef-themes-mixed-fonts t
 		ef-themes-headings '((agenda-date . (1.3))
 				     (agenda-structure . (variable-pitch light 1.8))
-				     (0 . (variable-pitch 1.7))
+				     (0 . (variable-pitch light 1.7))
 				     (1 . (variable-pitch 1.5))
 				     (2 . (variable-pitch 1.4))
 				     (3 . (variable-pitch 1.25))
@@ -24,7 +24,7 @@
   (seq-do #'disable-theme custom-enabled-themes)
   (ef-themes-select 'ef-cherie))
 
-(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
@@ -33,7 +33,7 @@
 (pixel-scroll-precision-mode t)
 (blink-cursor-mode -1)                                ; Steady cursor
 (setq pixel-scroll-precision-interpolate-page t)
-(set-fringe-mode 10)        ; Give some breathing room
+;;(set-fringe-mode 10)        ; Give some breathing room
 (setq-default cursor-type 'bar) ;; Barra de cursor
 (delete-selection-mode t)
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
