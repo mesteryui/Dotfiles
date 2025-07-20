@@ -1,4 +1,4 @@
-#+title: Configuración
+#+title: Configuración de GNU Emacs
 #+author: Mester
 #+email: oscarodriguez56@gmail.com
 #+description: Configuración de Emacs
@@ -145,22 +145,33 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 ;;(elpaca nil (message "deferred"))
 #+end_src
 * Variables y verbas diversas
+Estableciendo variables personalizadas diversas para propósitos diversos dentro de la configuración.
 #+begin_src emacs-lisp 
-  (defgroup os nil
-    "Group to my custom configs"
-    :group 'convenience)
-  (defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-    "The languages to be used by word corrections")
-  (defvar my/enabled-modules nil
-  "Lista de modulos a cargar.")
+(defgroup mester nil
+  "Group to my custom configs"
+  :group 'convenience)
+
+(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+  "The languages to be used by word corrections")
+
+(defcustom mester/spell-checker 'jinx
+  "Sistema de correccion ortografica de preferencia."
+  :type '(choice (const :tag "Jinx" jinx)
+		 (const :tag "Flyspell" flyspell)))
+
+(defcustom mester/enabled-modules nil
+  "Lista de modulos a cargar."
+  :group 'mester
+  :type '(repeat symbol))
 #+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/performance.el"
+:header-args:emacs-lisp: :tangle "modules/performance.el"
 :END:
 ** Better font lock performance
 Mejorar el rendimiento del font-lock
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
+<<lexicalbind>>
 (setq jit-lock-stealth-time 0.5)
 (setq jit-lock-chunk-size 1000)
 (setq jit-lock-defer-time 0.05)
@@ -179,14 +190,14 @@ Aquí hago ajustes adicionales al recolector de basura mediante la herramienta g
 #+end_src
 * Macros
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/macros.el"
+:header-args:emacs-lisp: :tangle "modules/macros.el"
 :END:
-#+begin_src emacs-lisp :tangle lisp/macros.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/macros.el :noweb yes
 <<lexicalbind>>
 #+end_src
 ** Create window
 Crear un frame para ejecutar un comando
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el 
 (defun os-window-delete-popup-frame (&rest _)
   "Kill selected selected frame if it has parameter `prot-window-popup-frame'.
 Use this function via a hook."
@@ -214,13 +225,13 @@ Use this function via a hook."
 #+end_src
 
 ** Add multiple
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro os/add-to-list (list &rest elements)
-`(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
+  `(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
 #+end_src
 ** After
 Una macro que permite ejecutar código después de que cargue un paquete para eso comprobamos que esta cargado en cuyo caso ejecutamos el código y si no le decimos que cargue y ejecute
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro os/after (package &rest body)
   "Ejecuta BODY tras cargar PACKAGE o los paquetes de la lista PACKAGE.
 Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que se cargue.
@@ -241,8 +252,8 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
            (progn ,@body))))))
 #+end_src
 ** When system
-Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
-#+begin_src emacs-lisp
+Sugerencia de una IA pero la veo y la entiendo y es algo lógico de hacer
+#+begin_src emacs-lisp 
 (defmacro when-system (sys &rest body)
 "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
 `(when (eq system-type ',sys)
@@ -250,7 +261,7 @@ Sugerencia de una IA pero la veo y la entiendo y es algo logico de hacer
 #+end_src
 ** GBind
 Esta macro es para facilitar el seteo de atajos personalizados de teclado a nivel global
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro gbind (key func)
 "Asigna atajos de teclado globales de forma más sencilla usando kbd:
 KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
@@ -266,14 +277,15 @@ Mientras que la anterior permite escribir la función para poner atajos de tecla
 #+end_src
 ** Unbind 
 Como el nombre dice elimina los atajos de teclado pero usando una sintaxis simplificado
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro unbind (key)
 "Unbind the global KEY sequence."
 `(global-unset-key (kbd ,key)))
 #+end_src
 
 ** Add hooks
-#+begin_src emacs-lisp :tangle lisp/macros.el
+Permite añadir múltiples funciones a un hook.
+#+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro add-hooks (hook &rest funcs)
   "Añadir varias funciones a un hook.
 Es decir si tengo 'org-mode-hook' puedo añadir varias funciones
@@ -284,12 +296,12 @@ y FUNCS las funciones a añadir"
 	     funcs)))
 #+end_src
 
-#+begin_src emacs-lisp :tangle lisp/macros.el
+#+begin_src emacs-lisp :tangle modules/macros.el
 (provide 'macros)
 #+end_src
 * Apariencia
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/ui.el"
+:header-args:emacs-lisp: :tangle "modules/ui.el"
 :END:
 ** Ajustes de faces
 Aquí introduciré los principales ajustes de faces para asegurar mayor compatibilidad con mis configuraciones
@@ -351,7 +363,7 @@ Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven gen
 				     (2 . (variable-pitch 1.4))
 				     (3 . (variable-pitch 1.25))
 				     (4 . (variable-pitch 1.1))
-				     (t . (variable-pitch 1.1))))
+				     (t . (variable-pitch 1.0))))
   (seq-do #'disable-theme custom-enabled-themes)
   (ef-themes-select 'ef-cherie))
 #+end_src
@@ -452,12 +464,12 @@ Esta es la opacidad que el editor aplica por defecto
 #+end_src
 * Herramientas y Paquetes Generales
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/tools.el" :noweb yes
+:header-args:emacs-lisp: :tangle "modules/tools.el" :noweb yes
 :END:
 Aquí introduzco herramientas que utilizo de forma más general por ejemplo los paquetes que uso y demás aunque no todo hace tangle hacia tools ya que hay algunas cosas que viene bien tener fuera
 ** Configuración de IRC
 Configuración del cliente erc
-#+begin_src emacs-lisp :tangle lisp/tools.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/tools.el :noweb yes
 <<lexicalbind>>
 (setopt erc-nick "mester")
 (setq erc-prompt-for-password (string-trim (shell-command-to-string "cat ~/Descargas/Conjuntos\\ contraseña/password_irc")))
@@ -468,7 +480,7 @@ Configuración del cliente erc
 #+end_src
 ** Configuraciones personales varias
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/personal.el" :noweb yes
+:header-args:emacs-lisp: :tangle "modules/personal.el" :noweb yes
 :END:
 Añadiendo ajustes como mi nombre completo, desactivando barra de herramientas y otras cosas
 #+BEGIN_SRC emacs-lisp :noweb yes
@@ -494,7 +506,7 @@ Aquí se tratan configuraciones especificas útiles para diversos aspectos
 **** Buffer scratch
 Configuraciones del buffer scratch como el mensaje por defecto
 #+begin_src emacs-lisp 
-(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval lisp expressions in any buffer.Enjoy doing things here.\n\n"
+(setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval modules expressions in any buffer.Enjoy doing things here.\n\n"
 				      (propertize
 				       (substitute-command-keys "\\<lisp-interaction-mode-map>\\[eval-print-last-sexp]")
 				       'face 'help-key-binding)))
@@ -560,7 +572,7 @@ make-backup-files nil                   ; No realiza backups de ficheros
 #+end_src
 ** So-long
 Es una funcionalidad implementada en las ultimas versiones de Emacs muy útil para los archivos muy largos
-#+begin_src emacs-lisp :tangle lisp/performance.el
+#+begin_src emacs-lisp :tangle modules/performance.el
 (global-so-long-mode 1)
 (os/after so-long
 	  (when (boundp 'so-long-minor-modes)
@@ -581,7 +593,27 @@ Permite hacer que el texto se envuelva digamos lo así si es muy largo
   (add-hook 'text-mode-hook 'visual-wrap-prefix-mode))
 #+end_src
 ** Ajustes a diversas herramientas y otras cosas
-Aqui pongo ajustes a ciertas herramientas nativas de Emacs que a lo mejor no es muy bueno poner con otras herramientas
+Aquí pongo ajustes a ciertas herramientas nativas de Emacs que a lo mejor no es muy bueno poner con otras herramientas
+*** Tramp
+Ya viene con Emacs aqui defino unas configuraciones, para que funcione como necesito
+#+begin_src emacs-lisp 
+(use-package tramp
+  :ensure nil
+  :custom
+  (remote-file-name-inhibit-locks t)
+  (tramp-use-scp-direct-remote-copying t)
+  (tramp-copy-size-limit (* 1024 1024))
+  (tramp-verbose 2)
+  (tramp-persistency-file-name
+   (no-littering-expand-var-file-name "tramp/history.el"))
+  :config
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "ssh")
+   'remote-direct-async-process))
+#+end_src
 *** Time
 Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de la hora en otras zonas horarias es util si haces necesitas comunicarte con gente de diferentes zonas horarias.
 #+begin_src emacs-lisp
@@ -633,7 +665,7 @@ Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de
 #+end_src
 ** Funciones propias
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/functions.el" :noweb yes
+:header-args:emacs-lisp: :tangle "modules/functions.el" :noweb yes
 :END:
 *** Crear proyecto uv
 #+begin_src emacs-lisp 
@@ -699,7 +731,7 @@ using what the result of 'get-local-language' function if the result is nil does
   (jinx-languages lang)))
 #+end_src
 *** Obtener valor de una macro org
-Este codigo es útil ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
+Este código es útil ya que así puedo usar el valor de una macro en otra macro que use Emacs Lisp en orgmode
 #+begin_src emacs-lisp 
 (defun get-local-macro-definition (macro-name)
 "Retrieve the definition of a local Org mode macro."
@@ -723,7 +755,7 @@ en todos los casos hay veces que hay que cerrar el programa
 #+end_src
 *** Abrir configuración
 Abrir el archivo de configuración usado en este caso abro el README.org que se edita para obtener el archivo de configuración
-#+begin_src emacs-lisp :tangle lisp/functions.el
+#+begin_src emacs-lisp :tangle modules/functions.el
 (defun os/open-config ()
 "Abrir configuracion de Emacs."
 (interactive)
@@ -738,8 +770,8 @@ Función propia para cambiar entre mis diccionarios más usados
 (interactive)
 (let* ((dic ispell-current-dictionary)
        (change
-	(completing-read "Seleccione el diccionario a usar: " os-languages nil t))
-       (result (cdr (assoc change os-languages))))
+	(completing-read "Seleccione el diccionario a usar: " mest-languages nil t))
+       (result (cdr (assoc change mest-languages))))
   (unless (string= dic result)
     (ispell-change-dictionary result)
     (message "Diccionario cambiado desde %s a %s" dic change))))
@@ -763,7 +795,7 @@ This function allow to activate the webserver when you use but if there is a pro
 *** Buffer temporal en modo Org
 Permite crear un buffer temporal en modo org el cual puede ser usado para tomar notas temporales que no están asociadas a algún archivo útil
 cuando necesitas crear notas para algo puntual simplemente organizando información pero luego no lo necesitas para nada más, también da la posibilidad de guardarlo como archivo
-#+begin_src emacs-lisp :tangle lisp/functions.el
+#+begin_src emacs-lisp :tangle modules/functions.el
 (defun org-temp-buffer (&optional template)
   "Acceder a un buffer temporal de orgmode."
   (interactive)
@@ -774,7 +806,7 @@ cuando necesitas crear notas para algo puntual simplemente organizando informaci
 	     (goto-char (point-max)))))
 #+end_src
 *** Modo sin distracciones
-No es mia pero es muy util ya que me permite hacerlo mucho con el tema de distracción
+No es mía pero es muy útil ya que me permite hacerlo mucho con el tema de distracción
 #+name: sin distracciones
 #+begin_src emacs-lisp :tangle no
 (defun ews-distraction-free ()
@@ -836,12 +868,12 @@ The DWIM behaviour of this command is as follows:
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
 #+end_src
 
-#+begin_src emacs-lisp :tangle lisp/functions.el
+#+begin_src emacs-lisp :tangle modules/functions.el
   (provide 'functions)
 #+end_src
 ** Paquetes
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/packages.el" :noweb yes
+:header-args:emacs-lisp: :tangle "modules/packages.el" :noweb yes
 :END:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
@@ -857,7 +889,7 @@ Configuración de fontaine lo voy a poner en la misma etapa de setear las fuente
 				;; Set last preset or fall back to desired style from `fontaine-presets'.
 				(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular)))))
   :config
-  (setq fontaine-latest-state-file (locate-user-emacs-file "fontaine-latest-state.eld"))
+  (add-hook 'enable-theme-functions #'fontaine-apply-current-preset)
   (setq-default text-scale-remap-header-line t)
   (setq fontaine-presets
 	'((small :default-height 105 :variable-pitch-height 105)
@@ -975,7 +1007,7 @@ Mejora la ayuda incorporada en Emacs
 (exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
 #+end_src
 *** Spacious padding
-Paquete de Protesilaos que permite mantener cierto espacio.
+Paquete de Protesilaos que permite mantener cierto espacio entre los elementos de Emacs tipo entre ventanas (no frames terminología de Emacs para ventanas en el sistema operativo).
 #+begin_src emacs-lisp 
 (use-package spacious-padding
 :ensure t
@@ -1021,26 +1053,6 @@ Un sistema que permite usar modelos de lenguaje grandes la mal llamada IA, porqu
 (visual-fill-column-width 100)
 (visual-fill-column-center-text t))
 #+end_src
-*** Tramp
-Ya viene con Emacs aqui defino unas configuraciones, para que funcione como necesito
-#+begin_src emacs-lisp 
-(use-package tramp
-  :ensure nil
-  :custom
-  (remote-file-name-inhibit-locks t)
-  (tramp-use-scp-direct-remote-copying t)
-  (tramp-copy-size-limit (* 1024 1024))
-  (tramp-verbose 2)
-  (tramp-persistency-file-name
-   (no-littering-expand-var-file-name "tramp/history.el"))
-  :config
-  (connection-local-set-profile-variables
-   'remote-direct-async-process
-   '((tramp-direct-async-process . t)))
-  (connection-local-set-profiles
-   '(:application tramp :protocol "ssh")
-   'remote-direct-async-process))
-#+end_src
 *** EMMS
 Es un reproductor de musica desde Emacs permite usar mpv para reproducir musica desde el editor
 #+begin_src emacs-lisp :tangle no
@@ -1074,6 +1086,7 @@ Hace que emacs tenga iconos chulos y que además funcione en terminal con esos i
   (nerd-icons-xref-mode 1))
 #+end_src
 **** Nerd icons corfu
+Integración de nerd icons con el sistema de auto completado corfu.
 #+begin_src emacs-lisp 
 (use-package nerd-icons-corfu
   :after (corfu nerd-icons)
@@ -1339,14 +1352,15 @@ Shell que permite usar comandos emacs-lisp, se puede mejorar la experiencia usan
   :after esh-mode
   :config
   (eshell-syntax-highlighting-global-mode +1))
-(global-set-key (kbd "C-c t") 'eshell-toggle)
+(global-set-key (kbd "C-c e") 'eshell-toggle)
 #+end_src
 *** Flyspell
 Habilita la corrección ortográfica al vuelo.
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp 
 (use-package flyspell
   :ensure nil
   :defer t
+  :if (eq mester/spell-checker 'flyspell)
   :init
   :config
   (setopt ispell-silently-savep t
@@ -1361,14 +1375,16 @@ Habilita la corrección ortográfica al vuelo.
 
 (use-package flyspell-correct
   :after (flyspell)
+  :if (eq mester/spell-checker 'flyspell)
   :bind (("C-;" . flyspell-auto-correct-previous-word)
 	 ("<f7>" . flyspell-correct-wrapper)))
 #+end_src
 *** Jinx
-Corrector ortográfico para Emacs usando la librería enchant, tambien permite la corrección al vuelo y es mejor que Flyspell.
+Corrector ortográfico para Emacs usando la librería enchant, también permite la corrección al vuelo y es mejor que Flyspell.
 #+begin_src emacs-lisp
 (use-package jinx
   :ensure t
+  :if (eq mester/spell-checker 'jinx)
   :hook (((text-mode prog-mode) . jinx-mode))
   :bind (("<f7>" . jinx-correct))
   :custom
@@ -1435,7 +1451,7 @@ Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcio
 #+begin_src emacs-lisp 
 (use-package embark
   :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
-  :init (setopt prefix-help-command #'embark-prefix-help-command)
+  :demand t
   :config
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -1453,7 +1469,7 @@ Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcio
 *** Hacer más estetico Emacs
 **** Dashboard
 El dashboard que me aparece al principio cuando abre el programa
-#+begin_src emacs-lisp :noweb yes :tangle lisp/packages.el
+#+begin_src emacs-lisp :noweb yes :tangle modules/packages.el
 ;; use-package with package.el:
 (use-package dashboard
 :ensure t
@@ -1538,15 +1554,15 @@ Para retocar la barra de abajo
 Completacion minimalista y más vistosa en el minibuffer
 #+begin_src emacs-lisp
 (use-package vertico
-  :init
-  (vertico-mode)
-  (vertico-multiform-mode)
+  :hook
+  (elpaca-after-init . vertico-mode)
   :custom
   (vertico-count 15)                    ; Número de candidatos a mostrar
   (vertico-resize t)
   (vertico-cycle t)
   (vertico-sort-function 'vertico-sort-history-alpha)
   :config
+  (vertico-multiform-mode 1)
   (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
 #+end_src
 **** Marginalia
@@ -1606,29 +1622,59 @@ potente
 #+end_src
 *** Which key
 Muestra de una mejor forma las opciones de teclas a pulsar a continuación
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (use-package which-key
-:ensure nil
-:after embark
-:commands which-key-mode
-:hook (elpaca-after-init-hook . which-key-mode)
-:custom
-(which-key-idle-delay 1.3)
-(which-key-max-description-length 40)
-(which-key-idle-secondary-delay 0.25)
- (which-key-add-column-padding 1)
-(which-key-dont-use-unicode nil)
-(which-key-separator " → ") 
-(which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
+  :ensure nil
+  :config 
+  (which-key-mode)
+  (setopt prefix-help-command #'embark-prefix-help-command)
+  :custom
+  (which-key-idle-delay 0.2)
+  (which-key-separator " → ") 
+  (which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
 #+end_src
-
 *** Olivetti
-En el caso de olivetti tambien le añado encima la función que me activa una especie de modo sin distracciones
-#+begin_src emacs-lisp :noweb yes
-  <<sin distracciones>>
-  (use-package olivetti
-    :bind
-    (("<f9>" . ews-distraction-free)))
+En el caso de olivetti también le añado encima la función que me activa una especie de modo sin distracciones
+#+begin_src emacs-lisp :tangle modules/sin-distracciones.el :noweb yes
+<<lexicalbind>>
+(use-package olivetti
+  :commands (olivetti-mode)
+  :config 
+  (setq olivetti-minimum-body-width 80
+    olivetti-recall-visual-line-mode-entry-state t))
+#+end_src
+*** Logos
+#+begin_src emacs-lisp :tangle modules/sin-distracciones.el
+(use-package logos
+  :ensure t
+  :bind
+  (("C-x n n" . logos-narrow-dwim)
+   ("C-x ]" . logos-forward-page-dwim)
+   ("C-x [" . logos-backward-page-dwim)
+   ;; I don't think I ever saw a package bind M-] or M-[...
+   ("M-]" . logos-forward-page-dwim)
+   ("M-[" . logos-backward-page-dwim)
+   ("<f9>" . logos-focus-mode))
+  :config
+  (setq logos-outlines-are-pages t)
+  (setq logos-outline-regexp-alist
+        `((emacs-lisp-mode . ,(format "\\(^;;;+ \\|%s\\)" logos-page-delimiter))
+          (org-mode . ,(format "\\(^\\*+ +\\|^-\\{5\\}$\\|%s\\)" logos-page-delimiter))
+          (markdown-mode . ,(format "\\(^\\#+ +\\|^[*-]\\{5\\}$\\|^\\* \\* \\*$\\|%s\\)" logos-page-delimiter))
+          (conf-toml-mode . "^\\[")))
+;; These apply when `logos-focus-mode' is enabled.  Their value is
+  ;; buffer-local.
+  (setq-default logos-hide-mode-line t)
+  (setq-default logos-hide-header-line t)
+  (setq-default logos-hide-buffer-boundaries t)
+  (setq-default logos-hide-fringe t)
+  (setq-default logos-variable-pitch t) ; see my `fontaine' configurations
+  (setq-default logos-buffer-read-only nil)
+  (setq-default logos-scroll-lock nil)
+  (setq-default logos-olivetti t)
+
+  (add-hook 'enable-theme-functions #'logos-update-fringe-in-buffers))
+(provide 'sin-distracciones)
 #+end_src
 *** Eradio
 Radio en Emacs
@@ -1676,9 +1722,23 @@ Herramienta para el auto guardado, me permite guardar de forma automatica si el 
 	  '(other-window  ; Al cambiar de ventana
 	    switch-to-buffer  ; Al cambiar de buffer
 	    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
-  (setq super-save-idle-duration 0.3)  ; 0.3 segundos de inactividad
+  (setq super-save-idle-duration 1)  ; 0.3 segundos de inactividad
   (setopt super-save-auto-save-when-idle t)
  (super-save-mode 1)) ; Opcional: guardar también en inactividad
+#+end_src
+*** Tmr
+Permite setear temporizadores en Emacs cuando acaban te notifican puedes ver lo que tienes en el temporizador.
+#+begin_src emacs-lisp
+;;; TMR May Ring (tmr is used to set timers)
+;; Read the manual: <https://protesilaos.com/emacs/tmr>.
+(use-package tmr
+  :ensure t
+  :bind
+  ("C-c t" . tmr-prefix-map)
+  :config
+  (setq tmr-sound-file "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
+        tmr-notification-urgency 'normal
+        tmr-description-list 'tmr-description-history))
 #+end_src
 *** Adaptative wrap
 #+begin_src emacs-lisp 
@@ -1709,7 +1769,7 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
   :hook ((markdown-mode . set-markdown-headers)
          (gfm-mode . set-markdown-headers))
   :mode (("README\\.md\\'" . gfm-mode)
-	 ("\\.md\\'" . markdown-mode)
+	 ("\\.md\\'" . gfm-mode)
 	 ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "markdown2")
   :config
@@ -1733,6 +1793,7 @@ Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
   (typst-ts-mode-highlight-raw-blocks-at-startup t))
 #+end_src
 **** Hyprland
+Modo para la configuracion de Hyprland usa treesitter y permite ver los archivos de configuracion de Hyprland bastante bien.
 #+begin_src emacs-lisp 
 (use-package hyprlang-ts-mode
   :ensure t
@@ -1768,7 +1829,8 @@ Para abrir la confió de i3 o sway, ahora que he tenido que volver a usar i3 alg
   ("/sway/config\\'" . i3wm-config-mode))
 #+end_src
 *** Cosas más
-#+begin_src emacs-lisp :tangle lisp/packages.el
+Añado savehist que es un paquete built-in necesario para algunas cosas.
+#+begin_src emacs-lisp :tangle modules/packages.el
   (use-package savehist
     :ensure nil
     :hook (after-init . savehist-mode))
@@ -1778,12 +1840,12 @@ Para abrir la confió de i3 o sway, ahora que he tenido que volver a usar i3 alg
 (provide 'packages)
 #+end_src
 
-#+begin_src emacs-lisp :tangle lisp/tools.el
+#+begin_src emacs-lisp :tangle modules/tools.el
 (provide 'tools)
 #+end_src
 * Org Mode
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/org-config.el" :noweb yes
+:header-args:emacs-lisp: :tangle "modules/org-config.el" :noweb yes
 :END:
 ** Ajustes generales
 Ajustes de Org Mode
@@ -1940,10 +2002,10 @@ Org modern nos permite modernizar el estilo visual del orgmode para que se vea m
 			(set-face-attribute 'org-modern-symbol nil :family "Aporetic Sans")))))
 #+end_src
 *** Desactivando algunas indentaciones raras en org mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
 (electric-indent-mode 0)
 (setq org-edit-src-content-indentation 0
-org-src-preserve-indentation nil) 
+      org-src-preserve-indentation nil) 
 #+end_src
 *** Ajustando otras cosas en relacion a indentacion
 #+begin_src emacs-lisp 
@@ -1965,6 +2027,7 @@ Diversas utilidades de org mode para que se vea todo mejor
 
 #+end_src 
 ** Configuración de org-capture
+Configuración de org template para diversas cosas siendo sinceros la configuración de esta herramienta es muy contra intuitiva.
 #+begin_src emacs-lisp 
 (setq org-capture-templates
       `(("t" "Tarea" entry
@@ -1997,6 +2060,12 @@ Aqui configuro los lenguajes que utilizo en org babel para hacer tangle y todo e
 	  (org-babel-do-load-languages 'org-babel-load-languages 
 				       '((ledger . t))))
 #+end_src
+** Org contrib
+Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
+#+begin_src emacs-lisp
+(use-package org-contrib
+:after org)
+#+end_src
 *** Org auto tangle
 Hace que en según que caso el tangle sea automático
 #+begin_src emacs-lisp
@@ -2021,18 +2090,12 @@ Encriptar entradas de archivos ~.org~ usando una clave GPG
   (org-tags-exclude-from-inheritance (quote ("crypt")))
   (org-crypt-key "oscarodriguez56@gmail.com"))
 #+end_src
-** Org contrib
-Incluyo el paquete org-contrib, para tener ob-ledger y poder usar mi contabilidad personal con ledger
-#+begin_src emacs-lisp
-(use-package org-contrib
-:after org)
-#+end_src
 #+begin_src emacs-lisp
 (provide 'org-config)
 #+end_src
 * Programación
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/programming.el"
+:header-args:emacs-lisp: :tangle "modules/programming.el"
 :END:
 Aquí están todos los paquetes y modos que utilizo para programar.
 #+begin_src emacs-lisp :noweb yes
@@ -2154,7 +2217,7 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
 #+end_src
 ** Corfu + Cape
 Soporte para el auto completado de una manera más 🐱 cape proporciona los backends, en si funciones para completion at point, que se pueden aprovechar para las labores de auto-completado.
-#+begin_src emacs-lisp :tangle lisp/completion.el
+#+begin_src emacs-lisp :tangle modules/completion.el
 ;; Corfu: interfaz mínima y rápida de completado en buffer
 (use-package corfu
   :ensure t
@@ -2201,7 +2264,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 #+end_src
 **** Configuraciones extra para corfu
 Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
-#+begin_src emacs-lisp :tangle lisp/completion.el
+#+begin_src emacs-lisp :tangle modules/completion.el
 (use-package emacs
   :ensure nil
   :custom
@@ -2283,7 +2346,7 @@ Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs,
 (use-package tempel-collection :ensure t)
 #+end_src
 ** LSP
-Configuracion de LSP
+Configuración de LSP
 #+begin_src emacs-lisp :tangle no
   (use-package lsp-mode
     :init
@@ -2466,7 +2529,7 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
 *** JavaScript
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/javascript.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/javascript.el" :mkdirp yes
 :END:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
@@ -2480,7 +2543,7 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 #+end_src
 *** Ruby
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/ruby.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/ruby.el" :mkdirp yes
 :END:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
@@ -2494,7 +2557,7 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 #+end_src
 *** Python
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/pythonlang.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/pythonlang.el" :mkdirp yes
 :END:
 #+begin_src python :tangle no
  (use-package lsp-pyright
@@ -2506,7 +2569,7 @@ Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes 
 #+end_src
 **** Trabajo con uv 
 Aqui voy a definir algunas funciones para trabajar con el gestor de complementos uv si veo que me sale bien podría traspasarlo a otro plugin, y ver que puedo hacer, por ejemplo hacer algo con un modo menor para detectar si se usa uv y que solo me de las funciones ahi pero bueno eso es ya más adelante
-#+begin_src emacs-lisp :tangle lisp/lang/pythonlang.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/lang/pythonlang.el :noweb yes
 <<lexicalbind>>
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
@@ -2520,11 +2583,11 @@ Aqui voy a definir algunas funciones para trabajar con el gestor de complementos
 #+end_src
 *** Scheme
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/schemelang.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/schemelang.el" :mkdirp yes
 :END:
 Lenguaje de programación bastante particular al que todavía no le he pillado todo
 el potencial.
-#+begin_src emacs-lisp :tangle lisp/lang/schemelang.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/lang/schemelang.el :noweb yes
 <<lexicalbind>>
   (use-package geiser
   :ensure t)
@@ -2537,7 +2600,7 @@ el potencial.
 #+end_src
 *** Rust
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/rust.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/rust.el" :mkdirp yes
 :END:
 Lenguaje de programación conocido por su velocidad y caracteristicas de seguridad en memoria
 #+begin_src emacs-lisp :noweb yes
@@ -2554,7 +2617,7 @@ Lenguaje de programación conocido por su velocidad y caracteristicas de segurid
 #+end_src
 *** Lua
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/lua.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/lua.el" :mkdirp yes
 :END:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
@@ -2563,7 +2626,7 @@ Lenguaje de programación conocido por su velocidad y caracteristicas de segurid
 #+end_src
 *** Java
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "lisp/lang/java.el" :mkdirp yes
+:header-args:emacs-lisp: :tangle "modules/lang/java.el" :mkdirp yes
 :END:
 Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui es un poco complicado
 #+begin_src emacs-lisp :noweb yes
@@ -2586,7 +2649,7 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 (provide 'java)
 #+end_src
 *** Common Lisp
-#+begin_src emacs-lisp :tangle lisp/lang/common-lisp.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/lang/common-lisp.el :noweb yes
 <<lexicalbind>>
   (use-package sly
     :ensure t
@@ -2597,7 +2660,7 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
 #+end_src
 *** Emacs Lisp
 Utilidades para desarrollar paquetes para emacs.
-#+begin_src emacs-lisp :tangle lisp/lang/emacs-lisp.el :noweb yes
+#+begin_src emacs-lisp :tangle modules/lang/emacs-lisp.el :noweb yes
 <<lexicalbind>>
 (use-package package-lint)
 
@@ -2637,11 +2700,11 @@ Utilidades para desarrollar paquetes para emacs.
 Aquí defino el bloque de código que lleva a cabo la carga de todos los módulos que componen esta config.
 #+begin_src emacs-lisp :tangle init.el
 ;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
-(add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "modules/lang/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
-(setq my/enabled-modules
+(setq mester/enabled-modules
   '(macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
     personal    ;; Ajustes personales diversos
@@ -2659,9 +2722,10 @@ Aquí defino el bloque de código que lleva a cabo la carga de todos los módulo
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    java))
+    java
+    sin-distracciones))
 ;; Cargar los módulos habilitados
-(dolist (module my/enabled-modules)
+(dolist (module mester/enabled-modules)
   (unless (featurep module)
   (require module)))
 #+end_src
@@ -2673,7 +2737,7 @@ Esto es para aplicar algunas buenas formas al programar en Emacs Lisp, junto con
 #+end_src
 * Agradecimientos
 Configuraciones que he tenido en cuenta: 
-- [[https://protesilaos.com/][Protesilaos]] últimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios tambien estoy usando fontaine y tengo cierto interes en tmr y logos.
+- [[https://protesilaos.com/][Protesilaos]] últimamente me he inspirado más en el por ejemplo en tenerlo todo en un archivo e ir sacando a varios últimamente estoy usando algunos de sus paquetes.
 - [[https://github.com/doomemacs/doomemacs/tree/master][Doom Emacs]]
 - [[https://github.com/progfolio/.emacs.d][Progfolio]] si el creador de elpaca me he inspirado un poco en su config
 - [[https://codeberg.org/salvari/emacs30_elpaca_public/src/branch/main][Salvari]] últimamente me he inspirado bastante en el 

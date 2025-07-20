@@ -92,20 +92,29 @@
 ;; Don't install anything. Defer execution of BODY
 ;;(elpaca nil (message "deferred"))
 
-(defgroup os nil
+(defgroup mester nil
   "Group to my custom configs"
   :group 'convenience)
-(defvar os-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+
+(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
   "The languages to be used by word corrections")
-(defvar my/enabled-modules nil
-"Lista de modulos a cargar.")
+
+(defcustom mester/spell-checker 'jinx
+  "Sistema de correccion ortografica de preferencia."
+  :type '(choice (const :tag "Jinx" jinx)
+		 (const :tag "Flyspell" flyspell)))
+
+(defcustom mester/enabled-modules nil
+  "Lista de modulos a cargar."
+  :group 'mester
+  :type '(repeat symbol))
 
 ;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
-(add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "lisp/lang/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "modules/lang/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
-(setq my/enabled-modules
+(setq mester/enabled-modules
   '(macros      ;; Macros personalizadas
     performance ;; Ajustes del rendimiento
     personal    ;; Ajustes personales diversos
@@ -123,9 +132,10 @@
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    java))
+    java
+    sin-distracciones))
 ;; Cargar los módulos habilitados
-(dolist (module my/enabled-modules)
+(dolist (module mester/enabled-modules)
   (unless (featurep module)
   (require module)))
 
