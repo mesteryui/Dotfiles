@@ -930,7 +930,7 @@ Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel pers
 #+end_src
 **** Os modeline
 Mi modeline personalizada en la que estoy trabajando.
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no
 (use-package os-modeline
   :load-path "os-lisp/"
   :custom (os-modeline-bar-height 120)
@@ -1524,7 +1524,7 @@ El dashboard que me aparece al principio cuando abre el programa
 #+end_src
 **** Doom modeline
 Para retocar la barra de abajo
-#+begin_src emacs-lisp :tangle no 
+#+begin_src emacs-lisp 
 (use-package doom-modeline
   :after (nerd-icons)
   :hook (elpaca-after-init-hook . doom-modeline-mode)
@@ -1852,6 +1852,7 @@ Ajustes de Org Mode
 *** Configurar archivos
 Aquí establezco los archivos tipo org que mi configuración va a requerir
 #+begin_src emacs-lisp 
+;; -*- lexical-binding: t; -*-
 (setopt org-directory "~/org/")
 (setopt diary-file (expand-file-name "diario.org" org-directory))
 (setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
@@ -2145,11 +2146,30 @@ Para resaltar palabras como todo en los comentarios que contengan tareas pendien
 (use-package hl-todo
   :hook (prog-mode . hl-todo-mode)
   :config
-  (setq hl-todo-keyword-faces
-    '(("FIXME" error bold)
-      ("TODO" org-todo)
-      ("DONE" org-done)
-      ("NOTE" bold))))
+  (defun my-ef-themes-hl-todo-faces ()
+  "Configure `hl-todo-keyword-faces' with Ef themes colors.
+The exact color values are taken from the active Ef theme."
+  (ef-themes-with-colors
+    (setq hl-todo-keyword-faces
+          `(("HOLD" . ,yellow)
+            ("TODO" . ,red)
+            ("NEXT" . ,blue)
+            ("THEM" . ,magenta)
+            ("PROG" . ,cyan-warmer)
+            ("OKAY" . ,green-warmer)
+            ("DONT" . ,yellow-warmer)
+            ("FAIL" . ,red-warmer)
+            ("BUG" . ,red-warmer)
+            ("DONE" . ,green)
+            ("NOTE" . ,blue-warmer)
+            ("KLUDGE" . ,cyan)
+            ("HACK" . ,cyan)
+            ("TEMP" . ,red)
+            ("FIXME" . ,red-warmer)
+            ("XXX+" . ,red-warmer)
+            ("REVIEW" . ,red)
+            ("DEPRECATED" . ,yellow)))))
+     (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
 #+end_src
 ** Eglot tempel 
 Según la descripción de su repositorio de github es un adaptador para usar las plantillas de Tempel en vez de yasnippet tomando las plantillas dadas por el servidor 
@@ -2263,7 +2283,7 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
 ;;(global-set-key (kbd "M-<tab>") #'completion-at-point) ; TAB para completado
 #+end_src
 **** Configuraciones extra para corfu
-Aqui añado unas configuraciones extra para poder hacer más cosas con corfu
+Aquí añado unas configuraciones extra para poder hacer más cosas con Corfu
 #+begin_src emacs-lisp :tangle modules/completion.el
 (use-package emacs
   :ensure nil
@@ -2472,12 +2492,11 @@ Gestion de proyectos cosa que puede ser util para el aspecto organizativo
 (setopt projectile-project-root-files '(".git"))
 #+end_src
 ** Tressiter
+Añadiendo el soporte para Treesitter que es un sistema de parseo incremental que en algunos casos puede funcionar mejor que el normal de Emacs.
 #+begin_src emacs-lisp 
 (setq treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
   (use-package treesit-auto
     :ensure t
-    :init
-    (message "Init treesit-auto")
     :custom
     (treesit-auto-install 'prompt)
     :config
@@ -2694,6 +2713,9 @@ Utilidades para desarrollar paquetes para emacs.
              elisp-refs-special
              elisp-refs-symbol))
 
+(define-abbrev emacs-lisp-mode-abbrev-table "lexbind" ";; -*- lexical-binding: t; -*-")
+
+(add-hook 'emacs-lisp-mode-hook 'abbrev-mode)
 (provide 'emacs-lisp)
 #+end_src
 * Carga de archivos
@@ -2717,12 +2739,12 @@ Aquí defino el bloque de código que lleva a cabo la carga de todos los módulo
     programming ;; Configuraciones base de programación
     ;; Módulos de lenguajes específicos
     javascript
-    schemelang
-    emacs-lisp ;; Desarrollo de paquetes para Emacs
+    schemelang ;; Lenguaje Scheme
+    emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    java
+    java ;; Lenguaje de programacion Java
     sin-distracciones))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)

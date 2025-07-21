@@ -127,12 +127,12 @@
     programming ;; Configuraciones base de programación
     ;; Módulos de lenguajes específicos
     javascript
-    schemelang
-    emacs-lisp ;; Desarrollo de paquetes para Emacs
+    schemelang ;; Lenguaje Scheme
+    emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
     common-lisp
-    java
+    java ;; Lenguaje de programacion Java
     sin-distracciones))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)

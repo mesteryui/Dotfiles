@@ -38,7 +38,5 @@ html-mode mhtml-mode
 
 emacs-lisp-mode
 (macro "(defmacro " p " (" p ")\n  \"" p "\"" n> r> ")")
-(lexbind ";; -*- lexical-binding: t; -*-")
 (alias "(defalias '" p " '" p ")")
 (fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")
-
