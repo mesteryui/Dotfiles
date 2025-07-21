@@ -23,6 +23,10 @@ icon_index=$((battery_percentage / 10))
 battery_icon=${battery_icons[icon_index]}
 if [ $battery_percentage -eq 100 ]; then 
     battery_icon=""
+elif [ $battery_percentage -le 20 && $battery_percentage -gt 10 ]; then 
+    battery_icon="\033[33m$battery_icon\033[0m"
+elif [ $battery_percentage -le 10]; then
+    battery_icon="\033[31m$battery_icon\033[0m"
 fi
 # Check if the battery is charging
 if [ "$battery_status" = "Charging" ]; then

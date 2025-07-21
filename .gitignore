@@ -9,3 +9,4 @@ fish/.config/fish/themes
 ~/.dotfiles/emacs/.config/emacs/.lsp-session-v1
 ~/.dotfiles/emacs/.config/emacs/.org-id-locations
 ~/.dotfiles/emacs/.config/emacs/.last-package-update-day
+~/.dotfiles/emacs/.config/emacs/.dap-breakpoints

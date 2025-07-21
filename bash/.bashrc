@@ -24,4 +24,4 @@ alias emacsc="emacsclient -c -a emacs"
 
 ## Fin de archivo 
 
-source /home/oscar/.config/broot/launcher/bash/br
+#source /home/oscar/.config/broot/launcher/bash/br

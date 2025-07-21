@@ -37,11 +37,16 @@
 	    "keyColor": "yellow",
             "key": "  "
     },
-//   {
-//	    "type":"uptime",
-//	    "keyColor":"red",
-//	    "key": "󰅐 "
-//    },
+    {
+      "type": "host",
+      "keyColor": "yellow",
+      "key": " 󰌢 ",
+    },
+   {
+	    "type":"uptime",
+	    "keyColor":"red",
+	    "key": " 󰅐 "
+    },
     {
 	    "type": "packages",
 	    "keyColor": "blue",
