@@ -29,17 +29,21 @@
 
 (defgroup os-scratch nil
   "Managing custom scratch."
-  :group 'convenience)
+  :group 'convenience
+  :prefix "os-scratch-"
+  :tag "Custom scratch.")
 
 
-(defvar os-scratch-messages `((org . ,(format "#+title: Org Temporal buffer\n#+author: %s\n#+description: %s" user-full-name (string-trim (shell-command-to-string "date +%Y/%m/%d"))))
-			      (emacs-lisp . ";; Temporal buffer in Emacs Lisp Mode")
-			      (bash-ts . "#!/usr/bin/bash")
-			      (gfm . "# Try of a Markdown Github Readme")
-			      (python-ts . "# Temporal python buffer that you can use to write code and see or save it")
-			      (common-lisp . ";; Welcome to Common Lisp Scratch.")
-			      (lisp-interaction . ,(string-replace "\n\n" "" initial-scratch-message)))
-  "Messages for 'os-scratch'.You only need to put the mode name without -mode.")
+(defcustom os-scratch-messages `((org . ,(format "# Buffer scratch para modo org creado con os-scratch"))
+				 (emacs-lisp . ";; Temporal buffer in Emacs Lisp Mode")
+				 (bash-ts . "#!/usr/bin/bash")
+				 (gfm . "# Try of a Markdown Github Readme")
+				 (python-ts . "# Temporal python buffer that you can use to write code and see or save it")
+				 (common-lisp . ";; Welcome to Common Lisp Scratch.")
+				 (lisp-interaction . ,(string-replace "\n\n" "" initial-scratch-message)))
+  "Messages for 'os-scratch'.You only need to put the mode name without -mode."
+  :group 'os-scratch
+  :type '(alist :key-type symbol :value-type string))
 
 (defun os-scratch--scratch-list-modes ()
   "List known major modes."
@@ -50,7 +54,7 @@
                   (or (provided-mode-derived-p symbol 'text-mode)
 		      (provided-mode-derived-p symbol 'prog-mode)))
          (push symbol symbols))))
-    symbols))
+    symbols)) ;; Copied from protesilaos.
 
 (defun os-scratch ()
   "Os scratch main function."
@@ -71,7 +75,7 @@
     buff))
 
 (defun os-scratch-pop-to-buffer (&optional buf)
-  "Pop to a scratch buffer created by 'os-scratch' yo can use BUF to give a buffer."  
+  "Pop to a scratch buffer created by 'os-scratch' yo can use BUF to give a buffer."
   (let* ((buff (or buf (os-scratch-select-buffer))))
     (pop-to-buffer buff)))
 
@@ -93,12 +97,17 @@
   "Return the initial message for MODE."
   (or (cdr (assoc (intern (string-replace "-mode" "" (symbol-name mode))) os-scratch-messages)) ""))
 
+(defun os-scratch-org-temp ()
+  "Implements a temporal buffer in org mode without select manually because of utility of this."
+  (interactive)
+  (os-scratch-create-buffer 'org-mode))
+
 (defun os-scratch-create-buffer (mode)
   "Create a custom scratch buffer using a MODE."
   (let* ((buf (os-scratch--buffer-name mode)))
     (with-current-buffer (get-buffer-create buf)
       (funcall mode)
-      (add-hook 'kill-buffer-hook (lambda () (when (not (one-window-p :no-minibuffer)) (delete-window))) nil t)
+      (add-hook 'kill-buffer-hook (lambda () (when (not (one-window-p :no-minibuffer)) (delete-window (get-buffer-window (current-buffer))))) nil t)
       (when (= (point-min) (point-max))
 	(insert (os-scratch--message-for-mode mode))
 	(when (and (string= (buffer-string) (os-scratch--message-for-mode mode)) (not (string= (buffer-string) "")))

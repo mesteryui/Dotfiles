@@ -147,22 +147,27 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 * Variables y verbas diversas
 Estableciendo variables personalizadas diversas para propósitos diversos dentro de la configuración.
 #+begin_src emacs-lisp 
-(defgroup mester nil
-  "Group to my custom configs"
-  :group 'convenience)
+  (defgroup mester nil
+    "Group to my custom configs"
+    :group 'convenience)
 
-(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-  "The languages to be used by word corrections")
+  (defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+    "The languages to be used by word corrections")
 
-(defcustom mester/spell-checker 'jinx
-  "Sistema de correccion ortografica de preferencia."
-  :type '(choice (const :tag "Jinx" jinx)
-		 (const :tag "Flyspell" flyspell)))
-
-(defcustom mester/enabled-modules nil
-  "Lista de modulos a cargar."
-  :group 'mester
-  :type '(repeat symbol))
+  (defcustom mester/spell-checker 'jinx
+    "Sistema de correccion ortografica de preferencia."
+    :type '(choice (const :tag "Jinx" jinx)
+  		 (const :tag "Flyspell" flyspell)))
+  (defcustom mester/modeline 'doom-modeline
+    "Modeline por defecto"
+    :group 'mester
+    :type '(choice (const :tag "Os modeline (Own)" os-modeline)
+  		 (const :tag "Doom Modeline" 'doom-modeline)))
+(setq mester/modeline 'os-modeline)
+  (defcustom mester/enabled-modules nil
+    "Lista de modulos a cargar."
+    :group 'mester
+    :type '(repeat symbol))
 #+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
@@ -379,9 +384,9 @@ Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven gen
 **** Doric themes
 #+begin_src emacs-lisp :tangle no
 (use-package doric-themes
-:ensure (:host github :repo "protesilaos/doric-themes")
-:config
-(doric-themes-select 'doric-dark))
+  :ensure (:host github :repo "protesilaos/doric-themes")
+  :config
+  (doric-themes-select 'doric-dark))
 #+end_src
 *** Ajustes de fuentes y alguna cosa
 **** Diversos ajustes de apariencia
@@ -406,6 +411,7 @@ Esto incluye todo ajustes relacionados a la apariencia así que creo que deberí
 Aquí están los ajustes de tipografía, que utilizo, actualmente uso la tipografía [[https://github.com/protesilaos/aporetic][Aporetic]] aquí dejo imágenes de como se ven [[https://protesilaos.com/emacs/aporetic-fonts-pictures][Imágenes]]
 #+begin_src emacs-lisp :noweb yes
 <<Fontaine>>
+;; (unless (display-graphic-p)
 ;; (set-face-attribute 'default nil
 ;; 		    :font "Aporetic Sans Mono"
 ;; 		    :height 110
@@ -417,7 +423,7 @@ Aquí están los ajustes de tipografía, que utilizo, actualmente uso la tipogra
 ;; (set-face-attribute 'fixed-pitch nil
 ;; 		    :font "Aporetic Sans Mono"
 ;; 		    :height 1.0
-;; 		    :weight 'medium)
+;; 		    :weight 'medium))
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
@@ -625,8 +631,7 @@ Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de
   :config
   (setq display-time-world-list t)
   (setq zoneinfo-style-world-list ; M-x shell RET timedatectl list-timezones
-        '(
-          ("Europe/Athens" "Athens")
+        '(("Europe/Athens" "Athens")
           ("Europe/Madrid" "Madrid")
           ("Asia/Tokyo" "Tokio")))
 
@@ -869,6 +874,7 @@ The DWIM behaviour of this command is as follows:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
 #+end_src
+
 *** Fontaine
 Configuración de fontaine lo voy a poner en la misma etapa de setear las fuentes
 #+name: Fontaine
@@ -904,8 +910,6 @@ Aqui ire introduciendo paquetes, e intentos de paquetes, creados por mi persona,
 **** Cosmos dashboard
 #+begin_src emacs-lisp :tangle no
 (load-file (expand-file-name "os-lisp/cosmos-dashboard/cosmos-dashboard.el" user-emacs-directory))
-(os/after cosmos-dashboard
-   (setq cosmos-dashboard-show-modeline t))
 #+end_src
 **** Os scratch
 Configuraciones para crear buffers a los que me gusta decir custom-scratch te permite crear buffers temporales de un modo en especifico 
@@ -929,6 +933,7 @@ Un plugin propio que me da alguna funcionalidad que valoro bastante a nivel pers
 Mi modeline personalizada en la que estoy trabajando.
 #+begin_src emacs-lisp
 (use-package os-modeline
+  :if (eq mester/modeline 'os-modeline)
   :load-path "os-lisp/"
   :custom (os-modeline-bar-height 25)
   :config
@@ -1017,7 +1022,6 @@ Paquete de Protesilaos que permite mantener cierto espacio entre los elementos d
          :mode-line-width 5
          :tab-width 4
          :right-divider-width 30
-         :scroll-bar-width 8
          :fringe-width 8)))
 #+end_src
 *** Gptel
@@ -1521,8 +1525,9 @@ El dashboard que me aparece al principio cuando abre el programa
 #+end_src
 **** Doom modeline
 Para retocar la barra de abajo
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package doom-modeline
+  :if (eq mester/modeline 'doom-modeline)
   :after (nerd-icons)
   :hook (elpaca-after-init-hook . doom-modeline-mode)
   :custom
@@ -1717,9 +1722,6 @@ Radio en Emacs
 (gbind-multiple ("C-x r e" . eradio-toggle)
 		("C-x r p" . eradio-play))
 #+end_src
-
-#+RESULTS:
-: eradio-play
 
 *** Doc View, Nov
 Esto no lo uso al menos ahora por eso he desactivado el tangle
@@ -2157,7 +2159,6 @@ Permite estructurar el código en estructuras plegables siendo practico para có
   :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
   :custom
   (outline-indent-ellipsis " ▼")
-
   :init
   ;; The minor mode can also be automatically activated for a certain modes.
   (add-hook 'python-mode-hook #'outline-indent-minor-mode)
@@ -2225,14 +2226,7 @@ Según la descripción de su repositorio de github es un adaptador para usar las
 
 (add-hook 'python-mode-hook #'flycheck-mode)
 #+end_src
-** VC
-Todo lo relacionado al tema del control de versiones.
-*** VC Jujutsu
-#+begin_src emacs-lisp 
-(use-package vc-jj
-  :ensure t)
-#+end_src
-*** Magit
+** Magit
 No es 100% imprescindible ni solo debe usarse para eso pero en la practica
 #+begin_src emacs-lisp
   (use-package transient)
@@ -2257,9 +2251,9 @@ Es el sistema que usa Emacs para mostrar documentacion por ejemplo de las funcio
 #+name: eldoc
 #+begin_src emacs-lisp :tangle no
 (use-package eldoc 
-:ensure nil
-:hook (prog-mode . eldoc-mode)
-:custom (eldoc-message-function #'message))
+  :ensure nil
+  :hook (prog-mode . eldoc-mode)
+  :custom (eldoc-message-function #'message))
 #+end_src
 **** Eldoc box
 Para que la documentación de funciones y demás mostradas por eldoc aparezca en caja
@@ -2579,6 +2573,9 @@ Añadiendo el soporte para Treesitter que es un sistema de parseo incremental qu
 #+end_src
 ** Lenguajes
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
+*** Clojure
+Lenguaje funcional interoperable con Java que se basa en el paradigma de la programacion funcional
+
 *** JavaScript
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "modules/lang/javascript.el" :mkdirp yes

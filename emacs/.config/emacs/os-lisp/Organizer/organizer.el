@@ -70,6 +70,7 @@
   :group 'organizer
   :type '(alist :key-type string :value-type file))
 
+;;;###autoload
 (defun organizer-files-selector (&optional key)
   "Allow to select one file and access to it from the files of 'organizer-files'.
 Allowing to access to them you can access in two ways:
@@ -101,6 +102,7 @@ Example:
   (find-file organizer-index-file)
   (organizer-dashboard-mode))
 
+;;;###autoload
 (defun organizer-agenda ()
   "Acceso a la agenda."
   (interactive)

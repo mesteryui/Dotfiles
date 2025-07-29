@@ -253,7 +253,7 @@ The string is truncated if the width of the window is smaller
 than `split-width-threshold'."
   (os-modeline-string-cut-end
    (os-modeline--vc-text file branch face)))
-
+;; TODO Do that the bar works correctly
 (defvar os-modeline--vc-faces
   '((added . vc-locally-added-state)
     (edited . vc-edited-state)

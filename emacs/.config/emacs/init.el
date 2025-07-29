@@ -73,9 +73,9 @@
  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package eldoc 
-:ensure nil
-:hook (prog-mode . eldoc-mode)
-:custom (eldoc-message-function #'message))
+  :ensure nil
+  :hook (prog-mode . eldoc-mode)
+  :custom (eldoc-message-function #'message))
 (elpaca-wait)
 ;;When installing a package which modifies a form used at the top-level
 ;;(e.g. a package which adds a use-package key word),
@@ -93,23 +93,28 @@
 ;;(elpaca nil (message "deferred"))
 
 (defgroup mester nil
-  "Group to my custom configs"
-  :group 'convenience)
+    "Group to my custom configs"
+    :group 'convenience)
 
-(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-  "The languages to be used by word corrections")
+  (defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+    "The languages to be used by word corrections")
 
-(defcustom mester/spell-checker 'jinx
-  "Sistema de correccion ortografica de preferencia."
-  :type '(choice (const :tag "Jinx" jinx)
-		 (const :tag "Flyspell" flyspell)))
+  (defcustom mester/spell-checker 'jinx
+    "Sistema de correccion ortografica de preferencia."
+    :type '(choice (const :tag "Jinx" jinx)
+  		 (const :tag "Flyspell" flyspell)))
+  (defcustom mester/modeline 'doom-modeline
+    "Modeline por defecto"
+    :group 'mester
+    :type '(choice (const :tag "Os modeline (Own)" os-modeline)
+  		 (const :tag "Doom Modeline" 'doom-modeline)))
+(setq mester/modeline 'os-modeline)
+  (defcustom mester/enabled-modules nil
+    "Lista de modulos a cargar."
+    :group 'mester
+    :type '(repeat symbol))
 
-(defcustom mester/enabled-modules nil
-  "Lista de modulos a cargar."
-  :group 'mester
-  :type '(repeat symbol))
-
-;; Añadir el directorio 'lisp' y subdirectorios al 'load-path'
+;; Añadir el directorio 'modules' y subdirectorios al 'load-path'
 (add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "modules/lang/" user-emacs-directory))
 
@@ -124,16 +129,18 @@
     tools       ;; Herramientas generales
     packages    ;; Paquetes que utilizo
     completion ;; Cosas de autocompletado
+    sin-distracciones ;; Modo sin distracciones
     programming ;; Configuraciones base de programación
+    minibuffer-improves ;; Mejoras a la completacion del minibuffer
     ;; Módulos de lenguajes específicos
     javascript
     schemelang ;; Lenguaje Scheme
     emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
     rust
-    common-lisp
+    common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
     java ;; Lenguaje de programacion Java
-    sin-distracciones))
+    ))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)
   (unless (featurep module)
