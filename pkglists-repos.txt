@@ -9,8 +9,6 @@ android-sdk-platform-tools
 android-udev
 ani-cli
 atuin
-base
-base-devel
 bat
 bibata-cursor-theme
 bind
