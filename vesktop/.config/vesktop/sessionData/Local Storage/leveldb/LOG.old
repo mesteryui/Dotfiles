@@ -1,0 +1,8 @@
+2025/09/15-20:32:25.430 ac6c Reusing MANIFEST /home/oscar/.config/vesktop/sessionData/Local Storage/leveldb/MANIFEST-000001
+2025/09/15-20:32:25.437 ac6c Recovering log #3
+2025/09/15-20:32:25.438 ac6c Level-0 table #3: started
+2025/09/15-20:32:25.441 ac6c Level-0 table #3: 30443 bytes OK
+2025/09/15-20:32:25.441 ac6c Recovering log #4
+2025/09/15-20:32:25.441 ac6c Reusing old log /home/oscar/.config/vesktop/sessionData/Local Storage/leveldb/000004.log 
+2025/09/15-20:32:25.445 ac6c Delete type=0 #3
+2025/09/15-20:32:25.445 ac6c Delete type=2 #5

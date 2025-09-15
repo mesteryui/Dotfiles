@@ -4,14 +4,9 @@ fselect
 hunspell-eo
 hyperfluent-grub-theme-arch
 kora-icon-theme
-kotlin-language-server
-kvantum-theme-catppuccin-git
 matugen-bin
-paru-debug
 plymouth-theme-archlinux
-podbit
 python-pywalfox
-ruby-solargraph
 ttf-aporetic
 ttf-gabarito-git
 tutanota-desktop-bin
