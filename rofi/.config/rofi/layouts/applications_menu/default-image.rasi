@@ -49,7 +49,7 @@ imageBoxOverlay {
 
 imageBox {
     enabled: true;
-    background-image: url("/home/oscar/Imágenes/Wallpapers/backiee-305584-landscape.jpg", height);
+    background-image: url("/home/oscar/Imágenes/Wallpapers/a_woman_holding_a_sword.jpg", height);
     border-radius: 12px;
     size: 180px;
 }

@@ -215,7 +215,7 @@
 		"format-linked": "󰖩 ",
 		"format-wifi": "{icon}",
 		"interval": 30,
-		"on-click": "kitty --class float_kitty -e 'impala'",
+		"on-click": "kitty --class float_kitty -e 'nmtui'",
 		"on-click-right": "rfkill toggle wifi",
 		"tooltip": true,
 		"tooltip-format": "interface:\t{ifname}\n\nconnected to {essid} at {signalStrength}% strength",
@@ -351,14 +351,8 @@
 // },
 
 	"custom/updates": {
-		"format": "{} {icon}",
+		"format": "   {}",
 		"return-type": "json",
-     	       "format-icons": {
-               "has-updates": " 󰏗",
-               		      "updated": " 󰄬",
-         		      "checking": " 󰄰",
-         		      "error": " 󰅖"
-    	        },
 		"exec-if": "which waybar-module-pacman-updates",
 		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
 		"on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",

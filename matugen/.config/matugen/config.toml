@@ -6,6 +6,13 @@ command = "swww"
 arguments = ["img", "--transition-type", "center"]
 set = true
 
+[templates.kvantum_kvconfig]
+input_path = './templates/kvantum-colors.kvconfig'
+output_path = '~/.config/Kvantum/matugen/matugen.kvconfig'
+
+[templates.kvantum_svg]
+input_path = './templates/kvantum-colors.svg'
+output_path = '~/.config/Kvantum/matugen/matugen.svg'
 
 [templates.gtk3]
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
@@ -15,6 +22,9 @@ output_path = '~/.config/gtk-3.0/gtk.css'
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/gtk.css'
 
+ [templates.walker]
+input_path = '/home/oscar/.config/matugen/templates/walker.css'
+output_path = '/home/oscar/.config/walker/themes/matugen/walker-colors.css'
 
 [templates.vesktop]
 input_path = 'templates/midnight-discord.css'
@@ -60,18 +70,22 @@ output_path = '~/.config/qt5ct/colors/matugen-qt5ct.conf'
 input_path = "~/.config/matugen/templates/matugen-starship.toml"
 output_path = "~/.config/starship.toml"
 
+[templates.btop]
+input_path = './templates/btop-theme'
+output_path = '~/.config/btop/themes/matugen.theme'
 # Qt6
-# [templates.qt6]
-# input_path = '~/.config/matugen/templates/qtct-colors.conf'
-# output_path = '~/.config/qt6ct/colors/matugen-qt6ct.conf'
+[templates.qt6]
+input_path = '~/.config/matugen/templates/qtct-colors.conf'
+output_path = '~/.config/qt6ct/colors/matugen-qt6ct.conf'
 
-[templates.color-scheme]
-input_path = '~/.config/matugen/templates/Matugen.colors'
-output_path = '~/.local/share/color-schemes/Matugen.colors'
+#[templates.color-scheme]
+#input_path = '~/.config/matugen/templates/Matugen.colors'
+#output_path = '~/.local/share/color-schemes/Matugen.colors'
 
 [templates.rofi]
 input_path = '~/.config/matugen/templates/matugen-rofi.rasi'
 output_path = '~/.config/rofi/matugen/matugen-rofi.rasi'
+post_hook = "~/.config/rofi/scripts/updateWallpaper.sh {{image}}"
 
 
 [templates.cava]

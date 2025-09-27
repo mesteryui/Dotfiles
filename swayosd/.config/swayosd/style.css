@@ -1,8 +1,13 @@
 @import 'colors.css';
+window {
+     border-radius: 0;
+  opacity: 0.97;
+  border: 2px solid @primary;
+}
 window#osd {
   padding: 12px 20px;
   border-radius: 999px;
-  border: none;
+  /*border: none;*/
   background: @background;
 }
   #container {
