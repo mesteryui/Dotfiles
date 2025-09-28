@@ -4,12 +4,12 @@ LOG_FILE="/tmp/swayosd.log"
 APP_NAME="swayosd-server"
 
 # Matar instancias anteriores colgadas (si las hay)
-while pgrep -x "$APP_NAME" > /dev/null; do
-    echo "🛑 Matando instancia colgada de $APP_NAME..."
-    pkill -x "$APP_NAME"
-    sleep 0.5
-done
-
+#while pgrep -x "$APP_NAME" > /dev/null; do
+    #echo "🛑 Matando instancia colgada de $APP_NAME..."
+    #systemctl restart --user swayosd
+    #sleep 0.5
+#done
+systemctl restart --user swayosd
 sleep 1
 
 # Borrar log anterior

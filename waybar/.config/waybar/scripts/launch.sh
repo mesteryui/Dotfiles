@@ -38,16 +38,16 @@ launch_waybar() {
     fi
     
     # Terminación agresiva de waybar existente
-    pkill -9 -x waybar 2>/dev/null
-    
+    #pkill -9 -x waybar 2>/dev/null
+    #systemctl restart --user waybar
     # Espera mínima pero efectiva
     sleep 0.1
     
     # Verificar y forzar terminación si es necesario
-    if pgrep -x waybar >/dev/null; then
-        pkill -9 -x waybar 2>/dev/null
-        sleep 0.2
-    fi
+    #if pgrep -x waybar >/dev/null; then
+    #    pkill -9 -x waybar 2>/dev/null
+    #    sleep 0.2
+    #fi
     
     log_message "Iniciando waybar con layout: $layout"
     
@@ -68,7 +68,7 @@ else
     # Ejecutar de forma completamente asíncrona
     launch_waybar </dev/null >/dev/null 2>&1 &
     disown
-    
+
     # El script termina inmediatamente, waybar continúa en segundo plano
     exit 0
 fi

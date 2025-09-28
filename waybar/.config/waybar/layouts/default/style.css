@@ -6,14 +6,15 @@ window#waybar {
 
 window > box {
     background-color: transparent;
-    margin: 8px 8px 0px 8px;
+    margin: 2px 6px 0px 6px;
    /* padding: 0px 10px;*/
     color: @text;
 }
 
 * {
-    font-family: "Gabarito Medium", FontAwesome, Roboto, IPAMincho;
+    font-family: "Gabarito Mediumq", FontAwesome, Roboto, IPAMincho;
     font-size: 11.5px;
+    font-size: 12;
     padding: 0;
     border-radius: 20px;
 }
@@ -213,13 +214,19 @@ window > box {
 }
 
 #battery.charging {
+    color: green;
     animation-name: blink;
     animation-duration: 1s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-direction: alternate;
 }
-
+batery.warning {
+    color: #f5d142;
+}
+battery.critical {
+    color: #e05252;
+}
 #pulseaudio {
     color: @text;
     border-radius: 100px;
@@ -296,8 +303,7 @@ window > box {
 }
 tooltip {
   background: @surface;
-  border: 1px solid @tertiary;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 tooltip label {
   color: @on_surface;

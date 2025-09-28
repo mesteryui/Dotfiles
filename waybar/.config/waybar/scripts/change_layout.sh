@@ -72,7 +72,8 @@ if [[ -n "$selected_layout" ]]; then
     
     # Ejecutar launch.sh (usando exec para reemplazar el proceso actual)
     if command -v launch.sh >/dev/null 2>&1; then
-        exec launch.sh
+	systemctl restart waybar.service
+        #exec launch.sh
     else
         # Buscar launch.sh en el PATH y directorios comunes
         for path in "$HOME/.local/bin" "$HOME/bin" "/usr/local/bin" "$(dirname "$0")"; do

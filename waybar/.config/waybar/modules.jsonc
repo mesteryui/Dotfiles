@@ -29,15 +29,15 @@
 		"format": "{icon} {capacity}%",
 		"format-icons": {
 			"default": [
-				"<span color=\"#f7768e\">   </span>",
-				"<span color=\"#fab387\">   </span>",
-				"<span color=\"#7aa2f7\">   </span>",
-				"<span color=\"#7aa2f7\">   </span>",
-				"<span color=\"#7aa2f7\">   </span>",
+				"   ",
+				"   ",
+				"   ",
+				"   ",
+				"   ",
 			],
 			"charging": [ "   ","   ","   ","   ",],
 		},
-		"format-charging": "<span color=\"#a6e3a1\">{icon}</span> {capacity}%",
+		"format-charging": "{icon} {capacity}%",
 	},
 
 
@@ -137,7 +137,26 @@
 		"format-critical": "<span color=\"#f7768e\"> </span>{temperatureC}°C",
 		"interval": 4,
 	},
-
+   "custom/notification": {
+    "tooltip": false,
+    "format": " {icon} ",
+    "format-icons": {
+      "notification": "<span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
 	// ┬ ┬┌─┐┬─┐┬┌─┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
 	// ││││ │├┬┘├┴┐└─┐├─┘├─┤│  ├┤ └─┐
 	// └┴┘└─┘┴└─┴ ┴└─┘┴  ┴ ┴└─┘└─┘└─┘
@@ -357,29 +376,8 @@
 		"exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300",
 		"on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",
 	},
-
-	"custom/notification": {
-		"escape": true,
-		"exec": "swaync-client -swb",
-		"exec-if": "which swaync-client",
-		"format": " {icon} ",
-		"format-icons": {
-		        "notification": " <span foreground='#f38ba8'><sup> </sup></span>",
-			"dnd-inhibited-none": " <sup> </sup>",
-			"dnd-inhibited-notification": " <span foreground='#f38ba8'><sup> </sup></span>",
-			"dnd-none": " ",
-			"dnd-notification": " <span foreground='#f38ba8'><sup> </sup></span>",
-			"inhibited-none": " <sup>󰜺 </sup>",
-			"inhibited-notification": "󰵙 <span foreground='#f38ba8'><sup> </sup></span>",
-			"none": " "
-			
-		},
-		"on-click": "sleep 0.1 && swaync-client -t -sw",
-		"on-click-right": "sleep 0.1 && swaync-client -d -sw",
-		"return-type": "json",
-		"tooltip": false
-	},
-
+  
+  
 	// ┌─┐┬─┐┌─┐┬ ┬┌─┐┌─┐
 	// │ ┬├┬┘│ ││ │├─┘└─┐
 	// └─┘┴└─└─┘└─┘┴  └─┘
