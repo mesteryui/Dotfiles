@@ -8,4 +8,4 @@ DEFAULT="default.rasi"
 THEME_FILE=$(cat "$CURRENT" 2>/dev/null || echo "$DEFAULT")
 
 # Ejecutar Rofi con el tema actual
-rofi -show drun -theme "$THEME_DIR/$THEME_FILE" -matching fuzzy -sort true -sorting-method "fzf" -normalize true -run-command "uwsm app -- {cmd}"
+rofi -show drun -theme "$THEME_DIR/$THEME_FILE" -matching fuzzy -sort true -sorting-method "fzf" -normalize true

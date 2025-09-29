@@ -1,359 +1,448 @@
 @import 'matugen/matugen-swaync.css';
 
+
 * {
   all: unset;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
   font-family: "Ubuntu Nerd Font";
   transition: 200ms;
 }
 
-/* Elementos básicos de escala */
+/* === ELEMENTOS BASE === */
+trough {
+  background-color: @surface_container_low;
+}
+
+trough highlight {
+  background: @primary;
+}
+
+trough slider {
+  margin: -10px;
+  border-radius: 12.6px;
+  box-shadow: 0 0 2px @shadow;
+  transition: all 0.2s ease;
+  background-color: @primary;
+}
+
+trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @primary;
+}
+
+scale {
+  margin: 0 7px;
+}
+
 scale trough {
   margin: 0rem 1rem;
-  background-color: #313244;
   min-height: 8px;
   min-width: 70px;
+  border-radius: 12.6px;
 }
 
-scale trough highlight {
-  background: #cdd6f4;
-}
-
-scale slider {
-  background-color: #89b4fa;
-}
-
-/* Notificaciones flotantes */
-.floating-notifications.background .notification-row .notification-background {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
+/* === NOTIFICACIONES === */
+.notification-background {
+  box-shadow: 0 0 8px 0 @shadow, inset 0 0 0 1px @outline_variant;
   border-radius: 12.6px;
   margin: 18px;
-  background-color: @surface;
+  background: @surface;
   color: @on_surface;
   padding: 0;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification {
+.notification-background .notification {
   padding: 7px;
   border-radius: 12.6px;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification.critical {
-  box-shadow: inset 0 0 7px 0 #f38ba8;
+.notification-background .notification.critical {
+  box-shadow: inset 0 0 7px 0 @error;
+  background: @error_container;
+  color: @on_error_container;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification .notification-content {
+.notification .notification-content {
   margin: 7px;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification .notification-content .summary {
-  color: #cdd6f4;
+.notification .notification-content overlay {
+  margin: 4px;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification .notification-content .time {
-  color: #a6adc8;
+.notification-content .summary {
+  color: @on_surface;
+  font-weight: 500;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification .notification-content .body {
-  color: #cdd6f4;
+.notification-content .time {
+  color: @on_surface_variant;
+  font-size: 0.9em;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification > *:last-child > * {
+.notification-content .body {
+  color: @on_surface_variant;
+}
+
+.notification > *:last-child > * {
   min-height: 3.4em;
 }
 
-.floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action {
-  border-radius: 7px;
-  color: @on_surface;
-  background-color: @surface;
-  box-shadow: inset 0 0 0 1px #45475a;
-  margin: 7px;
-}
-
-.floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @primary;
-  color: @on_primary;
-}
-
-.floating-notifications.background .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px @shadow;
-  background-color: @primary;
-  color: @on_primary;
-}
-
-.floating-notifications.background .notification-row .notification-background .close-button {
+/* Botón cerrar notificación */
+.notification-background .close-button {
   margin: 7px;
   padding: 2px;
   border-radius: 6.3px;
-  color: #1e1e2e;
-  background-color: #f38ba8;
+  /*color: @on_error_container;*/
+  color: @on_error;
+  background-color: @error;
 }
 
-.floating-notifications.background .notification-row .notification-background .close-button:hover {
-  background-color: #eba0ac;
-  color: #1e1e2e;
+.notification-background .close-button:hover {
+  background-color: @error;
+  color: @on_error;
 }
 
-.floating-notifications.background .notification-row .notification-background .close-button:active {
-  background-color: #f38ba8;
-  color: #1e1e2e;
+.notification-background .close-button:active {
+  background-color: @error;
+  color: @on_error;
+  transform: scale(0.95);
 }
 
-/* Centro de control */
-.control-center {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px @surface_container_highest;
+/* Botones de acción en notificaciones */
+.notification .notification-action {
+  border-radius: 7px;
+  color: @on_surface_variant;
+  background-color: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+  margin: 4px;
+  padding: 8px;
+  font-size: 0.2rem;
+}
+
+.notification .notification-action:hover {
+  background-color: @surface_container_high;
+  color: @on_surface;
+}
+
+.notification .notification-action:active {
+  background-color: @primary_container;
+  color: @on_primary_container;
+}
+
+/* Barras de progreso en notificaciones */
+.notification.critical progress {
+  background-color: @error;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @primary;
+}
+
+.notification progress,
+.notification trough,
+.notification progressbar {
   border-radius: 12.6px;
-  margin: 18px;
-  background-color: @surface;
+  padding: 3px 0;
+}
+
+/* === CENTRO DE CONTROL === */
+.control-center {
+  box-shadow: 0 0 8px 0 @shadow, inset 0 0 0 1px @outline;
+  border-radius: 12.6px;
+  background-color: @surface_dim;
   color: @on_surface;
   padding: 14px;
 }
 
+.control-center .notification-background {
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+  margin: 4px 10px;
+  background: @surface_container_low;
+}
+
+.control-center .notification-background .notification {
+  border-radius: 7px;
+}
+
+.control-center .notification-background .notification.low {
+  opacity: 0.8;
+}
+
+/* Títulos de widgets */
 .control-center .widget-title > label {
-  color: @on_surface;
+  color: @primary;
   font-size: 1.3em;
+  font-weight: 600;
 }
 
 .control-center .widget-title button {
   border-radius: 7px;
-  color: @on_surface;
-  background-color: @surface_variant;
-  box-shadow: inset 0 0 0 1px @shadow;
+  color: @on_surface_variant;
+  background-color: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
   padding: 8px;
 }
 
 .control-center .widget-title button:hover {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @outline;
-  color: @on_background;
+  background-color: @surface_container_high;
+  color: @on_surface;
 }
 
 .control-center .widget-title button:active {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @primary;
-  color: #1e1e2e;
+  background-color: @primary_container;
+  color: @on_primary_container;
 }
 
-.control-center .notification-row .notification-background {
-  border-radius: 7px;
-  color: #cdd6f4;
+.control-center .notification-group {
+  margin-top: 10px;
+}
+
+.control-center .notification-group:focus .notification-background {
   background-color: @surface_container;
-  box-shadow: inset 0 0 0 1px @surface_container_highest;
-  margin-top: 14px;
 }
 
-.control-center .notification-row .notification-background .notification {
-  padding: 7px;
-  border-radius: 7px;
+/* === SCROLLBAR === */
+scrollbar slider {
+  margin: -3px;
+  opacity: 0.8;
+  background-color: @outline;
 }
 
-.control-center .notification-row .notification-background .notification.critical {
-  box-shadow: inset 0 0 7px 0 #f38ba8;
+scrollbar slider:hover {
+  background-color: @primary;
 }
 
-.control-center .notification-row .notification-background .notification .notification-content {
-  margin: 7px;
+scrollbar trough {
+  margin: 2px 0;
+  background-color: @surface_container_lowest;
 }
 
-.control-center .notification-row .notification-background .notification .notification-content .summary {
-  color: @on_surface;
-}
-
-.control-center .notification-row .notification-background .notification .notification-content .time {
-  color: #a6adc8;
-}
-
-.control-center .notification-row .notification-background .notification .notification-content .body {
-  color: @on_surface;
-}
-
-.control-center .notification-row .notification-background .notification > *:last-child > * {
-  min-height: 3.4em;
-}
-
-.control-center .notification-row .notification-background .notification > *:last-child > * .notification-action {
-  border-radius: 7px;
-  color: #cdd6f4;
-  background-color: @background;
-  box-shadow: inset 0 0 0 1px @surface_container;
-  margin: 7px;
-}
-
-.control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:hover {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @background;
-  color: #cdd6f4;
-}
-
-.control-center .notification-row .notification-background .notification > *:last-child > * .notification-action:active {
-  box-shadow: inset 0 0 0 1px @shadow;
-  background-color: @background;
-  color: @on_surface;
-}
-
-.control-center .notification-row .notification-background .close-button {
-  margin: 7px;
-  padding: 2px;
-  border-radius: 6.3px;
-  color: @surface;
-  background-color: #eba0ac;
-}
-
-.control-center .notification-row .notification-background .close-button:hover {
-  background-color: #f38ba8;
-  color: #1e1e2e;
-}
-
-.control-center .notification-row .notification-background .close-button:active {
-  background-color: #f38ba8;
-  color: #1e1e2e;
-}
-
-.control-center .notification-row .notification-background:hover {
-  box-shadow: inset 0 0 0 1px #45475a;
-  background-color: @background;
-  color: #cdd6f4;
-}
-
-.control-center .notification-row .notification-background:active {
-  box-shadow: inset 0 0 0 1px @shadow;
-  background-color: #cba6f7;
-  color: #cdd6f4;
-}
-
-/* Botones de cierre */
-.close-button {
-  border-radius: 6.3px;
-}
-
-/* Barras de progreso para notificaciones */
-.notification.critical progressbar progress {
-  background-color: #f38ba8;
-}
-
-.notification.low progressbar progress,
-.notification.normal progressbar progress {
-  background-color: #89b4fa;
-}
-
-/* Widget DND (Do Not Disturb) */
-.control-center-dnd {
+/* === WIDGET DND === */
+.widget-dnd {
   margin-top: 5px;
   border-radius: 8px;
-  background: @surface_bright;
-  border: 1px solid @shadow;
-  box-shadow: none;
-}
-
-.control-center-dnd:checked {
-  background: @primary;
-}
-
-.control-center-dnd slider {
-  background: @surface_dim;
-  border-radius: 8px;
-}
-
-.widget-dnd {
-  margin: 0px;
   font-size: 1.1rem;
 }
 
 .widget-dnd > switch {
   font-size: initial;
   border-radius: 8px;
-  background: @surface_variant;
-  border: 1px solid @shadow;
-  box-shadow: none;
+  background: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
 }
 
 .widget-dnd > switch:checked {
-  background: @surface_variant;
+  background: @primary_container;
+  box-shadow: inset 0 0 0 1px @primary;
 }
 
 .widget-dnd > switch slider {
-  background: @surface_variant;
+  background: @outline;
   border-radius: 8px;
-  border: 1px solid @surface_container;
+  transition: all 0.2s ease;
 }
 
-/* Widget MPRIS (Media Player) */
-.widget-mpris .widget-mpris-player {
-  background: #313244;
-  padding: 7px;
+.widget-dnd > switch:checked slider {
+  background: @primary;
 }
 
-.widget-mpris .widget-mpris-title {
+/* === WIDGET MPRIS === */
+.widget-mpris-player {
+  background: @surface_container;
+  border-radius: 12.6px;
+  color: @on_surface;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+}
+
+.mpris-overlay {
+  background-color: @surface_container_high;
+  opacity: 0.95;
+  padding: 15px 10px;
+  border-radius: 12.6px;
+}
+
+.widget-mpris-album-art {
+  -gtk-icon-size: 100px;
+  border-radius: 12.6px;
+  margin: 0 10px;
+}
+
+.widget-mpris-title {
   font-size: 1.2rem;
+  color: @on_surface;
+  font-weight: 600;
 }
 
-.widget-mpris .widget-mpris-subtitle {
-  font-size: 0.8rem;
+.widget-mpris-subtitle {
+  font-size: 1rem;
+  color: @on_surface_variant;
 }
 
-/* Widget Menu Bar */
+.widget-mpris button {
+  border-radius: 12.6px;
+  color: @on_surface_variant;
+  margin: 0 5px;
+  padding: 2px;
+  transition: all 0.2s ease;
+}
+
+.widget-mpris button image {
+  -gtk-icon-size: 1.8rem;
+}
+
+.widget-mpris button:hover {
+  background-color: @surface_container_highest;
+  color: @on_surface;
+}
+
+.widget-mpris button:active {
+  background-color: @primary_container;
+  color: @on_primary_container;
+  transform: scale(0.95);
+}
+
+.widget-mpris button:disabled {
+  opacity: 0.4;
+  color: @outline;
+}
+
+/* === BARRA DE MENÚ === */
 .widget-menubar > box > .menu-button-bar > button > label {
   font-size: 3rem;
   padding: 0.5rem 2rem;
+  color: @on_surface;
 }
 
-.widget-menubar > box > .menu-button-bar > button:last-child {
-  color: #f38ba8;
+.widget-menubar > box > .menu-button-bar > :last-child {
+  color: @error;
 }
 
-/* Botones de poder y captura de pantalla */
+/* === BOTONES DE SISTEMA === */
+.power-buttons button,
+.powermode-buttons button,
+.screenshot-buttons button {
+  background-color: @surface_container;
+  color: @on_surface_variant;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
 .power-buttons button:hover,
 .powermode-buttons button:hover,
 .screenshot-buttons button:hover {
-  background: #313244;
-}
-
-/* Widget de etiquetas */
-.control-center .widget-label > label {
+  background: @surface_container_high;
   color: @on_surface;
-  font-size: 2rem;
 }
 
-/* Widget de botones en grid */
+.power-buttons button:active,
+.powermode-buttons button:active,
+.screenshot-buttons button:active {
+  background: @primary_container;
+  color: @on_primary_container;
+  transform: scale(0.95);
+}
+
+/* === ETIQUETAS === */
+.control-center .widget-label > label {
+  color: @primary;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* === GRILLA DE BOTONES === */
 .widget-buttons-grid {
   padding-top: 1rem;
 }
 
-.widget-buttons-grid > flowbox > flowboxchild > button label {
-  font-size: 2.5rem;
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background-color: @surface_container;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-/* Widget de volumen */
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background-color: @surface_container_high;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active {
+  background-color: @primary_container;
+  transform: scale(0.95);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button label {
+  font-size: 2.5rem;
+  color: @on_surface_variant;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover label {
+  color: @on_surface;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active label {
+  color: @on_primary_container;
+}
+
+/* === WIDGET VOLUMEN === */
 .widget-volume {
-  padding-top: 1rem;
+  padding: 1rem 0;
 }
 
 .widget-volume label {
-  font-size: 1.5rem;
-  color: #74c7ec;
+  color: @secondary;
+  padding: 0 1rem;
+  font-weight: 500;
 }
 
-.widget-volume scale trough highlight {
-  background: #74c7ec;
+.widget-volume trough {
+  background-color: @surface_container_low;
 }
 
-/* Widget de brillo */
-.widget-backlight scale trough highlight {
-  background: #f9e2af;
+.widget-volume trough highlight {
+  background: @secondary;
+}
+
+.widget-volume trough slider {
+  background-color: @secondary;
+}
+
+.widget-volume trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @secondary;
+}
+
+/* === WIDGET BRILLO === */
+.widget-backlight {
+  padding: 1rem 0;
+}
+
+.widget-backlight trough {
+  background-color: @surface_container_low;
+}
+
+.widget-backlight trough highlight {
+  background: @tertiary;
+}
+
+.widget-backlight trough slider {
+  background-color: @tertiary;
+}
+
+.widget-backlight trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @tertiary;
 }
 
 .widget-backlight label {
   font-size: 1.5rem;
-  color: #f9e2af;
+  color: @tertiary;
+  font-weight: 500;
 }
 
 .widget-backlight .KB {
   padding-bottom: 1rem;
 }
 
-/* Imágenes */
+/* === IMÁGENES === */
 .image {
   padding-right: 0.5rem;
 }

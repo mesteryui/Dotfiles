@@ -49,7 +49,6 @@
     "dnd": {
       "text": "No molestar",
       "no_disturbance_sounds": true
-
     },
     "label": {
       "max-lines": 5,
