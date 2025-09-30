@@ -147,21 +147,21 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 * Variables y verbas diversas
 Estableciendo variables personalizadas diversas para propósitos diversos dentro de la configuración.
 #+begin_src emacs-lisp 
-  (defgroup mester nil
-    "Group to my custom configs"
-    :group 'convenience)
+(defgroup mester nil
+  "Group to my custom configs"
+  :group 'convenience)
 
-  (defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-    "The languages to be used by word corrections")
+(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+  "The languages to be used by word corrections")
 
-  (defcustom mester/spell-checker 'jinx
-    "Sistema de correccion ortografica de preferencia."
-    :type '(choice (const :tag "Jinx" jinx)
+(defcustom mester/spell-checker 'jinx
+  "Sistema de correccion ortografica de preferencia."
+  :type '(choice (const :tag "Jinx" jinx)
   		 (const :tag "Flyspell" flyspell)))
-  (defcustom mester/modeline 'doom-modeline
-    "Modeline por defecto"
-    :group 'mester
-    :type '(choice (const :tag "Os modeline (Own)" os-modeline)
+(defcustom mester/modeline 'doom-modeline
+  "Modeline por defecto"
+  :group 'mester
+  :type '(choice (const :tag "Os modeline (Own)" os-modeline)
   		 (const :tag "Doom Modeline" 'doom-modeline)))
 (setq mester/modeline 'os-modeline)
   (defcustom mester/enabled-modules nil
@@ -171,7 +171,7 @@ Estableciendo variables personalizadas diversas para propósitos diversos dentro
 #+end_src
 * Ajustes de rendimiento
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle "modules/performance.el"
+:header-args:emacs-lisp: :tangle "modules/performance.el" :mkdirp yes
 :END:
 ** Better font lock performance
 Mejorar el rendimiento del font-lock
@@ -261,17 +261,17 @@ Si el paquete ya está cargado, se ejecuta inmediatamente.Si no, se espera a que
 Sugerencia de una IA pero la veo y la entiendo y es algo lógico de hacer
 #+begin_src emacs-lisp 
 (defmacro when-system (sys &rest body)
-"Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
-`(when (eq system-type ',sys)
-,@body))
+  "Ejecuta BODY solo si estamos en SYSTEM (gnu/linux, darwin, windows-nt)."
+  `(when (eq system-type ',sys)
+     ,@body))
 #+end_src
 ** GBind
 Esta macro es para facilitar el seteo de atajos personalizados de teclado a nivel global
 #+begin_src emacs-lisp :tangle modules/macros.el
 (defmacro gbind (key func)
-"Asigna atajos de teclado globales de forma más sencilla usando kbd:
+  "Asigna atajos de teclado globales de forma más sencilla usando kbd:
 KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
-`(global-set-key (kbd ,key) #',func))
+  `(global-set-key (kbd ,key) #',func))
 #+end_src
 *** Gbind multiple
 Mientras que la anterior permite escribir la función para poner atajos de tecla más fáciles, esta macro permite poner varios atajos de teclado de forma fácil sin tener que escribir cada vez.
@@ -874,7 +874,15 @@ The DWIM behaviour of this command is as follows:
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
 #+end_src
-
+*** Org social
+Org social es una red social basada en org-mode, la cual se basa en un archivo
+~social.org~ 
+#+begin_src emacs-lisp 
+(use-package org-social
+  :ensure (:host github :repo "tanrax/org-social.el")
+  :config
+  (setq org-social-file "~/Escritorio/CosasSociales/social.org"))
+#+end_src
 *** Fontaine
 Configuración de fontaine lo voy a poner en la misma etapa de setear las fuentes
 #+name: Fontaine
@@ -1384,7 +1392,7 @@ Habilita la corrección ortográfica al vuelo.
 Corrector ortográfico para Emacs usando la librería enchant, también permite la corrección al vuelo y es mejor que Flyspell.
 #+begin_src emacs-lisp
 (use-package jinx
-  :ensure (:host github :repo "minad/jinx.git")
+  :ensure ;;(:host github :repo "minad/jinx.git")
   :if (eq mester/spell-checker 'jinx)
   :hook (((text-mode prog-mode) . jinx-mode))
   :bind (("<f7>" . jinx-correct))
@@ -1556,7 +1564,7 @@ Para retocar la barra de abajo
 Completacion minimalista y más vistosa en el minibuffer
 #+begin_src emacs-lisp :tangle modules/minibuffer-improves.el
 (use-package vertico
-  :ensure (:host github :repo "minad/vertico.git")
+  :ensure ;;(:host github :repo "minad/vertico.git")
   :hook
   (elpaca-after-init . vertico-mode)
   :custom
@@ -1779,6 +1787,7 @@ Modos extra para algunos archivos específicos
 **** JSON
 #+begin_src emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
+(add-to-list 'treesit-language-source-alist '(json "https://github.com/tree-sitter/tree-sitter-json"))
 #+end_src
 **** Markdown
 Permitir el uso de Markdown en Emacs con cierto resaltado
@@ -1968,7 +1977,7 @@ Ajustes en relación al sistema de gestión de tareas en cuanto a tareas pendien
 ** Org utilities
 *** Org wild notifier
 Permite que se te notfique de las tareas y notas definidas mediante org
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package org-wild-notifier
   :ensure t
   :after org
@@ -2156,7 +2165,7 @@ Permite estructurar el código en estructuras plegables siendo practico para có
 (use-package outline-indent
   :ensure t
   :commands outline-indent-minor-mode
-  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
+;;  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
   :custom
   (outline-indent-ellipsis " ▼")
   :init
@@ -2261,6 +2270,13 @@ Para que la documentación de funciones y demás mostradas por eldoc aparezca en
 (use-package eldoc-box
   :ensure t
   :defer t)
+#+end_src
+**** Eldoc mouse
+#+begin_src emacs-lisp
+(use-package eldoc-mouse
+:ensure (:host github :repo "huangfeiyu/eldoc-mouse")
+:config
+(eldoc-mouse-enable))
 #+end_src
 ** Corfu + Cape
 Soporte para el auto completado de una manera más 🐱 cape proporciona los backends, en si funciones para completion at point, que se pueden aprovechar para las labores de auto-completado.
@@ -2460,6 +2476,7 @@ Servidor lsp más minimalista lo voy a probar
               ("C-c l p" . flymake-previous-error)
               ("C-c l d" . eldoc))
   :config
+  (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
   ;; (add-to-list 'eglot-server-programs
@@ -2575,7 +2592,6 @@ Añadiendo el soporte para Treesitter que es un sistema de parseo incremental qu
 Aquí estarán los paquetes para los modos mayores y otras cosas para lenguajes de programación específicos
 *** Clojure
 Lenguaje funcional interoperable con Java que se basa en el paradigma de la programacion funcional
-
 *** JavaScript
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "modules/lang/javascript.el" :mkdirp yes
