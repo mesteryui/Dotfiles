@@ -1,0 +1,111 @@
+source = $HOME/.config/hypr/colors.conf
+$accent = $primary
+$accentAlpha = $primary
+$font = JetBrainsMono Nerd Font Propo
+$font_bold = JetBrainsMono Nerd Font Propo Bold
+
+# GENERAL
+general {
+  disable_loading_bar = true
+  hide_cursor = true
+  text_trim = true
+  grace = 1
+}
+
+# BACKGROUND
+background {
+  monitor =
+  #path = screenshot
+  path = $image
+  blur_passes = 3
+  color = $background
+  contrast = 0.8916
+  brightness = 0.7172
+  vibrancy = 0.1696
+  vibrancy_darkness = 0
+}
+animations {
+    enabled = true
+}
+# LAYOUT
+label {
+  monitor =
+  text = Layout: $LAYOUT
+  color = $invert_primary
+  font_size = 25
+  font_family = $font
+  position = 30, -30
+  halign = left
+  valign = top
+}
+
+# TIME
+label {
+  monitor =
+  text = $TIME
+  color = $invert_primary
+  shadow_boost = 1.2
+  shadow_pass = 2
+  shadow_size = 3
+  font_size = 104
+  font_family = $font_bold
+  position = 0, -100
+  halign = center
+  valign = top
+}
+
+# DATE
+label {
+  monitor =
+  text = cmd[update:30000] date +"%A, %d %B %Y"
+  color = $invert_primary
+  font_size = 24
+  font_family = $font
+  position = 0, -270
+  halign = center
+  valign = top
+}
+
+# USER AVATAR
+image {
+  monitor =
+  path = $HOME/.face
+  size = 200
+  border_color = $accent
+  position = 0, 72
+  halign = center
+  valign = center
+}
+# Information
+label {
+    monitor =
+    text = cmd[update:1000] echo -e "$(~/.config/hypr/scripts/battery-infolock.sh)"
+    color = $invert_primary
+    font_size = 30
+    font_family = $font
+    position = -20, -20
+    halign = right
+    valign = top
+}
+# INPUT FIELD
+input-field {
+  monitor =
+  size = 500, 90
+  outline_thickness = 4
+  dots_size = 0.2
+  dots_spacing = 0.2
+  dots_center = true
+  outer_color = $accent
+  inner_color = $surface
+  font_color = $inverse_surface
+  fade_on_empty = false
+  placeholder_text = <i>󰌾 Sesion iniciada como </i>$USER
+  hide_input = false
+  check_color = $accent
+  fail_color = $error
+  fail_text = <i>$FAIL <b>($ATTEMPTS)</b></i>
+  capslock_color = $inverse_primary
+  position = 0, -150
+  halign = center
+  valign = center
+}

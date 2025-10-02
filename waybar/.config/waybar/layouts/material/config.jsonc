@@ -1,0 +1,230 @@
+{
+  "reload_style_on_change": true,
+  "layer": "top",
+  "position": "top",
+  "spacing": 8,
+  "height": 42,
+  "margin-top": 8,
+  "margin-left": 12,
+  "margin-right": 12,
+  
+  "modules-left": [
+    "custom/launcher",
+    "hyprland/workspaces",
+    "hyprland/window"
+  ],
+  
+  "modules-center": [
+    "clock"
+  ],
+  
+  "modules-right": [
+    "custom/weather",
+    "custom/update",
+    "group/system-tray",
+    "bluetooth",
+    "network",
+    "pulseaudio",
+    "battery",
+    "custom/notification",
+  ],
+
+  "custom/launcher": {
+    "format": "󰮯",
+    "on-click": "~/.config/rofi/scripts/launcher.sh",
+    "tooltip-format": "Launcher\n\nAlt + Space"
+  },
+
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "format": "{icon}",
+    "format-icons": {
+      "1": "󰲠",
+      "2": "󰲢",
+      "3": "󰲤",
+      "4": "󰲦",
+      "5": "󰲨",
+      "6": "󰲪",
+      "7": "󰲬",
+      "8": "󰲮",
+      "9": "󰲰",
+      "active": "󰝥",
+      "default": "󰊠"
+    },
+    "persistent-workspaces": {
+      "*": 3
+    }
+  },
+
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 50,
+    "separate-outputs": true,
+    "rewrite": {
+      "": "Escritorio"
+    }
+  },
+
+  "clock": {
+    "format": "{:L%H:%M  %a %d %b}",
+    "format-alt": "{:L%A, %d de %B de %Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#a6e3a1'><b>{}</b></span>",
+        "days": "<span color='#cdd6f4'><b>{}</b></span>",
+        "weeks": "<span color='#94e2d5'><b>W{}</b></span>",
+        "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "mode",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    }
+  },
+
+  "custom/update": {
+    "format": "󰚰 {}",
+    "return-type": "json",
+    "exec-if": "which waybar-module-pacman-updates",
+    "exec": "waybar-module-pacman-updates --interval-seconds 300",
+    "on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",
+  },
+
+  "custom/screenrecording-indicator": {
+    "on-click": "omarchy-cmd-screenrecord",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
+    "signal": 8,
+    "return-type": "json"
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "󰻠 {usage}%",
+    "on-click": "kitty --class float_kitty -e btop",
+    "states": {
+      "warning": 70,
+      "critical": 90
+    }
+  },
+
+  "memory": {
+    "interval": 5,
+    "format": "󰍛 {percentage}%",
+    "on-click": "kitty --class float_kitty -e btop",
+    "states": {
+      "warning": 70,
+      "critical": 90
+    }
+  },
+
+  "network": {
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-wifi": "{icon}",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰤮",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
+    "tooltip-format-ethernet": "Ethernet\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
+    "tooltip-format-disconnected": "Desconectado",
+    "interval": 3,
+    "on-click": "kitty --class float_kitty -e impala"
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱 {num_connections}",
+    "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} conectado(s)",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} conectado(s)\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+    "on-click": "blueberry"
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "kitty --class float_kitty -e wiremix",
+    "on-click-right": "pamixer -t",
+    "scroll-step": 5,
+    "tooltip-format": "{desc}\nVolumen: {volume}%"
+  },
+
+  "battery": {
+    "interval": 10,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󱐋 {capacity}%",
+    "format-full": "󰁹 {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "tooltip-format": "{timeTo}\nPotencia: {power}W"
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": " {icon} ",
+    "format-icons": {
+      "notification": " <span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": " <span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": " <span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": " <span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+
+  "custom/power": {
+    "format": "󰐥",
+    "on-click": "omarchy-menu power",
+    "tooltip-format": "Menú de energía"
+  },
+
+  "group/system-tray": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 500,
+      "children-class": "tray-item",
+      "transition-left-to-right": true
+    },
+    "modules": [
+      "custom/tray-icon",
+      "tray"
+    ]
+  },
+
+  "custom/tray-icon": {
+    "format": "󰅂",
+    "tooltip": false
+  },
+  "custom/weather": {
+    "format": "{}ºC",
+    "return-type": "json",
+    "exec": "wttrbar -l es --location Vigo",
+    "interval": 240,
+  },
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  }
+}

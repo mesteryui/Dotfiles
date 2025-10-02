@@ -21,7 +21,7 @@ alias emacsc="emacsclient -c -a emacs"
 [ -n "$EAT_SHELL_INTEGRATION_DIR" ] && \
   source "$EAT_SHELL_INTEGRATION_DIR/bash"
 
-[ -t 1 ] && exec fish
+#[ -t 1 ] && exec fish
 ## Fin de archivo 
 
 #source /home/oscar/.config/broot/launcher/bash/br

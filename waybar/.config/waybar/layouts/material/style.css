@@ -1,0 +1,289 @@
+/* ===== Material You Design System ===== */
+@import "../../colors.css";
+
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;
+  font-size: 13px;
+  min-height: 0;
+}
+
+/* Variables Material You */
+window#waybar {
+  background: transparent;
+}
+
+/* Contenedor principal con efecto glassmorphism */
+#waybar {
+  background: alpha(@surface_container, 0.85);
+  border-radius: 16px;
+  /*box-shadow: 0 8px 32px @shadow;*/
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Módulos base */
+.modules-left,
+.modules-center,
+.modules-right {
+  background: transparent;
+  padding: 0 8px;
+}
+
+/* Estilo general de módulos */
+#custom-launcher,
+#workspaces,
+#window,
+#clock,
+#custom-weather,
+#custom-update,
+#custom-screenrecording-indicator,
+#bluetooth,
+#network,
+#pulseaudio,
+#battery,
+#custom-notification,
+#custom-power,
+#cpu,
+#memory,
+#tray {
+  padding: 0 12px;
+  margin: 4px 3px;
+  margin-left: 4px;
+  background: @surface_container_high;
+  border-radius: 12px;
+  color: @on_surface;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#custom-notification {
+    margin-left: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+#network {
+    padding-right: 15px;
+}
+
+/* Hover effect con Material You */
+#custom-launcher:hover,
+#workspaces button:hover,
+#custom-weather:hover,
+#clock:hover,
+#custom-update:hover,
+#bluetooth:hover,
+#network:hover,
+#pulseaudio:hover,
+#battery:hover,
+#custom-notification:hover,
+#custom-power:hover,
+#cpu:hover,
+#memory:hover {
+  background: @primary;
+  color: @on_primary;
+  /*box-shadow: 0 4px 16px alpha(@primary, 0.3);*/
+}
+
+/* Launcher con gradiente Material */
+#custom-launcher {
+  background: @primary;
+  color: @on_primary;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0 16px;
+  margin-right: 8px;
+  /*box-shadow: 0 4px 12px alpha(@primary, 0.4);*/
+}
+
+#custom-launcher:hover {
+  background: @primary_fixed_dim;
+  /*box-shadow: 0 6px 20px alpha(@primary, 0.6);*/
+}
+
+/* Workspaces con efecto pill */
+#workspaces {
+  background: @surface_container;
+  border-radius: 20px;
+  padding: 2px 6px;
+}
+
+#workspaces button {
+  padding: 0 10px;
+  margin: 2px 3px;
+  background: transparent;
+  color: @on_surface_variant;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#workspaces button.active {
+  background: @primary_container;
+  color: @on_primary_container;
+  font-weight: bold;
+  box-shadow: 0 4px 12px alpha(@primary, 0.4);
+}
+
+#workspaces button.urgent {
+  background: @error;
+  color: @on_error;
+}
+
+/* Window title */
+#window {
+  background: @surface_container_low;
+  color: @on_surface_variant;
+  font-weight: 500;
+  padding: 0 20px;
+}
+
+/* Clock destacado */
+#clock {
+  background: @tertiary;
+  color: @on_tertiary;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0 20px;
+  /*box-shadow: 0 4px 12px alpha(@tertiary, 0.4);*/
+}
+
+#clock:hover {
+  background: @tertiary_fixed_dim;
+  box-shadow: 0 6px 20px alpha(@tertiary, 0.6);
+}
+
+
+/* Network con colores según estado */
+
+#network.disconnected {
+  color: @error;
+  background: alpha(@error_container, 0.5);
+}
+
+/* Bluetooth */
+#bluetooth {
+  color: @primary;
+}
+
+#bluetooth.disabled {
+  color: @on_surface_variant;
+  background: @surface_container_high;
+}
+
+#bluetooth.disabled:hover {
+  background: @primary;
+  color: @on_primary;
+  box-shadow: 0 4px 16px alpha(@outline, 0.2);
+}
+
+#bluetooth.connected {
+  color: @primary_fixed_dim;
+  background: alpha(@primary_container, 0.5);
+}
+/* Pulseaudio con barra visual */
+
+
+/* Battery con estados de color */
+
+
+#battery.charging,
+#battery.plugged {
+  color: @primary_fixed_dim;
+  background: alpha(@primary_container, 0.5);
+}
+
+#battery.warning:not(.charging) {
+  color: @tertiary_fixed_dim;
+  background: alpha(@tertiary_container, 0.5);
+}
+
+#battery.critical:not(.charging) {
+  color: @error;
+  background: alpha(@error_container, 0.5);
+}
+
+/* CPU & Memory */
+#cpu {
+  color: @secondary;
+}
+
+#cpu.warning {
+  color: @tertiary_fixed_dim;
+  background: alpha(@tertiary_container, 0.5);
+}
+
+#cpu.critical {
+  color: @error;
+  background: alpha(@error_container, 0.5);
+}
+
+#memory {
+  color: @secondary_fixed_dim;
+}
+
+#memory.warning {
+  color: @tertiary_fixed_dim;
+  background: alpha(@tertiary_container, 0.5);
+}
+
+#memory.critical {
+  color: @error;
+  background: alpha(@error_container, 0.5);
+}
+
+/* Power button destacado */
+#custom-power {
+  background: @primary;
+  color: @on_primary;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 8px;
+  box-shadow: 0 4px 12px alpha(@primary, 0.4);
+}
+
+#custom-power:hover {
+  background: @primary_fixed_dim;
+  box-shadow: 0 6px 20px alpha(@primary, 0.6);
+}
+
+/* System Tray con drawer */
+#custom-tray-icon {
+  background: @secondary_container;
+  color: @on_secondary_container;
+  padding: 0 12px;
+  margin-right: 8px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#custom-tray-icon:hover {
+  background: alpha(@secondary_container, 0.7);
+}
+
+.tray-item {
+  background: @surface_container_high;
+  padding: 0 8px;
+  margin: 4px 2px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tooltips Material */
+tooltip {
+  background: alpha(@surface_container_highest, 0.95);
+  border-radius: 12px;
+  border: 2px solid alpha(@primary, 0.3);
+  padding: 8px 12px;
+  /*box-shadow: 0 8px 24px @shadow;*/
+}
+
+tooltip label {
+  color: @on_surface;
+  font-weight: 500;
+}
+
+/* Screen recording indicator */
+#custom-screenrecording-indicator {
+  color: @error;
+  background: alpha(@error_container, 0.5);
+}

@@ -83,11 +83,6 @@ The exact color values are taken from the active Ef theme."
   :ensure t
   :defer t)
 
-(use-package eldoc-mouse
-:ensure (:host github :repo "huangfeiyu/eldoc-mouse")
-:config
-(eldoc-mouse-enable))
-
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
          ("M-*" . tempel-insert))
@@ -155,6 +150,7 @@ The exact color values are taken from the active Ef theme."
               ("C-c l p" . flymake-previous-error)
               ("C-c l d" . eldoc))
   :config
+  (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
   ;; (add-to-list 'eglot-server-programs
