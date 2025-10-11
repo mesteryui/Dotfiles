@@ -37,6 +37,7 @@ window#waybar {
 #clock,
 #custom-weather,
 #custom-update,
+#power-profiles-daemon,
 #custom-screenrecording-indicator,
 #bluetooth,
 #network,
@@ -59,15 +60,20 @@ window#waybar {
 #custom-notification {
     margin-left: 2px;
     padding-left: 5px;
-    padding-right: 5px;
+    padding-right: 7px;
+    margin-right: 2px;
 }
-
+#power-profiles-daemon {
+    padding-left: 15;
+    padding-right: 20;
+}
 #network {
     padding-right: 15px;
 }
 
 /* Hover effect con Material You */
 #custom-launcher:hover,
+#power-profiles-daemon:hover,
 #workspaces button:hover,
 #custom-weather:hover,
 #clock:hover,
@@ -189,17 +195,17 @@ window#waybar {
 #battery.charging,
 #battery.plugged {
   color: @primary_fixed_dim;
-  background: alpha(@primary_container, 0.5);
+  background:@primary_container;
 }
 
 #battery.warning:not(.charging) {
   color: @tertiary_fixed_dim;
-  background: alpha(@tertiary_container, 0.5);
+  background: @tertiary_container;
 }
 
 #battery.critical:not(.charging) {
   color: @error;
-  background: alpha(@error_container, 0.5);
+  background: @error_container;
 }
 
 /* CPU & Memory */

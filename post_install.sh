@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+set -e
+
 IFS=$'\n\t'
 
 # Este script está pensado para Arch Linux.
@@ -32,18 +34,42 @@ add_configs() {
     stow yazi
     stow matugen
     stow zathura
-    stow bat
     stow lsd
     stow cava
+    stow swayosd
+    stow swaync
+    stow fish
+    stow starship
+    stow bash
+    stow btop
+    stow uwsm
+    stow bat
 }
+enable_chaotic_AUR() {
+    echo "Añadiendo claves criptograficas"
+    sudo pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+    sudo pacman-key --lsign-key 3056513887B78AEB
+    echo "Añadiendo paquetes de repositorios y claves"
+    sudo pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    sudo pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+    sudo tee -a /etc/pacman.conf <<'EOF'
 
+[chaotic-aur]
+Include = /etc/pacman.d/chaotic-mirrorlist
+EOF
+    echo "Actualizando sistema y repositorios"
+    sudo pacman -Syu
+}
 install_software_notAUR() {
+    echo "Habilitando los repositorios de Chaotic-AUR"
+    enable_chaotic_AUR
     echo "Instalando paquetes de repositorios oficiales..."
     if [[ ! -f pkglists-repos.txt ]]; then
         echo "ERROR: El archivo pkglists-repos.txt no existe."
         exit 1
     fi
     sudo pacman -S --needed - < pkglists-repos.txt
+    rustup default stable
 }
 
 install_AUR_software() {

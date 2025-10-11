@@ -77,6 +77,17 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 #+begin_src emacs-lisp :noweb yes
 (when (boundp 'native-comp-eln-load-path)
   (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
+(when (fboundp 'native-compile-set-strict-mode)
+  ;; 1. Compilación nativa en background para no bloquear Emacs.
+  (setq native-comp-async-report-warnings-p nil)
+  (setq native-comp-deferred-compilation-deny-list '("."))
+  
+  ;; 2. Ajustes de la compilación en caliente (compilación JIT de Lisp)
+  (setq native-comp-deferred-compilation-inhibit-p nil)
+  (setq native-comp-speed 3)
+  
+  ;; 3. Activa la compilación asíncrona por si acaso.
+  (setq native-comp-async-p t))
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;(setq elpaca-core-date '(20250223)) ;; set to the build date of Emacs
@@ -179,14 +190,14 @@ Mejorar el rendimiento del font-lock
 <<lexicalbind>>
 (setq jit-lock-stealth-time 0.5)
 (setq jit-lock-chunk-size 1000)
-(setq jit-lock-defer-time 0.05)
+(setq jit-lock-defer-time nil)
 #+end_src
 ** Recolector de basura
 Aquí hago ajustes adicionales al recolector de basura mediante la herramienta gcmh la cual permite hacer la configuración del recolector de basura algo más automática ya que la herramienta, decide cuando ejecutar el recolector de basura para no activarlo por ejemplo mientras escribes sino que lo hace cuando estés un tiempo sin usar el editor
 #+begin_src emacs-lisp 
 (use-package gcmh
   :init
-  (setq gc-cons-threshold (* 16 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
+  (setq gc-cons-threshold (* 64 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
   (setq gcmh-idle-delay 'auto  ; default is 15s
 	gcmh-auto-idle-delay-factor 10 ;; Factor usado para decidir cuanto espera el recolector de basura cuando no has estado usando el editor
 	gcmh-high-cons-threshold (* 64 1024 1024))
@@ -393,6 +404,7 @@ Temas ef de Protesilaos es bastante chulo, tienen bastantes colores y se ven gen
 Esto incluye todo ajustes relacionados a la apariencia así que creo que debería estar aquí
 #+begin_src emacs-lisp
 ;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+(global-display-line-numbers-mode -1) 
 (add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
@@ -881,7 +893,8 @@ Org social es una red social basada en org-mode, la cual se basa en un archivo
 (use-package org-social
   :ensure (:host github :repo "tanrax/org-social.el")
   :config
-  (setq org-social-file "~/Escritorio/CosasSociales/social.org"))
+  (setq org-social-file "~/Escritorio/CosasSociales/social.org")
+  (setq org-social-my-public-url "https://codeberg.org/mester/CosasSociales/raw/branch/main/social.org"))
 #+end_src
 *** Fontaine
 Configuración de fontaine lo voy a poner en la misma etapa de setear las fuentes
@@ -1978,15 +1991,20 @@ Ajustes en relación al sistema de gestión de tareas en cuanto a tareas pendien
 *** Org wild notifier
 Permite que se te notfique de las tareas y notas definidas mediante org
 #+begin_src emacs-lisp :tangle no
-(use-package org-wild-notifier
+(use-package org-alert
   :ensure t
   :after org
-  :custom
-  (org-wild-notifier-notification-title "Org Wild Reminder")
-  (org-wild-notifier-alert-time (quote (1 10 30 1440 2880)))
-  (alert-default-style 'libnotify)
   :config
-  (org-wild-notifier-mode 1))
+  ;; 1. Define los tiempos de alerta (en minutos)
+  ;; Esto reemplaza a `org-wild-notifier-alert-time`.
+  ;; Los valores son: 1, 10, 30 minutos antes, y 1 y 2 días (1440, 2880 min) antes.
+  (setq org-alert-times '(1 10 30 1440 2880))
+
+  ;; 2. Personaliza el título de la notificación (opcional, pero útil)
+  (setq org-alert-title "Org Reminder")
+  (setq alert-default-style 'libnotify)
+  ;; 3. Activa el modo principal (equivalente a org-wild-notifier-mode)
+  (org-alert-mode 1))
 #+end_src
 *** Org superstar
 Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
@@ -2434,6 +2452,7 @@ Servidor lsp más minimalista lo voy a probar
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
   :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
+          (ruby-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :config
   (setq-default eglot-workspace-configuration
@@ -2469,6 +2488,11 @@ Servidor lsp más minimalista lo voy a probar
               ("C-c l p" . flymake-previous-error)
               ("C-c l d" . eldoc))
   :config
+   (add-to-list 'eglot-server-programs
+               `(python-ts-mode
+                 . ,(eglot-alternatives '(("pyright-langserver" "--stdio")
+                                          "jedi-language-server"
+                                          "pylsp"))))
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
@@ -2600,6 +2624,7 @@ Lenguaje funcional interoperable con Java que se basa en el paradigma de la prog
 (provide 'javascript)
 #+end_src
 *** Ruby
+Lenguaje de programacion Ruby me parece un lenguaje interesante.
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "modules/lang/ruby.el" :mkdirp yes
 :END:
@@ -2610,7 +2635,10 @@ Lenguaje funcional interoperable con Java que se basa en el paradigma de la prog
   :ensure nil
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
-  :mode "Gemfile\\'")
+  :mode "Gemfile\\'"
+  :custom
+  (ruby-indent-level 2)
+  (ruby-indent-tabs-mode nil))
 (provide 'ruby)
 #+end_src
 *** Python
@@ -2627,24 +2655,23 @@ Lenguaje funcional interoperable con Java que se basa en el paradigma de la prog
 #+end_src
 **** Integracion proyectos
 Esto es para integrar los entornos virtuales de python y tener acceso a esas librerias
-#+begin_src emacs-lisp
-(use-package pyvenv
+#+begin_src emacs-lisp 
+;; (use-package pyvenv
+;;   :ensure t
+;;   :config
+;;  (pyvenv-mode 1)
+;;  )
+(use-package pet
+  :ensure t
+  :defer t
+  :hook (python-base-mode . pet-mode))
+(use-package pyconf
   :ensure t)
-
-(defun my/pyvenv-auto-activate ()
-  "Si existe un entorno .venv en el proyecto, activarlo."
-  (let ((root (locate-dominating-file default-directory ".venv")))
-    (when root
-      (pyvenv-activate (expand-file-name ".venv" root)))))
-
-(add-hook 'python-mode-hook #'my/pyvenv-auto-activate)
-
-;; Black
-
-(add-hook 'python-mode-hook
-          (lambda ()
-            (add-hook 'before-save-hook 'black-format-buffer nil t)
-            (add-hook 'before-save-hook 'isort-format-buffer nil t)))
+(use-package python-black
+  :ensure t
+  :demand t
+  :after python
+  :hook ((python-mode . python-black-on-save-mode)))
 (use-package flymake-ruff
   :ensure t
   :hook (python-mode . flymake-ruff-load))
@@ -2808,6 +2835,7 @@ Aquí defino el bloque de código que lleva a cabo la carga de todos los módulo
     schemelang ;; Lenguaje Scheme
     emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+    ruby
     rust
     common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
     java ;; Lenguaje de programacion Java
