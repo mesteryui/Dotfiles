@@ -1,0 +1,130 @@
+/**
+ * Rofi Grid Launcher - Material Design 3 / Material You
+ * Siguiendo las convenciones de https://m3.material.io/
+ */
+
+@import "~/.config/rofi/matugen/matugen-rofi.rasi"
+
+* {
+    font: "Inter 11";
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+window {
+    width: 960px;
+    height: 640px;
+    padding: 24px;
+    background-color: @surface;
+    border: 0px;
+    border-radius: 28px;
+}
+
+mainbox {
+    orientation: vertical;
+    spacing: 20px;
+    children: [ "inputbar", "listview" ];
+}
+
+/* Search bar con elevación y estado de foco */
+inputbar {
+    children: [ "entry" ];
+    background-color: @surface-container-highest;
+    border: 0px;
+    border-radius: 28px;
+    padding: 16px 24px;
+    margin: 0px;
+}
+
+entry {
+    placeholder: "Buscar aplicaciones";
+    placeholder-color: @on-surface-variant;
+    background-color: transparent;
+    text-color: @on-surface;
+    cursor: text;
+}
+
+/* Grid de aplicaciones - 6 columnas × 3 filas para mejor proporción */
+listview {
+    columns: 6;
+    lines: 3;
+    fixed-height: true;
+    fixed-columns: true;
+    dynamic: false;
+    spacing: 16px;
+    cycle: true;
+    scrollbar: false;
+    flow: horizontal;
+}
+
+/* Elementos con estados interactivos Material */
+element {
+    orientation: vertical;
+    spacing: 12px;
+    padding: 16px 12px;
+    background-color: transparent;
+    text-color: @on-surface;
+    border-radius: 20px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element normal.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+element selected.normal {
+    background-color: @primary-container;
+    text-color: @on-primary-container;
+}
+
+element selected.active {
+    background-color: @tertiary-container;
+    text-color: @on-tertiary-container;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element alternate.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+/* Iconos con tamaño estándar Material (64dp) */
+element-icon {
+    size: 56px;
+    horizontal-align: 0.5;
+}
+
+/* Etiquetas con tipografía Material You */
+element-text {
+    font: "Inter Medium 10";
+    text-color: inherit;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+}
+
+element-text selected {
+    text-color: inherit;
+}
+
+/* Configuración global */
+configuration {
+    modi: "drun";
+    show-icons: true;
+    terminal: "kitty";
+    drun-display-format: "{name}";
+    disable-history: false;
+    hide-scrollbar: true;
+    display-drun: "";
+    sidebar-mode: false;
+    click-to-exit: true;
+    hover-select: true;
+}

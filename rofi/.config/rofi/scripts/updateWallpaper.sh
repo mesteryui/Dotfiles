@@ -4,7 +4,6 @@
 # Uso: ./update-rofi-wallpaper.sh /ruta/al/nuevo/wallpaper.jpg
 
 THEME_DIR="$HOME/.config/rofi/layouts/applications_menu/"
-
 # 1. Verificar si se proporcionó un argumento y si es un archivo válido
 if [[ -z "$1" || ! -f "$1" ]]; then
     echo "Error: Por favor, proporciona la ruta del wallpaper como argumento."

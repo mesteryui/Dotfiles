@@ -5,3 +5,4 @@ export QT_QUICK_CONTROLS_STYLE=org.hyprland.style
 export XDG_SESSION_DESKTOP=Hyprland
 export HYPRLAND_NO_SD_NOTIFY=1 # If systemd, disables the sd_notify calls.
 export HYPRLAND_NO_SD_VARS=1   # Disables management of variables in systemd and dbus activation environments.
+export AQ_DRM_DEVICES=/dev/dri/card1

@@ -200,17 +200,14 @@ apply_wallpaper() {
     local wallpaper_path="$1"
     
     # Immediate feedback
-    notify 1000 "⚡ Aplicando wallpaper..."
     log I "Aplicando wallpaper con matugen..."
     
     # Apply with error handling
     if matugen image "$wallpaper_path" >/dev/null 2>&1; then
         log S "Wallpaper aplicado: $(basename "$wallpaper_path")"
-        notify 1500 "✓ Wallpaper cambiado exitosamente"
         return 0
     else
         log E "Error aplicando wallpaper con matugen"
-        notify 3000 "✗ Error al cambiar wallpaper" critical
         return 1
     fi
 }

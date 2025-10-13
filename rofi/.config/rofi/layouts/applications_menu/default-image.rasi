@@ -49,7 +49,7 @@ imageBoxOverlay {
 
 imageBox {
     enabled: true;
-    background-image: url("/home/oscar/Imágenes/Wallpapers/a_cartoon_of_a_girl_with_blue_hair_and_a_skull.jpg", height);
+    background-image: url("/home/oscar/Imágenes/Wallpapers/GHltFKI.jpeg", height);
     border-radius: 12px;
     size: 180px;
 }

@@ -60,6 +60,7 @@ if [[ -n "$selected_layout" ]]; then
     if systemctl --user status waybar.service >/dev/null 2>&1; then
         systemctl --user restart waybar.service || show_error "No se pudo reiniciar waybar.service"
     else
+	systemctl --user start waybar.service
         show_error "waybar.service no está habilitado en systemd --user"
     fi
 

@@ -1,4 +1,4 @@
-export SDL_VIDEODRIVER=wayland
+export SDL_VIDEODRIVER=wayland,x11
 export XDG_SESSION_TYPE=wayland
 export GDK_SCALE=1.75
 export XCURSOR_SIZE=24

@@ -77,17 +77,6 @@ El gestor de paquetes que utilizo, junto con lo necesario para instalarlo si no 
 #+begin_src emacs-lisp :noweb yes
 (when (boundp 'native-comp-eln-load-path)
   (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
-(when (fboundp 'native-compile-set-strict-mode)
-  ;; 1. Compilación nativa en background para no bloquear Emacs.
-  (setq native-comp-async-report-warnings-p nil)
-  (setq native-comp-deferred-compilation-deny-list '("."))
-  
-  ;; 2. Ajustes de la compilación en caliente (compilación JIT de Lisp)
-  (setq native-comp-deferred-compilation-inhibit-p nil)
-  (setq native-comp-speed 3)
-  
-  ;; 3. Activa la compilación asíncrona por si acaso.
-  (setq native-comp-async-p t))
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;(setq elpaca-core-date '(20250223)) ;; set to the build date of Emacs
@@ -200,7 +189,7 @@ Aquí hago ajustes adicionales al recolector de basura mediante la herramienta g
   (setq gc-cons-threshold (* 64 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
   (setq gcmh-idle-delay 'auto  ; default is 15s
 	gcmh-auto-idle-delay-factor 10 ;; Factor usado para decidir cuanto espera el recolector de basura cuando no has estado usando el editor
-	gcmh-high-cons-threshold (* 64 1024 1024))
+	gcmh-high-cons-threshold (* 128 1024 1024))
   :ensure t
   :hook (elpaca-after-init-hook . gcmh-mode))
 #+end_src
@@ -634,7 +623,7 @@ Ya viene con Emacs aquí defino unas configuraciones, para que funcione como nec
    'remote-direct-async-process))
 #+end_src
 *** Time
-Aqui añado configuraciones para el reloj en Emacs, así puedo estar al tanto de la hora en otras zonas horarias es util si haces necesitas comunicarte con gente de diferentes zonas horarias.
+Aquí añado configuraciones para el reloj en Emacs, así puedo estar al tanto de la hora en otras zonas horarias es util si haces necesitas comunicarte con gente de diferentes zonas horarias.
 #+begin_src emacs-lisp
 ;;;; World clock (M-x world-clock)
 (use-package time
@@ -845,6 +834,21 @@ Me permite abrir el dashboard
       (kill-buffer dashboard-buffer-name))
   (dashboard-insert-startupify-lists)
   (switch-to-buffer dashboard-buffer-name))
+#+end_src
+*** Ejecutar python desde entorno virtual
+#+begin_src emacs-lisp
+(defun my/python-run-file ()
+  "Ejecuta el archivo Python actual en su entorno virtual (pet)."
+  (interactive)
+  (when (derived-mode-p 'python-mode 'python-ts-mode)
+    (pet-mode 1)
+    (save-buffer)
+    (let* ((venv (pet-virtualenv-root))
+           (python-exe (if venv
+                           (expand-file-name "bin/python" venv)
+                         "python3"))
+           (cmd (format "%s %s" python-exe (shell-quote-argument buffer-file-name))))
+      (compile cmd))))
 #+end_src
 *** Better keyboard quit
 Función originalmente creada por protesilaos la uso en el atajo ~C-g~ para sustituir a la alternativa nativa de Emacs ya que ofrece un mejor comportamiento al permitirme salir del minibuffer.
@@ -1758,6 +1762,10 @@ Esto no lo uso al menos ahora por eso he desactivado el tangle
   (add-hook 'doc-view-mode-hook 'pdf-tools-install)
   (setq-default pdf-view-use-scaling t
 		pdf-view-use-imagemagick nil))
+  (use-package reader
+    :ensure '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
+  	      :files ("*.el" "render-core.so")
+  	      :pre-build ("make" "all")))
 (use-package nov
   :ensure t
   :mode ("\\.epub\\'" . nov-mode))
@@ -1953,7 +1961,6 @@ Aquí establezco los archivos tipo org que mi configuración va a requerir
 ("C-c c" . org-capture)
 ("C-c a" . org-agenda))
 ;; disable electric pairing for angle bracket
-
 (add-hook 'org-mode-hook (lambda ()
   (setq-local electric-pair-inhibit-predicate
           `(lambda (c)
@@ -1988,7 +1995,7 @@ Ajustes en relación al sistema de gestión de tareas en cuanto a tareas pendien
 	  ("CANCELLED" . "grey")))
 #+end_src
 ** Org utilities
-*** Org wild notifier
+*** Org alert
 Permite que se te notfique de las tareas y notas definidas mediante org
 #+begin_src emacs-lisp :tangle no
 (use-package org-alert
@@ -1998,13 +2005,15 @@ Permite que se te notfique de las tareas y notas definidas mediante org
   ;; 1. Define los tiempos de alerta (en minutos)
   ;; Esto reemplaza a `org-wild-notifier-alert-time`.
   ;; Los valores son: 1, 10, 30 minutos antes, y 1 y 2 días (1440, 2880 min) antes.
-  (setq org-alert-times '(1 10 30 1440 2880))
+  (setq org-alert-interval 300
+      org-alert-notify-cutoff 10
+      org-alert-notify-after-event-cutoff 10)
 
   ;; 2. Personaliza el título de la notificación (opcional, pero útil)
   (setq org-alert-title "Org Reminder")
   (setq alert-default-style 'libnotify)
+  (org-alert-enable))
   ;; 3. Activa el modo principal (equivalente a org-wild-notifier-mode)
-  (org-alert-mode 1))
 #+end_src
 *** Org superstar
 Nos permite modificar los encabezados y los modos, actualmente no lo estoy usando en su lugar uso Org Modern
@@ -2080,7 +2089,6 @@ Diversas utilidades de org mode para que se vea todo mejor
 (use-package ox-reveal)
 (use-package htmlize
 :ensure t)
-
 #+end_src 
 ** Configuración de org-capture
 Configuración de org template para diversas cosas siendo sinceros la configuración de esta herramienta es muy contra intuitiva.
@@ -2452,25 +2460,13 @@ Servidor lsp más minimalista lo voy a probar
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
   :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
+          (hyprlang-ts-mode-hook . eglot-ensure)
           (ruby-ts-mode . eglot-ensure)
          (eglot-managed-mode . eldoc-box-hover-mode))
   :config
   (setq-default eglot-workspace-configuration
-              `(:pylsp (:plugins
-                        (;; Fix imports and syntax using `eglot-format-buffer`
-                         :isort (:enabled t)
-                         :autopep8 (:enabled t)
-
-                         ;; Syntax checkers (works with Flymake)
-                         :pylint (:enabled t)
-                         :pycodestyle (:enabled t)
-                         :flake8 (:enabled t)
-                         :pyflakes (:enabled t)
-                         :pydocstyle (:enabled t)
-                         :mccabe (:enabled t)
-
-                         :yapf (:enabled :json-false)
-                         :rope_autoimport (:enabled :json-false)))))
+              '(:pyright (:disableOrganizeImports nil
+                         :typeCheckingMode "basic")))              
   :custom
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
@@ -2656,17 +2652,10 @@ Lenguaje de programacion Ruby me parece un lenguaje interesante.
 **** Integracion proyectos
 Esto es para integrar los entornos virtuales de python y tener acceso a esas librerias
 #+begin_src emacs-lisp 
-;; (use-package pyvenv
-;;   :ensure t
-;;   :config
-;;  (pyvenv-mode 1)
-;;  )
 (use-package pet
   :ensure t
   :defer t
   :hook (python-base-mode . pet-mode))
-(use-package pyconf
-  :ensure t)
 (use-package python-black
   :ensure t
   :demand t

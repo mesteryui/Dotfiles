@@ -30,7 +30,7 @@
   ],
 
   "custom/launcher": {
-    "format": "󰮯",
+    "format": "",
     "on-click": "~/.config/rofi/scripts/launcher.sh",
     "tooltip-format": "Launcher\n\nAlt + Space"
   },
@@ -101,7 +101,7 @@
     "format": "󰚰 {}",
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
-    "exec": "waybar-module-pacman-updates --interval-seconds 300",
+    "exec": "waybar-module-pacman-updates --interval-seconds 100",
     "on-click": "kitty --class float_kitty -e ~/.config/hypr/scripts/update.sh",
   },
 
@@ -138,6 +138,7 @@
     "format-ethernet": "󰈀",
     "format-disconnected": "󰤮",
     "tooltip-format-wifi": "{essid} ({signalStrength}%)\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
+    "tooltip-format-ethernet": "Ethernet\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}","tooltip-format-wifi": "{essid} ({signalStrength}%)\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
     "tooltip-format-ethernet": "Ethernet\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
     "tooltip-format-disconnected": "Desconectado",
     "interval": 3,
