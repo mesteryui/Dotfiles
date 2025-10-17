@@ -3,7 +3,8 @@
 (use-package org-social
   :ensure (:host github :repo "tanrax/org-social.el")
   :config
-  (setq org-social-file "~/Escritorio/CosasSociales/social.org"))
+  (setq org-social-file "~/Escritorio/CosasSociales/social.org")
+  (setq org-social-my-public-url "https://codeberg.org/mester/CosasSociales/raw/branch/main/social.org"))
 
 (use-package os-scratch
   :load-path "os-lisp/"
@@ -153,6 +154,10 @@
 
 (use-package vterm
   :defer t
+  :init
+  (setq vterm-max-scrollback 10000)
+  (setq vterm-buffer-name-string "vterm: %s")
+  (setq vterm-toggle-fullscreen-p nil)
   :bind
   (:map
    vterm-mode-map
@@ -163,7 +168,11 @@
 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
-:ensure t)
+:ensure t
+:init 
+(setq eat-shell "/usr/bin/fish")
+(global-set-key (kbd "C-c u") #'eat)
+  (global-set-key (kbd "C-c T") #'eat-other-window))
 
 (use-package dired 
 :ensure nil 
@@ -345,7 +354,8 @@
 (setopt dictionary-server "dict.org")
 
 (use-package vundo
-:bind ("C-x u" . vundo))
+:bind ("C-x u" . vundo)
+:config (setq vundo-compact-display t))
 
 (use-package treemacs
   :config
@@ -460,8 +470,8 @@
   :if (eq mester/modeline 'doom-modeline)
   :after (nerd-icons)
   :hook (elpaca-after-init-hook . doom-modeline-mode)
-  :custom
-  (doom-modeline-height 25)
+  ;;:custom
+  ;;(doom-modeline-height 25)
   ;; (doom-modeline-time-analogue-clock nil)
   ;; (doom-modeline-time-icon nil)
   ;; (doom-modeline-unicode-fallback nil)
@@ -546,6 +556,10 @@
   (add-hook 'doc-view-mode-hook 'pdf-tools-install)
   (setq-default pdf-view-use-scaling t
 		pdf-view-use-imagemagick nil))
+  (use-package reader
+    :ensure '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
+  	      :files ("*.el" "render-core.so")
+  	      :pre-build ("make" "all")))
 (use-package nov
   :ensure t
   :mode ("\\.epub\\'" . nov-mode))
@@ -589,16 +603,15 @@
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . gfm-mode)
 	 ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "markdown2")
+  :init (setq markdown-command "pandoc")
   :config
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
-(use-package markdown-preview-eww
-  :ensure t
-  :after markdown-mode)
-
 (use-package markdown-preview-mode
-  :ensure t)
+  :ensure t
+  :commands (markdown-preview-mode)
+  :bind (:map markdown-mode-command-map
+              ("p" . markdown-preview-mode)))
 
 (use-package typst-mode
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el")

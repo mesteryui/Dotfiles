@@ -96,6 +96,19 @@ This function allow to activate the webserver when you use but if there is a pro
         (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
           (message " ✅ Webserver started")))))))
 
+(defun my/python-run-file ()
+  "Ejecuta el archivo Python actual en su entorno virtual (pet)."
+  (interactive)
+  (when (derived-mode-p 'python-mode 'python-ts-mode)
+    (pet-mode 1)
+    (save-buffer)
+    (let* ((venv (pet-virtualenv-root))
+           (python-exe (if venv
+                           (expand-file-name "bin/python" venv)
+                         "python3"))
+           (cmd (format "%s %s" python-exe (shell-quote-argument buffer-file-name))))
+      (compile cmd))))
+
 (defun prot/keyboard-quit-dwim ()
   "Do-What-I-Mean behaviour for a general `keyboard-quit'.
 

@@ -93,22 +93,22 @@
 ;;(elpaca nil (message "deferred"))
 
 (defgroup mester nil
-    "Group to my custom configs"
-    :group 'convenience)
+  "Group to my custom configs"
+  :group 'convenience)
 
-  (defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-    "The languages to be used by word corrections")
+(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
+  "The languages to be used by word corrections")
 
-  (defcustom mester/spell-checker 'jinx
-    "Sistema de correccion ortografica de preferencia."
-    :type '(choice (const :tag "Jinx" jinx)
+(defcustom mester/spell-checker 'jinx
+  "Sistema de correccion ortografica de preferencia."
+  :type '(choice (const :tag "Jinx" jinx)
   		 (const :tag "Flyspell" flyspell)))
-  (defcustom mester/modeline 'doom-modeline
-    "Modeline por defecto"
-    :group 'mester
-    :type '(choice (const :tag "Os modeline (Own)" os-modeline)
+(defcustom mester/modeline 'doom-modeline
+  "Modeline por defecto"
+  :group 'mester
+  :type '(choice (const :tag "Os modeline (Own)" os-modeline)
   		 (const :tag "Doom Modeline" 'doom-modeline)))
-(setq mester/modeline 'os-modeline)
+;;(setq mester/modeline 'os-modeline)
   (defcustom mester/enabled-modules nil
     "Lista de modulos a cargar."
     :group 'mester
@@ -137,6 +137,7 @@
     schemelang ;; Lenguaje Scheme
     emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
     pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+    ruby
     rust
     common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
     java ;; Lenguaje de programacion Java

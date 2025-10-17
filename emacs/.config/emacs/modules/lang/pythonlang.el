@@ -1,23 +1,18 @@
-(use-package pyvenv
-  :ensure t)
+(use-package python
+  :ensure nil
+  :mode (("\\.py\\'" . python-ts-mode))
+  :config (setq python-indent-offset 4)
+)
+(add-hook 'python-ts-mode-hook #'eglot-ensure)
 
-(defun my/pyvenv-auto-activate ()
-  "Si existe un entorno .venv en el proyecto, activarlo."
-  (let ((root (locate-dominating-file default-directory ".venv")))
-    (when root
-      (pyvenv-activate (expand-file-name ".venv" root)))))
+(use-package pet
+  :ensure t
+  :defer t
+  :hook (python-base-mode . pet-mode))
 
-(add-hook 'python-mode-hook #'my/pyvenv-auto-activate)
-
-;; Black
-
-(add-hook 'python-mode-hook
-          (lambda ()
-            (add-hook 'before-save-hook 'black-format-buffer nil t)
-            (add-hook 'before-save-hook 'isort-format-buffer nil t)))
 (use-package flymake-ruff
   :ensure t
-  :hook (python-mode . flymake-ruff-load))
+  :hook (python-ts-mode . flymake-ruff-load))
 
 ;; -*- lexical-binding: t; -*-
 (use-package uv

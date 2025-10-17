@@ -7,6 +7,7 @@
   (let* ((map (make-sparse-keymap)))
     (define-key map (kbd "a") #'organizer-agenda)
     (define-key map (kbd "s") #'organizer-files-selector)
+    (define-key map (kbd "n") #'(lambda () (organizer-files-selector "Notas")))
     map)
   "Keymap for `organizer-dashboard-mode'.")
 

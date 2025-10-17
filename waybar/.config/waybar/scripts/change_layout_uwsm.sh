@@ -36,10 +36,11 @@ current_layout=$(cat "$CURRENT" 2>/dev/null || echo "$DEFAULT")
 # -----------------------------
 # Selección de layout con Rofi
 # -----------------------------
-selected_layout=$(echo "$layout_list" | rofi -dmenu \
-    -p "Layout actual: $current_layout" \
-    -theme "~/.config/rofi/hyprsphere-selector-layout.rasi" \
-    -no-custom)
+#selected_layout=$(echo "$layout_list" | rofi -dmenu \
+#    -p "Layout actual: $current_layout" \
+#    -theme "~/.config/rofi/hyprsphere-selector-layout.rasi" \
+#    -no-custom)
+selected_layout=$(echo "$layout_list" | walker --dmenu -p "Layout Actual: $current_layout")
 
 # Si se seleccionó un layout válido
 if [[ -n "$selected_layout" ]]; then

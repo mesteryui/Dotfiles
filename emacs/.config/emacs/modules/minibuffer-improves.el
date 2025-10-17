@@ -1,5 +1,5 @@
 (use-package vertico
-  :ensure ;;(:host github :repo "minad/vertico.git")
+  :ensure
   :hook
   (elpaca-after-init . vertico-mode)
   :custom

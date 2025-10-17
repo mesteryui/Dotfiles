@@ -163,7 +163,7 @@
       "default": ["󰕿", "󰖀", "󰕾"]
     },
     "on-click": "kitty --class float_kitty -e wiremix",
-    "on-click-right": "pamixer -t",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
     "scroll-step": 5,
     "tooltip-format": "{desc}\nVolumen: {volume}%"
   },

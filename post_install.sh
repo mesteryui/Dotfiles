@@ -27,6 +27,7 @@ add_configs() {
     # Si quieres que falle si alguna no existe, añade 'set -e'
     stow hypr
     stow rofi
+    stow systemd
     stow kitty
     stow fastfetch
     stow emacs
@@ -44,6 +45,9 @@ add_configs() {
     stow btop
     stow uwsm
     stow bat
+}
+enable_system_user() {
+	systemctl --user enable hypridle swaync waybar swayosd hyprpolkitagent swww 
 }
 enable_chaotic_AUR() {
     echo "Añadiendo claves criptograficas"

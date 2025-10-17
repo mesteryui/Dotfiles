@@ -88,51 +88,50 @@ The exact color values are taken from the active Ef theme."
          ("M-*" . tempel-insert))
   :custom
   (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
-  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
-  :init
-    (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand (cons #'tempel-complete
-                      completion-at-point-functions))))
 ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
  ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
   :config 
+   (add-to-list 'completion-at-point-functions #'tempel-complete)
    (define-key tempel-map (kbd "TAB") #'tempel-next))
 
-(use-package tempel-collection :ensure t)
+(use-package tempel-collection :ensure t :after tempel)
+
+(use-package apheleia
+  :ensure t
+  :defer t
+  :hook
+  ((prog-mode . apheleia-mode)   ;; enable in all programming modes
+   (text-mode . apheleia-mode)) ;; optional, formats Markdown, etc.
+  :config
+  ;; Example formatters setup
+  (setf (alist-get 'clang-format apheleia-formatters)
+        '("clang-format" "-style=Google"))
+  (setf (alist-get 'prettier apheleia-formatters)
+        '("prettier" "--stdin-filepath" filepath))
+  (setf (alist-get 'ruff apheleia-formatters)
+        '("ruff" "format" "-"))
+  ;; Language → formatter mapping
+  (setf (alist-get 'c-mode apheleia-mode-alist) 'clang-format)
+  (setf (alist-get 'c++-mode apheleia-mode-alist) 'clang-format)
+  (setf (alist-get 'js-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'typescript-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'json-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'python-mode apheleia-mode-alist)
+      '(ruff)))
 
 (use-package eglot
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
-         (eglot-managed-mode . eldoc-box-hover-mode))
+  :hook (eglot-managed-mode . eldoc-box-hover-mode)
   :config
   (setq-default eglot-workspace-configuration
-              `(:pylsp (:plugins
-                        (;; Fix imports and syntax using `eglot-format-buffer`
-                         :isort (:enabled t)
-                         :autopep8 (:enabled t)
-
-                         ;; Syntax checkers (works with Flymake)
-                         :pylint (:enabled t)
-                         :pycodestyle (:enabled t)
-                         :flake8 (:enabled t)
-                         :pyflakes (:enabled t)
-                         :pydocstyle (:enabled t)
-                         :mccabe (:enabled t)
-
-                         :yapf (:enabled :json-false)
-                         :rope_autoimport (:enabled :json-false)))))
+              '(:pyright (:disableOrganizeImports nil
+                         :typeCheckingMode "basic")))              
   :custom
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
@@ -150,6 +149,11 @@ The exact color values are taken from the active Ef theme."
               ("C-c l p" . flymake-previous-error)
               ("C-c l d" . eldoc))
   :config
+   (add-to-list 'eglot-server-programs
+               `(python-ts-mode
+                 . ,(eglot-alternatives '(("pyright-langserver" "--stdio")
+                                          "jedi-language-server"
+                                          "pylsp"))))
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
@@ -242,3 +246,18 @@ The exact color values are taken from the active Ef theme."
     (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 
 (provide 'programming)
+
+;; -*- lexical-binding: t; -*-
+(use-package ruby-mode :ensure nil)
+
+(use-package ruby-ts-mode
+  :ensure nil
+  :mode "\\.rb\\'"
+  :mode "Rakefile\\'"
+  :mode "Gemfile\\'"
+  :custom
+  (ruby-indent-level 2)
+  (ruby-indent-tabs-mode nil)
+  :config
+  (add-hook ruby-ts-mode-hook #'eglot-ensure))
+(provide 'ruby)

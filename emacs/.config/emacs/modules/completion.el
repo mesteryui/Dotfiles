@@ -7,17 +7,19 @@
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
-  (corfu-auto-prefix 2)
+  (corfu-scroll-margin 5)
   (corfu-auto-delay 0.1)
   (corfu-quit-no-match 'separator)
   (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
-  (corfu-preselect-first t)
-  (corfu-quit-at-boundary 'separator)
+  ;;(corfu-preselect-first t)
+  (completion-styles '(orderless basic)) ;; IDE-like fuzzy matching
   (corfu-popupinfo-delay '(1.25 . 0.5))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
   :config 
+  (corfu-history-mode t)         ;; Remember completions
+  (corfu-popupinfo-mode t)       ;; Show documentation popup
   (os/after savehist
 	    (add-to-list 'savehist-additional-variables 'corfu-history))
    :hook

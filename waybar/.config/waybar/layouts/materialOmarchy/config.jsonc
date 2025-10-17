@@ -10,7 +10,8 @@
   
   "modules-left": [
     "custom/omarchy",
-    "hyprland/workspaces"
+    "hyprland/workspaces",
+    "hyprland/submap"
   ],
   
   "modules-center": [
@@ -35,7 +36,7 @@
    // "format": "󰣇",
     "format": "",
     "on-click": "~/.config/rofi/scripts/launcher.sh",
-    "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
+    "tooltip-format": "HyprSphere Menu\n\nSuper + Alt + Space"
   },
 
   "custom/weather": {
@@ -71,6 +72,10 @@
       "*": 3
     }
   },
+ "hyprland/submap": {
+   "format": "{}",
+   "tooltip": false,
+ },
  "power-profiles-daemon": {
   "format": "{icon}",
   "tooltip-format": "Power profile: {profile}\nDriver: {driver}",

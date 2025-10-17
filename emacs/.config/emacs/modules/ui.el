@@ -25,6 +25,7 @@
   (ef-themes-select 'ef-cherie))
 
 ;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
+(global-display-line-numbers-mode -1) 
 (add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús

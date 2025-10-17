@@ -4,5 +4,8 @@
   :ensure nil
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
-  :mode "Gemfile\\'")
+  :mode "Gemfile\\'"
+  :custom
+  (ruby-indent-level 2)
+  (ruby-indent-tabs-mode nil))
 (provide 'ruby)

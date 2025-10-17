@@ -47,7 +47,6 @@
 ("C-c c" . org-capture)
 ("C-c a" . org-agenda))
 ;; disable electric pairing for angle bracket
-
 (add-hook 'org-mode-hook (lambda ()
   (setq-local electric-pair-inhibit-predicate
           `(lambda (c)

@@ -3,7 +3,8 @@
   (use-package eglot-java
     :defer t)
 ;; TODO Do the java programation more useful
- (add-hook 'java-mode-hook 'eglot-java-mode)
+ (add-hook 'java-mode-hook #'eglot-ensure)
+ (add-hook 'java-mode-hook #'eglot-java-mode)
 
  (os/after eglot-java
     (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)

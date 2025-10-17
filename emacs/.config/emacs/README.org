@@ -163,7 +163,7 @@ Estableciendo variables personalizadas diversas para propósitos diversos dentro
   :group 'mester
   :type '(choice (const :tag "Os modeline (Own)" os-modeline)
   		 (const :tag "Doom Modeline" 'doom-modeline)))
-(setq mester/modeline 'os-modeline)
+;;(setq mester/modeline 'os-modeline)
   (defcustom mester/enabled-modules nil
     "Lista de modulos a cargar."
     :group 'mester
@@ -1138,6 +1138,10 @@ Un emulador de terminal muy potente dentro de emacs, que me gusta un poco
 #+begin_src emacs-lisp 
 (use-package vterm
   :defer t
+  :init
+  (setq vterm-max-scrollback 10000)
+  (setq vterm-buffer-name-string "vterm: %s")
+  (setq vterm-toggle-fullscreen-p nil)
   :bind
   (:map
    vterm-mode-map
@@ -1151,7 +1155,11 @@ Actualmente la uso por la integracion que proporciona con Eshell.
 #+begin_src emacs-lisp 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
-:ensure t)
+:ensure t
+:init 
+(setq eat-shell "/usr/bin/fish")
+(global-set-key (kbd "C-c u") #'eat)
+  (global-set-key (kbd "C-c T") #'eat-other-window))
 #+end_src
 *** Dired pretty 
 Es un conjunto de paquetes para hacer que dired sea más potente y vistoso
@@ -1435,7 +1443,8 @@ Hace que el sistema de desacer cambios use una estructura de arbol que se puede 
 Alternativa más ligera moderna y mantenida, más simple que aprovecha la funcionalidad undo de emacs y además no necesito nada tampoco tan complejo como undo-tree 
 #+begin_src emacs-lisp 
 (use-package vundo
-:bind ("C-x u" . vundo))
+:bind ("C-x u" . vundo)
+:config (setq vundo-compact-display t))
 #+end_src
 *** Treemacs
 #+begin_src emacs-lisp 
@@ -1555,8 +1564,8 @@ Para retocar la barra de abajo
   :if (eq mester/modeline 'doom-modeline)
   :after (nerd-icons)
   :hook (elpaca-after-init-hook . doom-modeline-mode)
-  :custom
-  (doom-modeline-height 25)
+  ;;:custom
+  ;;(doom-modeline-height 25)
   ;; (doom-modeline-time-analogue-clock nil)
   ;; (doom-modeline-time-icon nil)
   ;; (doom-modeline-unicode-fallback nil)
@@ -1581,7 +1590,7 @@ Para retocar la barra de abajo
 Completacion minimalista y más vistosa en el minibuffer
 #+begin_src emacs-lisp :tangle modules/minibuffer-improves.el
 (use-package vertico
-  :ensure ;;(:host github :repo "minad/vertico.git")
+  :ensure
   :hook
   (elpaca-after-init . vertico-mode)
   :custom
@@ -1828,16 +1837,15 @@ Permitir el uso de Markdown en Emacs con cierto resaltado
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . gfm-mode)
 	 ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "markdown2")
+  :init (setq markdown-command "pandoc")
   :config
   (setopt markdown-fontify-code-blocks-natively t)
   (setopt markdown-enable-math t))
-(use-package markdown-preview-eww
-  :ensure t
-  :after markdown-mode)
-
 (use-package markdown-preview-mode
-  :ensure t)
+  :ensure t
+  :commands (markdown-preview-mode)
+  :bind (:map markdown-mode-command-map
+              ("p" . markdown-preview-mode)))
 #+end_src
 **** Typst
 Alternativa moderna a LaTeX, tiene una sintaxis más parecida a Markdown
@@ -2309,17 +2317,19 @@ Soporte para el auto completado de una manera más 🐱 cape proporciona los bac
   (corfu-separator ?\s)  ; separador de palabra
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
-  (corfu-auto-prefix 2)
+  (corfu-scroll-margin 5)
   (corfu-auto-delay 0.1)
   (corfu-quit-no-match 'separator)
   (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
-  (corfu-preselect-first t)
-  (corfu-quit-at-boundary 'separator)
+  ;;(corfu-preselect-first t)
+  (completion-styles '(orderless basic)) ;; IDE-like fuzzy matching
   (corfu-popupinfo-delay '(1.25 . 0.5))
   (corfu-preview-current 'promt) ; insert previewed candidate
   (corfu-on-exact-match nil)
   :config 
+  (corfu-history-mode t)         ;; Remember completions
+  (corfu-popupinfo-mode t)       ;; Show documentation popup
   (os/after savehist
 	    (add-to-list 'savehist-additional-variables 'corfu-history))
    :hook
@@ -2404,28 +2414,16 @@ Una alternativa a Yasnippet que aprovecha los propios sistemas nativos de Emacs,
          ("M-*" . tempel-insert))
   :custom
   (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
-  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
-  :init
-    (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand (cons #'tempel-complete
-                      completion-at-point-functions))))
 ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
  ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
  ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
   :config 
+   (add-to-list 'completion-at-point-functions #'tempel-complete)
    (define-key tempel-map (kbd "TAB") #'tempel-next))
 
-(use-package tempel-collection :ensure t)
+(use-package tempel-collection :ensure t :after tempel)
 #+end_src
 ** LSP
 Configuración de LSP
@@ -2453,16 +2451,41 @@ Configuración de LSP
       lsp-ui-peek-enable t
       lsp-ui-doc-show-with-cursor t))
 #+end_src
+** Apheleia
+Formateador de codigo, me ayuda a que el codigo se formatee y vea correctamente
+#+begin_src emacs-lisp
+(use-package apheleia
+  :ensure t
+  :defer t
+  :hook
+  ((prog-mode . apheleia-mode)   ;; enable in all programming modes
+   (text-mode . apheleia-mode)) ;; optional, formats Markdown, etc.
+  :config
+  ;; Example formatters setup
+  (setf (alist-get 'clang-format apheleia-formatters)
+        '("clang-format" "-style=Google"))
+  (setf (alist-get 'prettier apheleia-formatters)
+        '("prettier" "--stdin-filepath" filepath))
+  (setf (alist-get 'ruff apheleia-formatters)
+        '("ruff" "format" "-"))
+  ;; Language → formatter mapping
+  (setf (alist-get 'c-mode apheleia-mode-alist) 'clang-format)
+  (setf (alist-get 'c++-mode apheleia-mode-alist) 'clang-format)
+  (setf (alist-get 'js-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'typescript-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'json-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'python-mode apheleia-mode-alist)
+      '(ruff)))
+#+end_src
 ** Eglot
 Servidor lsp más minimalista lo voy a probar
 #+begin_src emacs-lisp
 (use-package eglot
   :ensure nil
   :commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook (((python-ts-mode rust-ts-mode) . eglot-ensure)
-          (hyprlang-ts-mode-hook . eglot-ensure)
-          (ruby-ts-mode . eglot-ensure)
-         (eglot-managed-mode . eldoc-box-hover-mode))
+  :hook (eglot-managed-mode . eldoc-box-hover-mode)
   :config
   (setq-default eglot-workspace-configuration
               '(:pyright (:disableOrganizeImports nil
@@ -2627,6 +2650,7 @@ Lenguaje de programacion Ruby me parece un lenguaje interesante.
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
 (use-package ruby-mode :ensure nil)
+
 (use-package ruby-ts-mode
   :ensure nil
   :mode "\\.rb\\'"
@@ -2634,20 +2658,22 @@ Lenguaje de programacion Ruby me parece un lenguaje interesante.
   :mode "Gemfile\\'"
   :custom
   (ruby-indent-level 2)
-  (ruby-indent-tabs-mode nil))
+  (ruby-indent-tabs-mode nil)
+  :config
+  (add-hook ruby-ts-mode-hook #'eglot-ensure))
 (provide 'ruby)
 #+end_src
 *** Python
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle "modules/lang/pythonlang.el" :mkdirp yes
 :END:
-#+begin_src python :tangle no
- (use-package lsp-pyright
-   :ensure t
-   :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-   :hook (python-mode . (lambda ()
-                        (require 'lsp-pyright)
-                        (lsp))))  ; or lsp-deferred
+#+begin_src emacs-lisp
+(use-package python
+  :ensure nil
+  :mode (("\\.py\\'" . python-ts-mode))
+  :config (setq python-indent-offset 4)
+)
+(add-hook 'python-ts-mode-hook #'eglot-ensure)
 #+end_src
 **** Integracion proyectos
 Esto es para integrar los entornos virtuales de python y tener acceso a esas librerias
@@ -2656,14 +2682,10 @@ Esto es para integrar los entornos virtuales de python y tener acceso a esas lib
   :ensure t
   :defer t
   :hook (python-base-mode . pet-mode))
-(use-package python-black
-  :ensure t
-  :demand t
-  :after python
-  :hook ((python-mode . python-black-on-save-mode)))
+
 (use-package flymake-ruff
   :ensure t
-  :hook (python-mode . flymake-ruff-load))
+  :hook (python-ts-mode . flymake-ruff-load))
 
 #+end_src
 **** Trabajo con uv 
@@ -2705,7 +2727,8 @@ Lenguaje de programación conocido por su velocidad y caracteristicas de segurid
 #+begin_src emacs-lisp :noweb yes
 <<lexicalbind>>
 (use-package rust-mode) ;; Rust
-
+(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+(add-hook 'rust-ts-mode-hook #'eglot-ensure)
 (use-package cargo-mode
     :defer t
     :hook
@@ -2734,7 +2757,8 @@ Lenguaje de programacion que estoy aprendiendo en los estudios usarlo desde aqui
   (use-package eglot-java
     :defer t)
 ;; TODO Do the java programation more useful
- (add-hook 'java-mode-hook 'eglot-java-mode)
+ (add-hook 'java-mode-hook #'eglot-ensure)
+ (add-hook 'java-mode-hook #'eglot-java-mode)
 
  (os/after eglot-java
     (define-key eglot-java-mode-map (kbd "C-c l n") #'eglot-java-file-new)
