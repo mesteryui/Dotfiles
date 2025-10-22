@@ -1,0 +1,19 @@
+name = "power-profile"
+name_pretty = "Power Profile"
+icon = "󰚥"
+action = "powerprofilesctl set %VALUE%"
+
+[[entries]]
+text = "Power Save"
+icon = ""
+value = "power-saver"
+
+[[entries]]
+text = "Balanced"
+icon = ""
+value = "balanced"
+
+[[entries]]
+text = "Performace"
+icon = ""
+value = "performance"

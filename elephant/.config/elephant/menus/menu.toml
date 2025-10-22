@@ -1,0 +1,35 @@
+name = "main"
+name_pretty = "Menu principal"
+fixed_order = true
+icon = ""
+
+
+[[entries]]
+icon = ""
+text = "Update"
+actions = { "update" = "kitty --class=float_kitty -e paru -Syu" }
+
+[[entries]]
+icon = ""
+text = "About"
+actions = { "about_system" = "kitty --class=float_kitty -e $SHELL -c 'fastfetch;read -n 1;exit'" }
+
+[[entries]]
+icon = "󰹑"
+text = "Captura"
+submenu = "screenshot"
+
+[[entries]]
+icon = ""
+text = "Waybar"
+actions = { "change_layout" = "~/.config/waybar/scripts/change_layout_uwsm.sh" }
+
+[[entries]]
+icon = "󰚥"
+text = "Power profile"
+submenu = "power-profile"
+
+[[entries]]
+icon = ""
+text = "Keybindings"
+actions = { "keybindings" = "~/.config/hypr/scripts/menubinds.sh" }

@@ -1,0 +1,34 @@
+name = "screenshot"
+name_pretty = "Screenshot Menu"
+icon="applets-screenshooter"
+global_search = true
+
+[[entries]]
+text = "Capturar Pantalla"
+actions = { "cap_screen" = "sleep 0.5 && hyprshot -m output -m eDP-1" }
+icon = "applets-screenshooter"
+
+[[entries]]
+text = "Copiar pantalla"
+actions = { "cop_screen" = "sleep 0.5 && hyprshot -m output -m eDP-1 --clipboard-only" }
+icon = "applets-screenshooter"
+
+[[entries]]
+text = "Capturar Region"
+actions = { "cap_region" = "sleep 0.5 && hyprshot -m region" }
+icon = "applets-screenshooter"
+
+[[entries]]
+text = "Copiar Region"
+actions = { "cop_region" = "sleep 0.5 && hyprshot -m region --clipboard-only" }
+icon = "applets-screenshooter"
+
+[[entries]]
+text = "Copiar Ventana Activa"
+actions = { "cop_window" = "sleep 0.5 && hyprshot -m window -m active --clipboard-only" }
+icon = "applets-screenshooter"
+
+[[entries]]
+text = "Capturar Ventana Activa"
+actions = { "cap_window" = "sleep 0.5 && hyprshot -m window -m active" }
+icon = "applets-screenshooter"

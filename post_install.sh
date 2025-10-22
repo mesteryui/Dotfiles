@@ -73,6 +73,7 @@ install_software_notAUR() {
         exit 1
     fi
     sudo pacman -S --needed - < pkglists-repos.txt
+    enable_system_user
     rustup default stable
 }
 
