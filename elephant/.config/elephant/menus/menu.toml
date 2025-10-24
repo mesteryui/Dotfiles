@@ -12,7 +12,7 @@ actions = { "update" = "kitty --class=float_kitty -e paru -Syu" }
 [[entries]]
 icon = ""
 text = "About"
-actions = { "about_system" = "kitty --class=float_kitty -e $SHELL -c 'fastfetch;read -n 1;exit'" }
+actions = { "about_system" = "kitty --class=float_kitty -e $SHELL -c 'fastfetch;read -n 1 -s;exit'" }
 
 [[entries]]
 icon = "󰹑"
@@ -25,11 +25,21 @@ text = "Waybar"
 actions = { "change_layout" = "~/.config/waybar/scripts/change_layout_uwsm.sh" }
 
 [[entries]]
-icon = "󰚥"
-text = "Power profile"
-submenu = "power-profile"
+icon = ""
+text = "Sistema"
+submenu = "system"
 
 [[entries]]
 icon = ""
 text = "Keybindings"
-actions = { "keybindings" = "~/.config/hypr/scripts/menubinds.sh" }
+actions = { "keybindings" = "menubinds.sh" }
+
+[[entries]]
+icon = "󰉉"
+text = "Setup"
+submenu = "setup"
+
+[[entries]]
+icon = "󰊗"
+text = "Juegos y otras cosas"
+submenu = "games"

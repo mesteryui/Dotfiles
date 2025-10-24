@@ -1,0 +1,14 @@
+name = "setup"
+name_pretty = "Setup"
+fixed_order = true
+icon = "󰉉"
+
+[[entries]]
+icon = ""
+text = "Docker"
+actions = { "docker" =  "kitty --class=float_kitty -e docker-setup.sh" }
+
+[[entries]]
+icon = "󰌠"
+text = "Python"
+actions = { "python" = "kitty --class=float_kitty -e python-setup.sh" }

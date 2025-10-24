@@ -1,0 +1,8 @@
+hidden = [ 
+	"menus:main",
+	"menus:screenshot",
+        "menus:power-profile",
+        "menus:setup",
+        "menus:games",
+	"menus:system"
+ ]

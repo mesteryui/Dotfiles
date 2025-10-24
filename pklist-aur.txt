@@ -28,3 +28,11 @@ waybar-cava
 wttrbar
 xpm-pixbuf-git
 youtube-music-bin
+walker-bin
+elephant
+elephant-menus
+elephant-desktopapplications
+elephant-clipboard
+elephant-files
+elephant-windows
+elephant-symbols

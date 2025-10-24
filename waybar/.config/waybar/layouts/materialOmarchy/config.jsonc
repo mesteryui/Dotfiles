@@ -35,7 +35,7 @@
   "custom/omarchy": {
    // "format": "󰣇",
     "format": "",
-    "on-click": "~/.config/rofi/scripts/launcher.sh",
+    "on-click": "walker -m menus:main",
     "tooltip-format": "HyprSphere Menu\n\nSuper + Alt + Space"
   },
 
@@ -46,7 +46,7 @@
     "interval": 240
   },
   "custom/update": {
-    "format": "  {}",
+    "format": " {}",
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",
@@ -112,7 +112,7 @@
     "interval": 5,
     "format": "󰘚",
     "tooltip-format": "CPU: {usage}%\nCarga promedio: {load}",
-    "on-click": "kitty --class float_kitty -e btop"
+    "on-click": "kitty --class float_btop -e btop"
   },
 
   "clock": {
@@ -173,7 +173,7 @@
   },
 
   "pulseaudio": {
-    "format": "{icon}  {volume}%",
+    "format": "{icon} {volume}%",
     "format-bluetooth": "{icon}  󰂯",
     "format-muted": "󰝟",
     "format-icons": {

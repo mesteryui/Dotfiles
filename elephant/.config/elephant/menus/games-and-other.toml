@@ -1,0 +1,13 @@
+name = "games"
+name_pretty = "Juegos y otras cosas"
+icon = "󰊗"
+fixed_order = true
+
+[[entries]]
+text = "Steam"
+icon = "󰓓"
+actions = { "steam" = "kitty --class=float_kitty -e steam-setup.sh"}
+
+# [[entries]]
+# text = "Pack Otaku"
+# icon = "kawanime"

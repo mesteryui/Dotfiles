@@ -16,8 +16,9 @@
     "battery"
   ],
    "custom/omarchy": {
-    "format": "",
-    "on-click": "",
+   // "format": "",
+     "format": "",
+    "on-click": "walker -m menus:main",
     "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
   },
   "custom/weather": {

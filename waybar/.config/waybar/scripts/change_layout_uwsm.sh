@@ -6,32 +6,27 @@
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprsphere"
 LAYOUT_DIR="$HOME/.config/waybar/layouts"
 DEFAULT="default"
+
 CURRENT="$CACHE_DIR/waybar-layout.txt"
+#CURRENT="${XDG_CONFIG_HOME:-$HOME/.config}/Hyprsphere/config.toml"
 ICON_PATH="$HOME/.dotfiles/logo-hyprsphere-min.png"
 
 # Crear directorio de cache si no existe
 mkdir -p "$CACHE_DIR"
 
-# Función para mostrar errores con notificación
-show_error() {
-    local message="$1"
-    echo "Error: $message" >&2
-    notify-send -t 5000 "HyprSphere - Error" "$message" --icon="dialog-error" 2>/dev/null
-    exit 1
-}
 
 # Verificar que el directorio de layouts existe
 [[ -d "$LAYOUT_DIR" ]] || show_error "El directorio de layouts no existe: $LAYOUT_DIR"
 
 # Crear archivo de layout actual si no existe
-[[ -f "$CURRENT" ]] || echo "$DEFAULT" > "$CURRENT"
+#[[ -f "$CURRENT" ]] || echo "$DEFAULT" > "$CURRENT"
 
 # Obtener lista de layouts disponibles
 layout_list=$(find "$LAYOUT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
 [[ -n "$layout_list" ]] || show_error "No se encontraron layouts en $LAYOUT_DIR"
 
 # Layout actual
-current_layout=$(cat "$CURRENT" 2>/dev/null || echo "$DEFAULT")
+current_layout=$(cat "$CURRENT" || echo "$DEFAULT")
 
 # -----------------------------
 # Selección de layout con Rofi
