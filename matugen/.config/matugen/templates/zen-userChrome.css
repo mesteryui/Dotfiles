@@ -1,3 +1,5 @@
+/* Catppuccin Mocha Mauve userChrome.css*/
+
 @media (prefers-color-scheme: dark) {
 
   :root {
@@ -105,4 +107,3 @@
     --identity-icon-color: {{colors.primary.default.hex}} !important;
   }
 }
-

@@ -1,10 +1,10 @@
 [config]
 version_check = true
 
-[config.wallpaper]
-command = "swww"
-arguments = ["img", "--transition-type", "center"]
-set = true
+# [config.wallpaper]
+# command = "swww"
+# arguments = ["img", "--transition-type", "center"]
+# set = true
 
 [templates.kvantum_kvconfig]
 input_path = './templates/kvantum-colors.kvconfig'
@@ -14,10 +14,23 @@ output_path = '~/.config/Kvantum/matugen/matugen.kvconfig'
 input_path = './templates/kvantum-colors.svg'
 output_path = '~/.config/Kvantum/matugen/matugen.svg'
 
+[templates.wlogout]
+input_path = './templates/css_template.conf'
+output_path = '~/.config/wlogout/colors.css'
+
+#[templates.ghostty]
+#input_path = './templates/ghostty.conf'
+#output_path = "~/.config/ghostty/themes/matugen.conf"
+
+[templates.walker]
+input_path = '~/.config/matugen/templates/css_template.conf'
+output_path = '~/.config/walker/colors.css'
+
 [templates.bat]
-  input_path  = '~/.config/matugen/templates/matugen-bat-colors.tmTheme'
-  output_path = '~/.config/bat/themes/Matugen.tmTheme'
+input_path  = '~/.config/matugen/templates/matugen-bat-colors.tmTheme'
+output_path = '~/.config/bat/themes/Matugen.tmTheme'
 post_hook = 'bat cache --build'
+
 [templates.gtk3]
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/gtk.css'
@@ -25,10 +38,9 @@ output_path = '~/.config/gtk-3.0/gtk.css'
 [templates.gtk4]
 input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/gtk.css'
-
- [templates.walker]
-input_path = '/home/oscar/.config/matugen/templates/walker.css'
-output_path = '/home/oscar/.config/walker/themes/matugen/walker-colors.css'
+[templates.gtk4-dark]
+input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
+output_path = '~/.config/gtk-4.0/gtk-dark.css'
 
 [templates.vesktop]
 input_path = 'templates/midnight-discord.css'
@@ -112,15 +124,15 @@ output_path = '~/.config/zathura/matugen-zathurarc'
 
 # [templates.zenUserChrome]
 # input_path = '~/.config/matugen/templates/zen-userChrome.css'
-# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userChrome.css'
+# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/userChrome.css'
 
 # [templates.zenLogo]
 # input_path = '~/.config/matugen/templates/zen-logo.svg'
-# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/zen-logo-mocha.svg'
+# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/zen-logo-mocha.svg'
 
 # [templates.zenUserContent]
 # input_path = '~/.config/matugen/templates/zen-userContent.css'
-# output_path = '~/.zen/g2nrrthb.Default (release)/chrome/userContent.css'
+# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/userContent.css'
 
 [templates.yazi]
 input_path = '~/.config/matugen/templates/yazi-theme.toml'
