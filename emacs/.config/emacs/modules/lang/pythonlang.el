@@ -1,9 +1,10 @@
 (use-package python
+  :after eglot
   :ensure nil
+  :hook (python-ts-mode-hook eglot-ensure)
   :mode (("\\.py\\'" . python-ts-mode))
-  :config (setq python-indent-offset 4)
-)
-(add-hook 'python-ts-mode-hook #'eglot-ensure)
+  :config (setq python-indent-offset 4))
+;;(add-hook 'python-ts-mode-hook #'eglot-ensure)
 
 (use-package pet
   :ensure t

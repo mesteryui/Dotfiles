@@ -1,19 +1,21 @@
 ;; -*- lexical-binding: t; -*-
-(setopt org-directory "~/org/")
-(setopt diary-file (expand-file-name "diario.org" org-directory))
-(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
-(setopt org-agenda-files `( ,(expand-file-name "agenda.org" org-directory) ,(expand-file-name "proyectos.org" org-directory)))
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 (setq org-use-property-inheritance '("header-args"))
 
 (use-package org
   :ensure nil
+  :defer t
+  :mode ("\\.org\\'" . org-mode)
   :commands (org-mode org-version)
   :hook ((org-mode . org-indent-mode)
 	 ;;(org-mode . os/org-headers-setters)
 	 (org-mode . visual-line-mode)
 	 (org-mode . dynamic-language-change))
   :custom
+  (org-directory "~/org/")
+  (org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (org-agenda-files `(,(expand-file-name "agenda.org" org-directory)
+                      ,(expand-file-name "proyectos.org" org-directory)))
   ;; Exportación
   (org-export-with-drawers nil)
   (org-export-with-todo-keywords nil)
@@ -35,17 +37,23 @@
   (image-actual-width '(300))
   ;; Babel
   (org-confirm-babel-evaluate nil)
-  ;; Agenda
-  (org-agenda-skip-scheduled-if-done t)
   ;; Listas
   (org-list-allow-alphabetical t)
   ;; Enlaces
   (org-return-follows-link t)
   :config
-  (require 'org-tempo))
-(gbind-multiple 
-("C-c c" . org-capture)
-("C-c a" . org-agenda))
+  (require 'org-tempo)
+  (setopt org-todo-keywords
+	'((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)))
+  (os/after org-contrib
+  	  (org-babel-do-load-languages 'org-babel-load-languages 
+  				       '((ledger . t)))))
 ;; disable electric pairing for angle bracket
 (add-hook 'org-mode-hook (lambda ()
   (setq-local electric-pair-inhibit-predicate
@@ -54,6 +62,13 @@
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
+(use-package org-agenda
+  :ensure nil
+  :after org
+  :bind ("C-c a" . org-agenda)
+  :custom
+  (org-agenda-skip-scheduled-if-done t))
+
 (setopt calendar-month-name-array
 	["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio"
 	 "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
@@ -61,8 +76,6 @@
 (setopt calendar-day-name-array
 	["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
-(setopt org-todo-keywords
-	'((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
 (setopt org-todo-keyword-faces
 	'(("TODO" . "coral")
 	  ("NEXT" . "cyan")
@@ -108,8 +121,7 @@ org-src-fontify-natively t)
      ("WAITING" :background "yellow" :foreground "black")
      ("DONE" :background "green" :foreground "white")
      ("CANCELLED" :background "gray" :foreground "white")))
-  (org-modern-label-border 1)
-)
+  (org-modern-label-border 1))
 (add-hook 'after-make-frame-functions
           (lambda (frame)
             (with-selected-frame frame
@@ -121,7 +133,12 @@ org-src-fontify-natively t)
 (use-package htmlize
 :ensure t)
 
-(setq org-capture-templates
+(use-package org-capture
+  :ensure nil
+  :after org
+  :bind ("C-c c" . org-capture)
+  :custom
+  (org-capture-templates
       `(("t" "Tarea" entry
 	 (file+headline "~/org/agenda.org" "Tareas")
 	 "* TODO %?\n %i\n  %a")
@@ -137,17 +154,7 @@ org-src-fontify-natively t)
 	 "* Titulo de Entrada: %?\n")
 	("p" "Project" entry
 	 (file+headline "~/org/proyectos.org" "Proyectos")
-	 "*  %?\n")))
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (scheme . t)
-   (python . t)
-   (shell . t)))
-(os/after org-contrib
-	  (org-babel-do-load-languages 'org-babel-load-languages 
-				       '((ledger . t))))
+	 "*  %?\n"))))
 
 (use-package org-contrib
 :after org)

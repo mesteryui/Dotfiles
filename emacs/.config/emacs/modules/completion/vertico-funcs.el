@@ -1,5 +1,5 @@
 (use-package vertico
-  :ensure
+  :ensure t
   :hook
   (elpaca-after-init . vertico-mode)
   :custom
@@ -34,12 +34,4 @@
   ;; Do not allow the cursor in the minibuffer prompt
   (minibuffer-prompt-properties
    '(read-only t cursor-intangible t face minibuffer-prompt)))
-
-(use-package marginalia
-  :commands (marginalia-mode marginalia-cycle)
-  :custom
-  (marginalia-annotators
-   '(marginalia-annotators-heavy marginalia-annotators-lv))
-  :init
-  (marginalia-mode))
-(provide 'minibuffer-improves)
+(provide 'vertico-funcs)

@@ -6,23 +6,6 @@
 	erc-fill-function 'erc-fill-static
 	erc-fill-static-center 20)
 
-(use-package tramp
-  :ensure nil
-  :custom
-  (remote-file-name-inhibit-locks t)
-  (tramp-use-scp-direct-remote-copying t)
-  (tramp-copy-size-limit (* 1024 1024))
-  (tramp-verbose 2)
-  (tramp-persistency-file-name
-   (no-littering-expand-var-file-name "tramp/history.el"))
-  :config
-  (connection-local-set-profile-variables
-   'remote-direct-async-process
-   '((tramp-direct-async-process . t)))
-  (connection-local-set-profiles
-   '(:application tramp :protocol "ssh")
-   'remote-direct-async-process))
-
 ;;;; World clock (M-x world-clock)
 (use-package time
   :ensure nil
@@ -65,5 +48,4 @@
   (compilation-filter . ansi-color-compilation-filter)
   :config
   (setq ansi-color-for-compilation-mode t)) ; also see `ansi-color-for-comint-mode'
-
 (provide 'tools)

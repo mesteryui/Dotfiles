@@ -23,7 +23,7 @@
 (use-package outline-indent
   :ensure t
   :commands outline-indent-minor-mode
-;;  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
+  ;;  :bind (:map outline-indent-minor-mode-map ("TAB" . outline-indent-toggle-fold))
   :custom
   (outline-indent-ellipsis " ▼")
   :init
@@ -38,46 +38,46 @@
   :hook (prog-mode . hl-todo-mode)
   :config
   (defun my-ef-themes-hl-todo-faces ()
-  "Configure `hl-todo-keyword-faces' with Ef themes colors.
+    "Configure `hl-todo-keyword-faces' with Ef themes colors.
 The exact color values are taken from the active Ef theme."
-  (ef-themes-with-colors
-    (setq hl-todo-keyword-faces
-          `(("HOLD" . ,yellow)
-            ("TODO" . ,red)
-            ("NEXT" . ,blue)
-            ("THEM" . ,magenta)
-            ("PROG" . ,cyan-warmer)
-            ("OKAY" . ,green-warmer)
-            ("DONT" . ,yellow-warmer)
-            ("FAIL" . ,red-warmer)
-            ("BUG" . ,red-warmer)
-            ("DONE" . ,green)
-            ("NOTE" . ,blue-warmer)
-            ("KLUDGE" . ,cyan)
-            ("HACK" . ,cyan)
-            ("TEMP" . ,red)
-            ("FIXME" . ,red-warmer)
-            ("XXX+" . ,red-warmer)
-            ("REVIEW" . ,red)
-            ("DEPRECATED" . ,yellow)))))
-     (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
+    (ef-themes-with-colors
+      (setq hl-todo-keyword-faces
+            `(("HOLD" . ,yellow)
+              ("TODO" . ,red)
+              ("NEXT" . ,blue)
+              ("THEM" . ,magenta)
+              ("PROG" . ,cyan-warmer)
+              ("OKAY" . ,green-warmer)
+              ("DONT" . ,yellow-warmer)
+              ("FAIL" . ,red-warmer)
+              ("BUG" . ,red-warmer)
+              ("DONE" . ,green)
+              ("NOTE" . ,blue-warmer)
+              ("KLUDGE" . ,cyan)
+              ("HACK" . ,cyan)
+              ("TEMP" . ,red)
+              ("FIXME" . ,red-warmer)
+              ("XXX+" . ,red-warmer)
+              ("REVIEW" . ,red)
+              ("DEPRECATED" . ,yellow)))))
+  (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
 
 (use-package transient)
 (use-package magit
-   :bind
-   ("C-x g" . magit-status))
+  :bind
+  ("C-x g" . magit-status))
 
 (use-package magit-stats
   :ensure t)
 
- (use-package git-gutter
-   :defer 0.3
-   :delight
-   :init (global-git-gutter-mode))
+(use-package git-gutter
+  :defer 0.3
+  :delight
+  :init (global-git-gutter-mode))
 
- (use-package git-timemachine
-   :defer 1
-   :delight)
+(use-package git-timemachine
+  :defer 1
+  :delight)
 
 (use-package eldoc-box
   :ensure t
@@ -88,14 +88,26 @@ The exact color values are taken from the active Ef theme."
          ("M-*" . tempel-insert))
   :custom
   (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
-;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
- ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
- ;; (add-hook 'lsp-mode 'tempel-setup-capf)
- ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
- ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
+  ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
+  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
+  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
+  ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
+  ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
+  :init
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand (cons #'tempel-complete
+					    completion-at-point-functions))))
+  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
   :config 
-   (add-to-list 'completion-at-point-functions #'tempel-complete)
-   (define-key tempel-map (kbd "TAB") #'tempel-next))
+  (define-key tempel-map (kbd "TAB") #'tempel-next))
 
 (use-package tempel-collection :ensure t :after tempel)
 
@@ -122,7 +134,7 @@ The exact color values are taken from the active Ef theme."
   (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'python-mode apheleia-mode-alist)
-      '(ruff)))
+	'(ruff)))
 
 (use-package eglot
   :ensure nil
@@ -130,8 +142,11 @@ The exact color values are taken from the active Ef theme."
   :hook (eglot-managed-mode . eldoc-box-hover-mode)
   :config
   (setq-default eglot-workspace-configuration
-              '(:pyright (:disableOrganizeImports nil
-                         :typeCheckingMode "basic")))              
+		'((:pyright (:disableOrganizeImports nil
+						     :typeCheckingMode "basic"))
+		  (:gopls .
+			  ((staticcheck . t)
+			   (matcher . "CaseSensitive")))))              
   :custom
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
@@ -141,29 +156,25 @@ The exact color values are taken from the active Ef theme."
   (eglot-extend-to-xref t)
   (eglot-send-changes-idle-time 0.1)
   :bind (:map eglot-mode-map
-              ("C-c l a" . eglot-code-actions)
-              ("C-c l i" . eglot-code-actions-organize-imports)
-              ("C-c l r" . eglot-rename)
-              ("C-c l f" . eglot-format)
-              ("C-c l n" . flymake-next-error)
-              ("C-c l p" . flymake-previous-error)
-              ("C-c l d" . eldoc))
+	      ("C-c l a" . eglot-code-actions)
+	      ("C-c l i" . eglot-code-actions-organize-imports)
+	      ("C-c l r" . eglot-rename)
+	      ("C-c l f" . eglot-format)
+	      ("C-c l n" . flymake-next-error)
+	      ("C-c l p" . flymake-previous-error)
+	      ("C-c l d" . eldoc))
   :config
-   (add-to-list 'eglot-server-programs
-               `(python-ts-mode
-                 . ,(eglot-alternatives '(("pyright-langserver" "--stdio")
-                                          "jedi-language-server"
-                                          "pylsp"))))
+  (add-to-list 'eglot-server-programs
+	       `(python-ts-mode
+		 . ,(eglot-alternatives '(("pyright-langserver" "--stdio")
+					  "jedi-language-server"
+					  "pylsp"))))
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((c-mode c++-mode) . ("clangd")))
   )
-
-(use-package iedit
-  :ensure t)
-(gbind "C-v" iedit-mode)
 
 (use-package dape
   :defer t
@@ -175,7 +186,7 @@ The exact color values are taken from the active Ef theme."
   :config
   ;; Configuración para Python con debugpy
   (add-to-list 'dape-configs
-               `(python-debug
+	       `(python-debug
                  :description "Python (debugpy)"
                  modes (python-mode python-ts-mode)
                  command "python3"
@@ -186,7 +197,7 @@ The exact color values are taken from the active Ef theme."
                  :program ,(or (buffer-file-name) "/tmp/fallback.py")))  ;; apunta al buffer actual
   ;; Configuración para Rust con GDB
   (add-to-list 'dape-configs
-               `(rust-gdb
+	       `(rust-gdb
                  :description "Rust (GDB)"
                  modes (rust-mode rust-ts-mode)
                  command "gdb"
@@ -204,14 +215,14 @@ The exact color values are taken from the active Ef theme."
 (setopt projectile-project-root-files '(".git"))
 
 (setq treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
-  (use-package treesit-auto
-    :ensure t
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
-    (treesit-auto-add-to-auto-mode-alist 'all)
-    (global-treesit-auto-mode))
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
 
@@ -219,45 +230,30 @@ The exact color values are taken from the active Ef theme."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package rainbow-mode
-:defer t
-:hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
+  :defer t
+  :hook ((org-mode . rainbow-mode) (prog-mode . rainbow-mode)))
 
 (use-package flymake
-    :ensure t
-    :defer t
-    :hook
-    (prog-mode . flymake-mode)
-    :config 
-(setopt flymake-fringe-indicator-position 'left-fringe)
-(setopt flymake-show-diagnostics-at-end-of-line nil)
+  :ensure t
+  :defer t
+  :hook
+  (prog-mode . flymake-mode)
+  :config 
+  (setopt flymake-fringe-indicator-position 'left-fringe)
+  (setopt flymake-show-diagnostics-at-end-of-line nil)
 
-;; Suppress the display of Flymake error counters when there are no errors.
-(setopt flymake-suppress-zero-counters t)
+  ;; Suppress the display of Flymake error counters when there are no errors.
+  (setopt flymake-suppress-zero-counters t)
 
-;; Disable wrapping around when navigating Flymake errors.
-(setopt flymake-wrap-around nil))
+  ;; Disable wrapping around when navigating Flymake errors.
+  (setopt flymake-wrap-around nil))
 
-  (use-package flymake-flycheck
-    :ensure t
-    :defer t
-    :hook
-    (flymake-mode-hook . flymake-flycheck-auto))
-  (with-eval-after-load 'flymake-mode
-    (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+(use-package flymake-flycheck
+  :ensure t
+  :defer t
+  :hook
+  (flymake-mode-hook . flymake-flycheck-auto))
+(with-eval-after-load 'flymake-mode
+  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
 
 (provide 'programming)
-
-;; -*- lexical-binding: t; -*-
-(use-package ruby-mode :ensure nil)
-
-(use-package ruby-ts-mode
-  :ensure nil
-  :mode "\\.rb\\'"
-  :mode "Rakefile\\'"
-  :mode "Gemfile\\'"
-  :custom
-  (ruby-indent-level 2)
-  (ruby-indent-tabs-mode nil)
-  :config
-  (add-hook ruby-ts-mode-hook #'eglot-ensure))
-(provide 'ruby)

@@ -9,9 +9,10 @@
 (use-package os-scratch
   :load-path "os-lisp/"
   :config
-(add-to-list 'os-scratch-messages `(text . ,(format "Welcome to text-mode %s." user-full-name))))
+  (add-to-list 'os-scratch-messages `(text . ,(format "Welcome to text-mode %s." user-full-name))))
 
 (use-package organizer
+  :after org
   :load-path "os-lisp/Organizer/"
   :config
   (gbind "<f12>" organizer-index)
@@ -57,8 +58,8 @@
   (setq password-store-time-before-clipboard-restore 30))
 
 (use-package pass
- :ensure t
- :commands (pass))
+  :ensure t
+  :commands (pass))
 
 ;; Helpful is an alternative to the built-in Emacs help that provides much more
 ;; contextual information.
@@ -82,27 +83,24 @@
 (use-package exec-path-from-shell
   :ensure t
   :init
-  (exec-path-from-shell-initialize))
-(os/after exec-path-from-shell
-(exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
+  (exec-path-from-shell-initialize)
+  :config 
+  (exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
 
 (use-package spacious-padding
-:ensure t
-:hook (elpaca-after-init . spacious-padding-mode)
-:bind ("<f6>" . spacious-padding-mode)
-:config 
-(setq spacious-padding-widths
-      '(:internal-border-width 15
-         :header-line-width 4
-         :mode-line-width 5
-         :tab-width 4
-         :right-divider-width 30
-         :fringe-width 8)))
+  :ensure t
+  :hook (elpaca-after-init . spacious-padding-mode)
+  :bind ("<f6>" . spacious-padding-mode)
+  :config 
+  (setq spacious-padding-widths
+	'(:internal-border-width 15
+				 :header-line-width 4
+				 :mode-line-width 5
+				 :tab-width 4
+				 :right-divider-width 30
+				 :fringe-width 8)))
 
-(use-package gptel
-:config
-(setq gptel-model 'gemini-2.5-pro
-      gptel-backend (gptel-make-gemini "Gemini" :key (password-store-get "geminiAPI") :stream t)))
+
 
 (use-package ace-window
   :ensure t
@@ -118,11 +116,6 @@
 
 (use-package nerd-icons
   :ensure t)
-(use-package nerd-icons-completion
-  :ensure t
-  :after (marginalia nerd-icons)
-  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
-  :init (nerd-icons-completion-mode))
 (use-package nerd-icons-dired
   :ensure t
   :after (nerd-icons dired)
@@ -135,11 +128,6 @@
   :after xref
   :config
   (nerd-icons-xref-mode 1))
-
-(use-package nerd-icons-corfu
-  :after (corfu nerd-icons)
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 (use-package calfw
   :config
@@ -162,112 +150,24 @@
   (:map
    vterm-mode-map
    ("C-y" . vterm-yank)
-   ("C-q" . vterm-send-next-key)))
+   ("C-q" . vterm-send-next-key))
+  :config
+  (add-hook 'vterm-mode-hook
+	    (lambda ()
+	      (face-remap-add-relative 'default '(:family "JetBrainsMono Nerd Font" :height 110)))))
 (use-package vterm-toggle
   :bind (("C-c g" . vterm-toggle)))
 
 ;; ;; Aun no soportado en la shell de comandos que uso
 (use-package eat
-:ensure t
-:init 
-(setq eat-shell "/usr/bin/fish")
-(global-set-key (kbd "C-c u") #'eat)
-  (global-set-key (kbd "C-c T") #'eat-other-window))
-
-(use-package dired 
-:ensure nil 
-:custom ((dired-recursive-copies 'always)
-         (dired-recursive-deletes 'always)
-         (delete-by-moving-to-trash t)
-         (dired-dwim-target t))
-:hook ((dired-mode . dired-hide-details-mode)
-       (dired-mode . hl-line-mode))
-:config
-(when-let* ((cmd (cond ((equal system-type 'darwin) "open")
-              ((equal system-type 'gnu/linux) "xdg-open")
-              ((equal system-type 'windows-nt) "start"))))
-(setopt dired-guess-shell-alist-user
- `(("\\.\\(?:docx\\|pdf\\|djvu\\|eps\\)\\'" ,cmd)
-   ("\\.\\(?:jpe?g\\|png\\|gif\\|xpm\\)\\'" ,cmd)
-   ("\\.\\(?:xcf\\)\\'" ,cmd)
-   ("\\.csv\\'" ,cmd)
-   ("\\.tex\\'" ,cmd)
-   ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
-   ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
-   ("\\.html?\\'" ,cmd)
-   ("\\.md\\'" ,cmd))))
-(put 'dired-find-alternate-file 'disabled nil))
-
-(use-package dired-x
-:ensure nil
-:hook (dired-mode . dired-omit-mode)
-:config
-;; Make dired-omit-mode hide all "dotfiles"
-(setq dired-omit-verbose nil)
-(setq dired-omit-files
-(concat dired-omit-files "\\|^\\..*$")))
-;; Additional syntax highlighting for dired
-(use-package diredfl
-:hook
-(dired-mode . diredfl-mode))
-;; highlight parent and directory preview as well
-;(dirvish-directory-view-mode . diredfl-mode)
-
-(use-package dired-subtree
   :ensure t
-  :after dired
-  :bind
-  ( :map dired-mode-map
-    ("<tab>" . dired-subtree-toggle)
-    ("TAB" . dired-subtree-toggle)
-    ("<backtab>" . dired-subtree-remove)
-    ("S-TAB" . dired-subtree-remove))
-  :config
-  (setq dired-subtree-use-backgrounds nil))
-
-(use-package dired-preview
-  :ensure t
-  :hook (dired-mode . dired-preview-mode)
-  :config
-  (setq dired-preview-delay 0.7
-	dired-preview-max-size (expt 2 20)
-	 dired-preview-ignored-extensions-regexp
-        (concat "\\."
-                "\\(gz\\|"
-                "zst\\|"
-                "tar\\|"
-                "xz\\|"
-                "rar\\|"
-                "zip\\|"
-                "iso\\|"
-                "epub"
-                "\\)")))
-
-(use-package trashed
-  :ensure t
-  :commands (trashed)
-  :config
-  (setq trashed-action-confirmer 'y-or-n-p)
-  (setq trashed-use-header-line t)
-  (setq trashed-sort-key '("Date deleted" . t))
-  (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
-
-(use-package dired-sidebar
-:ensure t
-:defer t
-:commands (dired-sidebar-toggle-sidebar)
-:init
-(setopt dired-sidebar-theme 'nerd)
-(setopt dired-sidebar-use-term-integration t)
-(setopt dired-sidebar-use-custom-font t))
-(use-package dired-git
-:ensure t)
-(global-set-key (kbd "C-c s") #'dirvish-side)
+  :init 
+  (setq eat-shell "/usr/bin/fish"))
 
 (use-package autorevert
-:ensure nil
-:diminish
-:hook (after-init . global-auto-revert-mode))
+  :ensure nil
+  :diminish
+  :hook (after-init . global-auto-revert-mode))
 
 (setq eshell-prompt-function
       (lambda ()
@@ -291,9 +191,9 @@
     (when (not (eq (selected-window) (next-window)))
       (delete-window win))))
 (defun unable-completion-eshell ()
-"Disable completion system in eahell"
-(corfu-mode -1)
-(completion-preview-mode -1))
+  "Disable completion system in eahell"
+  (corfu-mode -1)
+  (completion-preview-mode -1))
 (use-package eshell
   :ensure nil
   :hook ((eshell-exit . eshell-close-toggle)
@@ -320,42 +220,8 @@
   (eshell-syntax-highlighting-global-mode +1))
 (global-set-key (kbd "C-c e") 'eshell-toggle)
 
-(use-package flyspell
-  :ensure nil
-  :defer t
-  :if (eq mester/spell-checker 'flyspell)
-  :init
-  :config
-  (setopt ispell-silently-savep t
-	  flyspell-case-fold-duplications t
-	  flyspell-issue-message-flag nil
-	  flyspell-default-dictionary "es_ES"
-	  ispell-program-name "hunspell"
-	  ispell-alternate-dictionary "/usr/share/dict/words") ;; Instalar paquete words en a
-  :hook (text-mode . flyspell-mode)
-  :bind(("M-<f7>" . flyspell-buffer)
-	("<f7>" . flyspell-word)))
-
-(use-package flyspell-correct
-  :after (flyspell)
-  :if (eq mester/spell-checker 'flyspell)
-  :bind (("C-;" . flyspell-auto-correct-previous-word)
-	 ("<f7>" . flyspell-correct-wrapper)))
-
-(use-package jinx
-  :ensure ;;(:host github :repo "minad/jinx.git")
-  :if (eq mester/spell-checker 'jinx)
-  :hook (((text-mode prog-mode) . jinx-mode))
-  :bind (("<f7>" . jinx-correct))
-  :custom
-  (jinx-delay 0.01))
-
 (setopt dictionary-use-single-buffer t)
 (setopt dictionary-server "dict.org")
-
-(use-package vundo
-:bind ("C-x u" . vundo)
-:config (setq vundo-compact-display t))
 
 (use-package treemacs
   :config
@@ -387,74 +253,57 @@
 (global-set-key (kbd "C-c f") 'treemacs)
 
 (use-package ledger-mode
-:ensure t)
-
-(use-package embark
-  :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
-  :demand t
-  :config
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none))))
-  :bind
-  (("C-c A" . embark-act)
-   ("C-:" . embark-dwim)
-   ("C-h B" . embark-bindings)))
-
-(use-package embark-consult
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  :ensure t)
 
 ;; use-package with package.el:
 (use-package dashboard
-:ensure t
-:hook 
-(elpaca-after-init-hook . dashboard-insert-startupify-lists)
-(elpaca-after-init-hook . dashboard-initialize)
-:custom
-(initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
-(dashboard-set-heading-icons t)
-(dashboard-set-file-icons t)
-(dashboard-icon-type 'nerd-icons)
-(dashboard-display-icons-p t)     ; display icons on both GUI and terminal
-(dashboard-vertically-center-content t)
-(dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
-(dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
-(dashboard-items '((recents . 5)
-            (agenda . 5)
-            (bookmarks . 3)))
-(dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
-                 ("Bookmarks:" . "Marcadores:")
-                  ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
- (dashboard-navigator-buttons
- `((
-    (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
-     "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
-     (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
-    (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
-     "WM Settings" "Hyprland settings"
-     (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
-    (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
-     "Index" "Index of my Org"
-     (lambda (&rest _) (organizer-index))))))
-(dashboard-startupify-list
- '(dashboard-insert-banner ;; Banner
-   dashboard-insert-newline ;; Insertando nueva linea
-   dashboard-insert-banner-title ;; Insertando banner del titulo
-   dashboard-insert-newline
-   dashboard-insert-navigator
-   dashboard-insert-items
-   dashboard-insert-newline
-   dashboard-insert-footer
-   dashboard-insert-init-info)) ;; Insertando informacion de inicio
-:config
-(dashboard-modify-heading-icons '((recents   . "nf-oct-file")
-				  (projects  . "nf-oct-rocket")
-				  (bookmarks . "nf-oct-bookmark")
-				  (agenda    . "nf-oct-calendar")
-				  (registers . "nf-oct-note")))
-(dashboard-setup-startup-hook))
+  :ensure t
+  :hook 
+  (elpaca-after-init-hook . dashboard-insert-startupify-lists)
+  (elpaca-after-init-hook . dashboard-initialize)
+  :custom
+  (initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-display-icons-p t)     ; display icons on both GUI and terminal
+  (dashboard-vertically-center-content t)
+  (dashboard-banner-logo-title (format "Bienvenido a Emacs %s, %s" emacs-version user-full-name))
+  (dashboard-startup-banner "~/.config/emacs/images/kawaii-sm.png")
+  (dashboard-items '((recents . 5)
+		     (agenda . 5)
+		     (bookmarks . 3)))
+  (dashboard-item-names '(("Recent Files:" . "Archivos Recientes:")
+			  ("Bookmarks:" . "Marcadores:")
+			  ("Agenda for the coming week:" . "Agenda para la próxima semana:")))
+  (dashboard-navigator-buttons
+   `((
+      (,(nerd-icons-mdicon "nf-md-cog" :height 1.1 :v-adjust 0.0) ;; Icono del menu
+       "Settings" "Open Config file" ;; Texto en el dashboard y texto cuando pasas el cursor
+       (lambda (&rest _) (os/open-config))) ;; Lambda para ejecutar lo que se necesita para acceder a eso
+      (,(nerd-icons-flicon "nf-linux-hyprland" :height 1.1 :v-adjust 0.0)
+       "WM Settings" "Hyprland settings"
+       (lambda (&rest _) (find-file "~/.config/hypr/hyprland.conf")))
+      (,(nerd-icons-mdicon "nf-md-notebook" :height 1.1 :v-adjust 0.0)
+       "Index" "Index of my Org"
+       (lambda (&rest _) (organizer-index))))))
+  (dashboard-startupify-list
+   '(dashboard-insert-banner ;; Banner
+     dashboard-insert-newline ;; Insertando nueva linea
+     dashboard-insert-banner-title ;; Insertando banner del titulo
+     dashboard-insert-newline
+     dashboard-insert-navigator
+     dashboard-insert-items
+     dashboard-insert-newline
+     dashboard-insert-footer
+     dashboard-insert-init-info)) ;; Insertando informacion de inicio
+  :config
+  (dashboard-modify-heading-icons '((recents   . "nf-oct-file")
+				    (projects  . "nf-oct-rocket")
+				    (bookmarks . "nf-oct-bookmark")
+				    (agenda    . "nf-oct-calendar")
+				    (registers . "nf-oct-note")))
+  (dashboard-setup-startup-hook))
 (gbind "<f10>" open-dashboard)
 (defun open-dashboard ()
   "Abre el buffer *dashboard* y salta al primer widget."
@@ -469,39 +318,18 @@
 (use-package doom-modeline
   :if (eq mester/modeline 'doom-modeline)
   :after (nerd-icons)
-  :hook (elpaca-after-init-hook . doom-modeline-mode)
-  ;;:custom
-  ;;(doom-modeline-height 25)
-  ;; (doom-modeline-time-analogue-clock nil)
-  ;; (doom-modeline-time-icon nil)
-  ;; (doom-modeline-unicode-fallback nil)
-  ;; (doom-modeline-buffer-encoding 'nondefault)
-  ;; (display-time-load-average nil)
-  ;; (doom-modeline-bar-width 3)
-  ;; (doom-modeline-icon t)
-  ;; (doom-modeline-buffer-file-name-style 'file-name) ; solo el nombre del archivo, no ruta completa
-  ;; (doom-modeline-minor-modes nil)                   ; oculta modos menores
-  ;; (doom-modeline-enable-word-count nil)
-  ;; (doom-modeline-buffer-encoding nil)
-  )
-
-(use-package orderless
-  :defer t
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides
-   '((file (styles basic partial-completion)))))
+  :hook (elpaca-after-init-hook . doom-modeline-mode))
 
 (use-package consult
-:hook (completion-list-mode . consult-preview-at-point-mode)
-:init 
-(setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
+  ;;:after (orderless)
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :init 
+  (setq register-preview-delay 0.5
+	register-preview-function #'consult-register-format)
   (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-:config
- (consult-customize
+	xref-show-definitions-function #'consult-xref)
+  :config
+  (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
@@ -510,21 +338,22 @@
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
   (setq consult-narrow-key "<")
-:bind (
-("C-c M-x" . consult-mode-command)
-;; ("C-c k" . consult-kmacro)
-("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-("M-y" . consult-yank-pop)                ;; orig. yank-pop
-("M-g o" . consult-outline)               ;; Alternativa: consult-org-heading
-("M-g i" . consult-imenu)
-("M-g I" . consult-imenu-multi)
-("M-s d" . consult-find)                  ;; Alternativa: consult-fd
-("M-s g" . consult-grep)
-("C-s" . consult-line)))
+  :bind (
+	 ("C-c M-x" . consult-mode-command)
+	 ;; ("C-c k" . consult-kmacro)
+	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+	 ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+	 ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+	 ("M-g o" . consult-outline)               ;; Alternativa: consult-org-heading
+	 ("M-g i" . consult-imenu)
+	 ("M-g I" . consult-imenu-multi)
+	 ("M-s d" . consult-find)                  ;; Alternativa: consult-fd
+	 ("M-s g" . consult-grep)
+	 ("C-s" . consult-line)))
 
 (use-package which-key
   :ensure nil
+  :after (embark vertico)
   :config 
   (which-key-mode)
   (setopt prefix-help-command #'embark-prefix-help-command)
@@ -538,7 +367,7 @@
   :custom
   (eradio-player '("mpv" "--no-video" "--no-terminal"))
   (eradio-channels '(("MGT Radio" . "https://stream.zeno.fm/koq3futfevouv") ;Esto con el punto se usa para crear un par asi podemos extraer uno u otro
-                     ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
+		     ("Radio asiatica" . "https://stream.zeno.fm/vwvzwtapjrpvv")
 		     ("Radio Libretics" . "https://stream-170.zeno.fm/a79lrhms108uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJhNzlscmhtczEwOHV2IiwiaG9zdCI6InN0cmVhbS0xNzAuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IndQLS1ld3VYVGV5RjcxNUtmaXdMRkEiLCJpYXQiOjE3NDIxNTQ3NzIsImV4cCI6MTc0MjE1NDgzMn0.nR6YeM5BOcjVXbKfFaSLO6v_kLFFvdgnbGRtaO_UblY")
 		     ("Cadena Dial" . "http://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3")
 		     ("Los 40 Principales" . "https://23553.live.streamtheworld.com:443/LOS40.mp3"))))
@@ -556,23 +385,14 @@
   (add-hook 'doc-view-mode-hook 'pdf-tools-install)
   (setq-default pdf-view-use-scaling t
 		pdf-view-use-imagemagick nil))
-  (use-package reader
-    :ensure '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
-  	      :files ("*.el" "render-core.so")
-  	      :pre-build ("make" "all")))
+;; (use-package reader
+;;   :ensure '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
+;; 	      :files ("*.el" "render-core.so")
+;; 	      :pre-build ("make" "all")))
 (use-package nov
   :ensure t
   :mode ("\\.epub\\'" . nov-mode))
 
-(use-package super-save
-  :config
-  (setopt super-save-triggers
-	  '(other-window  ; Al cambiar de ventana
-	    switch-to-buffer  ; Al cambiar de buffer
-	    mouse-leave-buffer-hook)) ; Al mover el ratón fuera de Emacs
-  (setq super-save-idle-duration 1)  ; 0.3 segundos de inactividad
-  (setopt super-save-auto-save-when-idle t)
- (super-save-mode 1)) ; Opcional: guardar también en inactividad
 
 ;;; TMR May Ring (tmr is used to set timers)
 ;; Read the manual: <https://protesilaos.com/emacs/tmr>.
@@ -582,8 +402,8 @@
   ("C-c t" . tmr-prefix-map)
   :config
   (setq tmr-sound-file "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
-        tmr-notification-urgency 'normal
-        tmr-description-list 'tmr-description-history))
+	tmr-notification-urgency 'normal
+	tmr-description-list 'tmr-description-history))
 
 (add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
 (add-to-list 'treesit-language-source-alist '(json "https://github.com/tree-sitter/tree-sitter-json"))
@@ -596,8 +416,8 @@
   (set-face-attribute 'markdown-header-face-4 nil :height 1.3)
   (set-face-attribute 'markdown-header-face-5 nil :height 1.15)
   (set-face-attribute 'markdown-header-face-6 nil :height 1.05))
- ;; :hook ((markdown-mode . set-markdown-headers)
- ;;         (gfm-mode . set-markdown-headers))
+;; :hook ((markdown-mode . set-markdown-headers)
+;;         (gfm-mode . set-markdown-headers))
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
@@ -611,7 +431,7 @@
   :ensure t
   :commands (markdown-preview-mode)
   :bind (:map markdown-mode-command-map
-              ("p" . markdown-preview-mode)))
+	      ("p" . markdown-preview-mode)))
 
 (use-package typst-mode
   :ensure (:type git :host github :repo "Ziqi-Yang/typst-mode.el")
@@ -644,9 +464,9 @@
   ("/sway/config\\'" . i3wm-config-mode))
 
 (use-package savehist
-    :ensure nil
-    :hook (after-init . savehist-mode))
-  
-  (use-package jsonrpc
-    :ensure t)
+  :ensure nil
+  :hook (after-init . savehist-mode))
+
+(use-package jsonrpc
+  :ensure t)
 (provide 'packages)

@@ -25,8 +25,8 @@ js-mode
 
 html-mode mhtml-mode
 (html5-document "<!DOCTYPE html>" n "<html lang=\"" (r> "en") "\">" n  "<head>" n "\t" "<meta charset=\"UTF-8\">" n
-   "\t" "<meta name=\"viewport\"" "content=\"width=" (r> "device-width") ", initial-scale=" (r> "1.0\"") ">"  n "\t"
-    "<title>" (r> "Introduzca titulo") "</title>" n "<head>" n "<body>" n q n "</body>")
+		"\t" "<meta name=\"viewport\"" "content=\"width=" (r> "device-width") ", initial-scale=" (r> "1.0\"") ">"  n "\t"
+		"<title>" (r> "Introduzca titulo") "</title>" n "<head>" n "<body>" n q n "</body>")
 
 (js-script "<script src=" (r> "\"script.js\"") " " r>"></script>")
 
@@ -40,3 +40,6 @@ emacs-lisp-mode
 (macro "(defmacro " p " (" p ")\n  \"" p "\"" n> r> ")")
 (alias "(defalias '" p " '" p ")")
 (fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")
+
+python-mode
+(supinit "super().__init__()")

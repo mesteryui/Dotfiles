@@ -67,4 +67,8 @@
 (setq completion-preview-overlay-enable nil)
 (setq completion-preview-inline-enable t)
 (global-completion-preview-mode 1))
-(provide 'completion)
+(use-package nerd-icons-corfu
+  :after (corfu nerd-icons)
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+(provide 'corfu-completion)

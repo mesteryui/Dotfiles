@@ -19,7 +19,24 @@
 # ==========================
 # # The config file consists of simple key-value pairs,
 # # separated by equals signs.
- font-family = JetBrainsMono
+# Font
+font-family = "CaskaydiaMono Nerd Font"
+font-style = Regular
+font-size = 9
+
+# Window
+window-padding-x = 14
+window-padding-y = 14
+confirm-close-surface=false
+resize-overlay = never
+
+# Cursor stlying
+cursor-style = "block"
+cursor-style-blink = false
+shell-integration-features = no-cursor
+
+# Keyboard bindings
+keybind = f11=toggle_fullscreen
 # window-padding-x = 2
 #
 # # Spacing around the equals sign does not matter.

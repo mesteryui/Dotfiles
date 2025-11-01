@@ -63,14 +63,14 @@
   ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
   (setq no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/")
         no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/")
-      )
+	)
   :config
   ;; set sensible defaults for backups
   (no-littering-theme-backups)
   ;; set paths for url-history-file and custom-file
   (setopt url-history-file (no-littering-expand-etc-file-name "url/history")
-        custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
- )
+          custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package eldoc 
   :ensure nil
@@ -109,43 +109,59 @@
   :type '(choice (const :tag "Os modeline (Own)" os-modeline)
   		 (const :tag "Doom Modeline" 'doom-modeline)))
 ;;(setq mester/modeline 'os-modeline)
-  (defcustom mester/enabled-modules nil
-    "Lista de modulos a cargar."
-    :group 'mester
-    :type '(repeat symbol))
+(defcustom mester/enabled-modules nil
+  "Lista de modulos a cargar."
+  :group 'mester
+  :type '(repeat symbol))
 
 ;; Añadir el directorio 'modules' y subdirectorios al 'load-path'
-(add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "modules/lang/" user-emacs-directory))
+(defun mester/add-subdirs-to-load-path (parent-dir)
+  "Añade PARENT-DIR y todos sus subdirectorios al load-path recursivamente."
+  (let ((default-directory parent-dir))
+    (add-to-list 'load-path parent-dir)
+    (normal-top-level-add-subdirs-to-load-path)))
+(mester/add-subdirs-to-load-path 
+ (expand-file-name "modules/" user-emacs-directory))
 
 ;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
 (setq mester/enabled-modules
-  '(macros      ;; Macros personalizadas
-    performance ;; Ajustes del rendimiento
-    personal    ;; Ajustes personales diversos
-    ui          ;; Apariencia y UI
-    functions   ;; Funciones propias desarrolladas por mi
-    org-config  ;; Configuración de Org Mode
-    tools       ;; Herramientas generales
-    packages    ;; Paquetes que utilizo
-    completion ;; Cosas de autocompletado
-    sin-distracciones ;; Modo sin distracciones
-    programming ;; Configuraciones base de programación
-    minibuffer-improves ;; Mejoras a la completacion del minibuffer
-    ;; Módulos de lenguajes específicos
-    javascript
-    schemelang ;; Lenguaje Scheme
-    emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
-    pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
-    ruby
-    rust
-    common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
-    java ;; Lenguaje de programacion Java
-    ))
+      '(macros      ;; Macros personalizadas
+	performance ;; Ajustes del rendimiento
+	personal    ;; Ajustes personales diversos
+	ui          ;; Apariencia y UI
+	functions   ;; Funciones propias desarrolladas por mi
+	org-config  ;; Configuración de Org Mode
+	tools       ;; Herramientas generales
+	keybindings ;; atajos de teclado diversos
+	;; Completion functions
+	orderless-funcs
+	corfu-completion ;; Sistema de autocompletado
+	vertico-funcs ;; Sistema para la completacion del minibuffer
+	embark-funcs
+	marginalia-funcs
+	;; Final Completion Functions
+	editing
+	spelling
+	dired
+	tramp-config
+	packages    ;; Paquetes que utilizble
+	sin-distracciones ;; Modo sin distracciones
+	programming ;; Configuraciones base de programación
+	;; Módulos de lenguajes específicos
+	javascript
+	golang
+	;; schemelang ;; Lenguaje Scheme
+	emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
+	pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+	ruby
+	rust
+	common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
+	java ;; Lenguaje de programacion Java
+	))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)
   (unless (featurep module)
-  (require module)))
+    (require module)))
 
 (provide 'init)
 ;;; init.el ends here

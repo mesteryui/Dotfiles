@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ "$TERM" == "kitty" ]]; then
+    kitty --class=float_kitty -e "$@"
+elif [[ "$TERM" == "ghostty" ]]; then
+     ghostty --class=local.floating -e "$@"
+fi
+
