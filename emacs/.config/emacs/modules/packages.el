@@ -6,6 +6,8 @@
   (setq org-social-file "~/Escritorio/CosasSociales/social.org")
   (setq org-social-my-public-url "https://codeberg.org/mester/CosasSociales/raw/branch/main/social.org"))
 
+
+
 (use-package os-scratch
   :load-path "os-lisp/"
   :config
@@ -18,35 +20,6 @@
   (gbind "<f12>" organizer-index)
   (add-to-list 'organizer-files `("Libros" . ,(expand-file-name "Libros.org" org-directory)))
   (add-to-list 'organizer-files `("Finanzas" . ,(expand-file-name "Finanzas.org" org-directory))))
-
-(use-package os-modeline
-  :if (eq mester/modeline 'os-modeline)
-  :load-path "os-lisp/"
-  :custom (os-modeline-bar-height 25)
-  :config
-  (setq mode-line-compact nil) ; Emacs 28
-  (setq mode-line-right-align-edge 'right-margin) ; Emacs 30
-  (setq-default mode-line-format
-		'("%e"
-		  os-modeline-input-method
-                  os-modeline-kbd-macro
-                  os-modeline-buffer-status
-	          os-modeline-buffer-name
-                  "   "
-                  os-modeline-major-mode
-		  "   "
-		  os-modeline-zoom
-                  "   "
-                  (:eval (when (buffer-file-name) "%p"))
-                  "   "
-                  os-modeline-vc-branch
-		  "   "
-		  os-modeline-eglot
-		  "   "
-                  os-modeline-flymake
-                  "   "
-		  mode-line-format-right-align ; Emacs 30
-		  os-modeline-misc-info)))
 
 ;;; Pass interface (password-store)
 (use-package password-store
@@ -79,27 +52,6 @@
   ([remap describe-variable] . helpful-variable)
   :custom
   (helpful-max-buffers 7))
-
-(use-package exec-path-from-shell
-  :ensure t
-  :init
-  (exec-path-from-shell-initialize)
-  :config 
-  (exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
-
-(use-package spacious-padding
-  :ensure t
-  :hook (elpaca-after-init . spacious-padding-mode)
-  :bind ("<f6>" . spacious-padding-mode)
-  :config 
-  (setq spacious-padding-widths
-	'(:internal-border-width 15
-				 :header-line-width 4
-				 :mode-line-width 5
-				 :tab-width 4
-				 :right-divider-width 30
-				 :fringe-width 8)))
-
 
 
 (use-package ace-window
@@ -140,29 +92,6 @@
   (setq cfw:org-overwrite-default-keybinding t)
   :bind ([f8] . cfw:open-org-calendar))
 
-(use-package vterm
-  :defer t
-  :init
-  (setq vterm-max-scrollback 10000)
-  (setq vterm-buffer-name-string "vterm: %s")
-  (setq vterm-toggle-fullscreen-p nil)
-  :bind
-  (:map
-   vterm-mode-map
-   ("C-y" . vterm-yank)
-   ("C-q" . vterm-send-next-key))
-  :config
-  (add-hook 'vterm-mode-hook
-	    (lambda ()
-	      (face-remap-add-relative 'default '(:family "JetBrainsMono Nerd Font" :height 110)))))
-(use-package vterm-toggle
-  :bind (("C-c g" . vterm-toggle)))
-
-;; ;; Aun no soportado en la shell de comandos que uso
-(use-package eat
-  :ensure t
-  :init 
-  (setq eat-shell "/usr/bin/fish"))
 
 (use-package autorevert
   :ensure nil
@@ -258,10 +187,13 @@
 ;; use-package with package.el:
 (use-package dashboard
   :ensure t
+  :init
+  (add-hook 'dashboard-mode-hook (lambda () (setq show-trailing-whitespace nil)))
   :hook 
   (elpaca-after-init-hook . dashboard-insert-startupify-lists)
   (elpaca-after-init-hook . dashboard-initialize)
   :custom
+  (dashboard-set-navigator t)
   (initial-buffer-choice 'dashboard-open) ;; Para que el buffer que aparece por defecto sea el dashboard cosa util si tienes el cliente y abres varias instancias
   (dashboard-set-heading-icons t)
   (dashboard-set-file-icons t)
@@ -315,10 +247,7 @@
   (dashboard-insert-startupify-lists)
   (switch-to-buffer dashboard-buffer-name))
 
-(use-package doom-modeline
-  :if (eq mester/modeline 'doom-modeline)
-  :after (nerd-icons)
-  :hook (elpaca-after-init-hook . doom-modeline-mode))
+
 
 (use-package consult
   ;;:after (orderless)
@@ -354,13 +283,13 @@
 (use-package which-key
   :ensure nil
   :after (embark vertico)
-  :config 
+  :config
   (which-key-mode)
-  (setopt prefix-help-command #'embark-prefix-help-command)
+  (setq prefix-help-command #'embark-prefix-help-command)
   :custom
   (which-key-idle-delay 0.2)
   (which-key-separator " → ") 
-  (which-key-ellipsis "…")) ;; Usando esto es posible usar embark para hacer que la busqueda sea más comoda
+  (which-key-ellipsis "…"))
 
 (use-package eradio
   :commands (eradio-play eradio-toggle)
@@ -405,9 +334,6 @@
 	tmr-notification-urgency 'normal
 	tmr-description-list 'tmr-description-history))
 
-(add-to-list 'auto-mode-alist '("\\.jsonc\\'" . json-ts-mode))
-(add-to-list 'treesit-language-source-alist '(json "https://github.com/tree-sitter/tree-sitter-json"))
-
 (defun set-markdown-headers () 
   "Setting the headers to a markdown file"
   (set-face-attribute 'markdown-header-face-1 nil :height 2.0)
@@ -450,7 +376,9 @@
 
 (use-package kdl-ts-mode 
   :ensure (:host github :repo "dataphract/kdl-ts-mode")
-  :init (add-to-list 'treesit-language-source-alist '(kdl "https://github.com/tree-sitter-grammars/tree-sitter-kdl")))
+  :init (add-to-list 'treesit-language-source-alist '(kdl "https://github.com/tree-sitter-grammars/tree-sitter-kdl"))
+  (unless (treesit-language-available-p 'kdl)
+    (treesit-install-language-grammar 'kdl)))
 
 (use-package fish-mode
   :ensure t)

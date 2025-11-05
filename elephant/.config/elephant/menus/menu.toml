@@ -7,12 +7,12 @@ icon = ""
 [[entries]]
 icon = ""
 text = "Update"
-actions = { "update" = "kitty --class=float_kitty -e paru -Syu" }
+actions = { "update" = "ghostty --class=local.floating -e paru -Syu" }
 
 [[entries]]
 icon = ""
 text = "About"
-actions = { "about_system" = "kitty --class=float_kitty -e $SHELL -c 'fastfetch;read -n 1 -s;exit'" }
+actions = { "about_system" = "ghostty --class=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'" }
 
 [[entries]]
 icon = "󰹑"

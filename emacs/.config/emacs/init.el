@@ -77,20 +77,6 @@
   :hook (prog-mode . eldoc-mode)
   :custom (eldoc-message-function #'message))
 (elpaca-wait)
-;;When installing a package which modifies a form used at the top-level
-;;(e.g. a package which adds a use-package key word),
-;;use `elpaca-wait' to block until that package has been installed/configured.
-;;For example:
-;;(use-package general :demand t)
-;;(elpaca-wait)
-
-;;Turns off elpaca-use-package-mode current declartion
-;;Note this will cause the declaration to be interpreted immediately (not deferred).
-;;Useful for configuring built-in emacs features.
-;;(use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
-
-;; Don't install anything. Defer execution of BODY
-;;(elpaca nil (message "deferred"))
 
 (defgroup mester nil
   "Group to my custom configs"
@@ -128,9 +114,11 @@
       '(macros      ;; Macros personalizadas
 	performance ;; Ajustes del rendimiento
 	personal    ;; Ajustes personales diversos
+	settings
 	ui          ;; Apariencia y UI
 	functions   ;; Funciones propias desarrolladas por mi
 	org-config  ;; Configuración de Org Mode
+	modeline
 	tools       ;; Herramientas generales
 	keybindings ;; atajos de teclado diversos
 	;; Completion functions
@@ -139,14 +127,22 @@
 	vertico-funcs ;; Sistema para la completacion del minibuffer
 	embark-funcs
 	marginalia-funcs
+	tempel-funcs
+	ligatures
 	;; Final Completion Functions
+	;; Editing and spelling
 	editing
 	spelling
+	;; End of editing and spelling
 	dired
+	eat-term
+	vterm-term
 	tramp-config
 	packages    ;; Paquetes que utilizble
 	sin-distracciones ;; Modo sin distracciones
+	treesit-funcs
 	programming ;; Configuraciones base de programación
+	emacs-git
 	;; Módulos de lenguajes específicos
 	javascript
 	golang
@@ -156,7 +152,7 @@
 	ruby
 	rust
 	common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
-	java ;; Lenguaje de programacion Java
+	;;java ;; Lenguaje de programacion Java
 	))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)

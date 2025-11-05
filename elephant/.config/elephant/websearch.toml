@@ -8,7 +8,4 @@ default = true
 name = "DuckDuckGo"
 url = "https://duckduckgo.com/?origin=funnel_home_website&t=h_&q=%TERM%&ia=web"
 
-[[entries]]
-default = true
-name = "Searxng"
-url = "https://searx.tuiter.ovh/searxng/search?q=%TERM%&language=auto&time_range=&safesearch=0&categories=general"
+

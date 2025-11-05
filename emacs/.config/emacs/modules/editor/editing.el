@@ -5,7 +5,14 @@
   (gbind "C-v" iedit-mode))
 (use-package vundo
   :bind ("C-x u" . vundo)
-  :config (setq vundo-compact-display t))
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols
+        vundo-compact-display t))
+
+ (setq undo-limit 800000)           ;; default: ~160k
+  (setq undo-strong-limit 12000000)  ;; default: ~12MB
+  (setq undo-outer-limit 120000000)  ;; default: ~120MB
+
 (use-package super-save
   :config
   (setopt super-save-triggers

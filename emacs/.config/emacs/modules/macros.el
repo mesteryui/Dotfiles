@@ -6,17 +6,17 @@ Use this function via a hook."
   (when (frame-parameter nil 'os-window-popup-frame)
     (delete-frame)))
 (defmacro functioner-create-window (command)
-"Crear una funcion que ejecute un comando COMMAND."
- `(defun ,(intern (format "open-new-frame-%s" (symbol-name command))) ()
-    ,(format "Run %s command in a new temporal frame using a hidden frame" (symbol-name command))
-    (interactive)
-    (let ((newer (make-frame '((os-window-popup-frame . t) (undecorated . t)))))
-         (select-frame newer)
-         (switch-to-buffer " os-window-hidden-buff")
-         (condition-case nil
-         (call-interactively ',command)
+  "Crear una funcion que ejecute un comando COMMAND."
+  `(defun ,(intern (format "open-new-frame-%s" (symbol-name command))) ()
+     ,(format "Run %s command in a new temporal frame using a hidden frame" (symbol-name command))
+     (interactive)
+     (let ((newer (make-frame '((os-window-popup-frame . t) (undecorated . t)))))
+       (select-frame newer)
+       (switch-to-buffer " os-window-hidden-buff")
+       (condition-case nil
+           (call-interactively ',command)
          ((quit error user-error)
-           (delete-frame))))))
+          (delete-frame))))))
 (declare-function org-capture "org-capture" (&optional goto keys))
 (defvar org-capture-after-finalize-hook)
 
@@ -58,13 +58,13 @@ KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
   `(global-set-key (kbd ,key) #',func))
 
 (defmacro gbind-multiple (&rest binds)
-    "Bind globally multiple keys"
-    `(progn
-       ,@(mapcar (lambda (bind) `(global-set-key (kbd ,(car bind)) #',(cdr bind))) binds)))
+  "Bind globally multiple keys"
+  `(progn
+     ,@(mapcar (lambda (bind) `(global-set-key (kbd ,(car bind)) #',(cdr bind))) binds)))
 
 (defmacro unbind (key)
-"Unbind the global KEY sequence."
-`(global-unset-key (kbd ,key)))
+  "Unbind the global KEY sequence."
+  `(global-unset-key (kbd ,key)))
 
 (defmacro add-hooks (hook &rest funcs)
   "Añadir varias funciones a un hook.
@@ -75,4 +75,6 @@ y FUNCS las funciones a añadir"
 	     (lambda (f) `(add-hook ',hook #',f))
 	     funcs)))
 
+
 (provide 'macros)
+;; End of macros

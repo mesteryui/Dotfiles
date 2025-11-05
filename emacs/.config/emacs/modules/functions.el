@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (defun create-uv-project (archivo)
   "Crear un proyecto de uv personalizado pasando la carpeta del proyecto como ARCHIVO y listo para empezar a editar."
   (interactive "GIntroduzca la carpeta del proyecto: ")
@@ -69,7 +70,7 @@ using what the result of 'get-local-language' function if the result is nil does
 (defun os/open-config ()
 "Abrir configuracion de Emacs."
 (interactive)
-(find-file (expand-file-name "README.org" user-emacs-directory)))
+(find-file (expand-file-name "init.el" user-emacs-directory)))
 (gbind "C-x c" os/open-config)
 
 (defun dictionary-switcher()

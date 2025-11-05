@@ -10,19 +10,23 @@
 (use-package ef-themes
   :ensure (:host github :repo "protesilaos/ef-themes")
   :demand t
-  :init (add-hook 'text-mode-hook #'variable-pitch-mode)
-  :config (setopt ef-themes-variable-pitch-ui t
-	          ef-themes-mixed-fonts t
-		  ef-themes-headings '((agenda-date . (1.3))
-				       (agenda-structure . (variable-pitch light 1.8))
-				       (0 . (variable-pitch light 1.7))
-				       (1 . (variable-pitch 1.5))
-				       (2 . (variable-pitch 1.4))
-				       (3 . (variable-pitch 1.25))
-				       (4 . (variable-pitch 1.1))
-				       (t . (variable-pitch 1.0))))
+  :init
+  (add-hook 'text-mode-hook #'variable-pitch-mode)
+  :config
+  (ef-themes-take-over-modus-themes-mode 1)
+  (setopt modus-themes-variable-pitch-ui t
+	  modus-themes-mixed-fonts t
+	  modus-themes-headings '((agenda-date . (1.3))
+				  (agenda-structure . (variable-pitch light 1.8))
+				  (0 . (variable-pitch light 1.7))
+				  (1 . (variable-pitch 1.5))
+				  (2 . (variable-pitch 1.4))
+				  (3 . (variable-pitch 1.25))
+				  (4 . (variable-pitch 1.1))
+				  (t . (variable-pitch 1.0))))
+  (setq modus-themes-italic-constructs t)
   (mapc #'disable-theme custom-enabled-themes)
-  (ef-themes-select 'ef-cherie))
+  (modus-themes-load-theme 'ef-cherie))
 
 ;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
 (global-display-line-numbers-mode -1) 
@@ -40,44 +44,18 @@
 (setq server-client-instructions nil) ;; Evita que me salgan avisos de como se cierra el cliente
 (setopt use-dialog-box nil)
 
-(use-package fontaine
-  :ensure t
-  :hook ((elpaca-after-init . fontaine-mode)
-	 (elpaca-after-init . (lambda ()
-				;; Set last preset or fall back to desired style from `fontaine-presets'.
-				(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular)))))
-  :config
-  (add-hook 'enable-theme-functions #'fontaine-apply-current-preset)
-  (setq-default text-scale-remap-header-line t)
-  (setq fontaine-presets
-	'((small :default-height 105 :variable-pitch-height 105)
-	  (regular)
-	  (coder :default-family "JetBrainsMono" :default-weight regular)
-	  (t  :default-family "Aporetic Sans Mono"
-              :default-height 110
-              :default-weight medium
-
-              :variable-pitch-family "Aporetic Sans"
-              :variable-pitch-height 110
-              :variable-pitch-weight medium
-
-              :fixed-pitch-family "Aporetic Sans Mono"
-              :fixed-pitch-height 1.0
-              :fixed-pitch-weight medium
-	      :line-spacing 0.3))))
-;; (unless (display-graphic-p)
-;; (set-face-attribute 'default nil
-;; 		    :font "Aporetic Sans Mono"
-;; 		    :height 110
-;; 		    :weight 'medium)
-;; (set-face-attribute 'variable-pitch nil
-;; 		    :font "Aporetic Sans"
-;; 		    :height 110
-;; 		    :weight 'medium)
-;; (set-face-attribute 'fixed-pitch nil
-;; 		    :font "Aporetic Sans Mono"
-;; 		    :height 1.0
-;; 		    :weight 'medium))
+(set-face-attribute 'default nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 110
+		    :weight 'medium)
+(set-face-attribute 'variable-pitch nil
+		    :font "Aporetic Sans"
+		    :height 110
+		    :weight 'medium)
+(set-face-attribute 'fixed-pitch nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 1.0
+		    :weight 'medium)
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
@@ -91,7 +69,7 @@
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
 
-(add-to-list 'default-frame-alist '(font . "Aporetic Sans Mono-11"))
+;;(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
 
 
 ;; Uncomment the following line if line spacing needs adjusting.
@@ -99,6 +77,17 @@
 
 (add-to-list 'default-frame-alist '(alpha-background . 92)) ; For all new frames henceforth
 
-(electric-pair-mode t)
+(use-package spacious-padding
+  :ensure t
+  :hook (elpaca-after-init . spacious-padding-mode)
+  :bind ("<f6>" . spacious-padding-mode)
+  :config 
+  (setq spacious-padding-widths
+	'(:internal-border-width 15
+				 :header-line-width 4
+				 :mode-line-width 5
+				 :tab-width 4
+				 :right-divider-width 30
+				 :fringe-width 8)))
 
 (provide 'ui)

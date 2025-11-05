@@ -63,60 +63,27 @@ The exact color values are taken from the active Ef theme."
   (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
 
 (use-package transient)
-(use-package magit
-  :bind
-  ("C-x g" . magit-status))
-
-(use-package magit-stats
-  :ensure t)
-
-(use-package git-gutter
-  :defer 0.3
-  :delight
-  :init (global-git-gutter-mode))
-
-(use-package git-timemachine
-  :defer 1
-  :delight)
 
 (use-package eldoc-box
   :ensure t
   :defer t)
 
-(use-package tempel
-  :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
-         ("M-*" . tempel-insert))
-  :custom
-  (tempel-path "~/.config/emacs/templates.el") ;; o donde quieras tus plantillas
-  ;; (add-hook 'eglot-java-mode-hook 'tempel-setup-capf)
-  ;; (add-hook 'lsp-mode-hook 'tempel-setup-capf)
-  ;; (add-hook 'lsp-mode 'tempel-setup-capf)
-  ;; (add-hook 'lsp-after-initialize-hook 'tempel-setup-capf)
-  ;; (add-hook 'lsp-on-idle-hook 'tempel-setup-capf)
-  :init
-  (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand (cons #'tempel-complete
-					    completion-at-point-functions))))
-  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
-  :config 
-  (define-key tempel-map (kbd "TAB") #'tempel-next))
-
-(use-package tempel-collection :ensure t :after tempel)
-
 (use-package apheleia
   :ensure t
   :defer t
+  :diminish apheleia-mode
   :hook
   ((prog-mode . apheleia-mode)   ;; enable in all programming modes
    (text-mode . apheleia-mode)) ;; optional, formats Markdown, etc.
+  :custom
+  ;; Respect Emacs indentation settings
+  (apheleia-formatters-respect-indent-level t)
+  ;; Hide log buffers from buffer list
+  (apheleia-hide-log-buffers t)
+  ;; Only log errors
+  (apheleia-log-only-errors t)
+  ;; Remote file formatting
+  (apheleia-remote-algorithm 'local)
   :config
   ;; Example formatters setup
   (setf (alist-get 'clang-format apheleia-formatters)
@@ -124,17 +91,25 @@ The exact color values are taken from the active Ef theme."
   (setf (alist-get 'prettier apheleia-formatters)
         '("prettier" "--stdin-filepath" filepath))
   (setf (alist-get 'ruff apheleia-formatters)
-        '("ruff" "format" "-"))
+        '("ruff" "format" "--silent" "--stdin-filename" filepath "-"))
+  (setf (alist-get 'ruff-isort apheleia-formatters)
+        '("ruff" "check" "--select" "I" "--fix" "--silent" "--stdin-filename" filepath "-"))
   ;; Language → formatter mapping
+  (setf (alist-get 'rustfmt apheleia-formatters)
+        '("rustfmt" "--quiet" "--emit" "stdout"))
+  (setf (alist-get 'rust-mode apheleia-mode-alist) 'rustfmt)
+  (setf (alist-get 'rust-ts-mode apheleia-mode-alist) 'rustfmt)
+  (setf (alist-get 'rustic-mode apheleia-mode-alist) 'rustfmt)
   (setf (alist-get 'c-mode apheleia-mode-alist) 'clang-format)
   (setf (alist-get 'c++-mode apheleia-mode-alist) 'clang-format)
   (setf (alist-get 'js-mode apheleia-mode-alist) 'prettier)
-  (setf (alist-get 'typescript-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'json-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'python-mode apheleia-mode-alist)
-	'(ruff)))
+	'(ruff-isort ruff))
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
+	'(ruff-isort ruff)))
 
 (use-package eglot
   :ensure nil
@@ -213,18 +188,6 @@ The exact color values are taken from the active Ef theme."
   (projectile-mode +1))
 
 (setopt projectile-project-root-files '(".git"))
-
-(setq treesit-extra-load-path (list (no-littering-expand-var-file-name "tree-sitter/")))
-(use-package treesit-auto
-  :ensure t
-  :custom
-  (treesit-auto-install 'prompt)
-  :config
-  ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode))
-
-(setopt treesit-font-lock-level 4)  ;; Maximum highlighting
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))

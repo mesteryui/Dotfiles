@@ -44,7 +44,7 @@
   :config
   (require 'org-tempo)
   (setopt org-todo-keywords
-	'((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
+	  '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "PAUSED(P)" "|" "DONE(d)" "CANCELLED(c)")))
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -52,13 +52,13 @@
      (python . t)
      (shell . t)))
   (os/after org-contrib
-  	  (org-babel-do-load-languages 'org-babel-load-languages 
-  				       '((ledger . t)))))
+  	    (org-babel-do-load-languages 'org-babel-load-languages 
+  					 '((ledger . t)))))
 ;; disable electric pairing for angle bracket
 (add-hook 'org-mode-hook (lambda ()
-  (setq-local electric-pair-inhibit-predicate
-          `(lambda (c)
-         (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+			   (setq-local electric-pair-inhibit-predicate
+				       `(lambda (c)
+					  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
@@ -76,24 +76,16 @@
 (setopt calendar-day-name-array
 	["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"])
 
-(setopt org-todo-keyword-faces
-	'(("TODO" . "coral")
-	  ("NEXT" . "cyan")
-	  ("WAITING" . "yellow")
-	  ("DONE" . "green")
-	  ("PAUSED" . "IndianRed1")
-	  ("CANCELLED" . "grey")))
-
 (electric-indent-mode 0)
 (setq org-edit-src-content-indentation 0
       org-src-preserve-indentation nil)
 
 (setopt org-src-tab-acts-natively t
-org-src-fontify-natively t)
+	org-src-fontify-natively t)
 
 (use-package org-appear
-:hook
-(org-mode . org-appear-mode))
+  :hook
+  (org-mode . org-appear-mode))
 ;; ;; Modern Org mode interface
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
@@ -121,17 +113,21 @@ org-src-fontify-natively t)
      ("WAITING" :background "yellow" :foreground "black")
      ("DONE" :background "green" :foreground "white")
      ("CANCELLED" :background "gray" :foreground "white")))
-  (org-modern-label-border 1))
+  (org-modern-label-border 1)
+  :config
+  (setq org-auto-align-tags nil
+        org-tags-column 0
+        org-hide-emphasis-markers t))
 (add-hook 'after-make-frame-functions
           (lambda (frame)
             (with-selected-frame frame
               (os/after org-modern
 			(set-face-attribute 'org-modern-symbol nil :family "Aporetic Sans")))))
 (use-package ox-epub
-:demand t)
+  :demand t)
 (use-package ox-reveal)
 (use-package htmlize
-:ensure t)
+  :ensure t)
 
 (use-package org-capture
   :ensure nil
@@ -139,34 +135,34 @@ org-src-fontify-natively t)
   :bind ("C-c c" . org-capture)
   :custom
   (org-capture-templates
-      `(("t" "Tarea" entry
-	 (file+headline "~/org/agenda.org" "Tareas")
-	 "* TODO %?\n %i\n  %a")
-	("n" "Nota" entry
-	 (file+headline "~/org/notes.org" "Notas")
-	 "* %? :nota:\n %i\n %a")
-	("e" "Evento" entry
-	 (file+headline "~/org/agenda.org" "Evento")
-	 "* WAITING %?\n"
-	 )
-	("j" "Diario" entry
-	 (file+datetree "~/org/diario.org")
-	 "* Titulo de Entrada: %?\n")
-	("p" "Project" entry
-	 (file+headline "~/org/proyectos.org" "Proyectos")
-	 "*  %?\n"))))
+   `(("t" "Tarea" entry
+      (file+headline "~/org/agenda.org" "Tareas")
+      "* TODO %?\n %i\n  %a")
+     ("n" "Nota" entry
+      (file+headline "~/org/notes.org" "Notas")
+      "* %? :nota:\n %i\n %a")
+     ("e" "Evento" entry
+      (file+headline "~/org/agenda.org" "Evento")
+      "* WAITING %?\n"
+      )
+     ("j" "Diario" entry
+      (file+datetree "~/org/diario.org")
+      "* Titulo de Entrada: %?\n")
+     ("p" "Project" entry
+      (file+headline "~/org/proyectos.org" "Proyectos")
+      "*  %?\n"))))
 
 (use-package org-contrib
-:after org)
+  :after org)
 
 (use-package org-auto-tangle
-:defer t
-:hook (org-mode . org-auto-tangle-mode))
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
 
 (use-package toc-org
-:demand t
-:commands toc-org-enable
-:init (add-hook 'org-mode-hook 'toc-org-enable))
+  :demand t
+  :commands toc-org-enable
+  :init (add-hook 'org-mode-hook 'toc-org-enable))
 
 (use-package org-crypt
   :ensure nil

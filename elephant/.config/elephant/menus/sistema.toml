@@ -18,6 +18,12 @@ text = "Permisos del compositor"
 actions = {"change_permissions" = "kitty --class=float_kitty -e nano $XDG_CONFIG_HOME/hypr/configs/permissions.conf"}
 
 [[entries]]
+icon = "󰍹"
+text = "Configuracion del monitor"
+actions = {"config_monitor" = "kitty --class=float_kitty -e nano $XDG_CONFIG_HOME/hypr/configs/monitors.conf"}
+
+
+[[entries]]
 icon = "󰇖"
 text="Cambiar DNS"
 actions = { "change_dns" = "kitty --class=float_kitty -e sudo nano /etc/systemd/resolved.conf" }

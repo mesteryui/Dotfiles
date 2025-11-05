@@ -82,7 +82,7 @@
   "cpu": {
     "interval": 5,
     "format": "󰍛",
-    "on-click": "kitty --class float_kitty -e btop"
+    "on-click": "kitty --class float_btop -e btop"
   },
   "clock": {
     "format": "{:L%A %H:%M}",

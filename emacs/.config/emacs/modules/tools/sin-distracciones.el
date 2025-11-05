@@ -3,7 +3,7 @@
   :commands (olivetti-mode)
   :config 
   (setq olivetti-minimum-body-width 80
-    olivetti-recall-visual-line-mode-entry-state t))
+	olivetti-recall-visual-line-mode-entry-state t))
 
 (use-package logos
   :ensure t
@@ -22,13 +22,11 @@
           (org-mode . ,(format "\\(^\\*+ +\\|^-\\{5\\}$\\|%s\\)" logos-page-delimiter))
           (markdown-mode . ,(format "\\(^\\#+ +\\|^[*-]\\{5\\}$\\|^\\* \\* \\*$\\|%s\\)" logos-page-delimiter))
           (conf-toml-mode . "^\\[")))
-;; These apply when `logos-focus-mode' is enabled.  Their value is
-  ;; buffer-local.
   (setq-default logos-hide-mode-line t)
   (setq-default logos-hide-header-line t)
   (setq-default logos-hide-buffer-boundaries t)
   (setq-default logos-hide-fringe t)
-  (setq-default logos-variable-pitch t) ; see my `fontaine' configurations
+  (setq-default logos-variable-pitch t)
   (setq-default logos-buffer-read-only nil)
   (setq-default logos-scroll-lock nil)
   (setq-default logos-olivetti t)

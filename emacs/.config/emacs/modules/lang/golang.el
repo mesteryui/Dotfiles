@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
-(use-package go-ts-mode
-  :ensure nil)
+
+(add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
 (add-hook 'go-ts-mode-hook #'eglot-ensure)
 
 (provide 'golang)
