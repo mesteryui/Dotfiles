@@ -75,7 +75,10 @@
 (use-package eldoc 
   :ensure nil
   :hook (prog-mode . eldoc-mode)
-  :custom (eldoc-message-function #'message))
+  :custom 
+(eldoc-message-function #'message)
+(eldoc-idle-delay 0.2))
+
 (elpaca-wait)
 
 (defgroup mester nil
@@ -123,10 +126,12 @@
 	keybindings ;; atajos de teclado diversos
 	;; Completion functions
 	orderless-funcs
+	eldoc-tools
 	corfu-completion ;; Sistema de autocompletado
 	vertico-funcs ;; Sistema para la completacion del minibuffer
 	embark-funcs
 	marginalia-funcs
+	consult-func
 	tempel-funcs
 	ligatures
 	;; Final Completion Functions

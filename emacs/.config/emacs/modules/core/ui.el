@@ -56,6 +56,7 @@
 		    :font "JetBrainsMono Nerd Font"
 		    :height 1.0
 		    :weight 'medium)
+
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
