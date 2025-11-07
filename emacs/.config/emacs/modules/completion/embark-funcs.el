@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*- 
 (use-package embark
   :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
   :demand t

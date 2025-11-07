@@ -19,7 +19,14 @@
 	    (lambda ()
 	      (face-remap-add-relative 'default '(:family "JetBrainsMono Nerd Font" :height 110)))))
 (use-package vterm-toggle
-  :bind (("C-c g" . vterm-toggle)))
+  :bind (("C-c g" . vterm-toggle))
+  :config
+  (add-to-list 'display-buffer-alist
+	       '("\*vterm\*"
+		 (display-buffer-in-side-window)
+		 (window-height . 0.5)
+		 (side . bottom)
+		 (slot . 0))))
 
 (provide 'vterm-term)
 ;;; vterm-term.el ends here

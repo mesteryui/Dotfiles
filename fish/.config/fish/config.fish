@@ -12,11 +12,11 @@ if status is-interactive
     #syncthing
     #syncthing install-completions | source
     sk --shell fish | source
-    end
+end
 #set -Ux GEM_HOME $HOME/.gem/ruby/(ruby -e 'print RUBY_VERSION')
 fish_config theme choose Matugen
-alias ls "lsd"
-alias cat "bat"
+alias ls lsd
+alias cat bat
 set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs "~/.gem/ruby/3.4.0/bin/"
 #set -gx XDG_RUNTIME_DIR "/run/user/$(id -u)"
 # set -Ux XDG_CONFIG_HOME $HOME/.config

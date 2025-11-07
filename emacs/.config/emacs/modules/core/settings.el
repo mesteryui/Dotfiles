@@ -18,8 +18,9 @@
 (use-package exec-path-from-shell
   :ensure t
   :init
+  (setq exec-path-from-shell-arguments nil)
   (exec-path-from-shell-initialize)
-  :config 
+  :config
   (exec-path-from-shell-copy-env "PASSWORD_STORE_DIR"))
 
 (provide 'settings)

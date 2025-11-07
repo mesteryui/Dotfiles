@@ -25,11 +25,11 @@
 				  (4 . (variable-pitch 1.1))
 				  (t . (variable-pitch 1.0))))
   (setq modus-themes-italic-constructs t)
-  (mapc #'disable-theme custom-enabled-themes)
+  ;;(mapc #'disable-theme custom-enabled-themes)
   (modus-themes-load-theme 'ef-cherie))
 
 ;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
-(global-display-line-numbers-mode -1) 
+(global-display-line-numbers-mode -1)
 (add-to-list 'default-frame-alist '(undecorated . t))
 (tool-bar-mode -1)                                            ; Desactivar la barra de herramientas
 (menu-bar-mode -1)                                            ; Desactivar la barra de menús
@@ -70,7 +70,7 @@
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
 
-;;(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
+(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
 
 
 ;; Uncomment the following line if line spacing needs adjusting.

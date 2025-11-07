@@ -41,32 +41,32 @@
     "Configure `hl-todo-keyword-faces' with Ef themes colors.
 The exact color values are taken from the active Ef theme."
     (ef-themes-with-colors
-      (setq hl-todo-keyword-faces
-            `(("HOLD" . ,yellow)
-              ("TODO" . ,red)
-              ("NEXT" . ,blue)
-              ("THEM" . ,magenta)
-              ("PROG" . ,cyan-warmer)
-              ("OKAY" . ,green-warmer)
-              ("DONT" . ,yellow-warmer)
-              ("FAIL" . ,red-warmer)
-              ("BUG" . ,red-warmer)
-              ("DONE" . ,green)
-              ("NOTE" . ,blue-warmer)
-              ("KLUDGE" . ,cyan)
-              ("HACK" . ,cyan)
-              ("TEMP" . ,red)
-              ("FIXME" . ,red-warmer)
-              ("XXX+" . ,red-warmer)
-              ("REVIEW" . ,red)
-              ("DEPRECATED" . ,yellow)))))
+     (setq hl-todo-keyword-faces
+           `(("HOLD" . ,yellow)
+             ("TODO" . ,red)
+             ("NEXT" . ,blue)
+             ("THEM" . ,magenta)
+             ("PROG" . ,cyan-warmer)
+             ("OKAY" . ,green-warmer)
+             ("DONT" . ,yellow-warmer)
+             ("FAIL" . ,red-warmer)
+             ("BUG" . ,red-warmer)
+             ("DONE" . ,green)
+             ("NOTE" . ,blue-warmer)
+             ("KLUDGE" . ,cyan)
+             ("HACK" . ,cyan)
+             ("TEMP" . ,red)
+             ("FIXME" . ,red-warmer)
+             ("XXX+" . ,red-warmer)
+             ("REVIEW" . ,red)
+             ("DEPRECATED" . ,yellow)))))
   (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
 
 (use-package transient)
 
-(use-package eldoc-box
-  :ensure t
-  :defer t)
+;; (use-package eldoc-box
+;;   :ensure t
+;;   :defer t)
 
 (use-package apheleia
   :ensure t
@@ -106,30 +106,35 @@ The exact color values are taken from the active Ef theme."
   (setf (alist-get 'json-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
+  
   (setf (alist-get 'python-mode apheleia-mode-alist)
 	'(ruff-isort ruff))
   (setf (alist-get 'python-ts-mode apheleia-mode-alist)
-	'(ruff-isort ruff)))
+	'(ruff-isort ruff))
+  (setf (alist-get 'gofmt apheleia-formatters)
+        '("gofmt"))
+  (setf (alist-get 'go-mode apheleia-mode-alist) 'gofmt)
+  (setf (alist-get 'go-ts-mode apheleia-mode-alist) 'gofmt)
+  
+  )
 
 (use-package eglot
   :ensure nil
-  :commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook (eglot-managed-mode . eldoc-box-hover-mode)
-  :config
-  (setq-default eglot-workspace-configuration
-		'((:pyright (:disableOrganizeImports nil
-						     :typeCheckingMode "basic"))
-		  (:gopls .
-			  ((staticcheck . t)
-			   (matcher . "CaseSensitive")))))              
+  ;;:commands (eglot-ensure eglor-rename eglot-format-buffer)
+  :hook
+  (eglot-managed-mode . eldoc-mode)
+  ;;(eglot-managed-mode . eldoc-box-hover-mode)
   :custom
+  (eglot-confirm-server-initiated-edits nil)
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
   (eglot-events-buffer-size 0)
+  (eglot-autoshutdown t)
+  ;;(eglot-connect-timeout 60)
+  (eglot-send-changes-idle-time 0.5)
   (eglot-auto-display-help-buffer nil)
   (eglot-confirm-server-initiated-edits nil)
   (eglot-extend-to-xref t)
-  (eglot-send-changes-idle-time 0.1)
   :bind (:map eglot-mode-map
 	      ("C-c l a" . eglot-code-actions)
 	      ("C-c l i" . eglot-code-actions-organize-imports)
@@ -139,17 +144,17 @@ The exact color values are taken from the active Ef theme."
 	      ("C-c l p" . flymake-previous-error)
 	      ("C-c l d" . eldoc))
   :config
-  (add-to-list 'eglot-server-programs
-	       `(python-ts-mode
-		 . ,(eglot-alternatives '(("pyright-langserver" "--stdio")
-					  "jedi-language-server"
-					  "pylsp"))))
+  ;;(setq jsonrpc-default-request-timeout 60)
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((python-mode python-ts-mode) . ("pylsp")))
   ;; (add-to-list 'eglot-server-programs
   ;;              '((c-mode c++-mode) . ("clangd")))
-  )
+  (with-eval-after-load 'jsonrpc
+    (fset #'jsonrpc--log-event #'ignore)))
+
+;; Opción 3: Reduce frecuencia de diagnósticos de flymake
+
 
 (use-package dape
   :defer t
@@ -204,7 +209,7 @@ The exact color values are taken from the active Ef theme."
   :config 
   (setopt flymake-fringe-indicator-position 'left-fringe)
   (setopt flymake-show-diagnostics-at-end-of-line nil)
-
+  (setopt flymake-no-changes-timeout 1.0)  ;; Espera 1 seg antes de chequear
   ;; Suppress the display of Flymake error counters when there are no errors.
   (setopt flymake-suppress-zero-counters t)
 

@@ -71,13 +71,14 @@
   (setopt url-history-file (no-littering-expand-etc-file-name "url/history")
           custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
   )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package eldoc 
+
+(use-package eldoc
   :ensure nil
   :hook (prog-mode . eldoc-mode)
-  :custom 
-(eldoc-message-function #'message)
-(eldoc-idle-delay 0.2))
+  :custom
+  (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+  (eldoc-message-function #'message)
+  (eldoc-idle-delay 0.2))
 
 (elpaca-wait)
 
@@ -117,13 +118,14 @@
       '(macros      ;; Macros personalizadas
 	performance ;; Ajustes del rendimiento
 	personal    ;; Ajustes personales diversos
-	settings
+	settings    ;; Ajustes diversos
 	ui          ;; Apariencia y UI
 	functions   ;; Funciones propias desarrolladas por mi
 	org-config  ;; Configuración de Org Mode
 	modeline
 	tools       ;; Herramientas generales
 	keybindings ;; atajos de teclado diversos
+	emacs-git
 	;; Completion functions
 	orderless-funcs
 	eldoc-tools
@@ -147,7 +149,6 @@
 	sin-distracciones ;; Modo sin distracciones
 	treesit-funcs
 	programming ;; Configuraciones base de programación
-	emacs-git
 	;; Módulos de lenguajes específicos
 	javascript
 	golang

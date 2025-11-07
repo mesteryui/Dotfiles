@@ -149,7 +149,7 @@
 
 /* Battery States - Material You Colors */
 #battery.warning {
-  background-color: alpha(@tertiary_container, 0.7);
+  background-color: @tertiary_container;
   color: @on_tertiary_container;
 }
 
@@ -159,7 +159,7 @@
 }
 
 #battery.charging {
-  background-color: alpha(@primary_container, 0.6);
+  background-color: @primary_container;
   color: @on_primary_container;
 }
 
@@ -303,10 +303,11 @@ tooltip label {
      margin-right: 15px;
 }
 #bluetooth.disabled {
-  opacity: 0.5;
+  background-color: @surface_container_highest;
+  color: @on_surface;
 }
 #bluetooth.connected {
-  background-color: alpha(@primary_container, 0.6);
+  background-color: @primary_container;
   color: @on_primary_container;
 }
 
@@ -317,7 +318,7 @@ tooltip label {
 }
 
 #network.disconnected {
-  background-color: alpha(@error_container, 0.5);
+  background-color: @error_container;
   color: @on_error_container;
 }
 

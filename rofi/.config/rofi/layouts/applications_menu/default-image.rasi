@@ -49,7 +49,7 @@ imageBoxOverlay {
 
 imageBox {
     enabled: true;
-    background-image: url("/home/oscar/Imágenes/Wallpapers/hinatsuki-mikan-machikado-mazoku-1920x1080-v0-m8mvrfloymwf1.webp", height);
+    background-image: url("/home/oscar/Imágenes/Wallpapers/wallhaven-2y7dy9.png", height);
     border-radius: 12px;
     size: 180px;
 }
