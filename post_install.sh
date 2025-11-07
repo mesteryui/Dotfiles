@@ -63,7 +63,7 @@ Include = /etc/pacman.d/chaotic-mirrorlist
 EOF
     echo "Actualizando sistema y repositorios"
     sudo pacman -Syu
-}
+} # Habilitar los repositorios de Chaotic Aur para evitarme lios
 install_software_notAUR() {
     echo "Habilitando los repositorios de Chaotic-AUR"
     enable_chaotic_AUR
