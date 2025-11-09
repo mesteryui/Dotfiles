@@ -2,6 +2,7 @@ name = "screenshot"
 name_pretty = "Screenshot Menu"
 icon="applets-screenshooter"
 global_search = true
+parent = "main"
 
 [[entries]]
 text = "Capturar Pantalla"
