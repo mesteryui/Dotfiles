@@ -130,8 +130,8 @@ window#waybar {
 }
 
 #workspaces button.active {
-  background: @primary_container;
-  color: @on_primary_container;
+  background: @primary;
+  color: @on_primary;
   box-shadow: 0 1px 4px alpha(@shadow, 0.15);
 }
 
@@ -395,7 +395,7 @@ window#waybar {
 
 /* ===== Tooltips ===== */
 tooltip {
-  background: @surface_container_highest;
+  background: @surface;
   border-radius: 8px;
   border: 1px solid @outline_variant;
   padding: 6px 10px;

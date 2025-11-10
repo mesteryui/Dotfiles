@@ -50,4 +50,3 @@ bluez-utils
 pacman-contrib
 noto-fonts
 noto-fonts-emoji
-gum

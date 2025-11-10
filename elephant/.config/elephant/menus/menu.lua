@@ -28,19 +28,14 @@ function GetEntries()
     SubMenu = "screenshot",
   },
   {
-    Text = "Waybar",
-    Icon = "",
-    SubMenu = "waybar-layout-selector",
+      Text = "Sistema",
+      Icon = "",
+      SubMenu = "system",
   },
   {
-      Text = "Fastfetch",
-      Icon = "",
-      SubMenu = "fastfetch",
-  },
-  {
-    Text = "Sistema",
-    Icon = "",
-    SubMenu = "system",
+      Text = "Temas",
+      Icon = "",
+      SubMenu = "themes",
   },
   {
     Text = "Keybindings",
