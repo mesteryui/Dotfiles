@@ -99,8 +99,7 @@ main() {
     add_configs
 
     if ! command -v paru &> /dev/null; then
-        gum confirm "Paru no está instalado. ¿Quieres instalarlo ahora? (s/n): "
-        if [ $? -eq 0 ]; then
+        if ! gum confirm "Paru no está instalado. ¿Quieres instalarlo ahora? (s/n): "; then
             install_paru
             install_AUR_software
         else

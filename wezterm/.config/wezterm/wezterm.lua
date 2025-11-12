@@ -26,8 +26,8 @@ automatically_reload_config = true,
     keys = {
     {key = "d",mods = "ALT",action = wezterm.action.SplitHorizontal { domain = "CurrentPaneDomain"}},
     -- Dividir el panel verticalmente (Ctrl + Shift + V)
-    {key = "v", mods = "ALT",action = wezterm.action.SplitVertical { domain = "CurrentPaneDomain" },},
- {key = "t", mods = "ALT",action = wezterm.action.SpawnTab "CurrentPaneDomain",},
+    	{key = "v", mods = "ALT",action = wezterm.action.SplitVertical { domain = "CurrentPaneDomain" },},
+	 {key = "t", mods = "ALT",action = wezterm.action.SpawnTab "CurrentPaneDomain",},
 	{key="q", mods="ALT", action=act.CloseCurrentTab{confirm = true}},
         {key="1", mods="CTRL", action=act{ActivateTab=0}},
         {key="2", mods="CTRL", action=act{ActivateTab=1}},

@@ -17,7 +17,7 @@ function ObtenerFastfetchLayoutDir()
     if dir then
 	return dir .. "/fastfetch/layouts/"
     else
-	return os.getenv("HOME") .. "/fastfetch/layouts/"
+	return os.getenv("HOME") .. "/.conifig/fastfetch/layouts/"
     end
 end
 function EliminarExtension(line)

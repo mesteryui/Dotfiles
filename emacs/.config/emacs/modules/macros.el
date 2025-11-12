@@ -26,6 +26,7 @@ Use this function via a hook."
 (add-hook 'org-capture-after-finalize-hook #'os-window-delete-popup-frame)
 
 (defmacro os/add-to-list (list &rest elements)
+  "Añadir multiples elementos al principio de una lista, siendo el ultimo en añadirse el primero al final ya que cada metodo se añade al principio"
   `(progn ,@(seq-map (lambda (e) `(add-to-list ',list ,e)) elements)))
 
 (defmacro os/after (package &rest body)
@@ -58,7 +59,7 @@ KEY: Es el conjunto de teclas FUNC: Es la funcion que queremos asignar al atajo"
   `(global-set-key (kbd ,key) #',func))
 
 (defmacro gbind-multiple (&rest binds)
-  "Bind globally multiple keys"
+  "Bind globally multiple BINDS, between keys and functions"
   `(progn
      ,@(mapcar (lambda (bind) `(global-set-key (kbd ,(car bind)) #',(cdr bind))) binds)))
 

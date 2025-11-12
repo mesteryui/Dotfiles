@@ -18,9 +18,9 @@ output_path = '~/.config/Kvantum/matugen/matugen.svg'
 input_path = './templates/css_template.conf'
 output_path = '~/.config/wlogout/colors.css'
 
-#[templates.ghostty]
-#input_path = './templates/ghostty.conf'
-#output_path = "~/.config/ghostty/themes/matugen.conf"
+[templates.ghostty]
+input_path = './templates/ghostty.conf'
+output_path = "~/.config/ghostty/themes/matugen.conf"
 
 [templates.walker]
 input_path = '~/.config/matugen/templates/css_template.conf'

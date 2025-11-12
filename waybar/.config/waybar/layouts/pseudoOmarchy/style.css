@@ -79,7 +79,8 @@ tooltip {
 }
 #custom-notification {
   min-width: 12px;
-  font-size: 13px;
+  font-size: 16px;
+  font-family: "Material Icons";
   margin: 0 7.5px;       /* mantiene separación lateral */
 }
 
