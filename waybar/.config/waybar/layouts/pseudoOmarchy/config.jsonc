@@ -19,7 +19,7 @@
    // "format": "",
      "format": "",
     "on-click": "walker -m menus:main",
-    "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
+    "tooltip-format": "Omarchy Menu\n\nAlt + Space"
   },
   "custom/weather": {
     "format": "{}ºC",
@@ -62,14 +62,7 @@
     "exec": "swaync-client -swb",
     "on-click": "swaync-client -t -sw",
     "on-click-right": "swaync-client -d -sw",
-    "escape": true
-  },
-  "hyprland/workspaces#name": {
-    "on-click":"activate",
-    "format": "{name}",
-    "format-icons": {
-      "active":"󱓻"
-    },
+    "escape": true,
   },
   "custom/update": {
     "format": "  {}",
@@ -101,7 +94,7 @@
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "kitty --class float_kitty -e impala"
+    "on-click": "$TERM --class=local.floating -e impala"
   },
   "battery": {
     "format": "{capacity}% {icon}",
@@ -116,7 +109,7 @@
     "tooltip-format-discharging": "{power:>1.0f}W↓ {capacity}%",
     "tooltip-format-charging": "{power:>1.0f}W↑ {capacity}%",
     "interval": 5,
-    "on-click": "omarchy-menu power",
+    "on-click": "walker -m menus:power-profiles",
     "states": {
       "warning": 20,
       "critical": 10

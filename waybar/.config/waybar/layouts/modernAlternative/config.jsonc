@@ -68,9 +68,6 @@
       "9": "9",
       "active": "󱓻"
     },
-    "persistent-workspaces": {
-      "*": 3
-    }
   },
  "hyprland/submap": {
    "format": "{}",
