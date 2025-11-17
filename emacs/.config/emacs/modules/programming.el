@@ -118,6 +118,12 @@ The exact color values are taken from the active Ef theme."
   
   )
 
+(use-package eglot-tempel
+  :preface (eglot-tempel-mode)
+  :init
+  (eglot-tempel-mode t))
+
+
 (use-package eglot
   :ensure nil
   ;;:commands (eglot-ensure eglor-rename eglot-format-buffer)
@@ -128,6 +134,7 @@ The exact color values are taken from the active Ef theme."
   (eglot-confirm-server-initiated-edits nil)
   (eglot-sync-connect nil)
   (eglot-autoshutdown t)
+  (eglot-ignored-server-capabilities '(:documentHighlightProvider))
   (eglot-events-buffer-size 0)
   (eglot-autoshutdown t)
   ;;(eglot-connect-timeout 60)
@@ -144,7 +151,7 @@ The exact color values are taken from the active Ef theme."
 	      ("C-c l p" . flymake-previous-error)
 	      ("C-c l d" . eldoc))
   :config
-  ;;(setq jsonrpc-default-request-timeout 60)
+  (setq jsonrpc-default-request-timeout 60)
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
   (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
   ;; (add-to-list 'eglot-server-programs

@@ -8,10 +8,12 @@
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
   (corfu-scroll-margin 5)
-  (corfu-auto-delay 0.1)
+  (corfu-auto-delay 0.2)
   (corfu-quit-no-match 'separator)
   (corfu-min-width 20)
   (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match 'separator)
+  (corfu-auto-trigger ".") ;; Custom trigger characters
   ;;(corfu-preselect-first t)
   (completion-styles '(orderless basic)) ;; IDE-like fuzzy matching
   (corfu-popupinfo-delay '(1.25 . 0.5))
@@ -22,11 +24,11 @@
   (corfu-popupinfo-mode t)       ;; Show documentation popup
   (os/after savehist
 	    (add-to-list 'savehist-additional-variables 'corfu-history))
-   :hook
-    (elpaca-after-init . (lambda ()
-                           (global-corfu-mode)
-                           (corfu-history-mode)
-                           (corfu-popupinfo-mode))))      ; activación global
+  :hook
+  (elpaca-after-init . (lambda ()
+			 (global-corfu-mode)
+			 (corfu-history-mode)
+			 (corfu-popupinfo-mode))))      ; activación global
 ;; (use-package corfu-terminal
 ;;    :after corfu
 ;;    :if (< emacs-major-version 31)
@@ -62,11 +64,11 @@
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p))
 (use-package completion-preview 
-:ensure nil
-:init
-(setq completion-preview-overlay-enable nil)
-(setq completion-preview-inline-enable t)
-(global-completion-preview-mode 1))
+  :ensure nil
+  :init
+  (setq completion-preview-overlay-enable nil)
+  (setq completion-preview-inline-enable t)
+  (global-completion-preview-mode 1))
 (use-package nerd-icons-corfu
   :after (corfu nerd-icons)
   :config

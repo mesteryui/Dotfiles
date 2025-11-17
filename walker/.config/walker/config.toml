@@ -148,3 +148,18 @@ clipboard = [
   { action = "toggle_images", global = true, label = "toggle images", bind = "ctrl i", after = "ClearReload" },
   { action = "edit", bind = "ctrl o" },
 ]
+
+[providers.sets.menu]
+default = [
+  "menus:main",
+  "menus:keybinds",
+  "menus:themes",
+  "menus:power-profiles",
+  "menus:fastfetch",
+  "menus:waybar-layout-selector",
+  "menus:system",
+  "menus:screenshot",
+  "menus:setup",
+]
+empty = ["menus:menu"]
+max_results = 50

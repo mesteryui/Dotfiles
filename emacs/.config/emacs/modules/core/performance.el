@@ -18,7 +18,7 @@
 	    (add-to-list 'so-long-minor-modes 'display-line-numbers-mode)
 	    (add-to-list 'so-long-minor-modes 'hl-line-mode))
 
-;; Only add mode replacements if the variable exists
+	  ;; Only add mode replacements if the variable exists
 	  (when (boundp 'so-long-action-alist)
 	    (setq so-long-action-alist
 		  (append so-long-action-alist

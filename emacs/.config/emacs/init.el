@@ -157,6 +157,7 @@
 	pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
 	ruby
 	rust
+	nimlang
 	common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
 	;;java ;; Lenguaje de programacion Java
 	))

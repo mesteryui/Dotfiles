@@ -23,5 +23,6 @@ alias emacsc="emacsclient -c -a emacs"
 
 #[ -t 1 ] && exec fish
 ## Fin de archivo 
-
 #source /home/oscar/.config/broot/launcher/bash/br
+source /usr/share/bash-completion/completions/git  # En Ubuntu/Debian
+

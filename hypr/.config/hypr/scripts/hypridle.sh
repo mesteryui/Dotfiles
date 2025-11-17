@@ -10,14 +10,14 @@
 SERVICE="hypridle"
 if [[ "$1" == "status" ]]; then
     sleep 1
-    if pgrep -x "$SERVICE" >/dev/null ;then
+    if systemctl is-active --user --quiet "$SERVICE" >/dev/null ;then
     	echo '{"text": "  On", "tooltip": "Hypridle esta activado"}'       
     else
         echo '{"text": "  Off", "tooltip": "Hypridle esta desactivado"}'
     fi
 fi
 if [[ "$1" == "toggle" ]]; then
-    if pgrep -x "$SERVICE" >/dev/null ;then
+    if systemctl is-active --user --quiet "$SERVICE" >/dev/null ;then
         killall hypridle
     else
         hypridle

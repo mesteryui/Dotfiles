@@ -20,7 +20,8 @@ org-mode
 (author "#+author: " (r "Introduzca nombre del autor") q)
 (table "|  " r>  " |")
 js-mode
-(func "function " (r> "nombreFuncion") "(" r> ") {" n "\t" q n "}")
+(func "function " (r> "nombreFuncion") "(" r> ") {" n "\t" q n "}"
+      :doc "JavaScript fucntion")
 (apiQuest "fetch(" r> ").then(" r> ")")
 
 html-mode mhtml-mode
@@ -42,4 +43,5 @@ emacs-lisp-mode
 (fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")
 
 python-mode
-(supinit "super().__init__()")
+(supinit "super().__init__()"
+	 :doc "Call superconstructor in Python")
