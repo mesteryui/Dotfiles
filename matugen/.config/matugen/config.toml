@@ -18,9 +18,14 @@ output_path = '~/.config/Kvantum/matugen/matugen.svg'
 input_path = './templates/css_template.conf'
 output_path = '~/.config/wlogout/colors.css'
 
+[templates.neovim-nvchad]
+input_path = '~/.config/matugen/templates/nvchad-colors.lua'
+output_path = '~/.config/nvim/lua/plugins/themes/matugen.lua'
+
 [templates.ghostty]
 input_path = './templates/ghostty.conf'
-output_path = "~/.config/ghostty/themes/matugen.conf"
+output_path = "~/.config/ghostty/themes/Matugen"
+post_hook='pkill -SIGUSR2 ghostty'
 
 [templates.walker]
 input_path = '~/.config/matugen/templates/css_template.conf'

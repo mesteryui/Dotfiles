@@ -50,6 +50,11 @@ function GetEntries()
     SubMenu = "setup",
   },
   {
+      Text = "Packages",
+      Icon = "󰏖",
+      SubMenu = "packages",
+  },
+  {
     Text = "Juegos y otras cosas",
     Icon = "󰊗",
     SubMenu = "games",

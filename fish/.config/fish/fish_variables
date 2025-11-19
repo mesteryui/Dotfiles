@@ -2,7 +2,7 @@
 # VERSION: 3.0
 SETUVAR --export EDITOR:emacsclient\x20\x2dt\x20\x2da\x20\x27\x27
 SETUVAR --export FZF_DEFAULT_OPTS:\x2d\x2dcolor\x3dbg\x2b\x3a\x23313244\x2cbg\x3a\x231e1e2e\x2cspinner\x3a\x23f5e0dc\x2chl\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dfg\x3a\x23cdd6f4\x2cheader\x3a\x23f38ba8\x2cinfo\x3a\x23cba6f7\x2cpointer\x3a\x23f5e0dc\x20\x2d\x2dcolor\x3dmarker\x3a\x23b4befe\x2cfg\x2b\x3a\x23cdd6f4\x2cprompt\x3a\x23cba6f7\x2chl\x2b\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dselected\x2dbg\x3a\x2345475a\x20\x2d\x2dmulti
-SETUVAR --export GEMINI_API_KEY:AIzaSyBAstnGRr80VPCM132aS3nDVWhVhVoYDUk
+SETUVAR --export GEMINI_API_KEY:AIzaSyB4oTiU3KNM6FV0PM4bu9WNAiWWiaUamM8
 SETUVAR --export GEM_HOME:/home/oscar/\x2egem/ruby/3\x2e4\x2e5
 SETUVAR --export GSETTINGS_SCHEMA_DIR:/usr/share/glib\x2d2\x2e0/schemas
 SETUVAR --export LOCALE:es_ES\x2eUTF\x2d8

@@ -33,3 +33,8 @@ icon = "applets-screenshooter"
 text = "Capturar Ventana Activa"
 actions = { "cap_window" = "sleep 0.5 && hyprshot -m window -m active" }
 icon = "applets-screenshooter"
+
+[[entries]]
+text = "Caputrar con Anotaciones"
+actions = { "cap_ann" = "grim - | satty --filename - --output-filename $HYPRSHOT_DIR/satty-annotated-$(date +'%Y-%m-%d-%H%M%S').png" }
+icon = "applets-screenshooter"

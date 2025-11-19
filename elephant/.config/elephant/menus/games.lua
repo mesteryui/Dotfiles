@@ -9,7 +9,7 @@ function GetEntries()
     Text = "Steam",
     Icon = "󰓓",
     Actions = {
-     ["steam"] = "kitty --class=float_kitty -e steam-setup.sh"
+     ["steam"] = "kitty --class=float_kitty -e steam-setup"
     },
   },
  }
