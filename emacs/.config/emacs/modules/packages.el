@@ -153,7 +153,8 @@
 (setopt dictionary-server "dict.org")
 
 (use-package treemacs
-  :config
+  :defer t
+  :init
   (global-set-key (kbd "C-c d") 'treemacs)
   (setopt treemacs-hide-gitignored-files-mode t)
   treemacs-project-follow-cleanup t

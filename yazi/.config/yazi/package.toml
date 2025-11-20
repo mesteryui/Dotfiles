@@ -1,12 +1,7 @@
 [[plugin.deps]]
-use = "atareao/mdcat"
-rev = "c4d6f8b"
-hash = "794667b1e3e57e8d308e24dee9fa988d"
-
-[[plugin.deps]]
 use = "Ape/mediainfo"
 rev = "df17c4f"
-hash = "74c2b0063f30c6b4e4ede533f9ca03f2"
+hash = "b25c2acb08d9ca5ff5cf71ea764fed8d"
 
 [[plugin.deps]]
 use = "Rolv-Apneseth/starship"
@@ -17,6 +12,11 @@ hash = "5614c46d5de76623c283d415bfac8025"
 use = "yazi-rs/plugins:chmod"
 rev = "9a09505"
 hash = "2f1053f89d1a301a648ab181d0948e38"
+
+[[plugin.deps]]
+use = "atareao/mdcat"
+rev = "485fafc"
+hash = "35aa47114658c135124f9ba7f44b9b43"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"

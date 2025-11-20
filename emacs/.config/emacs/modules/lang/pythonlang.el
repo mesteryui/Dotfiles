@@ -2,7 +2,6 @@
 (use-package python
   :ensure nil
   ;;:hook (python-ts-mode-hook eglot-ensure)
-  :mode (("\\.py\\'" . python-ts-mode))
   :custom
   (python-indent-guess-indent-offset nil)
   :config
@@ -11,7 +10,7 @@
     "Aplicar configuraciones de python especificas para eglot"
     (setq-local eglot-workspace-configuration
 		'(:python (:pythonPath "python"
-				       :analysis (:typeCheckingMode "basic"
+				       :analysis (:typeCheckingMode "off"
 								    :autoSearchPaths t
 								    :useLibraryCodeForTypes t))))
     (eglot-ensure))
@@ -21,9 +20,9 @@
   :ensure t
   :hook (python-base-mode . pet-mode))
 
-(use-package flymake-ruff
-  :ensure t
-  :hook (eglot-managed-mode . flymake-ruff-load))
+;; (use-package flymake-ruff
+;;   :ensure t
+;;   :hook (eglot-managed-mode . flymake-ruff-load))
 
 ;; -*- lexical-binding: t; -*-
 (use-package uv
