@@ -149,7 +149,7 @@ clipboard = [
   { action = "edit", bind = "ctrl o" },
 ]
 
-[providers.sets.menu]
+[providers.sets.hyprsphere]
 default = [
   "menus:main",
   "menus:keybinds",
@@ -161,5 +161,5 @@ default = [
   "menus:screenshot",
   "menus:setup",
 ]
-empty = ["menus:menu"]
+empty = ["menus:main"]
 max_results = 50

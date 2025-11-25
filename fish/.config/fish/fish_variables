@@ -1,59 +1,42 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR --export EDITOR:emacsclient\x20\x2dt\x20\x2da\x20\x27\x27
-SETUVAR --export FZF_DEFAULT_OPTS:\x2d\x2dcolor\x3dbg\x2b\x3a\x23313244\x2cbg\x3a\x231e1e2e\x2cspinner\x3a\x23f5e0dc\x2chl\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dfg\x3a\x23cdd6f4\x2cheader\x3a\x23f38ba8\x2cinfo\x3a\x23cba6f7\x2cpointer\x3a\x23f5e0dc\x20\x2d\x2dcolor\x3dmarker\x3a\x23b4befe\x2cfg\x2b\x3a\x23cdd6f4\x2cprompt\x3a\x23cba6f7\x2chl\x2b\x3a\x23f38ba8\x20\x2d\x2dcolor\x3dselected\x2dbg\x3a\x2345475a\x20\x2d\x2dmulti
 SETUVAR --export GEMINI_API_KEY:AIzaSyB4oTiU3KNM6FV0PM4bu9WNAiWWiaUamM8
-SETUVAR --export GEM_HOME:/home/oscar/\x2egem/ruby/3\x2e4\x2e5
-SETUVAR --export GSETTINGS_SCHEMA_DIR:/usr/share/glib\x2d2\x2e0/schemas
-SETUVAR --export LOCALE:es_ES\x2eUTF\x2d8
 SETUVAR --export PASSWORD_STORE_DIR:/home/oscar/\x2elocal/share/pass
-SETUVAR --export --path QT_PLUGIN_PATH:/usr/lib/qt6/plugins
-SETUVAR --export QT_SCALE_FACTOR:1
-SETUVAR --export QT_STYLE_OVERRIDE:kvantum
-SETUVAR --export XDG_CACHE_HOME:/home/oscar/\x2ecache
-SETUVAR --export XDG_CONFIG_HOME:/home/oscar/\x2econfig
-SETUVAR --export --path XDG_DATA_DIRS:/home/oscar/\x2elocal/share/flatpak/exports/share\x1e/var/lib/flatpak/exports/share\x1e/usr/local/share\x1e/usr/share\x1e/home/oscar/\x2elocal/share
-SETUVAR --export XDG_DATA_HOME:/home/oscar/\x2elocal/share
-SETUVAR --export XDG_STATE_HOME:/home/oscar/\x2elocal/state
 SETUVAR __fish_initialized:3800
-SETUVAR _fisher_upgraded_to_4_4:\x1d
-SETUVAR fish_color_autosuggestion:8f9284
-SETUVAR fish_color_cancel:ffb4ab
-SETUVAR fish_color_command:b6d086
-SETUVAR fish_color_comment:8f9284
-SETUVAR fish_color_cwd:384d12
+SETUVAR fish_color_autosuggestion:brblack
+SETUVAR fish_color_cancel:\x2dr
+SETUVAR fish_color_command:normal
+SETUVAR fish_color_comment:red
+SETUVAR fish_color_cwd:green
 SETUVAR fish_color_cwd_root:red
-SETUVAR fish_color_end:c1caab
-SETUVAR fish_color_error:ffb4ab
-SETUVAR fish_color_escape:00201d
+SETUVAR fish_color_end:green
+SETUVAR fish_color_error:brred
+SETUVAR fish_color_escape:brcyan
 SETUVAR fish_color_history_current:\x2d\x2dbold
-SETUVAR fish_color_host:1f4e49
-SETUVAR fish_color_host_remote:c1caab
-SETUVAR fish_color_keyword:bcece5
-SETUVAR fish_color_match:\x2d\x2dbackground\x3dbrblue
-SETUVAR fish_color_normal:e3e3d8
-SETUVAR fish_color_operator:bcece5
-SETUVAR fish_color_option:b6d086
-SETUVAR fish_color_param:a0d0c9
-SETUVAR fish_color_quote:c1caab
-SETUVAR fish_color_redirection:a0d0c9
-SETUVAR fish_color_search_match:\x2d\x2dbackground\x3d2f312a
-SETUVAR fish_color_selection:\x2d\x2dbackground\x3d2f312a
-SETUVAR fish_color_status:ffb4ab
-SETUVAR fish_color_user:414a32
+SETUVAR fish_color_host:normal
+SETUVAR fish_color_host_remote:yellow
+SETUVAR fish_color_normal:normal
+SETUVAR fish_color_operator:brcyan
+SETUVAR fish_color_param:cyan
+SETUVAR fish_color_quote:yellow
+SETUVAR fish_color_redirection:cyan\x1e\x2d\x2dbold
+SETUVAR fish_color_search_match:white\x1e\x2d\x2dbackground\x3dbrblack\x1e\x2d\x2dbold
+SETUVAR fish_color_selection:white\x1e\x2d\x2dbackground\x3dbrblack\x1e\x2d\x2dbold
+SETUVAR fish_color_status:red
+SETUVAR fish_color_user:brgreen
 SETUVAR fish_color_valid_path:\x2d\x2dunderline
 SETUVAR fish_key_bindings:fish_default_key_bindings
 SETUVAR fish_pager_color_background:\x1d
-SETUVAR fish_pager_color_completion:b6d086
-SETUVAR fish_pager_color_description:c5c8b9
-SETUVAR fish_pager_color_prefix:a0d0c9
-SETUVAR fish_pager_color_progress:b6d086
+SETUVAR fish_pager_color_completion:normal
+SETUVAR fish_pager_color_description:yellow\x1e\x2di
+SETUVAR fish_pager_color_prefix:normal\x1e\x2d\x2dbold\x1e\x2d\x2dunderline
+SETUVAR fish_pager_color_progress:brwhite\x1e\x2d\x2dbackground\x3dcyan\x1e\x2d\x2dbold
 SETUVAR fish_pager_color_secondary_background:\x1d
 SETUVAR fish_pager_color_secondary_completion:\x1d
 SETUVAR fish_pager_color_secondary_description:\x1d
 SETUVAR fish_pager_color_secondary_prefix:\x1d
-SETUVAR fish_pager_color_selected_background:\x2d\x2dbackground\x3dc1caab
-SETUVAR fish_pager_color_selected_completion:2b331d
-SETUVAR fish_pager_color_selected_description:2b331d
-SETUVAR fish_pager_color_selected_prefix:013733
+SETUVAR fish_pager_color_selected_background:\x2dr
+SETUVAR fish_pager_color_selected_completion:\x1d
+SETUVAR fish_pager_color_selected_description:\x1d
+SETUVAR fish_pager_color_selected_prefix:\x1d
 SETUVAR fish_user_paths:\x2dg\x1e/home/oscar/\x2ecargo/bin\x1e/home/oscar/\x2elocal/bin\x1e/home/oscar/\x1e/usr/local/bin\x1e/home/oscar/\x2elocal/share/pipx/venvs\x1e\x7e/\x2egem/ruby/3\x2e4\x2e0/bin/

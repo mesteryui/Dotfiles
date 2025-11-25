@@ -245,7 +245,7 @@ window#waybar {
 
 /* ===== Pulseaudio ===== */
 #pulseaudio {
-  background: @surface_container_high;
+  background: @surface;
   color: @on_surface;
 }
 
@@ -261,7 +261,7 @@ window#waybar {
 
 /* ===== Battery ===== */
 #battery {
-  background: @surface_container_high;
+  background: @surface;
   color: @on_surface;
 }
 

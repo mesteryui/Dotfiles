@@ -7,7 +7,7 @@
 
 
 * {
-    image: "/home/oscar/Imágenes/Wallpapers/Anime/Anime_wallhaven-2y7dy9.png";
+    image: "/home/oscar/Imágenes/Wallpapers/Anime_wallhaven-2y7dy9.png";
     primary: #ffb1c0;
     primary-fixed: #ffd9df;
     primary-fixed-dim: #ffb1c0;

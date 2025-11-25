@@ -2,13 +2,12 @@
 @import "../../colors.css";
 * {
     font-family: "Roboto", "Material Symbols Outlined", sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     border: none;
     border-radius: 0;
     min-height: 0;
 }
-
 
 /* Barra principal - Compacta para ahorrar espacio vertical */
 window#waybar {
@@ -123,7 +122,7 @@ window#waybar {
 
 /* Clock - Surface Container Highest para destacar */
 #clock {
-    background-color: @surface_container_high;
+    background-color: @surface_container_highest;
     color: @on_surface;
     font-weight: 600;
     padding: 4px 16px;
@@ -197,7 +196,6 @@ window#waybar {
 /* Network - Estados visuales */
 #network {
     padding: 4px 12px;
-    padding-right: 15px;
 }
 
 #network.disconnected {
@@ -231,8 +229,8 @@ window#waybar {
 
 /* Notifications - Estados de notificación */
 #custom-notification {
-    font-family: "Material Icons";
     padding: 4px 12px;
+    font-family: "Material Icons";
     font-size: 15px;
 }
 
@@ -269,7 +267,7 @@ window#waybar {
 }
 
 #tray menu menuitem {
-    background-color: @surface;
+    background-color: transparent;
     color: @on_surface;
     border-radius: 8px;
     padding: 6px 12px;
@@ -295,7 +293,7 @@ window#waybar {
 
 /* Tooltips - Material You Surface Container */
 tooltip {
-    background-color: @surface_container;
+    background-color: @surface;
     color: @on_surface;
     border: 1px solid @outline_variant;
     border-radius: 8px;

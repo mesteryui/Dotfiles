@@ -50,7 +50,7 @@
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",
-    "on-click": "ghostty --class=local.floating -e ~/.config/hypr/scripts/update.sh",
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e ~/.config/hypr/scripts/update.sh",
   },
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -126,7 +126,7 @@
         "days": "<span color='#ecc6d9'>{}</span>",
         "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
         "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-        "today": "<span color='#ff6699'><b>{}</b></span>"
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
       }
     },
     "on-click-right": "omarchy-cmd-tzupdate"
@@ -142,7 +142,7 @@
     "tooltip-format-ethernet": "Ethernet\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
     "tooltip-format-disconnected": "Desconectado",
     "interval": 3,
-    "on-click": "ghostty --class=local.floating -e impala"
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e impala"
   },
   "battery": {
     "interval": 10,
@@ -166,7 +166,7 @@
     "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} Conectado(s)\n\n{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
     "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
-    "on-click": "ghostty --class=local.floating -e bluetui"
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e bluetui"
   },
 
   "pulseaudio": {
@@ -196,7 +196,7 @@
   },
 
   "custom/expand-icon": {
-    "format": "󰅂",
+    "format": "",
     "tooltip": false
   },
 

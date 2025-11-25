@@ -1,4 +1,5 @@
 export SDL_VIDEODRIVER=wayland
+export TERMINAL=xdg-terminal-exec
 export PATH="$HOME/.local/share/hyprsphere/bin:$PATH"
 export XDG_SESSION_TYPE=wayland
 export GDK_SCALE=1.75

@@ -8,21 +8,14 @@ SearchName = true
 
 function GetEntries()
  return {
+     {
+	    Text = "Update",
+	    Icon = "",
+	    Actions = {
+		["update"] = "ghostty --class=local.floating -e paru -Syu"
+	    },
+	},
    {
-    Text = "Update",
-    Icon = "",
-    Actions = {
-	["update"] = "ghostty --class=local.floating -e paru -Syu"
-    },
-  },
-  {
-    Text = "About",
-    Icon = "",
-    Actions = {
-	["about_system"] = "ghostty --class=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
-    },
-  },
-  {
     Text = "Captura",
     Icon = "󰹑",
     SubMenu = "screenshot",
@@ -33,29 +26,12 @@ function GetEntries()
       SubMenu = "system",
   },
   {
-      Text = "Temas",
+      Text = "Apariencia",
       Icon = "",
       SubMenu = "themes",
   },
   {
-    Text = "Keybindings",
-    Icon = "",
-    Actions = {
-      ["keybindings"] = "menubinds.sh"
-    },
-  },
-  {
-    Text = "Setup",
-    Icon = "󰉉",
-    SubMenu = "setup",
-  },
-  {
-      Text = "Packages",
-      Icon = "󰏖",
-      SubMenu = "packages",
-  },
-  {
-    Text = "Juegos y otras cosas",
+    Text = "Juegos",
     Icon = "󰊗",
     SubMenu = "games",
   },

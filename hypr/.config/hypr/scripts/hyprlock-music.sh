@@ -153,21 +153,24 @@ trim_string() {
 # Time Conversion Functions
 # ============================================================================
 
-# Convert various time formats to seconds
+# Convert various time formats to seconds (with proper rounding DOWN)
 parse_time_to_seconds() {
   local time="$1"
   
   # Empty or invalid
   [[ -z "$time" ]] && echo "0" && return
   
-  # Remove any non-numeric characters except dots
-  time=$(echo "$time" | tr -cd '0-9.')
+  # Remove any non-numeric characters except dots and minus
+  time=$(echo "$time" | tr -cd '0-9.-')
   
   [[ -z "$time" ]] && echo "0" && return
 
   # Already in seconds (playerctl position output)
-  if [[ "$time" =~ ^[0-9]+\.?[0-9]*$ ]]; then
-    printf '%.0f' "$time" 2>/dev/null || echo "0"
+  if [[ "$time" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+    # Use awk for proper floor operation (truncate, don't round)
+    local result
+    result=$(awk -v t="$time" 'BEGIN { print (t < 0) ? 0 : int(t) }')
+    echo "$result"
   else
     echo "0"
   fi
@@ -228,7 +231,19 @@ get_current_position_seconds() {
 
   local pos
   pos=$(run_with_timeout playerctl -p "$player" position 2>/dev/null) || true
-  parse_time_to_seconds "$pos"
+  
+  local pos_seconds
+  pos_seconds=$(parse_time_to_seconds "$pos")
+  
+  # Cap position at track length to prevent overflow
+  local length_seconds
+  length_seconds=$(get_track_length_seconds)
+  
+  if [[ $length_seconds -gt 0 && $pos_seconds -gt $length_seconds ]]; then
+    echo "$length_seconds"
+  else
+    echo "$pos_seconds"
+  fi
 }
 
 # Get current position in mm:ss
@@ -253,6 +268,11 @@ calculate_progress_percent() {
   length_sec=$(get_track_length_seconds)
 
   if [[ "$length_sec" -gt 0 && "$pos_sec" -ge 0 ]]; then
+    # Ensure position doesn't exceed length
+    if [[ $pos_sec -gt $length_sec ]]; then
+      pos_sec=$length_sec
+    fi
+    
     local percent=$((pos_sec * 100 / length_sec))
     # Cap at 100
     [[ $percent -gt 100 ]] && percent=100
@@ -279,9 +299,6 @@ generate_progress_bar() {
     printf '<span foreground="#%s">%s</span>' "$COLOR_REMAINING" "$empty_bar"
     return
   fi
-
-  # Treat 95%+ as 100% to handle players switching tracks early
-  [[ $percent -ge 95 ]] && percent=100
 
   # Calculate filled segments
   local progress=$((percent * BAR_LENGTH / 100))

@@ -46,6 +46,7 @@ function GetEntries()
     local current_layout = ObtenerLayoutActual()
     if handle then
         for line in handle:lines() do
+	    line = line:gsub("\n","")
             -- Usa solo el nombre del archivo, quita extensiones si quieres
 	    local primera_mayuscula = line:find("%u", 2) -- busca mayúscula después del primer carácter
             local nombre

@@ -1,5 +1,5 @@
 Name = "themes"
-NamePretty = "Temas"
+NamePretty = "Apariencia"
 HideFromProviderList = true
 SearchName = true
 Icon = ""

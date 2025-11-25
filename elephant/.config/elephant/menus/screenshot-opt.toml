@@ -1,7 +1,7 @@
 name = "screenshot"
 name_pretty = "Screenshot Menu"
 icon="applets-screenshooter"
-global_search = true
+global_search = false
 parent = "main"
 
 [[entries]]

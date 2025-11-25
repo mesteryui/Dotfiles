@@ -44,11 +44,15 @@ function GetEntries()
 		    Text = nombre,
 		    Subtext = "Current",
 		    Value = line,
+		    Preview = dir.."../".."previews/"..name..".png" or "",
+		    PreviewType = "file",
 		})
 	    else
 		table.insert(entries,{
 		    Text = nombre,
 		    Value = line,
+		    Preview = dir.."../".."previews/"..name..".png" or "",
+		    PreviewType = "file",
 		})
 	    end
 	end

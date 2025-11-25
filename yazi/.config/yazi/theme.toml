@@ -24,7 +24,7 @@ count_cut = { fg = "#2c1700", bg = "#ffdcbc" }
 count_selected = { fg = "#551d2c", bg = "#ecbe91" }
 
 # Border
-border_symbol = "│"
+border_symbol = " "
 border_style  = { fg = "#ffb1c0" }
 
 # : ]]]
@@ -70,7 +70,6 @@ permissions_s = { fg = "#ff405e" }
 [select]
 border = { fg = "#ffb1c0" }
 active = { fg = "#ecbe91", bold = true }
-inactive = {}
 
 # : ]]]
 
@@ -80,6 +79,15 @@ inactive = {}
 [input]
 border = { fg = "#ffb1c0" }
 value = { fg = "#efdee0" }
+
+# : ]]]
+
+# : Tabs [[[
+
+[tabs]
+active = { fg = "#ffb1c0", bold = true, bg = "#191113" }
+inactive = { fg = "#e4bdc3", bg = "#191113" }
+sep_inner = { open = "[", close = "]" }
 
 # : ]]]
 
@@ -163,3 +171,13 @@ rules = [
 ]
 
 # : ]]]
+[icon]
+prepend_dirs = [
+  { name = "Descargas", text = "" },
+  { name = "Escritorio", text = ""},
+  { name = "Música", text = "󰝚"},
+  { name = "Documentos", text = ""},
+  { name = "Vídeos", text = ""},
+  { name = "Imágenes", text = "󰋹"}
+]
+

@@ -38,6 +38,11 @@
     border: 2px solid @primary;
 }
 
+#workspaces button.focused {
+    background-color: @primary;  /* Cambia este color de fondo */
+    color: @on_primary;          /* Cambia este color de texto */
+}
+
 #workspaces button.active {
     color: @on_primary;
     background: @primary;

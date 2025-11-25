@@ -1,5 +1,5 @@
 Name = "games"
-NamePretty = "Juegos y otras cosas"
+NamePretty = "Juegos"
 Icon = "󰊗"
 FixedOrder = true
 
