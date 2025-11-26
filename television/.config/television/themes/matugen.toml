@@ -1,0 +1,20 @@
+# Television Colors
+# Generated with Matugen
+
+background = '#191113'
+border_fg = '#9f8c8f'
+text_fg = '#efdee0'
+dimmed_text_fg = '#d6c2c4'
+input_text_fg = '#e4bdc3'
+result_count_fg = '#e4bdc3'
+result_name_fg = '#efdee0'
+result_line_number_fg = '#e4bdc3'
+result_value_fg = '#e4bdc3'
+selection_bg = '#ffb1c0'
+selection_fg = '#551d2c'
+match_fg = '#8d4959'
+preview_title_fg = '#ecbe91'
+channel_mode_fg = '#ecbe91'
+remote_control_mode_bg = '#191113'
+remote_control_mode_fg = '#e4bdc3'
+send_to_channel_mode_fg = '#ecbe91'
