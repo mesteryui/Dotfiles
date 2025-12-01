@@ -9,54 +9,54 @@
     (activate-project dir)))
 
 (defun activate-project (dir)
-"Activar un proyecto de uv"
-(let ((default-directory dir))
-  (when (fboundp 'uv-init-cmd) ; solo si está definido
-    (uv-init-cmd dir))))
+  "Activar un proyecto de uv"
+  (let ((default-directory dir))
+    (when (fboundp 'uv-init-cmd) ; solo si está definido
+      (uv-init-cmd dir))))
 
 (defun append-to-list (list-var elements)
-"Append ELEMENTS to the end of LIST-VAR.
+  "Append ELEMENTS to the end of LIST-VAR.
 The return value is the new value of LIST-VAR."
-(unless (consp elements)
-  (error "ELEMENTS must be a list"))
-(let ((list (symbol-value list-var)))
-  (if list
-      (setcdr (last list) elements)
-    (set list-var elements)))
-(symbol-value list-var))
+  (unless (consp elements)
+    (error "ELEMENTS must be a list"))
+  (let ((list (symbol-value list-var)))
+    (if list
+	(setcdr (last list) elements)
+      (set list-var elements)))
+  (symbol-value list-var))
 
 (defun append-to-gitignore (file)
-"Añade archivos al gitignore"
-(interactive "fSelect a file to append in the gitignore: ")
-(with-current-buffer (find-file-noselect (expand-file-name ".gitignore" (vc-root-dir)))
-  (end-of-buffer)
-  (insert (format "\n%s" file))
-  (save-buffer)))
+  "Añade archivos al gitignore"
+  (interactive "fSelect a file to append in the gitignore: ")
+  (with-current-buffer (find-file-noselect (expand-file-name ".gitignore" (vc-root-dir)))
+    (end-of-buffer)
+    (insert (format "\n%s" file))
+    (save-buffer)))
 
 (defun get-local-language ()
-"Retrieve the definition the language org variable."
-(save-excursion
-  (goto-char (point-min))
-  (when (re-search-forward
-	 "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
-    (let ((lang (match-string-no-properties 1)))
-      (cond
-       ((equal lang "es") "es_ES")
-       ((equal lang "en") "en_US")
-       (t lang))))))
+  "Retrieve the definition the language org variable."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward
+	   "^#\\+LANGUAGE:[ \t]*\\(.*\\)$" nil t)
+      (let ((lang (match-string-no-properties 1)))
+	(cond
+	 ((equal lang "es") "es_ES")
+	 ((equal lang "en") "en_US")
+	 (t lang))))))
 
 (defun dynamic-language-change ()
-"Define the dictionary used locally to apply the word correction,
+  "Define the dictionary used locally to apply the word correction,
 using what the result of 'get-local-language' function if the result is nil doesn't happen any change in another case use the language returned by 'get-local-language'"
-(when-let* ((lang (get-local-language)))
-  (jinx-languages lang)))
+  (when-let* ((lang (get-local-language)))
+    (jinx-languages lang)))
 
 (defun get-local-macro-definition (macro-name)
-"Retrieve the definition of a local Org mode macro."
-(save-excursion
-  (goto-char (point-min))
-  (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
-    (match-string 1))))
+  "Retrieve the definition of a local Org mode macro."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (concat "^#\\+MACRO: " macro-name " \\(.*\\)$") nil t)
+      (match-string 1))))
 
 (defun os/reload-config ()
   "Recargar configuracion Emacs."
@@ -68,34 +68,34 @@ using what the result of 'get-local-language' function if the result is nil does
 (gbind "C-c r" os/reload-config)
 
 (defun os/open-config ()
-"Abrir configuracion de Emacs."
-(interactive)
-(find-file (expand-file-name "init.el" user-emacs-directory)))
+  "Abrir configuracion de Emacs."
+  (interactive)
+  (find-file (expand-file-name "init.el" user-emacs-directory)))
 (gbind "C-x c" os/open-config)
 
 (defun dictionary-switcher()
-"Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
-(interactive)
-(let* ((dic ispell-current-dictionary)
-       (change
-	(completing-read "Seleccione el diccionario a usar: " mest-languages nil t))
-       (result (cdr (assoc change mest-languages))))
-  (unless (string= dic result)
-    (ispell-change-dictionary result)
-    (message "Diccionario cambiado desde %s a %s" dic change))))
+  "Cambiar entre los diccionarios de Español, Esperanto e Ingles mediante un menu interactivo solo entre esos y solo a un diccionario distinto al seteado."
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+	 (change
+	  (completing-read "Seleccione el diccionario a usar: " mest-languages nil t))
+	 (result (cdr (assoc change mest-languages))))
+    (unless (string= dic result)
+      (ispell-change-dictionary result)
+      (message "Diccionario cambiado desde %s a %s" dic change))))
 
 (defun toggle-webserver ()
-"Function to toggle a not much bigger webserver ChatGPT helping me to fix some things
+  "Function to toggle a not much bigger webserver ChatGPT helping me to fix some things
 This function allow to activate the webserver when you use but if there is a process of webserver the function kill it"
-(interactive)
-(let ((proc (get-process "webserver")))
-(if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
-    (progn
-       (delete-process "webserver")
-       (message "Webserver stopped"))
-       (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
-        (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
-          (message " ✅ Webserver started")))))))
+  (interactive)
+  (let ((proc (get-process "webserver")))
+    (if (and proc (eq (process-status proc) 'run))  ;; Verifica si el proceso está corriendo
+	(progn
+	  (delete-process "webserver")
+	  (message "Webserver stopped"))
+      (make-process :name "webserver" :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") :buffer "*webserver*" :filter (lambda (_proc output)
+																	   (when (string-match "Local: http://localhost:3000" output) ;; Verificamos a traves de la salida si el servidor ya se ha desplegado
+																	     (message " ✅ Webserver started")))))))
 
 (defun my/python-run-file ()
   "Ejecuta el archivo Python actual en su entorno virtual (pet)."
@@ -135,5 +135,19 @@ The DWIM behaviour of this command is as follows:
     (keyboard-quit))))
 
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
+
+(defun mester/kill-child-frames ()
+  "Cierra todos los child-frames (pop-ups) visibles."
+  (interactive)
+  (let ((killed-count 0))
+    (dolist (frame (frame-list))
+      (when (frame-parameter frame 'parent-frame)
+        (delete-frame frame)
+        (setq killed-count (1+ killed-count))))
+    (if (> killed-count 0)
+        (message "Cerrados %d pop-ups." killed-count)
+      (message "No se encontraron pop-ups activos."))))
+
+(gbind "C-x <deletechar>" mester/kill-child-frames)
 
 (provide 'functions)

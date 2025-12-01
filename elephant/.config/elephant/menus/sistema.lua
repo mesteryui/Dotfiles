@@ -1,5 +1,5 @@
-Name = "system"
-NamePretty = "System"
+Name = "configs"
+NamePretty = "Configuraciones"
 Icon = ""
 HideFromProviderlist = true
 Parent = "main"
@@ -13,27 +13,20 @@ function GetEntries()
 	    SubMenu = "power-profiles",
 	    Icon = "󰚥",
 	},
-  {
-      Text = "Packages",
-      Icon = "󰏖",
-      SubMenu = "packages",
-  },
-  {
-    Text = "Setup",
-    Icon = "󰉉",
-    SubMenu = "setup",
-  },
-  {
-    Text = "Configuración",
-    Icon = "",
-    SubMenu = "configuration",
-  },
-  {
-    Text = "About",
-    Icon = "",
-    Actions = {
-	["about_system"] = "ghostty --class=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
-    },
-  },
+	{
+	    Text = "Packages",
+	    Icon = "󰏖",
+	    SubMenu = "packages",
+	},
+	{
+	    Text = "Setup",
+	    Icon = "󰉉",
+	    SubMenu = "setup",
+	},
+	{
+	    Text = "Configuración",
+	    Icon = "",
+	    SubMenu = "configuration",
+	},
     }
 end

@@ -63,8 +63,7 @@ output_path = '~/.config/kitty/colors.conf'
 [templates.waybar]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/waybar/colors.css'
-#post_hook = '~/.config/waybar/scripts/launch.sh'
-post_hook = 'systemctl --user restart waybar'
+post_hook = 'launch_waybar'
 
 [templates.nwgbar]
 input_path = '~/.config/matugen/templates/css_template.conf'

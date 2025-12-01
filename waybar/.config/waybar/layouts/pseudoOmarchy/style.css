@@ -2,11 +2,12 @@
 
 * {
   background-color: @background;
-  color: @on_background;
+  color: @foreground;
+
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: 'JetBrainsMono Nerd Font';
   font-size: 12px;
 }
 
@@ -24,32 +25,35 @@
   margin: 0 1.5px;
   min-width: 9px;
 }
-#tray,
+
+#workspaces button.empty {
+  opacity: 0.5;
+}
+
 #cpu,
 #battery,
-#network,
-#bluetooth,
 #pulseaudio,
 #custom-omarchy,
 #custom-screenrecording-indicator,
 #custom-update {
   min-width: 12px;
-  margin-left: 5px;
   margin: 0 7.5px;
 }
 
-#tray > .passive {
-    -gtk-icon-effect: dim;
+#tray {
+  margin-right: 16px;
 }
 
-#tray > .needs-attention {
-    -gtk-icon-effect: highlight;
-    background-color: @error;
-    color: @on-primary;
-    border-radius: 20px;
+#bluetooth {
+  margin-right: 17px;
 }
+
+#network {
+  margin-right: 13px;
+}
+
 #custom-expand-icon {
-  margin-right: 7px;
+  margin-right: 18px;
 }
 
 tooltip {
@@ -57,11 +61,11 @@ tooltip {
 }
 
 #custom-update {
-  font-size: 13.5px;
+  font-size: 10px;
 }
 
 #clock {
-  margin-left: 5px;
+  margin-left: 8.75px;
 }
 
 .hidden {
@@ -77,24 +81,12 @@ tooltip {
 #custom-screenrecording-indicator.active {
   color: #a55555;
 }
+custom-weather {
+    font-size: 10px;
+}
 #custom-notification {
   min-width: 12px;
   font-size: 16px;
   font-family: "Material Icons";
   margin: 0 7.5px;       /* mantiene separación lateral */
 }
-
-
-#custom-weather {
-    font-size: 13.5;
-    margin: 0 2px;
-}
-#battery.warning {
-  color: @warning; /* amarillo */
-}
-
-/* Batería crítica */
-#battery.critical {
-  color: @error; /* rojo */
-}
-

@@ -9,6 +9,24 @@
   :config
   (setq compilation-scroll-output t))
 
+(with-eval-after-load 'apheleia
+  (setf (alist-get 'rustfmt apheleia-formatters)
+        '("rustfmt" "--quiet" "--emit" "stdout"))
+  (setf (alist-get 'rust-mode apheleia-mode-alist) 'rustfmt)
+  (setf (alist-get 'rust-ts-mode apheleia-mode-alist) 'rustfmt)
+  (setf (alist-get 'rustic-mode apheleia-mode-alist) 'rustfmt))
+
+(with-eval-after-load 'dape
+  (add-to-list 'dape-configs
+	       `(rust-gdb
+                 :description "Rust (GDB)"
+                 modes (rust-mode rust-ts-mode)
+                 command "gdb"
+                 command-args ("--interpreter=mi2" "--args")
+                 :type "gdb"
+                 :request "launch"
+                 :cwd dape-cwd-fn
+                 :program ,(expand-file-name "target/debug/mi_crate"))))
+
 (provide 'rust)
 ;;; rust.el ends here
-

@@ -2,21 +2,18 @@ Name = "packages"
 NamePretty = "Menu Paquetes"
 FixedOrder = true
 
+
 function GetEntries()
     return {
 	{
-	    Text = "Instalar Paquete",
+	    Text = "Instalacion",
 	    Icon = "",
-	    Actions = {
-		["install_package"] = "ghostty --class=local.floating -e application-installer"
-	    },
+	    SubMenu = "installation",
 	},
 	{
-	    Text = "Desinstalar Paquete",
+	    Text = "Desinstalacion",
 	    Icon = "",
-	    Actions = {
-		["install_package"] = "ghostty --class=local.floating -e application-uninstaller"
-	    },
+	    SubMenu = "uninstallation",
 	},
     }
 end

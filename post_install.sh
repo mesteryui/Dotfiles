@@ -20,7 +20,8 @@ install_gum() {
 
 install_paru() {
     gum style --foreground 33 "📦 Instalando dependencias base para compilar paru..."
-    sudo pacman -S --needed --noconfirm base-devel git
+    sudo pacman -S --needed --noconfirm base-devel git rustup
+    rustup default stable
     gum style --foreground 33 "📦 Clonando paru..."
     sudo git clone https://aur.archlinux.org/paru.git /opt/paru
     sudo chown -R "$USER":"$USER" /opt/paru
@@ -80,7 +81,6 @@ install_software_notAUR() {
     fi
     sudo pacman -S --needed - < pkglists-repos.txt
     enable_system_user
-    rustup default stable
 }
 
 install_AUR_software() {

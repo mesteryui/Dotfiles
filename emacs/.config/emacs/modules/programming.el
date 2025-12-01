@@ -83,40 +83,7 @@ The exact color values are taken from the active Ef theme."
   ;; Only log errors
   (apheleia-log-only-errors t)
   ;; Remote file formatting
-  (apheleia-remote-algorithm 'local)
-  :config
-  ;; Example formatters setup
-  (setf (alist-get 'clang-format apheleia-formatters)
-        '("clang-format" "-style=Google"))
-  (setf (alist-get 'prettier apheleia-formatters)
-        '("prettier" "--stdin-filepath" filepath))
-  (setf (alist-get 'ruff apheleia-formatters)
-        '("ruff" "format" "--silent" "--stdin-filename" filepath "-"))
-  (setf (alist-get 'ruff-isort apheleia-formatters)
-        '("ruff" "check" "--select" "I" "--fix" "--silent" "--stdin-filename" filepath "-"))
-  ;; Language → formatter mapping
-  (setf (alist-get 'rustfmt apheleia-formatters)
-        '("rustfmt" "--quiet" "--emit" "stdout"))
-  (setf (alist-get 'rust-mode apheleia-mode-alist) 'rustfmt)
-  (setf (alist-get 'rust-ts-mode apheleia-mode-alist) 'rustfmt)
-  (setf (alist-get 'rustic-mode apheleia-mode-alist) 'rustfmt)
-  (setf (alist-get 'c-mode apheleia-mode-alist) 'clang-format)
-  (setf (alist-get 'c++-mode apheleia-mode-alist) 'clang-format)
-  (setf (alist-get 'js-mode apheleia-mode-alist) 'prettier)
-  (setf (alist-get 'json-mode apheleia-mode-alist) 'prettier)
-  (setf (alist-get 'css-mode apheleia-mode-alist) 'prettier)
-  (setf (alist-get 'html-mode apheleia-mode-alist) 'prettier)
-  
-  (setf (alist-get 'python-mode apheleia-mode-alist)
-	'(ruff-isort ruff))
-  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
-	'(ruff-isort ruff))
-  (setf (alist-get 'gofmt apheleia-formatters)
-        '("gofmt"))
-  (setf (alist-get 'go-mode apheleia-mode-alist) 'gofmt)
-  (setf (alist-get 'go-ts-mode apheleia-mode-alist) 'gofmt)
-  
-  )
+  (apheleia-remote-algorithm 'local))
 
 (use-package eglot-tempel
   :preface (eglot-tempel-mode)
@@ -153,11 +120,6 @@ The exact color values are taken from the active Ef theme."
   :config
   (setq jsonrpc-default-request-timeout 60)
   (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
-  ;; (add-to-list 'eglot-server-programs
-  ;;              '((python-mode python-ts-mode) . ("pylsp")))
-  ;; (add-to-list 'eglot-server-programs
-  ;;              '((c-mode c++-mode) . ("clangd")))
   (with-eval-after-load 'jsonrpc
     (fset #'jsonrpc--log-event #'ignore)))
 
@@ -170,30 +132,7 @@ The exact color values are taken from the active Ef theme."
   (dape-buffer-window-arrangement 'gud)
   (dape-use-icons t)
   (dape-request-timeout 30)
-  (dape-inlay-hints t)
-  :config
-  ;; Configuración para Python con debugpy
-  (add-to-list 'dape-configs
-	       `(python-debug
-                 :description "Python (debugpy)"
-                 modes (python-mode python-ts-mode)
-                 command "python3"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "executable"            ; usar "executable" para debugpy
-                 :request "launch"
-                 :cwd dape-cwd-fn
-                 :program ,(or (buffer-file-name) "/tmp/fallback.py")))  ;; apunta al buffer actual
-  ;; Configuración para Rust con GDB
-  (add-to-list 'dape-configs
-	       `(rust-gdb
-                 :description "Rust (GDB)"
-                 modes (rust-mode rust-ts-mode)
-                 command "gdb"
-                 command-args ("--interpreter=mi2" "--args")
-                 :type "gdb"
-                 :request "launch"
-                 :cwd dape-cwd-fn
-                 :program ,(expand-file-name "target/debug/mi_crate"))))
+  (dape-inlay-hints t))
 
 (use-package projectile
   :ensure t

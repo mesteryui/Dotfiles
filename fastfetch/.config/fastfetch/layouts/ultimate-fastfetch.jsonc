@@ -1,0 +1,128 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "kitty-direct",
+    "source": "~/.config/fastfetch/pngwingScaled.com.png",
+    "padding": {
+      "right": 1,
+      "top": 0
+    }
+  },
+  "display": {
+    "separator": " 󰜴 "
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "╭─────────────────────────╮"
+    },
+    {
+      "type": "title",
+      "key": "│ {#31}  USER     {#keys}│",
+      "format": "{user-name}"
+    },
+    {
+      "type": "title",
+      "key": "│ {#32}  HOST     {#keys}│",
+      "format": "{host-name}"
+    },
+    {
+      "type": "custom",
+      "format": "├─────────────────────────┤"
+    },
+    {
+      "type": "os",
+      "key": "│ {#33}  OS       {#keys}│"
+    },
+    {
+      "type": "kernel",
+      "key": "│ {#34}  KERNEL   {#keys}│"
+    },
+    {
+      "type": "packages",
+      "key": "│ {#35}  PACKAGES {#keys}│"
+    },
+    {
+      "type": "custom",
+      "format": "├─────────────────────────┤"
+    },
+    {
+      "type": "wm",
+      "key": "│ {#36}  WM       {#keys}│"
+    },
+    {
+      "type": "de",
+      "key": "│ {#31}  DESKTOP  {#keys}│"
+    },
+    {
+      "type": "terminal",
+      "key": "│ {#32}  TERMINAL {#keys}│"
+    },
+    {
+      "type": "shell",
+      "key": "│ {#33}  SHELL    {#keys}│"
+    },
+    {
+      "type": "custom",
+      "format": "├─────────────────────────┤"
+    },
+    {
+      "type": "host",
+      "key": "│ {#34}  MODEL    {#keys}│"
+    },
+    {
+      "type": "cpu",
+      "key": "│ {#35}  CPU      {#keys}│",
+      "showPeCoreCount": true
+    },
+    {
+      "type": "gpu",
+      "key": "│ {#36}  GPU      {#keys}│",
+      "detectionMethod": "pci"
+    },
+    {
+      "type": "memory",
+      "key": "│ {#31}  RAM      {#keys}│"
+    },
+    {
+      "type": "disk",
+      "key": "│ {#32}  DISK     {#keys}│",
+      "folders": "/"
+    },
+    {
+      "type": "display",
+      "key": "│ {#33}  DISPLAY  {#keys}│"
+    },
+    {
+      "type": "battery",
+      "key": "│ {#34}  BATTERY  {#keys}│"
+    },
+    {
+      "type": "custom",
+      "format": "├─────────────────────────┤"
+    },
+    {
+      "type": "uptime",
+      "key": "│ {#35}  UPTIME   {#keys}│"
+    },
+    {
+      "type": "localip",
+      "key": "│ {#36}  LOCAL IP {#keys}│",
+      "compact": true
+    },
+    {
+      "type": "custom",
+      "format": "├─────────────────────────┤"
+    },
+    {
+      "type": "colors",
+      "key": "│ {#31}  PALETTE  {#keys}│",
+      "symbol": "circle",
+      "paddingLeft": 3
+    },
+    {
+      "type": "custom",
+      "format": "╰─────────────────────────╯"
+    }
+  ]
+}

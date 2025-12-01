@@ -70,7 +70,6 @@
 (add-hook 'emacs-startup-hook
           (lambda ()
             ;; Restaurar la configuración del recolector de basura (umbral de 16MB)
-	    (setq gc-cons-threshold (* 64 1024 1024))
             
             ;; Restaurar el manejador de nombres de archivo
             (setq file-name-handler-alist default-file-name-handler-alist)
@@ -83,11 +82,7 @@
                           (lambda ()
 			    (unless (frame-focus-state)
 			      (garbage-collect))))
-	    
-	    ;; ;; Mostrar el tiempo de arranque
-	    ;; (message "Emacs loaded in %s with %d garbage collections."
-	    ;;          (emacs-init-time "%.2f seconds")
-	    ;;          gcs-done)
+
 	    ))
 
 (provide 'early-init)

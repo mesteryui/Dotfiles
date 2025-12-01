@@ -9,31 +9,43 @@ SearchName = true
 function GetEntries()
  return {
      {
+	    Text = "About",
+	    Icon = "",
+	    Actions = {
+		["about_system"] = "ghostty --class=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
+	    },
+	},
+     {
 	    Text = "Update",
 	    Icon = "",
 	    Actions = {
 		["update"] = "ghostty --class=local.floating -e paru -Syu"
 	    },
-	},
+   },
    {
     Text = "Captura",
     Icon = "󰹑",
     SubMenu = "screenshot",
   },
   {
-      Text = "Sistema",
+      Text = "Configuraciones",
       Icon = "",
-      SubMenu = "system",
+      SubMenu = "configs",
   },
   {
       Text = "Apariencia",
       Icon = "",
       SubMenu = "themes",
   },
-  {
-    Text = "Juegos",
-    Icon = "󰊗",
-    SubMenu = "games",
-  },
+     {
+	 Text = "Juegos",
+	 Icon = "󰊗",
+	 SubMenu = "games",
+     },
+     {
+	 Text = "Power",
+	 Icon = "⏻",
+	 SubMenu = "power-menu",
+     },
  }
 end
