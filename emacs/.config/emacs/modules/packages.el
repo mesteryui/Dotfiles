@@ -2,6 +2,7 @@
 
 (use-package org-social
   :ensure (:host github :repo "tanrax/org-social.el")
+  :commands (org-social-post-subtrees)
   :config
   (setq org-social-file "~/Escritorio/CosasSociales/social.org")
   (setq org-social-my-public-url "https://codeberg.org/mester/CosasSociales/raw/branch/main/social.org"))
@@ -10,6 +11,7 @@
 
 (use-package os-scratch
   :load-path "os-lisp/"
+  :commands (os-scratch)
   :config
   (add-to-list 'os-scratch-messages `(text . ,(format "Welcome to text-mode %s." user-full-name))))
 
@@ -82,6 +84,7 @@
   (nerd-icons-xref-mode 1))
 
 (use-package calfw
+  :defer t
   :config
   (setopt cfw:org-overwrite-default-keybinding t)) ;; atajos de teclado de la agenda org-mode
 (setopt cfw:display-calendar-holidays t) ;; para esconder fiestas calendario emacs
@@ -156,26 +159,26 @@
   :defer t
   :init
   (global-set-key (kbd "C-c d") 'treemacs)
-  (setopt treemacs-hide-gitignored-files-mode t)
-  treemacs-project-follow-cleanup t
-  treemacs-width 45
-  treemacs-width-is-initially-locked nil
-  delete-by-moving-to-trash t
-  treemacs-collapse-dirs 3
-  treemacs-display-in-side-window t
-  treemacs-is-never-other-window t
-  treemacs-indentation 2
-  treemacs-indentation-string " "
-  treemacs-filewatch-mode t
-  treemacs-git-mode 'deferred
-  treemacs-text-scale 1
-  treemacs-move-files-by-mouse-dragging nil
-  treemacs-move-forward-on-expand t
-  treemacs-pulse-on-success t
-  treemacs-file-event-delay 0
-  treemacs-deferred-git-apply-delay 0
-  treemacs-git-commit-diff-mode 1)
-(add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode)
+  (setq treemacs-hide-gitignored-files-mode t
+	treemacs-project-follow-cleanup t
+	treemacs-width 45
+	treemacs-width-is-initially-locked nil
+	delete-by-moving-to-trash t
+	treemacs-collapse-dirs 3
+	treemacs-display-in-side-window t
+	treemacs-is-never-other-window t
+	treemacs-indentation 2
+	treemacs-indentation-string " "
+	treemacs-filewatch-mode t
+	treemacs-git-mode 'deferred
+	treemacs-text-scale 1
+	treemacs-move-files-by-mouse-dragging nil
+	treemacs-move-forward-on-expand t
+	treemacs-pulse-on-success t
+	treemacs-file-event-delay 0
+	treemacs-deferred-git-apply-delay 0
+	treemacs-git-commit-diff-mode t)
+  (add-hook 'treemacs-mode-hook #'treemacs-project-follow-mode))
 (use-package treemacs-nerd-icons
   :after nerd-icons
   :config
@@ -274,7 +277,6 @@
 		("C-x r p" . eradio-play))
 
 (use-package doc-view
-  :demand t
   :ensure nil
   :custom
   (doc-view-resolution 300)
@@ -378,5 +380,6 @@
   :hook (after-init . savehist-mode))
 
 (use-package jsonrpc
-  :ensure t)
+  :ensure t
+  :defer t)
 (provide 'packages)

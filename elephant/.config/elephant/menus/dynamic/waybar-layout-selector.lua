@@ -87,7 +87,7 @@ function GuardarLayoutReinciar(layout)
 	file:write(layout)
 	file:close()
 	os.execute("notify-send 'Cambio de Layout' 'Layout cambiado a: " .. layout .. "'")
-	os.execute("launch_waybar")
+	os.execute("launch-waybar")
     else
 	os.execute("notify-send 'No se pudo cambiar el layout'")
     end

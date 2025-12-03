@@ -64,6 +64,15 @@ The exact color values are taken from the active Ef theme."
 
 (use-package transient)
 
+(use-package mason
+  :ensure t
+  :config
+  (mason-ensure)
+  (mason-ensure
+   (lambda ()
+     (ignore-errors (mason-install "basedpyright"))
+     (ignore-errors (mason-install "ruff")))))
+
 ;; (use-package eldoc-box
 ;;   :ensure t
 ;;   :defer t)
@@ -170,5 +179,30 @@ The exact color values are taken from the active Ef theme."
   (flymake-mode-hook . flymake-flycheck-auto))
 (with-eval-after-load 'flymake-mode
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
+
+;; Lazy-load language modules
+(use-package javascript
+  :mode "\\.js\\'")
+
+(use-package golang
+  :mode "\\.go\\'")
+
+(use-package emacs-lisp
+  :mode "\\.el\\'")
+
+(use-package pythonlang
+  :mode "\\.py\\'")
+
+(use-package ruby
+  :mode "\\.rb\\'")
+
+(use-package rust
+  :mode "\\.rs\\'")
+
+(use-package nimlang
+  :mode "\\.nim\\'")
+
+(use-package common-lisp
+  :commands sly)
 
 (provide 'programming)

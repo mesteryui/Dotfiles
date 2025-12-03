@@ -10,7 +10,7 @@
     "Aplicar configuraciones de python especificas para eglot"
     (setq-local eglot-workspace-configuration
 		'(:python (:pythonPath "python"
-				       :analysis (:typeCheckingMode "off"
+				       :analysis (:typeCheckingMode "on"
 								    :autoSearchPaths t
 								    :useLibraryCodeForTypes nil
 								    :exclude ["**/__pycache__"]))))
@@ -49,7 +49,9 @@
 	'(ruff-isort ruff)))
 
 (with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
+  (add-to-list 'eglot-server-programs '(python-mode . ("basedpyright-langserver" "--stdio")))
+  ;;(add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
+  )
 
 (with-eval-after-load 'dape
   (add-to-list 'dape-configs
