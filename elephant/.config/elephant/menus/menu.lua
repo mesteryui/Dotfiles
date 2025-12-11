@@ -19,9 +19,14 @@ function GetEntries()
 	    Text = "Update",
 	    Icon = "",
 	    Actions = {
-		["update"] = "ghostty --class=local.floating -e paru -Syu"
+		["update"] = "ghostty --class=local.floating -e yay -Syu"
 	    },
    },
+     {
+	 Text = "Atajos de teclado",
+	 Icon = "",
+	 Actions =  { show_keybinds = "menubinds.sh" },
+     },
    {
     Text = "Captura",
     Icon = "󰹑",

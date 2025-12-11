@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*- 
 (use-package tramp
-  :ensure nil
+  :ensure t
   :custom
   (remote-file-name-inhibit-locks t)
   (tramp-use-scp-direct-remote-copying t)
@@ -15,5 +15,10 @@
   (connection-local-set-profiles
    '(:application tramp :protocol "ssh")
    'remote-direct-async-process))
+(use-package tramp-hlo
+  :ensure (:host github :repo "jsadusk/tramp-hlo")
+  :config
+  (tramp-hlo-setup)
+  )
 
 (provide 'tramp-config)

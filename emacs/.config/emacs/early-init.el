@@ -69,10 +69,11 @@
 ;; =============================================================================
 (add-hook 'emacs-startup-hook
           (lambda ()
-            ;; Restaurar la configuración del recolector de basura (umbral de 16MB)
-            (setq gc-cons-threshold 16777216
-		  gc-cons-percentage 0.1)
-            
+            ;; Restaurar la configuración del recolector de basura (umbral de 16MB)p-hook
+            (lambda ()
+              ;; Restaurar la configuración del recolector de basura (umbral de 16MB)
+              (setq gc-cons-threshold (* 64 1024 1024)
+		    gc-cons-percentage 0.1))
             ;; Restaurar el manejador de nombres de archivo
             (setq file-name-handler-alist default-file-name-handler-alist)
             

@@ -8,6 +8,7 @@
 
 * {
   all: unset;
+  font-family: "Google Sans Flex 24pt";
 }
 
 .normal-icons {
@@ -180,3 +181,4 @@ child:selected .item-box {
   background: @error_bg_color;
   color: @error_fg_color;
 }
+

@@ -5,7 +5,7 @@
 
 (use-package gcmh
   :init
-  (setq gc-cons-threshold (* 64 1024 1024)) ;; Seteando los ajustes por defecto del recolector de basura
+  ;; Seteando los ajustes por defecto del recolector de basura
   (setq gcmh-idle-delay 'auto  ; default is 15s
 	gcmh-auto-idle-delay-factor 10 ;; Factor usado para decidir cuanto espera el recolector de basura cuando no has estado usando el editor
 	gcmh-high-cons-threshold (* 128 1024 1024))

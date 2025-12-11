@@ -5,7 +5,7 @@ Cache = false
 GlobalSearch = false
 
 function ApplyWallpaper(wallpaper)
-    os.execute("swww img "..wallpaper .. " --transition-type center")
+    os.execute("awww img "..wallpaper .. " --transition-type center")
     os.execute("matugen image "..wallpaper)
 end
 

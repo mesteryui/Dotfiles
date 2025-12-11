@@ -1,4 +1,6 @@
 ;; -*- lexical-binding: t; -*-
+
+
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setopt display-line-numbers-type 'relative)
 (setq-default display-fill-column-indicator-column 79)
@@ -64,22 +66,13 @@ The exact color values are taken from the active Ef theme."
 
 (use-package transient)
 
-(use-package mason
-  :ensure t
-  :config
-  (mason-ensure)
-  (mason-ensure
-   (lambda ()
-     (ignore-errors (mason-install "basedpyright"))
-     (ignore-errors (mason-install "ruff")))))
-
 ;; (use-package eldoc-box
 ;;   :ensure t
 ;;   :defer t)
 
 (use-package apheleia
   :ensure t
-  :defer t
+  :after mason
   :diminish apheleia-mode
   :hook
   ((prog-mode . apheleia-mode)   ;; enable in all programming modes
@@ -94,43 +87,20 @@ The exact color values are taken from the active Ef theme."
   ;; Remote file formatting
   (apheleia-remote-algorithm 'local))
 
-(use-package eglot-tempel
-  :preface (eglot-tempel-mode)
-  :init
-  (eglot-tempel-mode t))
 
-
-(use-package eglot
-  :ensure nil
-  ;;:commands (eglot-ensure eglor-rename eglot-format-buffer)
-  :hook
-  (eglot-managed-mode . eldoc-mode)
-  ;;(eglot-managed-mode . eldoc-box-hover-mode)
-  :custom
-  (eglot-confirm-server-initiated-edits nil)
-  (eglot-sync-connect nil)
-  (eglot-autoshutdown t)
-  (eglot-ignored-server-capabilities '(:documentHighlightProvider))
-  (eglot-events-buffer-size 0)
-  (eglot-autoshutdown t)
-  ;;(eglot-connect-timeout 60)
-  (eglot-send-changes-idle-time 0.5)
-  (eglot-auto-display-help-buffer nil)
-  (eglot-confirm-server-initiated-edits nil)
-  (eglot-extend-to-xref t)
-  :bind (:map eglot-mode-map
-	      ("C-c l a" . eglot-code-actions)
-	      ("C-c l i" . eglot-code-actions-organize-imports)
-	      ("C-c l r" . eglot-rename)
-	      ("C-c l f" . eglot-format)
-	      ("C-c l n" . flymake-next-error)
-	      ("C-c l p" . flymake-previous-error)
-	      ("C-c l d" . eldoc))
+(use-package mason
+  :ensure t
   :config
-  (setq jsonrpc-default-request-timeout 60)
-  (add-to-list 'eglot-server-programs '((hyprlang-ts-mode) . ("hyprls")))
-  (with-eval-after-load 'jsonrpc
-    (fset #'jsonrpc--log-event #'ignore)))
+  (mason-ensure))
+(os/after mason
+	  (mason-ensure
+	   (lambda ()
+	     (ignore-errors (mason-install "basedpyright"))
+	     (ignore-errors (mason-install "jdtls"))
+	     (ignore-errors (mason-install "gopls")))))
+
+(require 'lsp-confs)
+
 
 ;; Opción 3: Reduce frecuencia de diagnósticos de flymake
 
@@ -179,30 +149,5 @@ The exact color values are taken from the active Ef theme."
   (flymake-mode-hook . flymake-flycheck-auto))
 (with-eval-after-load 'flymake-mode
   (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error))
-
-;; Lazy-load language modules
-(use-package javascript
-  :mode "\\.js\\'")
-
-(use-package golang
-  :mode "\\.go\\'")
-
-(use-package emacs-lisp
-  :mode "\\.el\\'")
-
-(use-package pythonlang
-  :mode "\\.py\\'")
-
-(use-package ruby
-  :mode "\\.rb\\'")
-
-(use-package rust
-  :mode "\\.rs\\'")
-
-(use-package nimlang
-  :mode "\\.nim\\'")
-
-(use-package common-lisp
-  :commands sly)
 
 (provide 'programming)

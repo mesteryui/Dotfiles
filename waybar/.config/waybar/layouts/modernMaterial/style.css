@@ -1,7 +1,7 @@
 /* Material You Waybar - Optimizado para espacio vertical */
 @import "../../colors.css";
 * {
-    font-family: "Roboto", "Material Symbols Outlined", sans-serif;
+    font-family: "Google Sans Flex Medium", "Material Symbols Rounded", sans-serif;
     font-size: 13px;
     font-weight: 500;
     border: none;
@@ -30,6 +30,7 @@ window#waybar {
 #workspaces,
 #submap,
 #custom-omarchy,
+#custom-stasis,
 #clock,
 #custom-weather,
 #custom-update,
@@ -114,7 +115,7 @@ window#waybar {
     margin-left: 8px;
     font-weight: 600;
 }
-
+#custom-stasis {}
 #custom-omarchy:hover {
     background-color: @primary_fixed_dim;
     color: @on_primary_fixed;

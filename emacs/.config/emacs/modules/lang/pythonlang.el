@@ -10,7 +10,7 @@
     "Aplicar configuraciones de python especificas para eglot"
     (setq-local eglot-workspace-configuration
 		'(:python (:pythonPath "python"
-				       :analysis (:typeCheckingMode "on"
+				       :analysis (:typeCheckingMode "off"
 								    :autoSearchPaths t
 								    :useLibraryCodeForTypes nil
 								    :exclude ["**/__pycache__"]))))
@@ -48,20 +48,17 @@
   (setf (alist-get 'python-ts-mode apheleia-mode-alist)
 	'(ruff-isort ruff)))
 
-(with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs '(python-mode . ("basedpyright-langserver" "--stdio")))
-  ;;(add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
-  )
+(add-server python-mode "basedpyright-langserver" "--stdio")
 
 (with-eval-after-load 'dape
   (add-to-list 'dape-configs
 	       `(python-debug
-                 :description "Python (debugpy)"
-                 modes (python-mode python-ts-mode)
-                 command "python3"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "executable"            ; usar "executable" para debugpy
-                 :request "launch"
-                 :cwd dape-cwd-fn
-                 :program ,(or (buffer-file-name) "/tmp/fallback.py"))))
+		 :description "Python (debugpy)"
+		 modes (python-mode python-ts-mode)
+		 command "python3"
+		 command-args ("-m" "debugpy.adapter")
+		 :type "executable"            ; usar "executable" para debugpy
+		 :request "launch"
+		 :cwd dape-cwd-fn
+		 :program ,(or (buffer-file-name) "/tmp/fallback.py"))))
 (provide 'pythonlang)

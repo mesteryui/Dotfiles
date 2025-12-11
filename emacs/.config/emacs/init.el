@@ -136,6 +136,7 @@
 	consult-func
 	tempel-funcs
 	ligatures
+	plz-http
 	;; Final Completion Functions
 	;; Editing and spelling
 	editing
@@ -150,7 +151,20 @@
 	treesit-funcs
 	programming ;; Configuraciones base de programación
 	;; Módulos de lenguajes específicos
-	;;java ;; Lenguaje de programacion Java
+	javascript
+	golang
+	;; schemelang ;; Lenguaje Scheme
+	emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
+	pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+	ruby
+	systemd-lang
+	zig-lang
+	rust
+	qml
+	hyprlang
+	nimlang
+	common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
+	java ;; Lenguaje de programacion Java
 	))
 ;; Cargar los módulos habilitados
 (dolist (module mester/enabled-modules)

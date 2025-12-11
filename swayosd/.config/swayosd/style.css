@@ -1,4 +1,7 @@
 @import 'colors.css';
+* {
+    font-family: "Google Sans Flex 24pt";
+}
 window {
   border-radius: 0;
   opacity: 0.97;

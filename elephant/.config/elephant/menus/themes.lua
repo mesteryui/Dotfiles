@@ -4,6 +4,7 @@ HideFromProviderList = true
 SearchName = true
 Icon = ""
 Parent = "main"
+FixedOrder = true
 function GetEntries()
     return {
 	{
@@ -16,5 +17,10 @@ function GetEntries()
           Icon = "",
           SubMenu = "waybar-layout-selector",
 	},
+	{
+	    Text = "Wallpapers",
+	    Icon = "",
+	    SubMenu = "wallpapers",
+	}
     }
 end

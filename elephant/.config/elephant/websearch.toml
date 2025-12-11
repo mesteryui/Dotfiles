@@ -1,10 +1,5 @@
 [[entries]]
 default = true
-name = "Google"
-url = "https://www.google.com/search?q=%TERM%"
-
-[[entries]]
-default = true
 name = "DuckDuckGo"
 url = "https://duckduckgo.com/?origin=funnel_home_website&t=h_&q=%TERM%&ia=web"
 

@@ -25,7 +25,6 @@
 				  (4 . (variable-pitch 1.1))
 				  (t . (variable-pitch 1.0))))
   (setq modus-themes-italic-constructs t)
-  ;;(mapc #'disable-theme custom-enabled-themes)
   (modus-themes-load-theme 'ef-cherie))
 
 ;;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Empezar maximizado
@@ -80,11 +79,11 @@
 
 (use-package spacious-padding
   :ensure t
-  :hook (elpaca-after-init . spacious-padding-mode)
+  ;;:hook (elpaca-after-init . spacious-padding-mode)
   :bind ("<f6>" . spacious-padding-mode)
   :config 
   (setq spacious-padding-widths
-	'(:internal-border-width 15
+	'(:internal-border-width 6
 				 :header-line-width 4
 				 :mode-line-width 5
 				 :tab-width 4

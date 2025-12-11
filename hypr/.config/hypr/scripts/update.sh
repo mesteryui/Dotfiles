@@ -2,4 +2,4 @@
 
 sudo -v || exit 1
 
-paru -Syu
+yay -Syu
