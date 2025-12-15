@@ -79,15 +79,15 @@
 
 (use-package spacious-padding
   :ensure t
-  ;;:hook (elpaca-after-init . spacious-padding-mode)
+  :hook (elpaca-after-init . spacious-padding-mode)
   :bind ("<f6>" . spacious-padding-mode)
   :config 
   (setq spacious-padding-widths
-	'(:internal-border-width 6
+	'(:internal-border-width 12
 				 :header-line-width 4
 				 :mode-line-width 5
 				 :tab-width 4
-				 :right-divider-width 30
-				 :fringe-width 8)))
+				 :right-divider-width 10
+				 :fringe-width 10)))
 
 (provide 'ui)

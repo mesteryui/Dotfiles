@@ -18,7 +18,7 @@ fish_config theme choose Matugen
 alias ls lsd
 alias cat bat
 alias cd z
-set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs "~/.gem/ruby/3.4.0/bin/"
+set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs "~/.gem/ruby/3.4.0/bin/" ~/.roswell/bin
 #set -gx XDG_RUNTIME_DIR "/run/user/$(id -u)"
 # set -Ux XDG_CONFIG_HOME $HOME/.config
 # set -Ux XDG_DATA_HOME $HOME/.local/share

@@ -9,9 +9,6 @@
 ;; =============================================================================
 ;; COMPILACIÓN NATIVA Y ADVERTENCIAS
 ;; =============================================================================
-(setq byte-compile-warnings '(not obsolete))
-(setq warning-suppress-log-types '((comp) (bytecomp)))
-(setq native-comp-async-report-warnings-errors 'silent)
 
 (when (featurep 'native-compile)
   (setq native-comp-speed 2

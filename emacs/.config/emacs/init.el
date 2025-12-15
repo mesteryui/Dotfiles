@@ -158,6 +158,7 @@
 	pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
 	ruby
 	systemd-lang
+	rune-lang
 	zig-lang
 	rust
 	qml

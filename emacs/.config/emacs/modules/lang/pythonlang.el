@@ -21,9 +21,9 @@
   :config
   (add-hook 'python-base-mode-hook 'pet-mode -10))
 
-;; (use-package flymake-ruff
-;;   :ensure t
-;;   :hook (eglot-managed-mode . flymake-ruff-load))
+(use-package flymake-ruff
+  :ensure t
+  :hook (eglot-managed-mode . flymake-ruff-load))
 
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")

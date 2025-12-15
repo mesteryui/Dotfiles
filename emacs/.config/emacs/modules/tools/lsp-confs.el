@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
 (defmacro add-server (mode server &rest args)
-  "Añadir un servidor lsp personalizado definido como SERVER a un modo MODE especifico con ARGS opcionales si se requieren"
+  "Añadir un servidor lsp personalizado definido como SERVER a un modo MODE especifico con ARGS opcionales si se requieren."
   `(with-eval-after-load 'eglot
      (add-to-list 'eglot-server-programs '(,mode . (,server ,@args)))))
 

@@ -19,7 +19,6 @@
   (setq consult-narrow-key "<")
   :bind (
 	 ("C-c M-x" . consult-mode-command)
-	 ;; ("C-c k" . consult-kmacro)
 	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
 	 ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
 	 ("M-y" . consult-yank-pop)                ;; orig. yank-pop

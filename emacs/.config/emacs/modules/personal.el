@@ -10,7 +10,7 @@
 	use-short-answers t
 	blink-matching-parent t)
 
-(load custom-file 'noerror 'nomessage)
+(add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)))
 
 (setq initial-scratch-message (format ";; This is `scratch` buffer. Use `%s` for eval and print the result of expression or also you can use `C-x C-e` for eval modules expressions in any buffer.Enjoy doing things here.\n\n"
 				      (propertize
