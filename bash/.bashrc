@@ -26,3 +26,11 @@ alias emacsc="emacsclient -c -a emacs"
 #source /home/oscar/.config/broot/launcher/bash/br
 source /usr/share/bash-completion/completions/git  # En Ubuntu/Debian
 
+
+# Automatically added by the Guix install script.
+if [ -n "$GUIX_ENVIRONMENT" ]; then
+    if [[ $PS1 =~ (.*)"\\$" ]]; then
+        PS1="${BASH_REMATCH[1]} [env]\\\$ "
+    fi
+fi
+

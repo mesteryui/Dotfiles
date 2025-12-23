@@ -5,6 +5,7 @@
   `(with-eval-after-load 'eglot
      (add-to-list 'eglot-server-programs '(,mode . (,server ,@args)))))
 
+
 (use-package eglot
   :ensure nil
   :after mason

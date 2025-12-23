@@ -1,0 +1,192 @@
+{
+  "reload_style_on_change": true,
+  "layer": "bottom",
+  "position": "top",
+  "margin-top": 0,
+  "margin-bottom": 0,
+  "margin-left": 0,
+  "margin-right": 0,
+  "spacing": 0,
+
+  "modules-left": [
+    "custom/start-menu",
+    "hyprland/workspaces"
+  ],
+
+  "modules-center": [
+    "mpd",
+    "clock"
+  ],
+
+  "modules-right": [
+    "group/tray-expander",
+    "pulseaudio",
+    "custom/notification",
+    "network",
+    "bluetooth",
+    "cpu",
+    "battery"
+  ],
+
+  "custom/start-menu": {
+    "format": "",
+    "on-click": "walker -m menus:main",
+    "tooltip-format": "Menu Principal\nSuper + Alt + Space"
+  },
+
+  "custom/app-launcher": {
+    "format": "󰚀",
+    "on-click": "rofi -show drun",
+    "tooltip-format": "Lanzador de aplicaciones"
+  },
+
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "format": "{name}",
+    "format-icons": {
+      "default": "󰧱",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4": "4",
+      "5": "5",
+      "active": "󱓻"
+    },
+  },
+
+  "mpd": {
+    "format": "󰎵 {title}",
+    "format-paused": "󰏦 {title}",
+    "format-stopped": "󰍹",
+    "tooltip-format": "Artista: {artist}\nÁlbum: {album}\nDuración: {elapsedTime:%M:%S}",
+    "max-length": 40,
+    "on-click": "mpc toggle",
+    "on-scroll-up": "mpc volume +5",
+    "on-scroll-down": "mpc volume -5"
+  },
+
+  "clock": {
+    "format": "󰅐 {:%H:%M}",
+    "format-alt": "󰃭 {:%d/%m/%Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#f7b2df'><b>{}</b></span>",
+        "days": "<span color='#eddfe4'>{}</span>",
+        "weeks": "<span color='#ddbecf'><b>W{}</b></span>",
+        "weekdays": "<span color='#f5b9a1'><b>{}</b></span>",
+        "today": "<span color='#f7b2df'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+
+  "network": {
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format": "{icon}",
+    "format-wifi": "󰤨",
+    "format-ethernet": "󰀂",
+    "format-disconnected": "󰤮",
+    "tooltip-format": "{ifname}",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
+    "tooltip-format-ethernet": "Ethernet\n󰇚 {bandwidthDownBytes}  󰇘 {bandwidthUpBytes}",
+    "tooltip-format-disconnected": "Desconectado",
+    "interval": 3,
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e nmtui"
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
+    "format-connected-battery": "󰂱 {device_battery_percentage}%",
+    "tooltip-format": "{controller_alias}",
+    "tooltip-format-connected": "{controller_alias}\n{num_connections} Conectado(s)\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}",
+    "tooltip-format-enumerate-connected-battery": "{device_alias} {device_battery_percentage}%",
+    "on-click": "bluetui"
+  },
+
+  "battery": {
+    "interval": 10,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󱐋 {capacity}%",
+    "format-full": "󰁹 {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "tooltip-format": "{timeTo}\nPotencia: {power}W"
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "󰘚 {usage}%",
+    "tooltip-format": "CPU: {usage}%\nCarga promedio: {load}",
+    "on-click": "kitty --class float_btop -e btop"
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-bluetooth": "{icon} 󰂯 {volume}%",
+    "format-muted": "󰝟",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "tooltip-format": "{desc}\nVolumen: {volume}%",
+    "on-click": "pamixer -t",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5",
+    "scroll-step": 5
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󰂚",
+      "none": "󰂑",
+      "dnd-notification": "󰂛",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "󰂙",
+      "inhibited-none": "󰂙",
+      "dnd-inhibited-notification": "󰂞",
+      "dnd-inhibited-none": "󰂟"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+
+  "group/tray-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 300,
+      "transition-left-to-right": true,
+      "children-class": "tray-group-item"
+    },
+    "modules": [
+      "custom/expand-icon",
+      "tray"
+    ]
+  },
+
+  "custom/expand-icon": {
+    "format": "󰅂",
+    "tooltip": false
+  },
+
+  "tray": {
+    "icon-size": 14,
+    "spacing": 6,
+    "show-passive-items": true
+  }
+}

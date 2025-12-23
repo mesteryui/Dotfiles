@@ -98,79 +98,75 @@
   :group 'mester
   :type '(choice (const :tag "Os modeline (Own)" os-modeline)
   		 (const :tag "Doom Modeline" 'doom-modeline)))
-;;(setq mester/modeline 'os-modeline)
-(defcustom mester/enabled-modules nil
-  "Lista de modulos a cargar."
-  :group 'mester
-  :type '(repeat symbol))
+
 
 ;; Añadir el directorio 'modules' y subdirectorios al 'load-path'
-(defun mester/add-subdirs-to-load-path (parent-dir)
-  "Añade PARENT-DIR y todos sus subdirectorios al load-path recursivamente."
-  (let ((default-directory parent-dir))
-    (add-to-list 'load-path parent-dir)
-    (normal-top-level-add-subdirs-to-load-path)))
-(mester/add-subdirs-to-load-path 
- (expand-file-name "modules/" user-emacs-directory))
 
-;; Lista de módulos a cargar. Comenta o elimina los que no quieras.
-(setq mester/enabled-modules
-      '(macros      ;; Macros personalizadas
-	performance ;; Ajustes del rendimiento
-	personal    ;; Ajustes personales diversos
-	settings    ;; Ajustes diversos
-	ui          ;; Apariencia y UI
-	functions   ;; Funciones propias desarrolladas por mi
-	org-config  ;; Configuración de Org Mode
-	modeline
-	tools       ;; Herramientas generales
-	keybindings ;; atajos de teclado diversos
-	emacs-git
-	;; Completion functions
-	orderless-funcs
-	eldoc-tools
-	corfu-completion ;; Sistema de autocompletado
-	vertico-funcs ;; Sistema para la completacion del minibuffer
-	embark-funcs
-	marginalia-funcs
-	consult-func
-	tempel-funcs
-	ligatures
-	plz-http
-	;; Final Completion Functions
-	;; Editing and spelling
-	editing
-	spelling
-	;; End of editing and spelling
-	dired
-	eat-term
-	vterm-term
-	tramp-config
-	packages    ;; Paquetes que utilizble
-	sin-distracciones ;; Modo sin distracciones
-	treesit-funcs
-	programming ;; Configuraciones base de programación
-	;; Módulos de lenguajes específicos
-	javascript
-	golang
-	;; schemelang ;; Lenguaje Scheme
-	emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
-	pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
-	ruby
-	systemd-lang
-	rune-lang
-	zig-lang
-	rust
-	qml
-	hyprlang
-	nimlang
-	common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
-	java ;; Lenguaje de programacion Java
-	))
 ;; Cargar los módulos habilitados
-(dolist (module mester/enabled-modules)
-  (unless (featurep module)
-    (require module)))
+(use-package moon-loader
+  :ensure nil
+  :load-path "os-lisp/moon-loader/"
+  :config
+  (moon-loader-add-modules (main-dashboard :after nerd-icons-settings))
+  (moon-loader-add-modules
+   (ui :after performance)          ;; Apariencia y UI
+   macros      ;; Macros personalizadas
+   performance ;; Ajustes del rendimiento
+   personal    ;; Ajustes personales diversos
+   settings    ;; Ajustes diversos
+   functions   ;; Funciones propias desarrolladas por mi
+   org-config  ;; Configuración de Org Mode
+   (modeline :after nerd-icons-settings)
+   nerd-icons-settings
+   tools       ;; Herramientas generales
+   keybindings ;; atajos de teclado diversos
+   emacs-git
+   ;; Completion functions
+   orderless-funcs
+   eldoc-tools
+   corfu-completion ;; Sistema de autocompletado
+   vertico-funcs ;; Sistema para la completacion del minibuffer
+   embark-funcs
+   marginalia-funcs
+   consult-func
+   tempel-funcs
+   ligatures
+   plz-http
+   ;; Final Completion Functions
+   ;; Editing and spelling
+   editing
+   spelling
+   ;; End of editing and spelling
+   dired
+   eat-term
+   vterm-term
+   tramp-config
+   packages    ;; Paquetes que utilizble
+   sin-distracciones ;; Modo sin distracciones
+   )
+   (moon-loader-add-modules
+   treesit-funcs
+   programming ;; Configuraciones base de programación
+   ;; Módulos de lenguajes específicos
+   javascript
+   golang
+   emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
+   pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
+   ruby
+   systemd-lang
+   markdown-things
+   kdl-ts-mode-settings
+   rune-lang
+   zig-lang
+   rust
+   qml
+   schemelang
+   hyprlang
+   nimlang
+   common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
+   java ;; Lenguaje de programacion Java
+   )
+  )
 
 (provide 'init)
 ;;; init.el ends here

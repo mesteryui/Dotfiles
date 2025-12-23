@@ -1,6 +1,6 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR --export GEMINI_API_KEY:AIzaSyB4oTiU3KNM6FV0PM4bu9WNAiWWiaUamM8
+SETUVAR --export GEMINI_API_KEY:AIzaSyBAstnGRr80VPCM132aS3nDVWhVhVoYDUk
 SETUVAR --export PASSWORD_STORE_DIR:/home/oscar/\x2elocal/share/pass
 SETUVAR __fish_initialized:3800
 SETUVAR fish_color_autosuggestion:brblack
@@ -39,4 +39,4 @@ SETUVAR fish_pager_color_selected_background:\x2dr
 SETUVAR fish_pager_color_selected_completion:\x1d
 SETUVAR fish_pager_color_selected_description:\x1d
 SETUVAR fish_pager_color_selected_prefix:\x1d
-SETUVAR fish_user_paths:\x2dg\x1e/home/oscar/\x2ecargo/bin\x1e/home/oscar/\x2elocal/bin\x1e/home/oscar/\x1e/usr/local/bin\x1e/home/oscar/\x2elocal/share/pipx/venvs\x1e\x7e/\x2egem/ruby/3\x2e4\x2e0/bin/
+SETUVAR fish_user_paths:\x2dg\x1e/home/oscar/\x2ecargo/bin\x1e/home/oscar/\x2elocal/bin\x1e/home/oscar/\x1e/usr/local/bin\x1e/home/oscar/\x2elocal/share/pipx/venvs\x1e\x7e/\x2egem/ruby/3\x2e4\x2e0/bin/\x1e/home/oscar/\x2eroswell/bin

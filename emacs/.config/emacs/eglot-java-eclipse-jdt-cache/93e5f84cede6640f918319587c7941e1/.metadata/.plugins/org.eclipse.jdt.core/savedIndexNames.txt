@@ -1,0 +1,3 @@
+INDEX VERSION 1.134+/home/oscar/.dotfiles/emacs/.config/emacs/eglot-java-eclipse-jdt-cache/93e5f84cede6640f918319587c7941e1/.metadata/.plugins/org.eclipse.jdt.core
+3672224818.index
+2812929423.index

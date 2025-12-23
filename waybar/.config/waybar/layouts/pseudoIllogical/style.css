@@ -1,0 +1,377 @@
+@import "../../colors.css";
+
+* {
+    font-family: "Google Sans Flex", JetBrainsMono Nerd Font Mono, "Material Symbols Rounded", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    min-height: 0;
+}
+
+/* Barra principal - Material You */
+window#waybar {
+    background-color: @surface;
+    color: @on_surface;
+    border: none;
+    padding: 6px 0;
+    margin: 0;
+}
+
+/* Contenedores de módulos */
+.modules-left,
+.modules-center,
+.modules-right {
+    background-color: transparent;
+    padding: 0 8px;
+    margin: 0;
+}
+
+/* Estilo base para módulos - Surface Container */
+#custom-start-menu,
+#custom-app-launcher,
+#workspaces,
+#mpd,
+#clock,
+#network,
+#bluetooth,
+#battery,
+#pulseaudio,
+#custom-notification,
+#cpu {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+    margin: 4px 2px;
+    border-radius: 12px;
+    border: none;
+    transition: all 200ms ease-out;
+}
+
+/* Hover states - Surface Container High */
+#custom-start-menu:hover,
+#custom-app-launcher:hover,
+#workspaces button:hover,
+#mpd:hover,
+#clock:hover,
+#network:hover,
+#bluetooth:hover,
+#battery:hover,
+#pulseaudio:hover,
+#custom-notification:hover,
+#cpu:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Menú de inicio - Primary */
+#custom-start-menu {
+    background-color: @primary;
+    color: @on_primary;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 12px;
+    margin-left: 6px;
+}
+
+#custom-start-menu:hover {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+/* Lanzador de aplicaciones */
+#custom-app-launcher {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#custom-app-launcher:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Espacios de trabajo - Workspaces */
+#workspaces {
+    background-color: transparent;
+    padding: 4px 8px;
+    margin: 4px 2px;
+    border: none;
+}
+
+#workspaces button {
+    background-color: @surface_container;
+    color: @on_surface_variant;
+    padding: 4px 8px;
+    margin: 0 2px;
+    border-radius: 10px;
+    border: none;
+    transition: all 150ms ease-out;
+    min-width: 28px;
+}
+
+#workspaces button:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#workspaces button.active,
+#workspaces button.focused {
+    background-color: @primary;
+    color: @on_primary;
+    font-weight: 600;
+}
+
+#workspaces button.active:hover,
+#workspaces button.focused:hover {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+#workspaces button.urgent {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+/* Reproductor de música */
+#mpd {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+    min-width: 200px;
+}
+
+#mpd.playing {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#mpd.paused {
+    background-color: @surface_container_high;
+    color: @on_surface_variant;
+}
+
+#mpd:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Reloj */
+#clock {
+    background-color: @surface_container_high;
+    color: @on_surface;
+    font-weight: 600;
+    padding: 6px 16px;
+}
+
+#clock:hover {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+/* Tooltip del calendario */
+tooltip {
+    background-color: @surface_container_highest;
+    color: @on_surface;
+    border: 1px solid @outline_variant;
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+tooltip label {
+    color: @on_surface;
+}
+
+/* Red - Network */
+#network {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#network.disconnected {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+#network.ethernet {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+#network.wifi {
+    background-color: @surface_container;
+    color: @on_surface;
+}
+
+#network:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#network.disconnected:hover {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+#network.ethernet:hover {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+/* Bluetooth */
+#bluetooth {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#bluetooth.connected {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#bluetooth.disabled {
+    background-color: @surface_container;
+    color: @on_surface_variant;
+    opacity: 0.7;
+}
+
+#bluetooth:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#bluetooth.connected:hover {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+/* Batería */
+#battery {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#battery.charging {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#battery.warning {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+#battery.critical {
+    background-color: @error_container;
+    color: @on_error_container;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+#battery.full {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+#battery.plugged {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#battery:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#battery.charging:hover,
+#battery.warning:hover,
+#battery.full:hover,
+#battery.plugged:hover {
+    opacity: 0.9;
+}
+
+/* CPU */
+#cpu {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#cpu:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Pulseaudio - Volumen */
+#pulseaudio {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 14px;
+}
+
+#pulseaudio.muted {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+#pulseaudio.bluetooth {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#pulseaudio:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Notificaciones */
+#custom-notification {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 12px;
+    font-size: 15px;
+}
+
+#custom-notification:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Tray - Bandeja del sistema */
+#tray {
+    background-color: transparent;
+    padding: 0 4px;
+}
+
+#tray > .passive {
+    opacity: 0.6;
+}
+
+#tray > .needs-attention {
+    background-color: @error_container;
+    color: @on_error_container;
+    border-radius: 10px;
+    padding: 2px 4px;
+}
+
+/* Expand icon para tray */
+#custom-expand-icon {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 6px 10px;
+    margin: 4px 2px;
+    border-radius: 12px;
+    border: none;
+}
+
+#custom-expand-icon:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Grupo tray-expander */
+.tray-group-item {
+    margin: 0 2px;
+}

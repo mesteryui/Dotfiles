@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+if [ "$(dms ipc lock isLocked 2>/dev/null)" = "false" ]; then
+    dms ipc lock lock
+fi

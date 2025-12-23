@@ -81,13 +81,15 @@
   :ensure t
   :hook (elpaca-after-init . spacious-padding-mode)
   :bind ("<f6>" . spacious-padding-mode)
-  :config 
+  :config
   (setq spacious-padding-widths
 	'(:internal-border-width 12
 				 :header-line-width 4
 				 :mode-line-width 5
+				 :custom-button-width 2
 				 :tab-width 4
-				 :right-divider-width 10
-				 :fringe-width 10)))
+				 :right-divider-width 12
+				 :scroll-bar-width 8
+				 :fringe-width 8)))
 
 (provide 'ui)

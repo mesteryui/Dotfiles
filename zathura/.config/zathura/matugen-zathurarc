@@ -3,36 +3,36 @@
 " -----------------------------------------------------------------------------
 
 " Colors
-set default-bg              "rgba(26, 17, 16, 1)"
-set default-fg              "#ffb4ac"
+set default-bg              "rgba(25, 17, 19, 1)"
+set default-fg              "#ffb1bf"
 
-set statusbar-bg            "#561e1a"
-set statusbar-fg            "#ffb4ac"
+set statusbar-bg            "#551d2b"
+set statusbar-fg            "#ffb1bf"
 
-set inputbar-bg             "#561e1a"
-set inputbar-fg             "#ffb4ac"
+set inputbar-bg             "#551d2b"
+set inputbar-fg             "#ffb1bf"
 
 set notification-error-bg   "#690005"
 set notification-error-fg   "#ffb4ab"
 
-set notification-warning-bg "#ffdad6"
+set notification-warning-bg "#ffd9de"
 set notification-warning-fg "#93000a"
 
-set highlight-color         "#ffdad6"
-set highlight-active-color  "#ffb4ac"
+set highlight-color         "#ffd9de"
+set highlight-active-color  "#ffb1bf"
 
-set completion-highlight-fg "#561e1a"
-set completion-highlight-bg #ffb4ac""
+set completion-highlight-fg "#551d2b"
+set completion-highlight-bg #ffb1bf""
 
-set completion-bg           "#561e1a"
-set completion-fg           "#ffb4ac"
+set completion-bg           "#551d2b"
+set completion-fg           "#ffb1bf"
 
-set notification-bg         "#561e1a"
-set notification-fg         "#ffb4ac"
+set notification-bg         "#551d2b"
+set notification-fg         "#ffb1bf"
 
 set recolor                 "true"
-set recolor-lightcolor      "rgba(86, 30, 26, 1)"
-set recolor-darkcolor       "#ffb4ac"
+set recolor-lightcolor      "rgba(85, 29, 43, 1)"
+set recolor-darkcolor       "#ffb1bf"
 set recolor-reverse-video   "true"
 set recolor-keephue         "true"
 

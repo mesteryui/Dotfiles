@@ -1,0 +1,406 @@
+@import "../../colors.css";
+
+* {
+    font-family: "Google Sans Flex", JetBrainsMono Nerd Font Prop, "Material Symbols Rounded", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+}
+
+/* Barra principal - Material You Surface */
+window#waybar {
+    background-color: @surface;
+    color: @on_surface;
+    border-bottom: 1px solid @outline_variant;
+    padding: 0;
+    margin: 0;
+}
+
+/* Contenedores de módulos */
+.modules-left,
+.modules-center,
+.modules-right {
+    background-color: transparent;
+    padding: 0 8px;
+}
+
+/* Estilo base para módulos - Material You Surface Container */
+#hyprland-workspaces,
+#workspaces,
+#custom-stasis,
+#clock,
+#custom-weather,
+#custom-update,
+#custom-screenrecording-indicator,
+#tray,
+#bluetooth,
+#power-profiles-daemon,
+#custom-notification,
+#network,
+#pulseaudio,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#keyboard-state,
+#hyprland-language,
+#battery,
+#custom-expand-icon,
+#idle_inhibitor,
+#hyprland-window,
+#wlr-taskbar {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 4px 12px;
+    margin: 4px 2px;
+    border-radius: 20px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover states - Material You elevation */
+#hyprland-workspaces button:hover,
+#workspaces button:hover,
+#custom-stasis:hover,
+#clock:hover,
+#custom-weather:hover,
+#custom-update:hover,
+#bluetooth:hover,
+#power-profiles-daemon:hover,
+#custom-notification:hover,
+#network:hover,
+#pulseaudio:hover,
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#backlight:hover,
+#keyboard-state:hover,
+#hyprland-language:hover,
+#battery:hover,
+#custom-expand-icon:hover,
+#idle_inhibitor:hover,
+#hyprland-window:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+/* Workspaces - Diseño compacto Material */
+#hyprland-workspaces,
+#workspaces {
+    padding: 2px 4px;
+    margin: 4px 4px;
+}
+
+#hyprland-workspaces button,
+#workspaces button {
+    background-color: transparent;
+    color: @on_surface_variant;
+    padding: 2px 8px;
+    margin: 0 2px;
+    border-radius: 16px;
+    min-width: 24px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#hyprland-workspaces button:hover,
+#workspaces button:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#hyprland-workspaces button.active,
+#hyprland-workspaces button.focused,
+#workspaces button.active,
+#workspaces button.focused {
+    background-color: @primary;
+    color: @on_primary;
+    font-weight: 600;
+}
+
+#hyprland-workspaces button.urgent,
+#workspaces button.urgent {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+/* Window title - Secondary Container */
+#hyprland-window,
+#window {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+    font-size: 12px;
+    padding: 4px 12px;
+    margin: 4px 8px;
+    border-radius: 16px;
+}
+
+/* Taskbar */
+#wlr-taskbar {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+#wlr-taskbar button {
+    background-color: @surface_container;
+    color: @on_surface;
+    padding: 4px 8px;
+    margin: 4px 2px;
+    border-radius: 12px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#wlr-taskbar button:hover {
+    background-color: @surface_container_high;
+}
+
+#wlr-taskbar button.active {
+    background-color: @primary;
+    color: @on_primary;
+}
+
+/* Clock - Surface Container Highest para destacar */
+#clock {
+    background-color: @surface_container_highest;
+    color: @on_surface;
+    font-weight: 600;
+    padding: 4px 16px;
+}
+
+/* Updates - Error Container cuando hay actualizaciones */
+#custom-update {
+    background-color: @surface_container;
+    color: @on_surface_variant;
+    padding: 4px 10px;
+}
+
+#custom-update.warning {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+/* Screen recording indicator - Error para llamar atención */
+#custom-screenrecording-indicator {
+    background-color: @error_container;
+    color: @on_error_container;
+    padding: 4px 12px;
+}
+
+/* Batería - Estados adaptativos */
+#battery {
+    padding: 4px 12px;
+}
+
+#battery.charging {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+#battery.warning {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+}
+
+#battery.critical {
+    background-color: @error_container;
+    color: @on_error_container;
+    animation: blink 0.5s ease-in-out infinite;
+}
+
+#battery.full {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+/* @keyframes blink { */
+/*     0%, 100% { opacity: 1; } */
+/*     50% { opacity: 0.6; } */
+/* } */
+/* Network - Estados visuales */
+#network {
+    padding: 4px 12px;
+}
+
+#network.disconnected {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+#network.ethernet {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+#network.wifi {
+    background-color: @surface_container;
+    color: @on_surface;
+}
+
+/* Pulseaudio - Volumen visual */
+#pulseaudio {
+    padding: 4px 12px;
+}
+
+#pulseaudio.muted {
+    color: @on_surface_variant;
+    background-color: @error_container;
+}
+
+#pulseaudio.bluetooth {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+/* CPU y Memory - Monitoreo de sistema */
+#cpu {
+    padding: 4px 12px;
+}
+
+#memory {
+    padding: 4px 12px;
+}
+
+/* Temperature */
+#temperature {
+    padding: 4px 12px;
+}
+
+#temperature.critical {
+    background-color: @error_container;
+    color: @on_error_container;
+}
+
+/* Backlight */
+#backlight {
+    padding: 4px 12px;
+}
+
+/* Keyboard State */
+#keyboard-state {
+    padding: 4px 12px;
+}
+
+#keyboard-state > label.locked {
+    background-color: @primary_container;
+    color: @on_primary_container;
+    padding: 0px 6px;
+    border-radius: 8px;
+    margin: 0 2px;
+}
+
+/* Language */
+#hyprland-language {
+    padding: 4px 12px;
+}
+
+/* Idle Inhibitor */
+#idle_inhibitor {
+    padding: 4px 12px;
+}
+
+#idle_inhibitor.activated {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+/* Notifications */
+#custom-notification {
+    padding: 4px 12px;
+    font-family: "Material Symbols Rounded";
+    font-size: 18px;
+}
+
+/* Custom modules - Primary */
+#custom-power {
+    padding: 4px 12px;
+    font-size: 16px;
+}
+
+#custom-layout {
+    padding: 4px 12px;
+    font-size: 16px;
+}
+
+#custom-media {
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-right: 4px;
+    font-size: 12px;
+}
+
+#custom-stasis {
+    padding: 4px 12px;
+    font-size: 16px;
+}
+
+/* Tray - Diseño drawer Material */
+#tray {
+    background-color: transparent;
+    padding: 0 4px;
+}
+
+#tray > .passive {
+    opacity: 0.6;
+}
+
+#tray > .needs-attention {
+    background-color: @error_container;
+    color: @on_error_container;
+    border-radius: 12px;
+    padding: 4px 8px;
+}
+
+/* Tray menu - Material You */
+#tray menu {
+    background-color: @surface;
+    border: 1px solid @outline_variant;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+#tray menu menuitem {
+    background-color: transparent;
+    color: @on_surface;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 2px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#tray menu menuitem:hover {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+#tray menu menuitem:disabled {
+    color: @on_surface_variant;
+    opacity: 0.38;
+}
+
+/* Separadores visuales mínimos */
+#tray menu separator {
+    background-color: @outline_variant;
+    margin: 4px 8px;
+}
+
+/* Tooltips - Material You Surface Container */
+tooltip {
+    background-color: @surface;
+    color: @on_surface;
+    border: 1px solid @outline_variant;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+tooltip label {
+    color: @on_surface;
+}
+
+/* Transiciones suaves globales */
+button,
+label {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,448 @@
+@import 'matugen/matugen-swaync.css';
+
+
+* {
+  all: unset;
+  font-size: 14px;
+  font-family: "Ubuntu Nerd Font";
+  transition: 200ms;
+}
+
+/* === ELEMENTOS BASE === */
+trough {
+  background-color: @surface_container_low;
+}
+
+trough highlight {
+  background: @primary;
+}
+
+trough slider {
+  margin: -10px;
+  border-radius: 12.6px;
+  box-shadow: 0 0 2px @shadow;
+  transition: all 0.2s ease;
+  background-color: @primary;
+}
+
+trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @primary;
+}
+
+scale {
+  margin: 0 7px;
+}
+
+scale trough {
+  margin: 0rem 1rem;
+  min-height: 8px;
+  min-width: 70px;
+  border-radius: 12.6px;
+}
+
+/* === NOTIFICACIONES === */
+.notification-background {
+  box-shadow: 0 0 8px 0 @shadow, inset 0 0 0 1px @outline_variant;
+  border-radius: 12.6px;
+  margin: 18px;
+  background: @surface;
+  color: @on_surface;
+  padding: 0;
+}
+
+.notification-background .notification {
+  padding: 7px;
+  border-radius: 12.6px;
+}
+
+.notification-background .notification.critical {
+  box-shadow: inset 0 0 7px 0 @error;
+  background: @error_container;
+  color: @on_error_container;
+}
+
+.notification .notification-content {
+  margin: 7px;
+}
+
+.notification .notification-content overlay {
+  margin: 4px;
+}
+
+.notification-content .summary {
+  color: @on_surface;
+  font-weight: 500;
+}
+
+.notification-content .time {
+  color: @on_surface_variant;
+  font-size: 0.9em;
+}
+
+.notification-content .body {
+  color: @on_surface_variant;
+}
+
+.notification > *:last-child > * {
+  min-height: 3.4em;
+}
+
+/* Botón cerrar notificación */
+.notification-background .close-button {
+  margin: 7px;
+  padding: 2px;
+  border-radius: 6.3px;
+  /*color: @on_error_container;*/
+  color: @on_error;
+  background-color: @error;
+}
+
+.notification-background .close-button:hover {
+  background-color: @error;
+  color: @on_error;
+}
+
+.notification-background .close-button:active {
+  background-color: @error;
+  color: @on_error;
+  transform: scale(0.95);
+}
+
+/* Botones de acción en notificaciones */
+.notification .notification-action {
+  border-radius: 7px;
+  color: @on_surface_variant;
+  background-color: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+  margin: 4px;
+  padding: 8px;
+  font-size: 0.2rem;
+}
+
+.notification .notification-action:hover {
+  background-color: @surface_container_high;
+  color: @on_surface;
+}
+
+.notification .notification-action:active {
+  background-color: @primary_container;
+  color: @on_primary_container;
+}
+
+/* Barras de progreso en notificaciones */
+.notification.critical progress {
+  background-color: @error;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @primary;
+}
+
+.notification progress,
+.notification trough,
+.notification progressbar {
+  border-radius: 12.6px;
+  padding: 3px 0;
+}
+
+/* === CENTRO DE CONTROL === */
+.control-center {
+  box-shadow: 0 0 8px 0 @shadow, inset 0 0 0 1px @outline;
+  border-radius: 12.6px;
+  background-color: @surface_dim;
+  color: @on_surface;
+  padding: 14px;
+}
+
+.control-center .notification-background {
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+  margin: 4px 10px;
+  background: @surface_container_low;
+}
+
+.control-center .notification-background .notification {
+  border-radius: 7px;
+}
+
+.control-center .notification-background .notification.low {
+  opacity: 0.8;
+}
+
+/* Títulos de widgets */
+.control-center .widget-title > label {
+  color: @primary;
+  font-size: 1.3em;
+  font-weight: 600;
+}
+
+.control-center .widget-title button {
+  border-radius: 7px;
+  color: @on_surface_variant;
+  background-color: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+  padding: 8px;
+}
+
+.control-center .widget-title button:hover {
+  background-color: @surface_container_high;
+  color: @on_surface;
+}
+
+.control-center .widget-title button:active {
+  background-color: @primary_container;
+  color: @on_primary_container;
+}
+
+.control-center .notification-group {
+  margin-top: 10px;
+}
+
+.control-center .notification-group:focus .notification-background {
+  background-color: @surface_container;
+}
+
+/* === SCROLLBAR === */
+scrollbar slider {
+  margin: -3px;
+  opacity: 0.8;
+  background-color: @outline;
+}
+
+scrollbar slider:hover {
+  background-color: @primary;
+}
+
+scrollbar trough {
+  margin: 2px 0;
+  background-color: @surface_container_lowest;
+}
+
+/* === WIDGET DND === */
+.widget-dnd {
+  margin-top: 5px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
+.widget-dnd > switch {
+  font-size: initial;
+  border-radius: 8px;
+  background: @surface_container;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+}
+
+.widget-dnd > switch:checked {
+  background: @primary_container;
+  box-shadow: inset 0 0 0 1px @primary;
+}
+
+.widget-dnd > switch slider {
+  background: @outline;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.widget-dnd > switch:checked slider {
+  background: @primary;
+}
+
+/* === WIDGET MPRIS === */
+.widget-mpris-player {
+  background: @surface_container;
+  border-radius: 12.6px;
+  color: @on_surface;
+  box-shadow: inset 0 0 0 1px @outline_variant;
+}
+
+.mpris-overlay {
+  background-color: @surface_container_high;
+  opacity: 0.95;
+  padding: 15px 10px;
+  border-radius: 12.6px;
+}
+
+.widget-mpris-album-art {
+  -gtk-icon-size: 100px;
+  border-radius: 12.6px;
+  margin: 0 10px;
+}
+
+.widget-mpris-title {
+  font-size: 1.2rem;
+  color: @on_surface;
+  font-weight: 600;
+}
+
+.widget-mpris-subtitle {
+  font-size: 1rem;
+  color: @on_surface_variant;
+}
+
+.widget-mpris button {
+  border-radius: 12.6px;
+  color: @on_surface_variant;
+  margin: 0 5px;
+  padding: 2px;
+  transition: all 0.2s ease;
+}
+
+.widget-mpris button image {
+  -gtk-icon-size: 1.8rem;
+}
+
+.widget-mpris button:hover {
+  background-color: @surface_container_highest;
+  color: @on_surface;
+}
+
+.widget-mpris button:active {
+  background-color: @primary_container;
+  color: @on_primary_container;
+  transform: scale(0.95);
+}
+
+.widget-mpris button:disabled {
+  opacity: 0.4;
+  color: @outline;
+}
+
+/* === BARRA DE MENÚ === */
+.widget-menubar > box > .menu-button-bar > button > label {
+  font-size: 3rem;
+  padding: 0.5rem 2rem;
+  color: @on_surface;
+}
+
+.widget-menubar > box > .menu-button-bar > :last-child {
+  color: @error;
+}
+
+/* === BOTONES DE SISTEMA === */
+.power-buttons button,
+.powermode-buttons button,
+.screenshot-buttons button {
+  background-color: @surface_container;
+  color: @on_surface_variant;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.power-buttons button:hover,
+.powermode-buttons button:hover,
+.screenshot-buttons button:hover {
+  background: @surface_container_high;
+  color: @on_surface;
+}
+
+.power-buttons button:active,
+.powermode-buttons button:active,
+.screenshot-buttons button:active {
+  background: @primary_container;
+  color: @on_primary_container;
+  transform: scale(0.95);
+}
+
+/* === ETIQUETAS === */
+.control-center .widget-label > label {
+  color: @primary;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* === GRILLA DE BOTONES === */
+.widget-buttons-grid {
+  padding-top: 1rem;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background-color: @surface_container;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background-color: @surface_container_high;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active {
+  background-color: @primary_container;
+  transform: scale(0.95);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button label {
+  font-size: 2.5rem;
+  color: @on_surface_variant;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover label {
+  color: @on_surface;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active label {
+  color: @on_primary_container;
+}
+
+/* === WIDGET VOLUMEN === */
+.widget-volume {
+  padding: 1rem 0;
+}
+
+.widget-volume label {
+  color: @secondary;
+  padding: 0 1rem;
+  font-weight: 500;
+}
+
+.widget-volume trough {
+  background-color: @surface_container_low;
+}
+
+.widget-volume trough highlight {
+  background: @secondary;
+}
+
+.widget-volume trough slider {
+  background-color: @secondary;
+}
+
+.widget-volume trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @secondary;
+}
+
+/* === WIDGET BRILLO === */
+.widget-backlight {
+  padding: 1rem 0;
+}
+
+.widget-backlight trough {
+  background-color: @surface_container_low;
+}
+
+.widget-backlight trough highlight {
+  background: @tertiary;
+}
+
+.widget-backlight trough slider {
+  background-color: @tertiary;
+}
+
+.widget-backlight trough slider:hover {
+  box-shadow: 0 0 2px @shadow, 0 0 8px @tertiary;
+}
+
+.widget-backlight label {
+  font-size: 1.5rem;
+  color: @tertiary;
+  font-weight: 500;
+}
+
+.widget-backlight .KB {
+  padding-bottom: 1rem;
+}
+
+/* === IMÁGENES === */
+.image {
+  padding-right: 0.5rem;
+}

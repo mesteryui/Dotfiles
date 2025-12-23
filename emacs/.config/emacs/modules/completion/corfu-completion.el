@@ -1,6 +1,9 @@
+;; -*- lexical-binding: t; -*- 
 ;; Corfu: interfaz mínima y rápida de completado en buffer
+(eval-when-compile (require 'macros))
 (use-package corfu
   :ensure t
+  :after orderless
   :commands (corfu-mode global-corfu-mode)
   :bind (:map corfu-map ("<tab>" . corfu-complete))
   :custom

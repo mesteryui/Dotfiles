@@ -1,4 +1,5 @@
 ;; -*- lexical-binding: t; -*- 
+
 (use-package python
   :ensure nil
   ;;:hook (python-ts-mode-hook eglot-ensure)

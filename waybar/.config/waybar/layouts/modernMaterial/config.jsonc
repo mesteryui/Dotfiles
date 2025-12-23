@@ -18,7 +18,6 @@
     "clock",
     "custom/weather",
     "custom/update",
-    "custom/stasis",
   ],
   
   "modules-right": [
@@ -59,7 +58,7 @@
     "interval": 240
   },
   "custom/update": {
-    "format": "   {}",
+    "format": "  {}",
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",
@@ -99,7 +98,7 @@
 },
  "custom/notification": {
     "tooltip": false,
-    "format": " {icon}",
+    "format": "{icon}",
     "format-icons": {
       "notification": "notifications_active",
       "none": "notifications",

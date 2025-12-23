@@ -1,7 +1,7 @@
 /* Material You Waybar - Optimizado para espacio vertical */
 @import "../../colors.css";
 * {
-    font-family: "Google Sans Flex Medium", "Material Symbols Rounded", sans-serif;
+    font-family: "Google Sans Flex", JetBrainsMono Nerd Font Propo, "Material Symbols Rounded", sans-serif;
     font-size: 13px;
     font-weight: 500;
     border: none;
@@ -231,8 +231,8 @@ window#waybar {
 /* Notifications - Estados de notificación */
 #custom-notification {
     padding: 4px 12px;
-    font-family: "Material Icons";
-    font-size: 15px;
+    font-family: "Material Symbols Rounded";
+    font-size: 18px;
 }
 
 /* Tray - Diseño drawer Material */

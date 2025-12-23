@@ -8,7 +8,8 @@
 
 * {
   all: unset;
-  font-family: "Google Sans Flex 24pt";
+  font-family: "Google Sans Flex";
+  font-variation-settings: "opsz" 11, "GRAD" 20;
 }
 
 .normal-icons {
@@ -88,6 +89,7 @@ child {
   background: alpha(@accent_bg_color, 0.25);
   border-radius: 5px;
   padding: 10px;
+  font-variation-settings: "GRAD" 600, "opsz" 24;
 }
 
 child:hover .item-box,
@@ -169,7 +171,7 @@ child:selected .item-box {
 
 .keybind-bind {
   color: @on_surface;
-  font-weight: bold;
+  font-variation-settings: "wght" 700, "opsz" 30;
 }
 
 .keybind-label {

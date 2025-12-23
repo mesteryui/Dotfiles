@@ -1,143 +1,90 @@
 [config]
-version_check = false
 
 [templates.kvantum_kvconfig]
-input_path = './templates/kvantum-colors.kvconfig'
-output_path = '~/.config/Kvantum/matugen/matugen.kvconfig'
+input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.kvconfig'
+output_path = '/home/oscar/.config/Kvantum/matugen/matugen.kvconfig'
 
 [templates.kvantum_svg]
-input_path = './templates/kvantum-colors.svg'
-output_path = '~/.config/Kvantum/matugen/matugen.svg'
+input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.svg'
+output_path = '/home/oscar/.config/Kvantum/matugen/matugen.svg'
 
 [templates.wlogout]
-input_path = './templates/css_template.conf'
-output_path = '~/.config/wlogout/colors.css'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar/.config/wlogout/colors.css'
 
 [templates.television]
-input_path = 'templates/television.toml'
-output_path = '~/.config/television/themes/matugen.toml'
-
-[templates.ghostty]
-input_path = './templates/ghostty.conf'
-output_path = "~/.config/ghostty/themes/Matugen"
-post_hook='pkill -SIGUSR2 ghostty'
+input_path = '/home/oscar/.config/matugen/templates/television.toml'
+output_path = '/home/oscar/.config/television/themes/matugen.toml'
 
 [templates.walker]
-input_path = '~/.config/matugen/templates/css_template.conf'
-output_path = '~/.config/walker/colors.css'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar/.config/walker/colors.css'
 
 [templates.bat]
-input_path  = '~/.config/matugen/templates/matugen-bat-colors.tmTheme'
-output_path = '~/.config/bat/themes/Matugen.tmTheme'
+input_path  = '/home/oscar/.config/matugen/templates/matugen-bat-colors.tmTheme'
+output_path = '/home/oscar/.config/bat/themes/Matugen.tmTheme'
 post_hook = 'bat cache --build'
 
-[templates.gtk3]
-input_path = '/home/oscar/.config/matugen/templates/gtk-colors.css'
-output_path = '~/.config/gtk-3.0/gtk.css'
-
-[templates.gtk4]
-input_path = '/home/oscar/.config/matugen/templates/gtk-4.0/gtk.css'
-output_path = '~/.config/gtk-4.0/gtk.css'
-
-[templates.vesktop]
-input_path = 'templates/midnight-discord.css'
-output_path = '~/.config/vesktop/themes/midnight-discord.css'
-
-# [templates.niri]
-# input_path = '~/.config/matugen/templates/colors.kdl'
-# output_path = '~/.config/niri/colors.kdl'
 
 [templates.kitty]
-input_path = '~/.config/matugen/templates/kitty-kolors.conf'
-output_path = '~/.config/kitty/colors.conf'
-#post_hook = "kitty @ set-colors -a -c ~/.config/kitty/colors.conf"
+input_path = '/home/oscar/.config/matugen/templates/kitty-kolors.conf'
+output_path = '/home/oscar/.config/kitty/colors.conf'
+#post_hook = "kitty @ set-colors -a -c /home/oscar/.config/kitty/colors.conf"
 
 [templates.waybar]
-input_path = '~/.config/matugen/templates/css_template.conf'
-output_path = '~/.config/waybar/colors.css'
-post_hook = 'launch-waybar'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar/.config/waybar/colors.css'
+#post_hook = 'launch-waybar'
 
 [templates.nwgbar]
-input_path = '~/.config/matugen/templates/css_template.conf'
-output_path = '~/.config/nwg-bar/colors.css'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar/.config/nwg-bar/colors.css'
 [templates.swaync]
-input_path = '~/.config/matugen/templates/css_template.conf'
-output_path = '~/.config/swaync/matugen/matugen-swaync.css'
-post_hook = 'swaync-client -rs'
-
-[templates.swayosd]
-input_path = '~/.config/matugen/templates/css_template.conf'
-output_path = '~/.config/swayosd/colors.css'
-post_hook = '~/.config/hypr/scripts/restart_osd.sh'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar/.config/swaync/matugen/matugen-swaync.css'
+#post_hook = 'swaync-client -rs'
 
 [templates.hyprland]
-input_path = "~/.config/matugen/templates/hyprland_template.conf"
-output_path = "~/.config/hypr/colors.conf"
+input_path = "/home/oscar/.config/matugen/templates/hyprland_template.conf"
+output_path = "/home/oscar/.config/hypr/colors.conf"
 post_hook = "hyprctl reload"
 
-# [templates.hyprlock]
-# input_path = "~/.config/matugen/templates/hyprland/hyprlock-colors.conf"
-# output_path = "~/.config/hypr/hyprlock/colors.conf"
+[templates.hyprtoolkit]
+input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
+output_path = "/home/oscar/.config/hypr/hyprtoolkit.conf"
+post_hook = "hyprctl reload"
+
 
 [templates.qt5]
-input_path = '~/.config/matugen/templates/qtct-colors.conf'
-output_path = '~/.config/qt5ct/colors/matugen-qt5ct.conf'
+input_path = '/home/oscar/.config/matugen/templates/qtct-colors.conf'
+output_path = '/home/oscar/.config/qt5ct/colors/matugen-qt5ct.conf'
 
 [templates.starship]
-input_path = "~/.config/matugen/templates/matugen-starship.toml"
-output_path = "~/.config/starship.toml"
+input_path = "/home/oscar/.config/matugen/templates/matugen-starship.toml"
+output_path = "/home/oscar/.config/starship.toml"
 
 [templates.btop]
-input_path = './templates/btop-theme'
-output_path = '~/.config/btop/themes/matugen.theme'
-# Qt6
-[templates.qt6]
-input_path = '~/.config/matugen/templates/qtct-colors.conf'
-output_path = '~/.config/qt6ct/colors/matugen-qt6ct.conf'
-post_hook = 'systemctl restart --user hyprpolkitagent'
-#[templates.color-scheme]
-#input_path = '~/.config/matugen/templates/Matugen.colors'
-#output_path = '~/.local/share/color-schemes/Matugen.colors'
+input_path = '/home/oscar/.config/matugen/templates/btop-theme'
+output_path = '/home/oscar/.config/btop/themes/matugen.theme'
 
 [templates.rofi]
-input_path = '~/.config/matugen/templates/matugen-rofi.rasi'
-output_path = '~/.config/rofi/matugen/matugen-rofi.rasi'
-post_hook = "~/.config/rofi/scripts/updateWallpaper.sh {{image}}"
+input_path = '/home/oscar/.config/matugen/templates/matugen-rofi.rasi'
+output_path = '/home/oscar/.config/rofi/matugen/matugen-rofi.rasi'
 
 
 [templates.cava]
-input_path = '~/.config/matugen/templates/matugen-cava'
-output_path = '~/.dotfiles/cava/.config/cava/config'
+input_path = '/home/oscar/.config/matugen/templates/matugen-cava'
+output_path = '/home/oscar/.dotfiles/cava/.config/cava/config'
 
 [templates.fish]
-input_path = '~/.config/matugen/templates/fish_theme.fish'
-output_path = '~/.config/fish/themes/Matugen.theme'
-
-[templates.pywalfox]
-input_path = '~/.config/matugen/templates/pywalfox-colors.json'
-output_path = '~/.cache/wal/colors.json'
-post_hook = 'pywalfox update'
+input_path = '/home/oscar/.config/matugen/templates/fish_theme.fish'
+output_path = '/home/oscar/.config/fish/themes/Matugen.theme'
 
 [templates.zathura]
-input_path = '~/.config/matugen/templates/matugen-zathurarc'
-output_path = '~/.config/zathura/matugen-zathurarc'
+input_path = '/home/oscar/.config/matugen/templates/matugen-zathurarc'
+output_path = '/home/oscar/.config/zathura/matugen-zathurarc'
 
-[templates.vscodium]
-input_path = '~/.config/matugen/templates/vscodium-settings.json'
-output_path = '~/.config/VSCodium/User/settings.json'
-
-# [templates.zenUserChrome]
-# input_path = '~/.config/matugen/templates/zen-userChrome.css'
-# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/userChrome.css'
-
-# [templates.zenLogo]
-# input_path = '~/.config/matugen/templates/zen-logo.svg'
-# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/zen-logo-mocha.svg'
-
-# [templates.zenUserContent]
-# input_path = '~/.config/matugen/templates/zen-userContent.css'
-# output_path = '~/.zen/1c2c2r2y.Default (release)/chrome/userContent.css'
 
 [templates.yazi]
-input_path = '~/.config/matugen/templates/yazi-theme.toml'
-output_path = '~/.config/yazi/theme.toml'
+input_path = '/home/oscar/.config/matugen/templates/yazi-theme.toml'
+output_path = '/home/oscar/.config/yazi/theme.toml'

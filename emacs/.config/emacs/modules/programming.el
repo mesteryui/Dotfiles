@@ -99,7 +99,7 @@ The exact color values are taken from the active Ef theme."
 	     (ignore-errors (mason-install "jdtls"))
 	     (ignore-errors (mason-install "gopls")))))
 
-(require 'lsp-confs)
+(moon-loader-add-modules lsp-confs)
 
 
 ;; Opción 3: Reduce frecuencia de diagnósticos de flymake
