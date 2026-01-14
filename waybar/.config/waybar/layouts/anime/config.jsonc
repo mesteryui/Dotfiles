@@ -1,0 +1,80 @@
+{
+  "reload_style_on_change": true,
+  "layer": "bottom",
+  "position": "top",
+  "margin-top": 7,
+  "margin-bottom": 0,
+  "margin-left": 0,
+  "margin-right": 0,
+  "spacing": 0,
+  "modules-center": [
+    "clock",
+    "hyprland/submap",
+    "hyprland/workspaces",
+    "pulseaudio",
+    "network",
+    "battery"
+  ],
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "format": "{icon}",
+    "format-icons": {
+      "default": "󰧱",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六",
+      "7": "七",
+      "8": "八",
+      "9": "九",
+      "10": "十"
+    }
+  },
+  "mpris": {
+    "format": "{title}",
+    "format-paused": "{title}",
+    "tooltip": false,
+    "on-click": "playerctl play-pause",
+    "max-length": 16
+  },
+  "hyprland/submap": {
+    "format": "{}",
+    "tooltip": false
+  },
+  "pulseaudio": {
+    "format": "{icon}",
+    "format-muted": "󰖁",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "pavucontrol",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5",
+    "tooltip": true,
+    "tooltip-format": "Volumen: {volume}%"
+  },
+  "network": {
+    "format": "{icon}",
+    "format-wifi": "󰤨",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰖪",
+    "tooltip": true,
+    "tooltip-format": "Red: {essid}\nVelocidad: {bandwidthDownBits} ↓ {bandwidthUpBits} ↑",
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e impala"
+  },
+  "battery": {
+    "interval": 10,
+     "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon}",
+    "format-charging": "󰂄",
+    "format-plugged": "󱐋",
+    "format-full": "󰁹",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "tooltip-format": "Batería: {capacity}%\nEstado: {status}"
+  }
+}

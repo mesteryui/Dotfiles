@@ -12,20 +12,23 @@ function GetEntries()
 	    Text = "About",
 	    Icon = "",
 	    Actions = {
-		["about_system"] = "ghostty --class=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
+		["about_system"] = "xdg-terminal-exec --app-id=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
 	    },
 	},
      {
 	    Text = "Update",
 	    Icon = "",
 	    Actions = {
-		["update"] = "ghostty --class=local.floating -e yay -Syu"
+		["update"] = "xdg-terminal-exec --app-id=local.floating -e yay -Syu"
 	    },
    },
      {
 	 Text = "Atajos de teclado",
 	 Icon = "",
-	 Actions =  { show_keybinds = "menubinds.sh" },
+	 Actions =  { 
+	      show_keybinds = "menubinds.sh" 
+	     --show_keybinds = "dms ipc keybinds open hyprland"
+	 },
      },
    {
     Text = "Captura",
@@ -33,10 +36,10 @@ function GetEntries()
     SubMenu = "screenshot",
   },
   {
-      Text = "Configuraciones",
-      Icon = "",
-      SubMenu = "configs",
-  },
+	    Text = "Configuración",
+	    Icon = "",
+	    SubMenu = "configuration",
+	},
   {
       Text = "Apariencia",
       Icon = "",

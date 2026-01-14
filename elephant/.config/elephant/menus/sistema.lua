@@ -8,11 +8,7 @@ SearchName = true
 
 function GetEntries()
     return {
-	{
-	    Text = "Power profile",
-	    SubMenu = "power-profiles",
-	    Icon = "󰚥",
-	},
+	
 	{
 	    Text = "Packages",
 	    Icon = "󰏖",

@@ -8,9 +8,5 @@ function GetEntries()
 	    Text = "Instalar Paquete",
 	    Value = "application-installer",
 	},
-	{
-	    Text = "Instalar de AUR",
-	    Value = "aur-install",
-	}
     }
 end

@@ -2,10 +2,10 @@
   "reload_style_on_change": true,
   "layer": "bottom",
   "position": "top",
-   "margin-top": 0,
+   "margin-top": 5,
     "margin-bottom": 0,
-    "margin-left": 0,
-    "margin-right": 0,
+    "margin-left": 5,
+    "margin-right": 5,
     "spacing": 0,
   
   "modules-left": [
@@ -15,6 +15,7 @@
   ],
   
   "modules-center": [
+    "mpris",
     "clock",
     "custom/weather",
     "custom/update",
@@ -23,6 +24,7 @@
   "modules-right": [
     "group/tray-expander",
     "bluetooth",
+    "custom/stasis",
     "power-profiles-daemon",
     "custom/notification",
     "network",
@@ -36,13 +38,20 @@
     "on-click": "walker -m menus:main",
     "tooltip-format": "HyprSphere Menu\n\nSuper + Alt + Space"
   },
+  "mpris": {
+    "format": "{title}",
+    "format-paused": "{title}",
+    "tooltip": false,
+    "on-click": "playerctl play-pause",
+    "max-length": 16
+  },
   "custom/stasis": {
   "exec": "stasis info --json",
   "format": "{icon}",
   "format-icons": {
-      "idle_active": "",
-      "idle_inhibited": "",
-      "manually_inhibited": "",
+      "idle_active": "",
+      "idle_inhibited": "",
+      "manually_inhibited": "",
       "not_running": "󰒲"
   },
   "tooltip": true,
@@ -54,7 +63,7 @@
   "custom/weather": {
     "format": "{}°C",
     "return-type": "json",
-    "exec": "wttrbar -l es --location Vigo",
+    "exec": "wttrbar -l es --nerd --location Vigo",
     "interval": 240
   },
   "custom/update": {
@@ -189,8 +198,7 @@
       "default": ["󰕿", "󰖀", "󰕾"]
     },
     "tooltip-format": "{desc}\nVolumen: {volume}%",
-    "on-click": "ghostty --class=local.floating -e wiremix",
-    "on-click-right": "pamixer -t",
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e wiremix",
     "scroll-step": 5
   },
 

@@ -30,5 +30,10 @@ function GetEntries()
 	    Actions = { 
 		["cambiar_dns"] = "ghostty -e sudo nano /etc/systemd/resolved.conf" },
 	},
+	{
+	    Text = "Power profile",
+	    SubMenu = "power-profiles",
+	    Icon = "󰚥",
+	},
     }
 end

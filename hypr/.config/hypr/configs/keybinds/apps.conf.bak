@@ -12,7 +12,7 @@ bindd = $mainMod, F, Abrir gestor de archivos, exec, uwsm app -- $fileManager
 bindd = Alt, Space, Abrir menú general, exec, uwsm app -- $menu
 bindd = $mainMod, Space, Abrir menú del sistema, exec, uwsm app -- $menu -s hyprsphere
 bindd = Alt, K, Abrir menú de atajos de teclado, exec, uwsm app -- menubinds.sh
-bindd = $mainMod, X, Abrir menú del sistema, exec, dms ipc call settings focusOrToggle
+#bindd = $mainMod, X, Abrir menú del sistema, exec, dms ipc call settings focusOrToggle
 
 # ---------------------------------------------------------------------------------------------------
 # - Aplicaciones de productividad y comunicación
@@ -27,6 +27,6 @@ bindd = $mainMod, Z, Abrir cliente Whatsapp, exec, uwsm app -- zapzap
 # - Utilidades y herramientas adicionales
 # ---------------------------------------------------------------------------------------------------
 # bindd = Alt, V, Abrir menú del portapapeles, exec, uwsm app -- $menu -m clipboard
-bindd = Alt, V, Abrir menú del portapapeles, exec, dms ipc clipboard toggle
+bindd = Alt, V, Abrir menú del portapapeles, exec, $menu -m clipboard
 bindd = Alt, E, Abrir menú de emojis, exec, uwsm app -- $menu -m symbols
 bindd = $mainMod, G, Abrir Cartuchos, exec, uwsm app -- cartridges

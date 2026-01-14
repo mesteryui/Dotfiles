@@ -17,8 +17,14 @@ input_path = '/home/oscar/.config/matugen/templates/television.toml'
 output_path = '/home/oscar/.config/television/themes/matugen.toml'
 
 [templates.walker]
-input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
-output_path = '/home/oscar/.config/walker/colors.css'
+input_path = './templates/css_template.conf'
+output_path = '~/.config/walker/colors.css'
+
+[templates.swayosd]
+input_path = '~/.config/matugen/templates/css_template.conf'
+output_path = '~/.config/swayosd/colors.css'
+post_hook = '~/.config/hypr/scripts/restart_osd.sh'
+
 
 [templates.bat]
 input_path  = '/home/oscar/.config/matugen/templates/matugen-bat-colors.tmTheme'
@@ -29,31 +35,52 @@ post_hook = 'bat cache --build'
 [templates.kitty]
 input_path = '/home/oscar/.config/matugen/templates/kitty-kolors.conf'
 output_path = '/home/oscar/.config/kitty/colors.conf'
-#post_hook = "kitty @ set-colors -a -c /home/oscar/.config/kitty/colors.conf"
+post_hook = 'pkill -SIGUSR1 kitty'
 
 [templates.waybar]
-input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
-output_path = '/home/oscar/.config/waybar/colors.css'
-#post_hook = 'launch-waybar'
+input_path = './templates/css_template.conf'
+output_path = '~/.config/waybar/colors.css'
+post_hook = 'launch-waybar'
 
 [templates.nwgbar]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
 output_path = '/home/oscar/.config/nwg-bar/colors.css'
+
 [templates.swaync]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
 output_path = '/home/oscar/.config/swaync/matugen/matugen-swaync.css'
-#post_hook = 'swaync-client -rs'
+post_hook = 'swaync-client -rs'
 
 [templates.hyprland]
 input_path = "/home/oscar/.config/matugen/templates/hyprland_template.conf"
 output_path = "/home/oscar/.config/hypr/colors.conf"
 post_hook = "hyprctl reload"
 
+[templates.gtk3]
+input_path = './templates/gtk-colors.css'
+output_path = '~/.config/gtk-3.0/gtk.css'
+
+[templates.kcolorscheme]
+input_path = './templates/kcolorscheme.colors'
+output_path = '~/.local/share/color-schemes/Matugen.colors'
+
+[templates.gtk4]
+input_path = './templates/gtk-colors.css'
+output_path = '~/.config/gtk-4.0/gtk.css'
+
 [templates.hyprtoolkit]
 input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
 output_path = "/home/oscar/.config/hypr/hyprtoolkit.conf"
 post_hook = "hyprctl reload"
 
+[templates.vesktop]
+input_path = './templates/midnight-discord.css'
+output_path = '~/.config/vesktop/themes/midnight-discord.css'
+
+[templates.pywalfox]
+input_path = './templates/pywalfox-colors.json'
+output_path = '~/.cache/wal/colors.json'
+post_hook = 'pywalfox update'
 
 [templates.qt5]
 input_path = '/home/oscar/.config/matugen/templates/qtct-colors.conf'
@@ -71,7 +98,6 @@ output_path = '/home/oscar/.config/btop/themes/matugen.theme'
 input_path = '/home/oscar/.config/matugen/templates/matugen-rofi.rasi'
 output_path = '/home/oscar/.config/rofi/matugen/matugen-rofi.rasi'
 
-
 [templates.cava]
 input_path = '/home/oscar/.config/matugen/templates/matugen-cava'
 output_path = '/home/oscar/.dotfiles/cava/.config/cava/config'
@@ -88,3 +114,20 @@ output_path = '/home/oscar/.config/zathura/matugen-zathurarc'
 [templates.yazi]
 input_path = '/home/oscar/.config/matugen/templates/yazi-theme.toml'
 output_path = '/home/oscar/.config/yazi/theme.toml'
+
+[config.custom_colors]
+# Colores Base ANSI
+black   = { color = "#181818", blend = false }
+red     = { color = "#f38ba8", blend = false }
+green   = { color = "#a6e3a1", blend = false }
+yellow  = { color = "#f9e2af", blend = false }
+cyan    = { color = "#94e2d5", blend = false }
+white   = { color = "#bac2de", blend = false }
+
+# Colores Bright ANSI
+bright_black  = { color = "#585b70", blend = false }
+bright_red    = { color = "#f38ba8", blend = false }
+bright_green  = { color = "#a6e3a1", blend = false }
+bright_yellow = { color = "#f9e2af", blend = false }
+bright_cyan   = { color = "#94e2d5", blend = false }
+bright_white  = { color = "#a6adc8", blend = false }

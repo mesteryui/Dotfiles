@@ -1,31 +1,32 @@
 /* Material You Waybar - Optimizado para espacio vertical */
 @import "../../colors.css";
 * {
-    font-family: "Google Sans Flex", JetBrainsMono Nerd Font Propo, "Material Symbols Rounded", sans-serif;
+    font-family: "Google Sans Flex","Geist Mono Nerd Font Propo", "Material Symbols Rounded", sans-serif;
     font-size: 13px;
     font-weight: 500;
     border: none;
     border-radius: 0;
     min-height: 0;
+    opacity: 1.0;
 }
 
 /* Barra principal - Compacta para ahorrar espacio vertical */
 window#waybar {
-    background-color: @surface;
+    background-color: transparent;
     color: @on_surface;
-    border-bottom: 1px solid @outline_variant;
     padding: 0;
     margin: 0;
+    border-radius: 20px;
 }
 
 /* Contenedores de módulos */
 .modules-left,
 .modules-center,
 .modules-right {
-    background-color: transparent;
+    background-color: @background;
     padding: 0 8px;
+    border-radius: 20px;
 }
-
 /* Estilo base para módulos - Material You Surface Container */
 #workspaces,
 #submap,
@@ -310,4 +311,49 @@ tooltip label {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     margin-left: 0;
+}
+
+/* MPRIS - Reproductor de multimedia - Material You */
+#mpris {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+    padding: 4px 12px;
+    margin: 4px 2px;
+    border-radius: 20px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    min-width: 100px;
+}
+
+/* Estado de reproducción activa */
+#mpris.playing {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+    animation: pulse-mpris 2s ease-in-out infinite;
+}
+
+/* Estado pausado - Color más sutil */
+#mpris.paused {
+    background-color: @surface_container;
+    color: @on_surface_variant;
+    opacity: 0.7;
+}
+
+/* Hover - Elevation Material */
+#mpris:hover {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+    padding: 4px 16px;
+}
+
+#mpris.paused:hover {
+    background-color: @surface_container_high;
+    color: @on_surface;
+    opacity: 1;
+}
+
+/* Animación de pulso para reproducción activa */
+
+#mpris {
+    
 }
