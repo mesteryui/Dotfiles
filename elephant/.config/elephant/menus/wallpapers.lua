@@ -1,18 +1,18 @@
 Name = "wallpapers"
 NamePretty = "Wallpapers"
 HideFromProviderlist = true
-Cache = true
+Cache = false
 GlobalSearch = false
 
 function ApplyWallpaper(wallpaper)
-    os.execute("awww img "..wallpaper .. " --transition-type center")
+    os.execute("awww img \""..wallpaper .. "\" --transition-type center")
     os.execute("matugen image "..wallpaper)
 end
 
 function GetEntries()
     local entries = {}
     local wallpapers_dir = os.getenv("HOME") .. "/Imágenes/Wallpapers"
-    local wallpaper_see = io.popen("find -L '" .. wallpapers_dir .. "' -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) | sort")
+    local wallpaper_see = io.popen("find -L '" .. wallpapers_dir .. "' -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) -print0 | sort -z | tr '\\0' '\\n'")
     if wallpaper_see then
 	for line in wallpaper_see:lines() do
 	    local filename = line:match("([^/]+)$")
