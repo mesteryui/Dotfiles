@@ -5,11 +5,10 @@
   "spacing": 0,
   "height": 32,
   "modules-left": ["custom/omarchy","hyprland/workspaces"],
-  "modules-center": ["clock", "custom/update", "custom/weather", "custom/screenrecording-indicator"],
+  "modules-center": ["clock", "custom/weather", "custom/update", "custom/screenrecording-indicator"],
   "modules-right": [
     "group/tray-expander",
     "bluetooth",
-    "custom/notification",
     "network",
     "pulseaudio",
     "cpu",
@@ -25,8 +24,8 @@
   "custom/weather": {
     "format": "{}ºC",
     "return-type": "json",
-    "exec": "wttrbar -l es --location Vigo",
-    "interval": 240,
+    "exec": "wttrbar --nerd -l es --location Vigo",
+    "interval": 24,
 },
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -73,7 +72,7 @@
     },
   },
   "custom/update": {
-    "format": "  {}",
+    "format": " {}",
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",

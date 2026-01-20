@@ -1,9 +1,8 @@
 @define-color text            @on_background;
-@define-color background-alt  @surface;
+@define-color background-alt  alpha(@surface, .4);
 @define-color selected        @primary;
-@define-color hover           @primary_container;
+@define-color hover           alpha(@selected,.4);
 @define-color urgent          @error;
-
 * {
 
   /*background-alt:        @color1;      Buttons background */
@@ -28,7 +27,7 @@
 }
 
 .floating-notifications.background .notification-row .notification-background {
-  background: @background;
+  background: alpha(@background,0.73);
   box-shadow: 0 0 8px 0 rgba(0,0,0,.6);
   border: 1px solid @selected;
   border-radius: 15px;

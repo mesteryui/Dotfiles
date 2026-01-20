@@ -281,15 +281,9 @@ launch_rofi() {
     fi
     
     # Verificar que existe la configuración de rofi
-    if [[ ! -f "$ROFI_DIR/steam-launcher.rasi" ]]; then
-        echo "❌ Error: Archivo de configuración de rofi no encontrado"
-        echo "Ubicación esperada: $ROFI_DIR/steam-launcher.rasi"
-        return 1
-    fi
     
     # Lanzar rofi con configuración optimizada para carátulas
     rofi -show drun \
-         -theme "$ROFI_DIR/steam-launcher.rasi" \
          -drun-categories Game \
          -drun-match-fields name,generic,exec,categories,keywords \
          -drun-display-format "{name}" \

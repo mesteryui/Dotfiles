@@ -1,0 +1,18 @@
+@import "../config.rasi"
+* { 
+  font: "Maple Mono NF 12";
+  
+} 
+
+window { 
+       /*width: 400px;*/
+}
+configuration {
+    sort: true;
+    sorting-method: "fzf";
+    matching: "fuzzy";
+    case-sensitive: false;
+}
+inputbar {
+  children: ["entry"];
+}

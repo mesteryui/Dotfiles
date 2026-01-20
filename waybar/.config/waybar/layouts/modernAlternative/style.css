@@ -1,4 +1,4 @@
-@import "../../colors.css";
+@import "colors.css";
 
 @define-color icon_color @secondary;
 @define-color border_color @secondary;
@@ -10,7 +10,6 @@
   border: none;
   border-radius: 10px;
 }
-
 .modules-left {
     margin:6px 0px 6px 8px;
 }

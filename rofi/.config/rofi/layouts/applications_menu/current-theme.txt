@@ -1,1 +1,1 @@
-material.rasi
+material-compact.rasi

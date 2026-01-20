@@ -2,7 +2,7 @@
   "reload_style_on_change": true,
   "layer": "bottom",
   "position": "top",
-   "margin-top": 5,
+   "margin-top": 0,
     "margin-bottom": 0,
     "margin-left": 5,
     "margin-right": 5,
@@ -11,11 +11,11 @@
   "modules-left": [
     "custom/omarchy",
     "hyprland/workspaces",
-    "hyprland/submap"
+    "hyprland/submap",
+    "mpris"
   ],
   
   "modules-center": [
-    "mpris",
     "clock",
     "custom/weather",
     "custom/update",
@@ -24,17 +24,16 @@
   "modules-right": [
     "group/tray-expander",
     "bluetooth",
-    "custom/stasis",
+    "idle_inhibitor",
     "power-profiles-daemon",
     "custom/notification",
     "network",
     "pulseaudio",
-    "cpu",
     "battery"
   ],
   "custom/omarchy": {
-   // "format": "󰣇",
-    "format": "  ",
+   "format": "󰣇",
+    //"format": "",
     "on-click": "walker -m menus:main",
     "tooltip-format": "HyprSphere Menu\n\nSuper + Alt + Space"
   },
@@ -60,6 +59,13 @@
   "restart-interval": 2,
   "return-type": "json"
 },
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+        "activated": "",
+        "deactivated": ""
+    }
+},
   "custom/weather": {
     "format": "{}°C",
     "return-type": "json",
@@ -71,7 +77,7 @@
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",
-    "on-click": "xdg-terminal-exec --app-id=local.floating -e ~/.config/hypr/scripts/update.sh",
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e ~/.config/hypr/scripts/update.sh & disown",
   },
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -135,7 +141,6 @@
 
   "clock": {
     "format": "{:L%A %H:%M}",
-    "format-alt": "{:L%d %B W%V %Y}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",

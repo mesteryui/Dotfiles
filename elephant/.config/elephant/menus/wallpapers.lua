@@ -12,7 +12,10 @@ end
 function GetEntries()
     local entries = {}
     local wallpapers_dir = os.getenv("HOME") .. "/Imágenes/Wallpapers"
-    local wallpaper_see = io.popen("find -L '" .. wallpapers_dir .. "' -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) -print0 | sort -z | tr '\\0' '\\n'")
+    local find_cmd = "find '" ..
+        wallpapers_dir ..
+        "' -maxdepth 1 -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.gif' -o -name '*.bmp' -o -name '*.webp' 2>/dev/null"    
+    local wallpaper_see = io.popen(find_cmd)
     if wallpaper_see then
 	for line in wallpaper_see:lines() do
 	    local filename = line:match("([^/]+)$")

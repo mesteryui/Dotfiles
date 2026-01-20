@@ -8,6 +8,10 @@ frases=(
     "Tu mente es el mejor software, prográmala bien."
     "Stay hungry, stay foolish."
     "Menos es más."
+    "La perfección no se alcanza cuando no hay más que añadir, sino cuando ya no queda nada por quitar."
+    "La claridad es el poder de los inteligentes."
+    "El conocimiento es ruido si no se transforma en acción."
+    "La sencillez es la máxima sofisticación."
 )
 
 # Obtener un índice aleatorio

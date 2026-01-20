@@ -12,11 +12,11 @@ function GetEntries()
 	    Icon = "",
 	    SubMenu = "fastfetch",
 	},
-	-- {
-        --   Text = "Waybar",
-        --   Icon = "",
-        --   SubMenu = "waybar-layout-selector",
-	-- },
+	 {
+           Text = "Waybar",
+           Icon = "",
+           SubMenu = "waybar-layout-selector",
+	 },
 	{
 	    Text = "Wallpapers",
 	    Icon = "",

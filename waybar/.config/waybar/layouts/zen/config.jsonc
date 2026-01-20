@@ -10,6 +10,7 @@
   "modules-center": [
     "clock",
     "hyprland/submap",
+    "mpris",
     "hyprland/workspaces",
     "pulseaudio",
     "network",
@@ -17,7 +18,7 @@
   ],
   "hyprland/workspaces": {
     "on-click": "activate",
-    "format": "{icon}",
+    "format": "{name}",
     "format-icons": {
       "default": "󰧱",
       "1": "一",
@@ -30,6 +31,23 @@
       "8": "八",
       "9": "九",
       "10": "十"
+    }
+  },
+  "clock": {
+    "format": "{:L%H:%M}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#ffead3'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'>{}</span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
     }
   },
   "mpris": {
@@ -66,7 +84,7 @@
   },
   "battery": {
     "interval": 10,
-     "states": {
+    "states": {
       "warning": 30,
       "critical": 15
     },
@@ -75,6 +93,6 @@
     "format-plugged": "󱐋",
     "format-full": "󰁹",
     "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
-    "tooltip-format": "Batería: {capacity}%\nEstado: {status}"
+    "tooltip-format": "{capacity}%"
   }
 }

@@ -23,12 +23,6 @@ icon_index=$((battery_percentage / 10))
 battery_icon=${battery_icons[icon_index]}
 if [ "$battery_percentage" -eq 100 ]; then 
     battery_icon="󰁹"
-# Se recomienda usar [[ ]] para comparaciones complejas o usar -a (and)
-elif [ "$battery_percentage" -le 20 ] && [ "$battery_percentage" -gt 10 ]; then 
-    battery_icon="\033[33m$battery_icon\033[0m"
-elif [ "$battery_percentage" -le 10 ]; then
-    # Añadido espacio antes del ]
-    battery_icon="\033[31m$battery_icon\033[0m"
 fi
 
 # Check if the battery is charging
@@ -38,4 +32,5 @@ fi
 
 # Output the battery percentage and icon
 #printf "%s%% %s\n" "$battery_percentage" "$battery_icon"
-echo "$battery_icon $battery_percentage% "
+final_string="$battery_icon $battery_percentage% "
+echo $final_string

@@ -1,13 +1,159 @@
-configuration {
-    modi: "run,window,combi,drun";
-    show-icons: true;
-    font: "JetBrainsMono NF Bold 12";
-    terminal: "kitty";
-    drun-display-format: "{icon} {name}";
-    location: 0;
-    disable-history: false;
-    display-drun: " Aplicaciones:";
-    hide-scrollbar: true;
-    sidebar-mode: false;
+/* ~/.config/rofi/config.rasi */
+@import "colors.rasi"
+
+* {
+    font: "Google Sans Flex 12";
+    background-color: transparent;
+    text-color: @on-surface;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
 }
-@theme "colors.rasi"
+
+configuration {
+    modi: "drun,run,window";
+    display-drun: " Apps";
+    display-run: " Run";
+    display-window: " Window";
+    drun-display-format: "{name}";
+    window-format: "{c}";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    terminal: "xdg-terminal-exec";
+    lines: 10;
+    columns: 1;
+}
+
+window {
+    background-color: @surface;
+    border: 2px;
+    border-color: @outline-variant;
+    border-radius: 16px;
+    width: 40%;
+    height: 60%;
+    padding: 20;
+    location: center;
+    anchor: center;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing: 12px;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    children: ["inputbar", "listview"];
+}
+
+inputbar {
+    background-color: @surface-container-high;
+    border: 2px;
+    border-color: @outline-variant;
+    border-radius: 28px; 
+    spacing: 12px;
+    padding: 9px 14px;
+    margin: 0 0 0 0;
+    children: ["prompt", "entry"];
+}
+prompt {
+    background-color: transparent;
+    text-color: @primary;
+    font: "Google Sans Flex 12";
+    padding: 8px 0 8px 0;
+    margin: 0 8px 0 8px;
+    enabled: true;
+}
+entry {
+    background-color: transparent;
+    text-color: @on-surface;
+    placeholder-color: @on-surface-variant;
+    placeholder: "Buscar";
+    expand: true;
+    margin: 0 0 0 0;
+    padding: 8px 0 8px 0;
+}
+
+listview {
+    background-color: transparent;
+    lines: 12;
+    spacing: 8px;
+    scrollbar: false;
+    dynamic: true;
+    margin: 0 0 0 0;
+    padding: 8px 0 8px 0;
+}
+
+scrollbar {
+    width: 6px;
+    handle-color: @primary;
+    background-color: @surface-container-high;
+    border-radius: 3px;
+    margin: 0;
+}
+
+element {
+    background-color: transparent;
+    text-color: @on-surface;
+    border-radius: 20px;
+    padding: 15px 6px;
+    margin: 5px 0 0 0;
+    spacing: 0px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element normal.active {
+    background-color: @primary-container;
+    text-color: @on-primary-container;
+}
+
+element normal.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+element selected.normal {
+    background-color: @primary;
+    text-color: @on-primary;
+}
+
+element selected.active {
+    background-color: @primary;
+    text-color: @on-primary;
+}
+
+element selected.urgent {
+    background-color: @error;
+    text-color: @on-error;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element alternate.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+element alternate.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+element-icon {
+    size: 28px;
+    background-color: transparent;
+    margin: 0 10px 0 0;
+   
+}
+
+element-text {
+    background-color: transparent;
+    highlight: bold;
+    vertical-align: 0.5;
+}

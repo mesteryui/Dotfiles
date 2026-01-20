@@ -1,5 +1,5 @@
 /* Material You Waybar - Optimizado para espacio vertical */
-@import "../../colors.css";
+@import "colors.css";
 * {
     font-family: "Google Sans Flex","Geist Mono Nerd Font Propo", "Material Symbols Rounded", sans-serif;
     font-size: 13px;
@@ -20,18 +20,21 @@ window#waybar {
 }
 
 /* Contenedores de módulos */
+
 .modules-left,
 .modules-center,
 .modules-right {
     background-color: @background;
     padding: 0 8px;
     border-radius: 20px;
+    margin-top: 5px;
 }
 /* Estilo base para módulos - Material You Surface Container */
 #workspaces,
 #submap,
 #custom-omarchy,
 #custom-stasis,
+#idle_inhibitor,
 #clock,
 #custom-weather,
 #custom-update,
@@ -353,7 +356,3 @@ tooltip label {
 }
 
 /* Animación de pulso para reproducción activa */
-
-#mpris {
-    
-}

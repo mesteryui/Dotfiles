@@ -53,7 +53,9 @@ function GetEntries()
      {
 	 Text = "Power",
 	 Icon = "⏻",
-	 SubMenu = "power-menu",
+	 Actions = {
+		["logout_menu"] = "wlogout"
+	    },
      },
  }
 end

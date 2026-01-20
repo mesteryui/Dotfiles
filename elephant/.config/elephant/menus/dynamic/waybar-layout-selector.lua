@@ -12,15 +12,17 @@ end
 function ObtenerLayoutActual()
     local waybar_dir = ObtenerDirectorioWaybar()
     local handle = io.popen("readlink -f " .. waybar_dir .. "config.jsonc 2>/dev/null")
-    local resultado = handle:read("*a")
-    handle:close()
+    if handle then
+      local resultado = handle:read("*a")
+      handle:close()
     
-    if resultado == "" then
-        return nil
-    end
+      if resultado == "" then
+          return nil
+      end
     
-    local layout_name = resultado:match("layouts/([^/]+)/config.jsonc")
-    return layout_name
+      local layout_name = resultado:match("layouts/([^/]+)/config.jsonc")
+      return layout_name
+  end
 end
 
 function ObtenerDirectorioWaybar()

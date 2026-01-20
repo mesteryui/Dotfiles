@@ -4,7 +4,7 @@ configuration {
     modi: "dmenu";
     show-icons: true;
     drun-display-format: "{name}";
-    font: "JetBrainsMono NF 12";
+    font: "Google Sans Flex 12";
     display-dmenu: "🖼️ Wallpapers";
     matching: "fuzzy";
 }
@@ -21,8 +21,8 @@ configuration {
 window {
     enabled: true;
     fullscreen: false;
-    width: 1000px;
-    height: 600px;
+    width: 1200px;
+    height: 500px;
     transparency: "off";
     cursor: "default";
     spacing: 0px;
@@ -61,7 +61,7 @@ textbox-prompt-colon {
     background-color: transparent;
     text-color: @accent-color;
     padding: 0px 12px 0px 0px;
-    font: "JetBrainsMono NF Bold 12";
+    font: "Google Sans Flex Bold 12";
 }
 
 entry {
@@ -75,16 +75,16 @@ entry {
 
 listview {
     enabled: true;
-    columns: 2;
-    lines: 2;
-    spacing: 35px;
-    padding: 25px;
+    columns: 4;
+    lines: 3;
+    spacing: 15px;
+    padding: 12px;
     cycle: true;
     dynamic: true;
     scrollbar: false;
     layout: vertical;
     reverse: false;
-    fixed-height: true;
+    fixed-height: false;
     fixed-columns: true;
     cursor: "default";
     background-color: transparent;
@@ -94,8 +94,9 @@ listview {
 element {
     enabled: true;
     orientation: vertical;
-    spacing: 18px;
-    padding: 25px;
+    spacing: 12px;
+    padding: 28px;
+    margin: 10px;
     border: 2px;
     border-color: transparent;
     border-radius: 18px;
@@ -123,7 +124,7 @@ element alternate.normal {
 }
 
 element-icon {
-    size: 280px;
+    size: 190px;
     cursor: inherit;
     border-radius: 15px;
     background-color: transparent;
@@ -133,7 +134,7 @@ element-icon {
 }
 
 element-text {
-    font: "JetBrainsMono NF Bold 13";
+    font: "Google Sans Flex NF Bold 13";
     cursor: inherit;
     background-color: transparent;
     text-color: inherit;

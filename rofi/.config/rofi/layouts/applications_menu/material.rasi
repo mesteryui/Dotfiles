@@ -6,7 +6,7 @@
 @import '~/.config/rofi/matugen/matugen-rofi.rasi'
 
 * {
-    font: "Inter 12";
+    font: "Google Sans Flex 12";
     background-color: transparent;
     text-color: @on-surface;
 }
@@ -118,8 +118,8 @@ element normal.urgent {
 
 /* Elemento seleccionado - efecto Material You */
 element selected.normal {
-    background-color: @primary-container;
-    text-color: @on-primary-container;
+    background-color: @primary;
+    text-color: @on-primary;
     border-radius: 16px;
 }
 

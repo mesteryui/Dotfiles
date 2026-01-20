@@ -52,8 +52,8 @@ output_path = '/home/oscar/.config/swaync/matugen/matugen-swaync.css'
 post_hook = 'swaync-client -rs'
 
 [templates.hyprland]
-input_path = "/home/oscar/.config/matugen/templates/hyprland_template.conf"
-output_path = "/home/oscar/.config/hypr/colors.conf"
+input_path = './templates/hyprland_template.conf'
+output_path = "~/.config/hypr/colors.conf"
 post_hook = "hyprctl reload"
 
 [templates.gtk3]
@@ -115,19 +115,9 @@ output_path = '/home/oscar/.config/zathura/matugen-zathurarc'
 input_path = '/home/oscar/.config/matugen/templates/yazi-theme.toml'
 output_path = '/home/oscar/.config/yazi/theme.toml'
 
-[config.custom_colors]
-# Colores Base ANSI
-black   = { color = "#181818", blend = false }
-red     = { color = "#f38ba8", blend = false }
-green   = { color = "#a6e3a1", blend = false }
-yellow  = { color = "#f9e2af", blend = false }
-cyan    = { color = "#94e2d5", blend = false }
-white   = { color = "#bac2de", blend = false }
+[templates.spicetify]
+input_path = '~/.config/matugen/templates/spotify-colors.ini'
+output_path = '~/.config/spicetify/Themes/Sleek/color.ini'
+post_hook = 'spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q"'
 
-# Colores Bright ANSI
-bright_black  = { color = "#585b70", blend = false }
-bright_red    = { color = "#f38ba8", blend = false }
-bright_green  = { color = "#a6e3a1", blend = false }
-bright_yellow = { color = "#f9e2af", blend = false }
-bright_cyan   = { color = "#94e2d5", blend = false }
-bright_white  = { color = "#a6adc8", blend = false }
+

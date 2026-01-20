@@ -1,4 +1,4 @@
-@import "../../colors.css";
+@import "colors.css";
 
 * {
     font-family: "Google Sans Flex","Maple Mono NF CN";
@@ -58,18 +58,19 @@ window#waybar {
 
 #workspaces button.active {
     color: @on_primary;
-    background: linear-gradient(120deg, @primary 20%, @source_color 80%);
+    background: linear-gradient(120deg, @primary 20%, @tertiary 80%);
     border-radius: 20px;
     padding: 4px 20px;
 }
 
 #submap {
-    color: @error;
+    color: @primary;
     font-size: 12px;
     font-weight: 700;
     padding: 2px 8px;
-    background: @error-container;
-    border-radius: 6px;
+    margin-right: 12px;
+    background: @surface_container;
+    border-radius: 50px;
 }
 
 #pulseaudio,
@@ -78,10 +79,12 @@ window#waybar {
     color: @on-surface;
     font-size: 13px;
     padding: 0 6px;
+    padding-right: 12px;
     transition: color 0.3s ease;
 }
 #pulseaudio {
     font-size: 17px;
+    padding-left: 12px;
     padding-right: 12px;
 }
 #pulseaudio:hover,

@@ -1,0 +1,185 @@
+/***
+ * Rofi Material You Theme
+ * Diseño inspirado en Material Design 3 (Material You)
+ */
+
+@import '~/.config/rofi/matugen/matugen-rofi.rasi'
+
+* {
+    font: "Google Sans Flex 12";
+    background-color: transparent;
+    text-color: @on-surface;
+}
+window {
+    background-color: @surface;
+    border: 1px;
+    border-color: @outline-variant;
+    border-radius: 28px;
+    width: 640px;
+    padding: 24px;
+    location: center;
+    anchor: center;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing: 20px;
+    children: ["inputbar", "message", "listview"];
+}
+
+/* Barra de búsqueda con diseño Material You */
+inputbar {
+    background-color: @surface-container-highest;
+    border-radius: 28px;
+    padding: 16px 24px;
+    spacing: 12px;
+    children: ["entry"];
+}
+
+prompt {
+    enabled: true;
+    background-color: transparent;
+    text-color: @primary;
+    font: "Inter Medium 12";
+}
+
+entry {
+    background-color: transparent;
+    text-color: @on-surface;
+    placeholder: "Buscar aplicaciones...";
+    placeholder-color: @on-surface-variant;
+    cursor: text;
+}
+
+/* Área de mensajes (opcional) */
+message {
+    background-color: @surface-container-high;
+    border-radius: 16px;
+    padding: 12px 16px;
+    text-color: @on-surface-variant;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: inherit;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+}
+
+/* Lista de aplicaciones */
+listview {
+    background-color: transparent;
+    columns: 1;
+    lines: 6;
+    cycle: true;
+    dynamic: true;
+    scrollbar: false;
+    fixed-height: true;
+    spacing: 8px;
+    padding: 4px;
+}
+
+/* Scrollbar estilo Material You */
+scrollbar {
+    width: 6px;
+    border: 0;
+    handle-width: 6px;
+    handle-color: @primary;
+    background-color: @surface-container-high;
+    border-radius: 3px;
+    padding: 0;
+}
+
+/* Elementos de la lista */
+element {
+    background-color: transparent;
+    text-color: @on-surface;
+    orientation: horizontal;
+    border-radius: 16px;
+    padding: 15px 20px;
+    spacing: 12px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element normal.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+element normal.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+/* Elemento seleccionado - efecto Material You */
+element selected.normal {
+    background-color: @primary;
+    text-color: @on-primary;
+    border-radius: 16px;
+}
+
+element selected.active {
+    background-color: @tertiary-container;
+    text-color: @on-tertiary-container;
+    border-radius: 16px;
+}
+
+element selected.urgent {
+    background-color: @error;
+    text-color: @on-error;
+    border-radius: 16px;
+}
+
+/* Elementos alternos (para patrones zebra si se desea) */
+element alternate.normal {
+    background-color: transparent;
+    text-color: @on-surface;
+}
+
+element alternate.active {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}
+
+element alternate.urgent {
+    background-color: @error-container;
+    text-color: @on-error-container;
+}
+
+/* Iconos de aplicaciones */
+element-icon {
+    background-color: transparent;
+    size: 36px;
+    cursor: pointer;
+}
+
+/* Texto de aplicaciones */
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    cursor: pointer;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+}
+
+/* Modo de entrada (si se usa) */
+mode-switcher {
+    spacing: 8px;
+    background-color: transparent;
+}
+
+button {
+    background-color: @surface-container-high;
+    text-color: @on-surface-variant;
+    border-radius: 20px;
+    padding: 12px 20px;
+}
+
+button selected {
+    background-color: @secondary-container;
+    text-color: @on-secondary-container;
+}

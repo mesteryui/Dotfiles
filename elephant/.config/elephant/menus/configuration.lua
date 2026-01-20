@@ -1,7 +1,7 @@
 Name = "configuration"
 NamePretty = "Configuración"
 Icon = ""
-Parent = "system"
+Parent = "main"
 SearchName = true
 
 function GetEntries()

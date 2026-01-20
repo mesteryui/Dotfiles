@@ -4,7 +4,7 @@
 # Guarda este archivo como ~/.local/bin/rofi-windows y hazlo ejecutable
 
 # Configuración
-THEME="$HOME/.config/rofi/window_switcher.rasi"
+THEME="$HOME/.config/rofi/layouts/window_switcher.rasi"
 ICON_SIZE=64
 
 # Verificar si el tema existe
@@ -18,7 +18,7 @@ fi
 rofi -show window \
      -theme "$THEME" \
      -show-icons \
-     -icon-theme "Papirus" \
+     -icon-theme "Papirus-Dark" \
      -cycle true \
      -eh 2 \
      -auto-select false \

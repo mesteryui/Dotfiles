@@ -14,11 +14,11 @@ rofi -show drun \
      -case-insensitive \
      -sort true \
      -sorting-method fzf \
-     -levenshtein-sort true \
+     -display-columns 1 
      -normalize true \
      -show-icons \
-     -drun-match-fields name,generic,exec \
      -threads 4 \
      -limit 25 \
+     -no-custom \
      -run-command "uwsm app -- {cmd}"
 
