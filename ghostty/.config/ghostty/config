@@ -1,17 +1,17 @@
 # Font Configuration
-font-size = 11
+font-size = 10.3
 
 # Window Configuration
 window-decoration = false
-window-padding-x = 12
-window-padding-y = 12
-background-opacity = 0.96
-background-blur-radius = 32
+window-padding-x = 14
+window-padding-y = 14
+background-opacity = 0.90
+#background-blur-radius = 1
 #font-family = GeistMono Nerd Font
 font-family = MapleMono NF CN
 # Cursor Configuration
 cursor-style = bar
-cursor-style-blink = true
+#cursor-style-blink = true
 
 # Scrollback
 scrollback-limit = 3023
@@ -27,26 +27,28 @@ app-notifications = no-clipboard-copy,no-config-reload
 # Key bindings for common actions
 #keybind = ctrl+c=copy_to_clipboard
 #keybind = ctrl+v=paste_from_clipboard
-keybind = ctrl+shift+n=new_window
-keybind = ctrl+t=new_tab
-keybind = ctrl+plus=increase_font_size:1
-keybind = ctrl+minus=decrease_font_size:1
-keybind = ctrl+zero=reset_font_size
+config-file = ./keybinds.conf
 
-# Material 3 UI elements
-unfocused-split-opacity = 0.7
-unfocused-split-fill = #44464f
 
+quit-after-last-window-closed = true
+quit-after-last-window-closed-delay = 5m
+
+quit-after-last-window-closed = false
 # Tab configuration
 gtk-titlebar = false
-
+gtk-toolbar-style = flat
 # Shell integration
 shell-integration = detect
 shell-integration-features = cursor,sudo,title,no-cursor
-keybind = shift+enter=text:\n
 
 # Rando stuff
 gtk-single-instance = true
 
 # Dank color generation
-config-file = ./themes/Matugen
+#config-file = ./themes/Matugen
+theme = Matugen
+custom-shader = ./shaders/cursor_trail.glsl
+
+# Ajustes para fuentes más suaves (estilo Kitty)
+font-thicken = true
+freetype-load-flags = no-hinting

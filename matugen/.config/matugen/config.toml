@@ -12,6 +12,11 @@ output_path = '/home/oscar/.config/Kvantum/matugen/matugen.svg'
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
 output_path = '/home/oscar/.config/wlogout/colors.css'
 
+# [templates.materialhex]
+# input_path = './templates/current_primary.txt'
+# output_path = '~/.cache/matugen/current_primary_color.txt'
+# post_hook = "./scripts/icon-reload.sh"
+
 [templates.television]
 input_path = '/home/oscar/.config/matugen/templates/television.toml'
 output_path = '/home/oscar/.config/television/themes/matugen.toml'
@@ -35,7 +40,12 @@ post_hook = 'bat cache --build'
 [templates.kitty]
 input_path = '/home/oscar/.config/matugen/templates/kitty-kolors.conf'
 output_path = '/home/oscar/.config/kitty/colors.conf'
-post_hook = 'pkill -SIGUSR1 kitty'
+post_hook = 'pkill -SIGUSR2 kitty'
+
+[templates.ghostty]
+input_path = './templates/ghostty.conf'
+output_path = '~/.config/ghostty/themes/Matugen'
+post_hook = 'pkill -SIGUSR2 ghostty'
 
 [templates.waybar]
 input_path = './templates/css_template.conf'
@@ -63,6 +73,7 @@ output_path = '~/.config/gtk-3.0/gtk.css'
 [templates.kcolorscheme]
 input_path = './templates/kcolorscheme.colors'
 output_path = '~/.local/share/color-schemes/Matugen.colors'
+post_hook = 'systemctl restart --user hyprpolkitagent'
 
 [templates.gtk4]
 input_path = './templates/gtk-colors.css'
@@ -118,6 +129,5 @@ output_path = '/home/oscar/.config/yazi/theme.toml'
 [templates.spicetify]
 input_path = '~/.config/matugen/templates/spotify-colors.ini'
 output_path = '~/.config/spicetify/Themes/Sleek/color.ini'
-post_hook = 'spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q"'
-
+post_hook = 'spicetify apply --no-restart'
 

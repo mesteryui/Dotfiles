@@ -82,7 +82,7 @@
   "cpu": {
     "interval": 5,
     "format": "󰍛",
-    "on-click": "kitty --class float_btop -e btop"
+    "on-click": "xdg-terminal-exec --app-id=local.btopfloat -e btop"
   },
   "clock": {
     "format": "{:L%A %H:%M}",
@@ -101,7 +101,7 @@
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "kitty --class float_kitty -e impala"
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e impala"
   },
   "battery": {
     "format": "{capacity}% {icon}",
@@ -127,7 +127,7 @@
     "format-disabled": "󰂲",
     "format-connected": "",
     "tooltip-format": "Devices connected: {num_connections}",
-    "on-click": "blueberry"
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e bluetui"
   },
   "pulseaudio": {
     "format": "{icon}",

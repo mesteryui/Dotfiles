@@ -8,6 +8,7 @@
   "margin-right": 0,
   "spacing": 0,
   "modules-center": [
+    "tray",
     "clock",
     "hyprland/submap",
     "mpris",
@@ -68,8 +69,8 @@
       "default": ["󰕿", "󰖀", "󰕾"]
     },
     "on-click": "pavucontrol",
-    "on-scroll-up": "pamixer -i 5",
-    "on-scroll-down": "pamixer -d 5",
+    "on-scroll-up": "swayosd-client --output-volume=lower",
+    "on-scroll-down": "swayosd-client --output-volume=raise",
     "tooltip": true,
     "tooltip-format": "Volumen: {volume}%"
   },
@@ -94,5 +95,9 @@
     "format-full": "󰁹",
     "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
     "tooltip-format": "{capacity}%"
-  }
+  },
+  "tray": {
+    "icon-size": 15,
+    "spacing": 10
+}
 }

@@ -1,5 +1,5 @@
 @define-color text            @on_background;
-@define-color background-alt  alpha(@surface, .4);
+@define-color background-alt  alpha(@surface, .8);
 @define-color selected        @primary;
 @define-color hover           alpha(@selected,.4);
 @define-color urgent          @error;
@@ -21,7 +21,7 @@
 /* CONTROL CENTER ------------------------------------------------------------------------ */
 
 .control-center {
-  background: alpha(@background, .73);
+  background: alpha(@background, .76);
   border-radius: 24px;
   border: 1px solid @primary;
   box-shadow: 0 0 10px 0 rgba(0,0,0,.6);
@@ -247,9 +247,9 @@ progressbar {
 
 /* Volume Widget - Fixed */
 .widget-volume {
-  background: alpha(@surface, 0.3);
+  background: alpha(@background,.5);
   color: @primary;
-  padding: 20px 6px;
+  padding: 10px 6px;
   margin: 6px;
   border-radius: 6px;
 }

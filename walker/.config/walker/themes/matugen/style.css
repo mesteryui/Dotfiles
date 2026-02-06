@@ -9,7 +9,7 @@
 * {
   all: unset;
   font-family: "Google Sans Flex";
-  font-variation-settings: "opsz" 11, "GRAD" 20;
+  font-variation-settings: "opsz" 10;
 }
 
 .normal-icons {
@@ -28,7 +28,7 @@ scrollbar {
   box-shadow:
     0 19px 38px rgba(0, 0, 0, 0.3),
     0 15px 12px rgba(0, 0, 0, 0.22);
-  background: @surface;
+  background: @background;
   padding: 20px;
   border-radius: 20px;
   border: 2px solid @primary;
@@ -37,7 +37,7 @@ scrollbar {
 .preview-box,
 .elephant-hint,
 .placeholder {
-  color: @theme_fg_color;
+  color: @on_background;
 }
 
 .box {
@@ -89,13 +89,13 @@ child {
   background: alpha(@accent_bg_color, 0.25);
   border-radius: 5px;
   padding: 10px;
-  font-variation-settings: "GRAD" 600, "opsz" 24;
+  font-variation-settings: "GRAD" 700;
 }
 
 child:hover .item-box,
 child:selected .item-box {
   background: @primary;
-  color:@on_primary;
+  color: @on_primary;
 }
 
 .item-text-box {
@@ -171,7 +171,6 @@ child:selected .item-box {
 
 .keybind-bind {
   color: @on_surface;
-  font-variation-settings: "wght" 700, "opsz" 30;
 }
 
 .keybind-label {
@@ -180,7 +179,7 @@ child:selected .item-box {
 
 .error {
   padding: 10px;
-  background: @error_bg_color;
-  color: @error_fg_color;
+  background: @error;
+  color: @background;
 }
 

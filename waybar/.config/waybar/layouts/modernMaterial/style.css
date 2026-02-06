@@ -1,7 +1,7 @@
 /* Material You Waybar - Optimizado para espacio vertical */
 @import "colors.css";
 * {
-    font-family: "Google Sans Flex","Geist Mono Nerd Font Propo", "Material Symbols Rounded", sans-serif;
+    font-family: "Google Sans Flex","JetBrains Mono Nerd Font Propo", "Material Symbols Rounded", sans-serif;
     font-size: 13px;
     font-weight: 500;
     border: none;
@@ -112,8 +112,8 @@ window#waybar {
 
 /* Menú personalizado - Primary */
 #custom-omarchy {
-    background-color: @primary;
-    color: @on_primary;
+    /*background-color: @primary;
+    color: @on_primary;*/
     font-size: 16px;
     padding: 4px 12px;
     margin-left: 8px;
@@ -121,8 +121,8 @@ window#waybar {
 }
 #custom-stasis {}
 #custom-omarchy:hover {
-    background-color: @primary_fixed_dim;
-    color: @on_primary_fixed;
+    /*background-color: @primary_fixed_dim;
+    color: @on_primary_fixed;*/
 }
 
 /* Clock - Surface Container Highest para destacar */

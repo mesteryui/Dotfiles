@@ -9,14 +9,14 @@ SearchName = true
 function GetEntries()
  return {
      {
-	    Text = "About",
+	    Text = "Sobre el sistema",
 	    Icon = "",
 	    Actions = {
 		["about_system"] = "xdg-terminal-exec --app-id=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
 	    },
 	},
      {
-	    Text = "Update",
+	    Text = "Actualizar",
 	    Icon = "",
 	    Actions = {
 		["update"] = "xdg-terminal-exec --app-id=local.floating -e yay -Syu"

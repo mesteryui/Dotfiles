@@ -11,7 +11,7 @@ add_newline = false
 # $character
 # """
 format = """
-$cmd_duration 󰜥 $directory $git_branch $rust $python
+$cmd_duration 󰜥 $directory $git_branch $rust $python $java
 $character"""
 palette = 'colors'
 
@@ -116,6 +116,10 @@ format = "[](fg:color8 bg:color4)[${symbol}${version}](bg:color8 fg:color5)[�
 symbol = '🐍'
 # pyenv_version_name = true
 pyenv_prefix = 'venv'
+
+[java]
+format = "[](fg:color8 bg:color4)[${symbol}${version}](bg:color8 fg:color5)[](fg:color8 bg:color4) "
+symbol = " "
 
 [rust]
 format = "[](fg:color8 bg:color4)[${symbol}${version}](bg:color8 fg:color5)[](fg:color8 bg:color4) "

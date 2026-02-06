@@ -1,7 +1,7 @@
 @import "colors.css";
 
 * {
-    font-family: "Google Sans Flex","Maple Mono NF CN";
+    font-family: "Google Sans Flex","JetBrains Mono Nerd Font Propo";
     margin: 0;
     padding: 0;
 }
@@ -45,7 +45,7 @@ window#waybar {
     color: @on-surface-variant;
     background: transparent;
     border: none;
-    padding: 4px 8px;
+    padding: 2px 8px;
     border-radius: 6px;
     transition: all 0.3s ease;
     font-size: 16px;
@@ -60,7 +60,7 @@ window#waybar {
     color: @on_primary;
     background: linear-gradient(120deg, @primary 20%, @tertiary 80%);
     border-radius: 20px;
-    padding: 4px 20px;
+    padding: 2px 20px;
 }
 
 #submap {
@@ -121,4 +121,58 @@ window#waybar {
 
 #mpris.playing {
     color: @tertiary;
+}
+tooltip {
+    background-color: alpha(@background,0.98);
+    padding: 8px 12px;
+}
+tooltip label {
+    color: @on_surface;
+}
+#tray {
+    background-color: transparent;
+    padding: 0 4px;
+}
+#tray > .passive {
+    opacity: 0.6;
+}
+
+#tray > .needs-attention {
+    background-color: @error_container;
+    color: @on_error_container;
+    border-radius: 12px;
+}
+
+
+/* Tray menu - Material You */
+#tray menu {
+    background-color: @surface;
+    border: 1px solid @outline_variant;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+#tray menu menuitem {
+    background-color: transparent;
+    color: @on_surface;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 2px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#tray menu menuitem:hover {
+    background-color: @primary_container;
+    color: @on_primary_container;
+}
+
+#tray menu menuitem:disabled {
+    color: @on_surface_variant;
+    opacity: 0.38;
+}
+
+/* Separadores visuales mínimos */
+#tray menu separator {
+    background-color: @outline_variant;
+    margin: 4px 8px;
 }

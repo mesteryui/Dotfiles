@@ -25,7 +25,6 @@
     "group/tray-expander",
     "bluetooth",
     "idle_inhibitor",
-    "power-profiles-daemon",
     "custom/notification",
     "network",
     "pulseaudio",
@@ -38,7 +37,7 @@
     "tooltip-format": "HyprSphere Menu\n\nSuper + Alt + Space"
   },
   "mpris": {
-    "format": "{title}",
+    "format": "{icon} {title}",
     "format-paused": "{title}",
     "tooltip": false,
     "on-click": "playerctl play-pause",
@@ -73,7 +72,7 @@
     "interval": 240
   },
   "custom/update": {
-    "format": "  {}",
+    "format": " {}",
     "return-type": "json",
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval 5 --network-interval-seconds 300",
@@ -136,7 +135,7 @@
     "interval": 5,
     "format": "󰘚",
     "tooltip-format": "CPU: {usage}%\nCarga promedio: {load}",
-    "on-click": "kitty --class float_btop -e btop"
+    "on-click": "xdg-terminal-exec --app-id=local.btopfloat -e btop"
   },
 
   "clock": {

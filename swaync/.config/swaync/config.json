@@ -11,7 +11,7 @@
   "control-center-margin-left": 0,
 
   "notification-window-width": 400,
-  "notification-icon-size": 48,
+  "notification-icon-size": 50,
   "notification-body-image-height": 160,
   "notification-body-image-width": 200,
 
@@ -41,7 +41,6 @@
   },
   "widgets": [
     "buttons-grid",
-    "mpris",
     "volume",
     "title",
     "dnd",
@@ -61,8 +60,9 @@
       "text": " "
     },
     "mpris": {
-      "image-size": 96,
-      "image-radius": 12
+      "image-size": 120,
+      "image-radius": 20
+
     },
     "volume": {
       "label": "󰕾",

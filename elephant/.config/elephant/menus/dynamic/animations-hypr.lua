@@ -2,7 +2,6 @@ Name="hyprland-animations"
 NamePretty="Hyprland Animations"
 function ApplyAnimation(val)
     local archivo = ObtenerHyprAnimsLayoutDir().."../animation.conf"
-    
 end
 function ObtenerHyprAnimsLayoutDir()
     local dir = os.getenv("XDG_CONFIG_HOME")

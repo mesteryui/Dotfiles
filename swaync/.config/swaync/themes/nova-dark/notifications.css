@@ -1,5 +1,5 @@
 @define-color text            @on_background;
-@define-color background-alt  alpha(@surface, .4);
+@define-color background-alt  alpha(@surface, .84);
 @define-color selected        @primary;
 @define-color hover           alpha(@selected,.4);
 @define-color urgent          @error;
