@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<libraryInfos>
-    <libraryInfo home="/usr/lib/jvm/java-21-openjdk" version="21.0.9"/>
-    <libraryInfo home="/usr/lib/jvm/java-25-openjdk" version="25.0.1"/>
-    <libraryInfo home="/usr/lib/jvm/java-11-openjdk" version="11.0.29"/>
-    <libraryInfo home="/usr/lib/jvm/default" version="25.0.1"/>
-</libraryInfos>

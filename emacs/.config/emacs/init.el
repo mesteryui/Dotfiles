@@ -1,172 +1,81 @@
 ;; -*- lexical-binding: t; -*-
-;;(add-to-list 'load-path "~/.config/emacs/scripts/")
 
-(defvar no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/"))
-(defvar no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/"))
+;; 1. Bootstrapping del gestor de paquetes
+(load (expand-file-name "modules/core/os-package.el" user-emacs-directory))
 
-(when (boundp 'native-comp-eln-load-path)
-  (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;(setq elpaca-core-date '(20250223)) ;; set to the build date of Emacs
-(defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/"  no-littering-var-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                 ,@(when-let ((depth (plist-get order :depth)))
-                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
-;;(elpaca org)
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
-
-;; Block until current queue processed.
-(use-package no-littering
-  :ensure t
-  :init
-  ;; set paths for no-littering etc and var directories
-  ;; instead of this paths, you could use
-  ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
-  (setq no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/")
-        no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/")
-	)
-  :config
-  ;; set sensible defaults for backups
-  (no-littering-theme-backups)
-  ;; set paths for url-history-file and custom-file
-  (setopt url-history-file (no-littering-expand-etc-file-name "url/history")
-          custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
-  )
-
-(use-package eldoc
-  :ensure nil
-  :hook (prog-mode . eldoc-mode)
-  :custom
-  (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-  (eldoc-message-function #'message)
-  (eldoc-idle-delay 0.2))
-
-(elpaca-wait)
-
-(defgroup mester nil
-  "Group to my custom configs"
-  :group 'convenience)
-
-(defvar mest-languages '(("Español" . "es_ES") ("English" . "en") ("Esperanto" . "eo"))
-  "The languages to be used by word corrections")
-
-(defcustom mester/spell-checker 'jinx
-  "Sistema de correccion ortografica de preferencia."
-  :type '(choice (const :tag "Jinx" jinx)
-  		 (const :tag "Flyspell" flyspell)))
-(defcustom mester/modeline 'doom-modeline
-  "Modeline por defecto"
-  :group 'mester
-  :type '(choice (const :tag "Os modeline (Own)" os-modeline)
-  		 (const :tag "Doom Modeline" 'doom-modeline)))
-
-
-;; Añadir el directorio 'modules' y subdirectorios al 'load-path'
-
-;; Cargar los módulos habilitados
+;; 2. Cargar el cargador de módulos (Moon Loader)
 (use-package moon-loader
   :ensure nil
   :load-path "os-lisp/moon-loader/"
   :config
-  (moon-loader-add-modules (main-dashboard :after nerd-icons-settings))
+  ;; 3. Cargar el núcleo (CORE) - El orden importa aquí
   (moon-loader-add-modules
-   (ui :after performance)          ;; Apariencia y UI
-   macros      ;; Macros personalizadas
-   performance ;; Ajustes del rendimiento
-   personal    ;; Ajustes personales diversos
-   settings    ;; Ajustes diversos
-   functions   ;; Funciones propias desarrolladas por mi
-   org-config  ;; Configuración de Org Mode
-   (modeline :after nerd-icons-settings)
-   nerd-icons-settings
-   tools       ;; Herramientas generales
-   keybindings ;; atajos de teclado diversos
-   emacs-git
-   ;; Completion functions
-   orderless-funcs
-   eldoc-tools
-   corfu-completion ;; Sistema de autocompletado
-   vertico-funcs ;; Sistema para la completacion del minibuffer
-   embark-funcs
-   marginalia-funcs
-   consult-func
-   tempel-funcs
-   ligatures
-   plz-http
-   ;; Final Completion Functions
-   ;; Editing and spelling
-   editing
-   spelling
-   ;; End of editing and spelling
-   dired
-   eat-term
-   vterm-term
-   tramp-config
-   packages    ;; Paquetes que utilizble
-   sin-distracciones ;; Modo sin distracciones
+   (os-funcs :after os-macros)
+   os-vars    ;; Variables básicas y configuración nativa
+   os-defbinds
    )
-   (moon-loader-add-modules
-   treesit-funcs
-   programming ;; Configuraciones base de programación
-   ;; Módulos de lenguajes específicos
-   javascript
-   golang
-   emacs-lisp ;; Paquetes para facilitar el desarrollo en Emacs Lisp
-   pythonlang ;; Lo puse así porque si lo ponia como python hacia conflicto con la libreria de Emacs
-   ruby
-   systemd-lang
-   markdown-things
-   kdl-ts-mode-settings
-   rune-lang
-   zig-lang
-   rust
-   qml
-   schemelang
-   hyprlang
-   nimlang
-   common-lisp ;; Soporte para CommonLisp NOTE Estandar Lisp
-   java ;; Lenguaje de programacion Java
+
+  ;; 4. Interfaz de Usuario (UI)
+  (moon-loader-add-modules
+   os-ui
+   os-icons
+   os-modeline
    )
-  )
+  
+  ;; 5. Otros módulos (se añadirán conforme se creen)
+  (moon-loader-add-modules
+   ;; Completion
+   os-orderless
+   os-vertico
+   os-marginalia
+   os-consult
+   os-embark
+   os-which-key
+   os-corfu
+   os-tempel
+   os-programming
+   os-editing
+   
+   ;; Tools/UI
+   os-dashboard
+   os-org
+   os-spelling
+   ;; Multiple tools
+   os-vterm
+   os-no-distraction
+   os-ligatures
+   os-treesit
+   os-tramp
+   os-eat
+   os-git
+   os-eshell
+   os-productivity
+   os-eldoc
+   os-docker
+
+   ;; Languages
+   os-common-lisp
+   os-config-modes
+   os-emacs-lisp
+   os-golang
+   os-hyprlang
+   os-java
+   os-javascript
+   os-kdl
+   os-lua
+   os-markdown
+   os-nim
+   os-python
+   ;;os-qml
+   ;;os-ruby
+   os-rune
+   os-rust
+   os-scheme
+   os-systemd
+   os-toml
+   os-typst
+   os-zig
+   ))
 
 (provide 'init)
 ;;; init.el ends here

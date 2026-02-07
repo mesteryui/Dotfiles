@@ -27,7 +27,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl-lib))
+(require 'cl-lib)
 
 (defgroup moon-loader nil
   "Moon loader configuration"
@@ -87,6 +87,7 @@
 		       (require m)))))
     (if (or (null after) (featurep after))
 	(funcall load-func module)
+      (funcall load-func after)
       (with-eval-after-load after
 	(funcall load-func module)))))
 

@@ -14,10 +14,10 @@ if [ "$HYPRGAMEMODE" -eq 1 ] ; then
         keyword decoration:active_opacity 1;\
         keyword decoration:inactive_opacity 1;\
         keyword decoration:fullscreen_opacity 1"
-    hyprctl notify 1 5000 "rgb(40a02b)" "Gamemode [ON]"
+    hyprctl notify 1 5000 "rgb(40a02b)" "fontsize:15 Gamemode [ON]"
     exit
 else
-    hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]"
+    hyprctl notify 1 5000 "rgb(d20f39)" "fontsize:15 Gamemode [OFF]"
     hyprctl reload
     exit 0
 fi

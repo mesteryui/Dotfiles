@@ -156,4 +156,5 @@ dynamic_bindings |
   sort -u |
   parse_keycodes |
   parse_bindings |
-  walker --dmenu -p 'Keybindings' --width 800 --height "$menu_height"
+  #rofi -dmenu -i -p "Shorcuts" -theme-str "window { width: 820px; height: ${menu_height}px; }" -matching fuzzy
+  walker --height "$menu_height" --width 800 --dmenu

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+export GEM_PATH="/home/oscar/.config/emacs/mason/packages/solargraph/:$GEM_PATH"
+exec /home/oscar/.config/emacs/mason/packages/solargraph/bin/solargraph "$@"

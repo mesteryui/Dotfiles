@@ -1,0 +1,172 @@
+[19:51:44.975][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:71]: Lua Lsp startup, root: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
+[19:51:44.975][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:72]: ROOT:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
+[19:51:44.975][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:73]: LOGPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log
+[19:51:44.975][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:74]: METAPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/meta
+[19:51:44.976][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:75]: VERSION:	3.16.4
+[19:51:45.048][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[19:51:45.048][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.899 MB
+        # 00 : 1.899 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[19:51:45.159][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {},
+    general = {
+      positionEncodings = { "utf-32", "utf-8", "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite", "source", "source.organizeImports" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = false,
+        isPreferredSupport = true,
+        resolveSupport = {
+          properties = { "edit", "command" }
+        }
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          resolveSupport = {
+            properties = { "documentation", "details", "additionalTextEdits" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        contextSupport = true,
+        dynamicRegistration = false
+      },
+      declaration = {
+        dynamicRegistration = false,
+        linkSupport = true
+      },
+      definition = {
+        dynamicRegistration = false,
+        linkSupport = true
+      },
+      documentHighlight = {
+        dynamicRegistration = false
+      },
+      documentSymbol = {
+        dynamicRegistration = false,
+        hierarchicalDocumentSymbolSupport = true,
+        symbolKind = {
+          valueSet = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 }
+        }
+      },
+      formatting = {
+        dynamicRegistration = false
+      },
+      hover = {
+        contentFormat = { "markdown", "plaintext" },
+        dynamicRegistration = false
+      },
+      implementation = {
+        dynamicRegistration = false,
+        linkSupport = true
+      },
+      inlayHint = {
+        dynamicRegistration = false
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = false,
+        relatedInformation = false,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        }
+      },
+      rangeFormatting = {
+        dynamicRegistration = false
+      },
+      references = {
+        dynamicRegistration = false
+      },
+      rename = {
+        dynamicRegistration = false
+      },
+      signatureHelp = {
+        dynamicRegistration = false,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = false,
+        willSave = true,
+        willSaveWaitUntil = true
+      },
+      typeDefinition = {
+        dynamicRegistration = false,
+        linkSupport = true
+      }
+    },
+    window = {
+      showDocument = {
+        support = true
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      configuration = true,
+      didChangeWatchedFiles = {
+        dynamicRegistration = true
+      },
+      executeCommand = {
+        dynamicRegistration = false
+      },
+      symbol = {
+        dynamicRegistration = false
+      },
+      workspaceEdit = {
+        documentChanges = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Eglot",
+    version = "1.17.30"
+  },
+  initializationOptions = {},
+  processId = 658825,
+  rootPath = "/home/oscar/.dotfiles/",
+  rootUri = "file:///home/oscar/.dotfiles",
+  workspaceFolders = { {
+      name = "~/.dotfiles/",
+      uri = "file:///home/oscar/.dotfiles"
+    } }
+}
+[19:51:45.160][info] [#0:script/language.lua:137]: VSC language: nil
+[19:51:45.160][info] [#0:script/language.lua:138]: LS  language: en-us
+[19:51:45.160][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///home/oscar/.dotfiles
+[19:51:45.160][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log/file_home_oscar_.dotfiles.log

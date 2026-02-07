@@ -18,27 +18,10 @@ vesktop/.config/vesktop/sessionData/
 vesktop/.config/vesktop/settings.json
 vesktop/.config/vesktop/settings/
 vesktop/.config/vesktop/state.json
-yazi/.config/yazi/theme.toml-1757962370141201
-yazi/.config/yazi/theme.toml-1757962567607559
-yazi/.config/yazi/theme.toml-1758025737651060
-yazi/.config/yazi/theme.toml-1758092771917062
-yazi/.config/yazi/theme.toml-1758112225603854
-yazi/.config/yazi/theme.toml-1758183471635422
-yazi/.config/yazi/theme.toml-1758215281344120
-	yazi/.config/yazi/theme.toml-1758398905161399
-	yazi/.config/yazi/theme.toml-1758479061901581
-	yazi/.config/yazi/theme.toml-1758526391419327
-	yazi/.config/yazi/theme.toml-1758559871991832
-	yazi/.config/yazi/theme.toml-1758784155466939
-	yazi/.config/yazi/theme.toml-1758882005023382
-	yazi/.config/yazi/theme.toml-1758907224828445
-	yazi/.config/yazi/theme.toml-1758975764171566
-	yazi/.config/yazi/theme.toml-1758997382281363
-	yazi/.config/yazi/theme.toml-1759018054398066
-	yazi/.config/yazi/theme.toml-1759222821023514
-	yazi/.config/yazi/theme.toml-1759223246375301
+yazi/.config/yazi/theme.toml-
 cava/.config/cava/shaders/
-	cava/.config/cava/themes/
-	emacs/.config/emacs/elpa/
-	systemd/.config/systemd/user/graphical-session.target.wants/hyprpolkitagent.service
-	systemd/.config/systemd/user/graphical-session.target.wants/swaync.service
+cava/.config/cava/themes/
+emacs/.config/emacs/elpa/
+emacs/.config/emacs/eglot-java-eclipse-jdt-cache
+systemd/.config/systemd/user/graphical-session.target.wants/hyprpolkitagent.service
+systemd/.config/systemd/user/graphical-session.target.wants/swaync.service

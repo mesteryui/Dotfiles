@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec /home/oscar/.config/emacs/mason/packages/lua-language-server/libexec/bin/lua-language-server "$@"

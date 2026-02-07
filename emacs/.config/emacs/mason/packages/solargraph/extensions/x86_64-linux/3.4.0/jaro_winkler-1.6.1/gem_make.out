@@ -1,0 +1,22 @@
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/jaro_winkler-1.6.1/ext/jaro_winkler
+/usr/bin/ruby extconf.rb
+checking for whether -std=c99 is accepted as CFLAGS... yes
+creating Makefile
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/jaro_winkler-1.6.1/ext/jaro_winkler
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-phdhbs sitelibdir\=./.gem.20251205-156476-phdhbs clean
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/jaro_winkler-1.6.1/ext/jaro_winkler
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-phdhbs sitelibdir\=./.gem.20251205-156476-phdhbs
+compiling adj_matrix.c
+compiling codepoints.c
+compiling jaro.c
+compiling jaro_winkler.c
+linking shared-object jaro_winkler/jaro_winkler_ext.so
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/jaro_winkler-1.6.1/ext/jaro_winkler
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-phdhbs sitelibdir\=./.gem.20251205-156476-phdhbs install
+/usr/bin/install -c -m 0755 jaro_winkler_ext.so ./.gem.20251205-156476-phdhbs/jaro_winkler
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/jaro_winkler-1.6.1/ext/jaro_winkler
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-phdhbs sitelibdir\=./.gem.20251205-156476-phdhbs clean

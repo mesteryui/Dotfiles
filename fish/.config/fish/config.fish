@@ -28,5 +28,4 @@ set VISUAL "emacsclient -c -a emacs"
 set EDITOR "emacsclient -t -a ''"
 set -Ux PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
-set -Ux GEMINI_API_KEY (pass geminiAPI)
 alias config "git --git-dir=$HOME/.dotfiles/.git --work-tree=$HOME/.dotfiles"

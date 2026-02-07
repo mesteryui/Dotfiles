@@ -1,0 +1,18 @@
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/racc-1.8.1/ext/racc/cparse
+/usr/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-ssbwhs sitelibdir\=./.gem.20251205-156476-ssbwhs clean
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-ssbwhs sitelibdir\=./.gem.20251205-156476-ssbwhs
+compiling cparse.c
+linking shared-object racc/cparse.so
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-ssbwhs sitelibdir\=./.gem.20251205-156476-ssbwhs install
+/usr/bin/install -c -m 0755 cparse.so ./.gem.20251205-156476-ssbwhs/racc
+
+current directory: /home/oscar/.config/emacs/mason/packages/solargraph/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251205-156476-ssbwhs sitelibdir\=./.gem.20251205-156476-ssbwhs clean

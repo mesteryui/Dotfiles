@@ -1,15 +1,15 @@
 @import 'colors.css';
 * {
-    font-family: "Google Sans Flex 24pt";
+    font-family: "Google Sans Flex";
 }
 window {
   border-radius: 0;
-  opacity: 0.97;
+  opacity: 0.89;
   border: 2px solid @primary;
 }
 window#osd {
   padding: 12px 20px;
-  border-radius: 999px;
+  border-radius: 40px;
   /*border: none;*/
   background: @background;
    min-width: 120px;   /* ancho más largo */
@@ -30,7 +30,7 @@ window#osd {
   progressbar {
     min-height: 6px;
     min-width: 120px;
-    border-radius: 999px;
+    border-radius: 78px;
     background: transparent;
     border: none;
   }

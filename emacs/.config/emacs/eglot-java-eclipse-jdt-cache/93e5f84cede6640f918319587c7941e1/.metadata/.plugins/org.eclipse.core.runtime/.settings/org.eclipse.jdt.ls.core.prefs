@@ -1,6 +1,0 @@
-PREF_FILTER_TESTCODE=false
-eclipse.preferences.version=1
-java.project.resourceFilters=node_modules\:\:\\.git
-m2e.disableTestClasspathFlag=false
-maven.multiModuleProjectDirectory=/home/oscar/Escritorio/Colegio/CalculadoraPSP
-workspaceInitialized=true

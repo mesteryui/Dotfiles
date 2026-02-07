@@ -1,6 +1,4 @@
 export HYPRSHOT_DIR=$HOME/Imágenes/Capturas
-export HYPRCURSOR_SIZE=24
-export HYPRCURSOR_THEME="Bibata-Modern-Classsic"
 export QT_QUICK_CONTROLS_STYLE=org.hyprland.style
 export XDG_SESSION_DESKTOP=Hyprland
 export HYPRLAND_NO_SD_NOTIFY=1 # If systemd, disables the sd_notify calls.

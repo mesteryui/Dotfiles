@@ -1,0 +1,85 @@
+append_cflags: checking for whether -std=gnu99 is accepted as CFLAGS... -------------------- yes
+
+LD_LIBRARY_PATH=.:/usr/lib ASAN_OPTIONS=detect_leaks=0 "gcc -o conftest -I/usr/include/ruby-3.4.0/x86_64-linux -I/usr/include/ruby-3.4.0/ruby/backward -I/usr/include/ruby-3.4.0 -I. -I./../../include    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions         -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -ffile-prefix-map=/build/ruby/src=/usr/src/debug/ruby -flto=auto -fPIC conftest.c -L. -L/usr/lib -L. -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now          -Wl,-z,pack-relative-relocs -flto=auto -fstack-protector-strong -rdynamic -Wl,-export-dynamic -Wl,--no-as-needed     -lruby  -lm -lpthread  -lc"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+LD_LIBRARY_PATH=.:/usr/lib ASAN_OPTIONS=detect_leaks=0 "gcc -I/usr/include/ruby-3.4.0/x86_64-linux -I/usr/include/ruby-3.4.0/ruby/backward -I/usr/include/ruby-3.4.0 -I. -I./../../include    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions         -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -ffile-prefix-map=/build/ruby/src=/usr/src/debug/ruby -flto=auto -fPIC  -std=gnu99 -Werror -c conftest.c"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+--------------------
+
+append_cflags: checking for whether -Wimplicit-fallthrough is accepted as CFLAGS... -------------------- yes
+
+LD_LIBRARY_PATH=.:/usr/lib ASAN_OPTIONS=detect_leaks=0 "gcc -I/usr/include/ruby-3.4.0/x86_64-linux -I/usr/include/ruby-3.4.0/ruby/backward -I/usr/include/ruby-3.4.0 -I. -I./../../include    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions         -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -ffile-prefix-map=/build/ruby/src=/usr/src/debug/ruby -flto=auto -fPIC -std=gnu99  -Wimplicit-fallthrough -Werror -c conftest.c"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+--------------------
+
+append_cflags: checking for whether -Wunused-result is accepted as CFLAGS... -------------------- yes
+
+LD_LIBRARY_PATH=.:/usr/lib ASAN_OPTIONS=detect_leaks=0 "gcc -I/usr/include/ruby-3.4.0/x86_64-linux -I/usr/include/ruby-3.4.0/ruby/backward -I/usr/include/ruby-3.4.0 -I. -I./../../include    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions         -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -ffile-prefix-map=/build/ruby/src=/usr/src/debug/ruby -flto=auto -fPIC -std=gnu99 -Wimplicit-fallthrough  -Wunused-result -Werror -c conftest.c"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+--------------------
+
+append_cflags: checking for whether -Wc++-compat is accepted as CFLAGS... -------------------- no
+
+LD_LIBRARY_PATH=.:/usr/lib ASAN_OPTIONS=detect_leaks=0 "gcc -I/usr/include/ruby-3.4.0/x86_64-linux -I/usr/include/ruby-3.4.0/ruby/backward -I/usr/include/ruby-3.4.0 -I. -I./../../include    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions         -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -ffile-prefix-map=/build/ruby/src=/usr/src/debug/ruby -flto=auto -fPIC -std=gnu99 -Wimplicit-fallthrough -Wunused-result  -Wc++-compat -Werror -c conftest.c"
+En el fichero incluido desde /usr/include/ruby-3.4.0/ruby/internal/arithmetic/char.h:29,
+                 desde /usr/include/ruby-3.4.0/ruby/internal/arithmetic.h:24,
+                 desde /usr/include/ruby-3.4.0/ruby/ruby.h:28,
+                 desde /usr/include/ruby-3.4.0/ruby.h:38,
+                 desde conftest.c:1:
+/usr/include/ruby-3.4.0/ruby/internal/core/rstring.h: En la función ‘rbimpl_rstring_getmem’:
+/usr/include/ruby-3.4.0/ruby/internal/core/rstring.h:398:24: error: el miembro const sin inicializar en ‘struct RString’ es no válido en C++ [-Werror=c++-compat]
+  398 |         struct RString retval;
+      |                        ^~~~~~
+En el fichero incluido desde /usr/include/ruby-3.4.0/ruby/internal/core/rstring.h:28:
+/usr/include/ruby-3.4.0/ruby/internal/core/rbasic.h:86:17: nota: ‘klass’ se debe inicializar
+   86 |     const VALUE klass;
+      |                 ^~~~~
+cc1: todos los avisos se tratan como errores
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+--------------------
+
