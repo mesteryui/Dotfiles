@@ -57,7 +57,7 @@ inputbar {
 textbox-prompt-colon {
     enabled: true;
     expand: false;
-    str: "Buscar:";
+    str: "Wallpapers:";
     background-color: transparent;
     text-color: @accent-color;
     padding: 0px 12px 0px 0px;

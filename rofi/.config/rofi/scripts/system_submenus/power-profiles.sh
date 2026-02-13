@@ -8,7 +8,7 @@ profiles=$(powerprofilesctl list | awk '/:/ && !/CpuDriver|PlatformDriver|Degrad
         printf "%s\n", $1; # Los inactivos: imprimimos espacios y el primer campo
     }
 }')
-profile=$(echo -e "$profiles" | rofi -dmenu -theme "~/.config/rofi/layouts/system-menu.rasi")
+profile=$(echo -e "$profiles" | rofi -dmenu -theme "~/.config/rofi/layouts/minimal.rasi" -p 'Power Profile:')
 
 if [ -n "$profile" ]; then
    profile_clean="${profile#* }"

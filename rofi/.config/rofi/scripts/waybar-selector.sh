@@ -14,7 +14,7 @@ for file in "$LAYOUT_DIR"/*; do
   fi
 done
 
-SELECTED=$(printf "%s\n" "${LAYOUTS[@]}" | rofi -dmenu -p "Waybar")
+SELECTED=$(printf "%s\n" "${LAYOUTS[@]}" | rofi -dmenu -p "Waybar:")
 
 if [[ -n "$SELECTED" ]]; then
   SELECTED=${SELECTED#* }

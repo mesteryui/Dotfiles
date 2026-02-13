@@ -10,9 +10,9 @@ THEME_FILE=$(cat "$CURRENT" 2>/dev/null || echo "$DEFAULT")
 # Ejecutar Rofi con el tema actual
 rofi -show drun \
      -theme "$THEME_DIR/$THEME_FILE" \
-     -matching fuzzy \
      -case-insensitive \
      -sort true \
+     -matching fuzzy \
      -sorting-method fzf \
      -display-columns 1 
      -normalize true \

@@ -1,9 +1,4 @@
 @import "../config.rasi"
-* { 
-  font: "Maple Mono NF 12";
-  
-} 
-
 window { 
        /*width: 400px;*/
 }
@@ -14,5 +9,19 @@ configuration {
     case-sensitive: false;
 }
 inputbar {
-  children: ["entry"];
+  children: ["textbox-prompt-custom", "entry"];
 }
+textbox-prompt-custom {
+    enabled:     true;
+    expand:      false;       /* Importante: para que no ocupe toda la línea */
+    str:         "Menu:";      /* En Rofi moderno se usa 'str' en lugar de 'content' */
+    width:        74px;      /* OPCIONAL: Si quieres un ancho fijo exacto */
+    /* Estilo visual */
+    border-radius: 5px;
+    padding: 8px 0 0 8px;
+    margin: 0 8px 0 8px;
+    text-color: @primary;
+    background-color: transparent;
+    font: "Google Sans Flex 12";
+}
+
