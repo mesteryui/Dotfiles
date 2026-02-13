@@ -16,15 +16,12 @@ kotofetch
 lib32-amdvlk
 libsodium-1.0.18
 matugen-bin
-paru-debug
 plymouth-theme-archlinux
 python-pywalfox
-systemd-manager-tui
 ttf-aporetic
 ttf-gabarito-git
 tutanota-desktop-bin
 unimatrix-git
-waybar-cava
 wttrbar
 xpm-pixbuf-git
 youtube-music-bin

@@ -42,7 +42,7 @@ lsd
 blueberry
 power-profiles-daemon
 zathura
-loupe
+imv
 vesktop
 bluez
 bluez-libs

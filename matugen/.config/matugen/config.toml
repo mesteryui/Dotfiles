@@ -68,7 +68,7 @@ post_hook = "hyprctl reload"
 
 [templates.gtk3]
 input_path = './templates/gtk-colors.css'
-output_path = '~/.config/gtk-3.0/gtk.css'
+output_path = '~/.config/gtk-3.0/colors.css'
 
 [templates.kcolorscheme]
 input_path = './templates/kcolorscheme.colors'
@@ -77,7 +77,7 @@ post_hook = 'systemctl restart --user hyprpolkitagent'
 
 [templates.gtk4]
 input_path = './templates/gtk-colors.css'
-output_path = '~/.config/gtk-4.0/gtk.css'
+output_path = '~/.config/gtk-4.0/colors.css'
 
 [templates.hyprtoolkit]
 input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
