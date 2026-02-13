@@ -40,5 +40,10 @@
   :ensure nil
   :init (savehist-mode))
 
+(use-package consult-eglot
+  :ensure t
+  :bind (:map eglot-mode-map
+              ("M-g s" . consult-eglot-symbols))) ;; "Go to Symbol"
+
 (provide 'os-consult)
 ;;; os-consult.el ends here

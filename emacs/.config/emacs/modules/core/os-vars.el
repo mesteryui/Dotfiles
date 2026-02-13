@@ -31,9 +31,7 @@
 (prefer-coding-system 'utf-8)
 
 ;; Editing Behavior
-(setopt select-enable-clipboard t
-        select-enable-primary t
-        enable-local-variables t
+(setopt enable-local-variables t
         vc-follow-symlinks t)
 
 ;; Files and Backups

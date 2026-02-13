@@ -1,4 +1,5 @@
 (use-package which-key
+  :after embark
   :ensure t
   :config
   (which-key-mode)

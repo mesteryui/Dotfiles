@@ -56,6 +56,35 @@ This modifies the list in place."
    (t
     (keyboard-quit))))
 
+(defun toggle-webserver ()
+  "Toggle a simple webserver (browser-sync) for the current directory.
+If running, it stops the server. If stopped, it starts it on port 3000."
+  (interactive)
+  (let ((proc (get-process "webserver")))
+    (if (and proc (eq (process-status proc) 'run))
+        (progn
+          (delete-process "webserver")
+          (message "Webserver stopped"))
+      (make-process :name "webserver" 
+                    :command '("npx" "browser-sync" "start" "--server" "--files" "**/*") 
+                    :buffer "*webserver*"
+                    :filter (lambda (_proc output)
+                              (when (string-match "Local: http://localhost:3000" output)
+                                (message " ✅ Webserver started")))))))
+
+(defun my/python-run-file ()
+  "Run the current Python file in its virtual environment (pet)."
+  (interactive)
+  (when (derived-mode-p 'python-mode 'python-ts-mode)
+    (pet-mode 1)
+    (save-buffer)
+    (let* ((venv (pet-virtualenv-root))
+           (python-exe (if venv
+                           (expand-file-name "bin/python" venv)
+                         "python3"))
+           (cmd (format "%s %s" python-exe (shell-quote-argument buffer-file-name))))
+      (compile cmd))))
+
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
 
 (provide 'os-funcs)

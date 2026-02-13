@@ -1,6 +1,7 @@
-;;; -*- lexical-binding: t -*-
+;;; os-programming.el --- Programming general configuration -*- lexical-binding: t -*-
 
-;;(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+;;; Code:
+
 (global-display-line-numbers-mode)
 (dolist (mode '(org-mode-hook
                 cfw:calendar-mode-hook
@@ -15,6 +16,23 @@
 (setq-default display-fill-column-indicator-column 79)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
+;; MASON: Gestión de binarios externos
+(use-package mason
+  :ensure t
+  :demand t
+  :init
+  ;; Añadimos al PATH antes de que otros paquetes busquen ejecutables
+  (let ((mason-path (expand-file-name "mason/bin" user-emacs-directory)))
+    (add-to-list 'exec-path mason-path)
+    (setenv "PATH" (concat mason-path ":" (getenv "PATH"))))
+  :config
+  (mason-ensure)
+  (mason-ensure
+   (lambda ()
+     (dolist (pkg '("basedpyright" "jdtls" "gopls" "ruff"))
+       (unless (mason-installed-p pkg) (mason-install pkg))))))
+
+;; Estética y Visualización
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -30,7 +48,7 @@
    (prog-mode . hs-minor-mode)
    (outline-minor-mode
     .
-    (lambda()
+    (lambda ()
       (let* ((display-table (or buffer-display-table (make-display-table)))
              (face-offset (* (face-id 'shadow) (ash 1 22)))
              (value (vconcat (mapcar (lambda (c) (+ face-offset c)) " ▼"))))
@@ -55,72 +73,44 @@
   (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
   (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode))
 
-;; TODO Highlights
+;; TODO Highlights con Ef-themes
 (use-package hl-todo
   :hook (prog-mode . hl-todo-mode)
   :config
   (defun my-ef-themes-hl-todo-faces ()
-    "Configure `hl-todo-keyword-faces' with Ef themes colors."
     (ef-themes-with-colors
       (setq hl-todo-keyword-faces
-            `(("HOLD" . ,yellow)
-              ("TODO" . ,red)
-              ("NEXT" . ,blue)
-              ("THEM" . ,magenta)
-              ("PROG" . ,cyan-warmer)
-              ("OKAY" . ,green-warmer)
-              ("DONT" . ,yellow-warmer)
-              ("FAIL" . ,red-warmer)
-              ("BUG" . ,red-warmer)
-              ("DONE" . ,green)
-              ("NOTE" . ,blue-warmer)
-              ("KLUDGE" . ,cyan)
-              ("HACK" . ,cyan)
-              ("TEMP" . ,red)
-              ("FIXME" . ,red-warmer)
-              ("XXX+" . ,red-warmer)
-              ("REVIEW" . ,red)
-              ("DEPRECATED" . ,yellow)))))
+            `(("HOLD" . ,yellow) ("TODO" . ,red) ("NEXT" . ,blue) ("THEM" . ,magenta)
+              ("PROG" . ,cyan-warmer) ("OKAY" . ,green-warmer) ("DONT" . ,yellow-warmer)
+              ("FAIL" . ,red-warmer) ("BUG" . ,red-warmer) ("DONE" . ,green)
+              ("NOTE" . ,blue-warmer) ("KLUDGE" . ,cyan) ("HACK" . ,cyan)
+              ("TEMP" . ,red) ("FIXME" . ,red-warmer) ("XXX+" . ,red-warmer)
+              ("REVIEW" . ,red) ("DEPRECATED" . ,yellow)))))
   (add-hook 'ef-themes-post-load-hook #'my-ef-themes-hl-todo-faces))
 
 ;; Project Management
 (use-package projectile
   :ensure t
   :config
-  (projectile-mode +1))
-(setopt projectile-project-root-files '(".git"))
+  (projectile-mode +1)
+  (setq projectile-project-root-files '(".git" "pyproject.toml" "setup.py" "go.mod" "Cargo.toml")))
 
-;;(use-package transient)
-
-;; Formatting
+;; Formatting (Apheleia)
 (use-package apheleia
   :ensure t
   :after mason
   :diminish apheleia-mode
-  :hook
-  ((prog-mode . apheleia-mode)
-   (text-mode . apheleia-mode))
+  :hook ((prog-mode . apheleia-mode) (text-mode . apheleia-mode))
   :custom
   (apheleia-formatters-respect-indent-level t)
   (apheleia-hide-log-buffers t)
   (apheleia-log-only-errors t)
   (apheleia-remote-algorithm 'local))
 
-;; LSP / Tooling
-(use-package mason
-  :ensure t
-  :config
-  (mason-ensure))
-(os/after mason
-          (mason-ensure
-           (lambda ()
-             (ignore-errors (mason-install "basedpyright"))
-             (ignore-errors (mason-install "jdtls"))
-             (ignore-errors (mason-install "gopls")))))
-
+;; Cargar Eglot
 (moon-loader-add-modules os-lsp-confs)
 
-;; Debugging
+;; Debugging (Dape)
 (use-package dape
   :defer t
   :custom
@@ -129,7 +119,7 @@
   (dape-request-timeout 30)
   (dape-inlay-hints t))
 
-;; Linting / Diagnostics (Flymake)
+;; Flymake y Diagnósticos
 (use-package flymake
   :ensure t
   :defer t

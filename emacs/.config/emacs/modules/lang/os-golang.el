@@ -1,6 +1,6 @@
 ;;; os-golang.el --- Golang configuration -*- lexical-binding: t; -*-
 
-(add-to-list 'auto-mode-alist '("\.go\'" . go-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
 (defun eglot-go-config ()
   (setq-local eglot-workspace-configuration
               '(:gopls (:analyses (:unusedparams t)

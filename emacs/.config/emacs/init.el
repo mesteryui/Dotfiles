@@ -1,8 +1,7 @@
-;; -*- lexical-binding: t; -*-
+;; -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; 1. Bootstrapping del gestor de paquetes
 (load (expand-file-name "modules/core/os-package.el" user-emacs-directory))
-
 ;; 2. Cargar el cargador de módulos (Moon Loader)
 (use-package moon-loader
   :ensure nil
@@ -21,7 +20,6 @@
    os-icons
    os-modeline
    )
-  
   ;; 5. Otros módulos (se añadirán conforme se creen)
   (moon-loader-add-modules
    ;; Completion
@@ -35,11 +33,14 @@
    os-tempel
    os-programming
    os-editing
+   os-indent-bars
    
    ;; Tools/UI
-   os-dashboard
    os-org
+   os-org-roam
+   os-dashboard
    os-spelling
+   os-colorful-mode
    ;; Multiple tools
    os-vterm
    os-no-distraction
@@ -52,6 +53,7 @@
    os-productivity
    os-eldoc
    os-docker
+   os-treemacs
 
    ;; Languages
    os-common-lisp

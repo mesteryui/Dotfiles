@@ -9,7 +9,8 @@
 * {
   all: unset;
   font-family: "Google Sans Flex";
-  font-variation-settings: "opsz" 10;
+  font-variation-settings: "opsz" 11, "wght" 500;
+  font-size: 15px;
 }
 
 .normal-icons {

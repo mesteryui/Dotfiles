@@ -7,12 +7,12 @@
   :config
   (setq lua-indent-string-contents t)
   ;; Ensure .lua files use the correct mode
-  (add-to-list 'auto-mode-alist '("\.lua\'" . lua-mode)))
+  (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 
 ;; Modern Tree-sitter mode for Lua (better highlighting)
 (use-package lua-ts-mode
   :ensure nil
-  :mode "\.lua\'"
+  :mode "\\.lua\\'"
   :hook (lua-ts-mode . eglot-ensure)
   :config
   ;; Tell Eglot to use lua-language-server

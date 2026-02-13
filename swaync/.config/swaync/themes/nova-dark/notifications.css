@@ -14,7 +14,7 @@
   color: @on_background;
 
   all: unset;
-  font-size: 14px;
+  font-size: 13.6px;
   font-family: "Google Sans Flex Medium", "JetBrainsMono Nerd Font Propo";
   transition: 200ms;
 
@@ -27,7 +27,7 @@
 }
 
 .floating-notifications.background .notification-row .notification-background {
-  background: alpha(@background,0.73);
+  background: alpha(@background,0.82);
   box-shadow: 0 0 8px 0 rgba(0,0,0,.6);
   border: 1px solid @selected;
   border-radius: 15px;

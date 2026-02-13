@@ -11,6 +11,8 @@
 (use-package embark
   :commands (embark-act embark-prefix-help-command embark-dwim embark-collect embark-bindings embark-export)
   :demand t
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command)
   :config
   (add-to-list 'display-buffer-alist
                '("\`\*Embark Collect \(Live\|Completions\)\*"

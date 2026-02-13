@@ -1,4 +1,4 @@
-;;; os-org.el --- Org Mode configuration -*- lexical-binding: t; -*
+;;; os-org.el --- Org Mode configuration -*- lexical-binding: t; -*-
 
 (setopt org-archive-location "~/org/%s_archivo.org::datetree/")
 (setq org-use-property-inheritance '("header-args"))
@@ -6,7 +6,7 @@
 (use-package org
   :ensure nil
   :defer t
-  :mode ("\.org\'" . org-mode)
+  :mode ("\\.org\\'" . org-mode)
   :commands (org-mode org-version)
   :hook ((org-mode . org-indent-mode)
          ;;(org-mode . os/org-headers-setters)
@@ -128,10 +128,20 @@
           (lambda (frame)
             (with-selected-frame frame
               (os/after org-modern
-                        (set-face-attribute 'org-modern-symbol nil :family "Aporetic Sans")))))
+                        (set-face-attribute 'org-modern-symbol nil :family "Google Sans Flex")))))
 (use-package ox-epub
   :demand t)
-(use-package ox-reveal)
+(use-package ox-reveal
+  :ensure t
+  :init
+  ;; Define la ubicación de Reveal.js (usando CDN para evitar descargas manuales)
+  (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
+  :config
+  ;; Configuraciones adicionales
+  (setq org-reveal-mathjax t)      ; Habilita soporte para ecuaciones matemáticas
+  (setq org-reveal-hlevel 2)       ; Los encabezados de nivel 2 inician nuevas diapositivas
+  (setq org-reveal-theme "black")  ; Tema por defecto (puedes cambiarlo en cada archivo)
+  (setq org-reveal-transition "slide")) ; Transición por defecto
 (use-package htmlize
   :ensure t)
 

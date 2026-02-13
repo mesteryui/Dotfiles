@@ -9,6 +9,7 @@
 window#waybar {
     background: transparent;
     border-radius: 0;
+    font-size: 12px;
 }
 
 .modules-center {

@@ -41,11 +41,13 @@
 
 (defun moon-loader-add-subdirs-to-load-path (parent-dir)
   "Añade PARENT-DIR y todos sus subdirectorios al load-path recursivamente."
-  (when (file-directory-p parent-dir)
-    (let ((default-directory parent-dir))
-      (add-to-list 'load-path parent-dir)
-      (when (fboundp 'normal-top-level-add-subdirs-to-load-path)
-	(normal-top-level-add-subdirs-to-load-path)))))
+  (let ((default-directory (file-name-as-directory parent-dir)))
+    (when (file-directory-p default-directory)
+      (add-to-list 'load-path default-directory)
+      (dolist (file (directory-files default-directory t))
+        (when (and (file-directory-p file)
+                   (not (string-prefix-p "." (file-name-nondirectory file))))
+          (moon-loader-add-subdirs-to-load-path file))))))
 
 
 (defmacro moon-loader-add-modules (&rest modules)

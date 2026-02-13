@@ -1,4 +1,6 @@
-;;; os-python.el --- Python configuration -*- lexical-binding: t; -*-
+;;; os-python.el --- Python performance & full config -*- lexical-binding: t; -*-
+
+;;; Code:
 
 (use-package python
   :ensure nil
@@ -6,35 +8,29 @@
   (python-indent-guess-indent-offset nil)
   :config
   (setq python-indent-offset 4)
-  
   (defun python-eglot-configs ()
-    "Optimized Eglot configuration for Python to avoid freezing."
-    ;; Performance: Increase timeout and limit unnecessary traffic
-    (setq-local jsonrpc-default-request-timeout 30)
-    (setq-local eglot-send-changes-idle-time 0.5)
-    (setq-local eglot-events-buffer-size 0) ;; Disable logging for speed
-    
-    (setq-local eglot-workspace-configuration
-                '(:basedpyright
-                  (:analysis (:autoSearchPaths nil
-					       :useLibraryCodeForTypes nil
-					       :diagnosticMode "openFilesOnly" ;; Only analyze open files (Huge speedup)
-					       :typeCheckingMode "off" ;; Disable heavy type checking for speed
-					       :inlayHints (:variableTypes nil
-									   :functionReturnTypes nil
-									   :callArgumentNames nil)))))
+    "Aplicar configuraciones de python especificas para eglot."
     (pet-mode 1)
+    (setq-local eglot-workspace-configuration
+		'(:basedpyright (:analysis (:typeCheckingMode "basic"
+							      :autoImportCompletions t
+							      :autoSearchPaths t
+							      :useLibraryCodeForTypes t
+							      :exclude ["**/__pycache__"]))))
     (eglot-ensure))
-  
-  (add-hook 'python-mode-hook #'python-eglot-configs)
   (add-hook 'python-ts-mode-hook #'python-eglot-configs))
 
-(use-package pet)
+(use-package pet
+  :ensure t
+  :config
+  (setq pet-find-file-functions '(pet-find-file-from-project-root
+                                  pet-locate-dominating-file)))
 
 (use-package flymake-ruff
   :ensure t
   :hook (eglot-managed-mode . flymake-ruff-load))
 
+;; Gestión de paquetes Python (uv)
 (use-package uv
   :ensure (uv :type git :host github :repo "johannes-mueller/uv.el")
   :after tomlparse
@@ -46,31 +42,31 @@
 (use-package tomlparse
   :ensure (:type git :host github :repo "johannes-mueller/tomlparse.el"))
 
+;; Formateo con Apheleia y Ruff
 (with-eval-after-load 'apheleia
-  (setf (alist-get 'ruff apheleia-formatters)
-        '("ruff" "format" "--silent" "--stdin-filename" filepath "-"))
-  (setf (alist-get 'ruff-isort apheleia-formatters)
+  (setf (alist-get 'ruff-combo apheleia-formatters)
         '("ruff" "check" "--select" "I" "--fix" "--silent" "--stdin-filename" filepath "-"))
-  ;; Chain: Sort imports first, then format
-  (setf (alist-get 'python-mode apheleia-mode-alist)
-        '(ruff-isort ruff))
-  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
-        '(ruff-isort ruff)))
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist) '(ruff-combo ruff))
+  (setf (alist-get 'python-mode apheleia-mode-alist) '(ruff-combo ruff)))
 
+;; USO IDIOMÁTICO DE LA CONFIGURACIÓN: Registrar el servidor mediante la macro add-server
+(add-server (python-mode python-ts-mode) "basedpyright-langserver" "--stdio")
+
+;; Ajustes adicionales para Eglot en Python
 (with-eval-after-load 'eglot
-  (with-eval-after-load 'pet
-    (add-server python-ts-mode-mode "basedpyright" "--stdio")))
+  (add-to-list 'eglot-stay-out-of 'font-lock))
 
+;; Debugging (Dape) Config
 (with-eval-after-load 'dape
   (add-to-list 'dape-configs
 	       `(python-debug
-                 :description "Python (debugpy)"
-                 modes (python-mode python-ts-mode)
-                 command "python3"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "executable"
-                 :request "launch"
-                 :cwd dape-cwd-fn
-                 :program ,(or (buffer-file-name) "/tmp/fallback.py"))))
+		 :description "Python (debugpy)"
+		 modes (python-mode python-ts-mode)
+		 command "python3"
+		 command-args ("-m" "debugpy.adapter")
+		 :type "executable"
+		 :request "launch"
+		 :cwd dape-cwd-fn
+		 :program ,(or (buffer-file-name) "/tmp/fallback.py"))))
 
 (provide 'os-python)

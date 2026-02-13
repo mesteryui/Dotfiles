@@ -1,45 +1,44 @@
-;;; -*- lexical-binding: t -*-
+;;; os-lsp-confs.el --- Eglot High Performance configuration -*- lexical-binding: t -*-
+
+;;; Code:
 
 (defmacro add-server (mode server &rest args)
-  "Añadir un servidor lsp personalizado definido como SERVER a un modo MODE especifico con ARGS opcionales si se requieren."
+  "Añadir un servidor lsp personalizado."
   `(with-eval-after-load 'eglot
      (add-to-list 'eglot-server-programs '(,mode . (,server ,@args)))))
 
-
 (use-package eglot
   :ensure nil
-  :after mason
-  :hook
-  (eglot-managed-mode . eldoc-mode)
-  ;;(eglot-managed-mode . eldoc-box-hover-mode)
+  :hook (eglot-managed-mode . eldoc-mode)
   :custom
-  (eglot-confirm-server-initiated-edits nil)
-  (eglot-sync-connect t)
-  (eglot-autoshutdown t)
+  ;; RENDIMIENTO Y ESTABILIDAD
+  (eglot-confirm-server-initiated-edits t)
+  (eglot-sync-connect nil)
+  (eglot-autoreconnect 3)
+  (eglot-autoshutdown nil) ; Mantener vivo el server aunque cerremos buffers (más estable)
   (eglot-ignored-server-capabilities '(:documentHighlightProvider))
-  (eglot-events-buffer-size 0)
-  (eglot-autoshutdown t)
-  ;;(eglot-connect-timeout 60)
-  (eglot-send-changes-idle-time 0.5)
-  (eglot-auto-display-help-buffer nil)
-  (eglot-confirm-server-initiated-edits nil)
+  (eglot-connect-timeout 60)    ; Dar tiempo a servers pesados (Java/Rust)
+  (eglot-send-changes-idle-time 0.2)
   (eglot-extend-to-xref t)
-  :bind (:map eglot-mode-map
-	      ("C-c l a" . eglot-code-actions)
-	      ("C-c l i" . eglot-code-actions-organize-imports)
-	      ("C-c l r" . eglot-rename)
-	      ("C-c l f" . eglot-format)
-	      ("C-c l n" . flymake-next-error)
-	      ("C-c l p" . flymake-previous-error)
-	      ("C-c l d" . eldoc))
+  (eglot-report-progress t)       ; Ver qué está haciendo el server
   :config
-  (setq jsonrpc-default-request-timeout 5)
-  (with-eval-after-load 'jsonrpc
-    (fset #'jsonrpc--log-event #'ignore)))
+  (fset 'jsonrpc-log-event #'ignore)
+  ;; CAPF INTELIGENTE
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (setq-local completion-at-point-functions
+                          (list (cape-capf-super
+                                 (cape-capf-buster #'eglot-completion-at-point)
+                                 #'tempel-expand
+                                 #'cape-file)
+                                #'cape-dabbrev))))
+
+  ;; OPTIMIZACIÓN DE FLUJO DE DATOS
+  (setq read-process-output-max (* 3 1024 1024))) ; 3MB de buffer de lectura
 
 (use-package eglot-tempel
-  :preface (eglot-tempel-mode)
-  :init
-  (eglot-tempel-mode t))
+  :ensure t
+  :after (eglot tempel)
+  :hook (eglot-managed-mode . eglot-tempel-mode))
 
 (provide 'os-lsp-confs)

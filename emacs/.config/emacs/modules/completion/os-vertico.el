@@ -1,50 +1,49 @@
 ;;; os-vertico.el --- Vertico configuration -*- lexical-binding: t; -*-
 
-;; Author: Oscar
-;; Keywords: completion, convenience
-
-;;; Commentary:
-;; Configuration for Vertico (vertical interactive completion).
-
 ;;; Code:
 
 (use-package vertico
   :ensure t
-  :hook
-  (elpaca-after-init . vertico-mode)
+  :hook (elpaca-after-init . vertico-mode)
   :custom
-  (vertico-count 12)                    ; Número de candidatos a mostrar
+  (vertico-count 12)
   (vertico-resize t)
   (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha)
   :config
+  ;; Habilitamos multiform para permitir diferentes vistas (como el grid)
   (vertico-multiform-mode 1)
-  (add-to-list 'vertico-multiform-categories '(embark-keybinding grid)))
+  
+  ;; CONFIGURACIÓN CLAVE:
+  ;; Para embark-keybinding, usamos 'posframe' Y 'grid' a la vez.
+  ;; Esto hace que la rejilla aparezca en la ventana flotante.
+  (setq vertico-multiform-categories
+        '((embark-keybinding posframe grid)
+          (imenu posframe buffer)
+          (file posframe))))
 
-;; Prompt indicator for `completing-read-multiple'.
-(when (< emacs-major-version 31)
-  (advice-add #'completing-read-multiple :filter-args
-              (lambda (args)
-                (cons (format "[CRM%s] %s"
-                              (string-replace "[ 	]*" "" crm-separator)
-                              (car args))
-                      (cdr args)))))
+(use-package vertico-posframe
+  :ensure t
+  :after vertico
+  :custom
+  (vertico-posframe-parameters
+   '((left-fringe . 8)
+     (right-fringe . 8)
+     (internal-border-width . 2)))
+  :config
+  ;; Handler para centrar la ventana
+  (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center)
+  
+  ;; No activamos vertico-posframe-mode globalmente para dejar que 
+  ;; vertico-multiform decida cuándo usarlo (según lo configurado arriba).
+  ;; Esto evita conflictos y hace el comportamiento más predecible.
+  (vertico-posframe-mode 1))
 
 (use-package emacs
   :ensure nil
   :custom
-  ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
-  ;; to switch display modes.
-  (context-menu-mode t)
-  ;; Support opening new minibuffers from inside existing minibuffers.
   (enable-recursive-minibuffers t)
-  ;; Hide commands in M-x which do not work in the current mode.  Vertico
-  ;; commands are hidden in normal buffers. This setting is useful beyond
-  ;; Vertico.
   (read-extended-command-predicate #'command-completion-default-include-p)
-  ;; Do not allow the cursor in the minibuffer prompt
   (minibuffer-prompt-properties
    '(read-only t cursor-intangible t face minibuffer-prompt)))
 
 (provide 'os-vertico)
-;;; os-vertico.el ends here

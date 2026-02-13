@@ -7,8 +7,8 @@ GlobalSearch = false
 function ApplyWallpaper(wallpaper)
 	local wallpapers_dir = os.getenv("HOME") .. "/Imágenes/Wallpapers"
 	os.execute('awww img "' .. wallpaper .. '" --transition-type center')
-	os.execute("ln -s " .. wallpaper .. " " .. wallpapers_dir .. "/.current_wallpaper")
-	os.execute("matugen image " .. wallpaper)
+	os.execute("cp '" .. wallpaper .. "' " .. wallpapers_dir .. "/.current_wallpaper")
+	os.execute("matugen image '" .. wallpaper .. "'")
 end
 
 function GetEntries()

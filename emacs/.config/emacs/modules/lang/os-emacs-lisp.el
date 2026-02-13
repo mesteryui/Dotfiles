@@ -1,6 +1,7 @@
 ;;; os-emacs-lisp.el --- Emacs Lisp configuration -*- lexical-binding: t; -*-
 
-(use-package package-lint)
+(use-package package-lint
+  :ensure t)
 
 (use-package package-lint-flymake
   :ensure t

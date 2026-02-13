@@ -35,9 +35,6 @@
 ;; Preferir archivos .elc más nuevos
 (setq load-prefer-newer t)
 
-;; Deshabilitar manejador de archivos automático durante el inicio
-(setq auto-mode-case-fold nil)
-
 ;; Optimización del recolector de basura
 (setopt gc-cons-percentage 0.5
 	gc-cons-threshold most-positive-fixnum)
@@ -66,11 +63,10 @@
 ;; =============================================================================
 (add-hook 'emacs-startup-hook
           (lambda ()
-            ;; Restaurar la configuración del recolector de basura (umbral de 16MB)p-hook
-            (lambda ()
-              ;; Restaurar la configuración del recolector de basura (umbral de 16MB)
-              (setq gc-cons-threshold (* 64 1024 1024)
-		    gc-cons-percentage 0.1))
+            ;; Restaurar la configuración del recolector de basura (umbral de 64MB)
+            (setq gc-cons-threshold (* 64 1024 1024)
+		  gc-cons-percentage 0.1)
+
             ;; Restaurar el manejador de nombres de archivo
             (setq file-name-handler-alist default-file-name-handler-alist)
             
@@ -81,8 +77,6 @@
             (add-function :after after-focus-change-function
                           (lambda ()
 			    (unless (frame-focus-state)
-			      (garbage-collect))))
-
-	    ))
+			      (garbage-collect))))))
 
 (provide 'early-init)

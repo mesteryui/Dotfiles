@@ -5,6 +5,7 @@
 (use-package dashboard
   :ensure t
   :init
+  (require 'org)
   (add-hook 'dashboard-mode-hook (lambda () (setq show-trailing-whitespace nil)))
   :hook 
   (elpaca-after-init-hook . dashboard-insert-startupify-lists)
