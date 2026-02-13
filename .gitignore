@@ -11,6 +11,7 @@ fish/.config/fish/themes
 ~/.dotfiles/emacs/.config/emacs/.last-package-update-day
 ~/.dotfiles/emacs/.config/emacs/.dap-breakpoints
 vesktop/.config/vesktop/Crashpad/*
+emacs/.config/emacs/mason/*
 vesktop/.config/vesktop/SingletonCookie
 vesktop/.config/vesktop/SingletonLock
 vesktop/.config/vesktop/SingletonSocket
