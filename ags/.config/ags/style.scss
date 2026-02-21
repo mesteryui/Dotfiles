@@ -1,0 +1,215 @@
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+$accent: #{"@accent_bg_color"};
+$bg-alt: rgba(255, 255, 255, 0.08);
+$bg-critical: #{"@error_bg_color"};
+
+* {
+  font-family: "Google Sans Flex", "JetBrainsMono Nerd Font";
+  font-weight: 500;
+}
+
+window.Bar {
+  background: transparent;
+  color: $fg-color;
+  font-weight: bold;
+
+  > centerbox {
+    background: $bg-color;
+    border-radius: 10px;
+    margin: 8px;
+  }
+
+  button {
+    border-radius: 8px;
+    margin: 2px;
+  }
+  .battery-warning {
+    color: yellow;
+  }
+  .battery-critical {
+    color: $bg-critical;
+  }
+  /* Multimedia en la barra principal - CON FONDO */
+  .media-box-1 {
+    background: $bg-alt;
+    border-radius: 10px;
+    
+    .media-button {
+      background: transparent;
+      padding-left: 6px;
+      padding-right: 6px;
+      &:hover {
+        background: $accent;
+        color: $bg-color;
+      }
+    }
+
+    .media-title {
+      background: transparent;
+    }
+    
+    > menubutton {
+      label {
+        margin-left: 4px;
+      }
+      > button {
+        background: transparent;
+      }
+      > button:hover {
+        background: $bg-alt;
+      }
+    }
+  }
+
+  /* Reloj - SIN FONDO (Transparente) */
+  .clock {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 8px;
+    &:hover {
+      background: $bg-alt;
+    }
+  }
+
+  /* Imagen antes de espacios de trabajo */
+  .launcher {
+      background: transparent;
+      padding: 4px 8px;
+      &:hover {
+          background: $bg-alt;
+      }
+  }
+  .workspaces {
+    background: $bg-alt;
+    border-radius: 20px;
+  }
+  .workspace {
+    background: transparent;
+    border-radius: 20px;
+  }
+  .workspace:hover {
+    background: $bg-alt;
+  }
+  .active {
+    background: $accent;
+    color: $bg-color;
+  }
+  .active:hover {
+    background: $accent;
+    color: $bg-color;
+  }
+  
+
+  .volume-widget, .network-widget {
+    background: transparent;
+  }
+  .volume-widget:hover, .network-widget:hover {
+    background: $accent;
+    color: $bg-color;
+  }
+  
+  .tray-box {
+    background: $bg-alt;
+    border-radius: 10px;
+    padding: 0 6px;
+  }
+  .notification-button {
+    > button {
+      background: transparent;
+    }
+    > button:hover {
+      background: $bg-alt;
+    }
+    
+  }
+  .tray-item {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      margin: 0px;
+      border-radius: 6px;
+      > button {
+        background: transparent;
+        padding: 4px;
+        margin: 0px;
+      }
+      &:hover {
+        background: $bg-alt;
+      }
+
+      > menubutton {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }  
+  }
+}
+
+/* Popover revertido a estilo con fondo estándar */
+popover {
+  .media-dashboard {
+    background: transparent;
+    padding: 16px;
+  }
+
+  .media-progress-box {
+    margin: 8px 0;
+    min-width: 280px;
+  }
+
+  
+
+  .media-art {
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .media-control-btn {
+    border-radius: 8px;
+    &:hover {
+      background: $accent;
+      color: $bg-color;
+    }
+  }
+  
+  calendar {
+      background: transparent;
+  }
+}
+window.notifications-popups {
+   .notification-popoup-container {
+    background: transparent;
+  }
+  
+  
+}
+window.notification-panel {
+  background: $bg-color;
+  border-radius: 15px;
+  .notification-box {
+    background-color: $bg-alt;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 15px;
+    font-size: 15px;
+    min-width: 15px;
+    min-height: 10px; 
+  }
+}
+.notifications-container {
+  padding: 10px;
+}
+.notification-box {
+    background: #{"alpha(@theme_bg_color, 0.67)"};
+    padding: 10px;
+    margin: 10px;
+    border-radius: 15px;
+    font-size: 15px;
+    min-width: 30px;
+    min-height: 40px;
+  }
+
