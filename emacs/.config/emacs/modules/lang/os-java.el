@@ -12,11 +12,12 @@
                                  "--add-modules=ALL-SYSTEM"
                                  "--add-opens" "java.base/java.util=ALL-UNNAMED"
                                  "--add-opens" "java.base/java.lang=ALL-UNNAMED")))
-;;(add-server java-mode "jdtls")
-(add-hook 'java-mode-hook #'eglot-ensure)
+
+;; Usar eglot-java-mode en lugar de eglot-ensure directamente para Java
+;; eglot-java-mode se encarga de iniciar eglot con los argumentos correctos
 (add-hook 'java-mode-hook #'eglot-java-mode)
-(add-hook 'java-ts-mode-hook #'eglot-ensure)
 (add-hook 'java-ts-mode-hook #'eglot-java-mode)
+
 ;; TODO Do the java programation more useful
 
 (os/after eglot-java

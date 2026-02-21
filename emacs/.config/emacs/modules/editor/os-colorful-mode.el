@@ -17,7 +17,7 @@
 
   ;; 3. SEGURIDAD: Liberar tus atajos C-c
   ;; Borramos el mapa de teclado del paquete para que no intercepte nada
-  (setcdr colorful-mode-map nil)
+  (setq colorful-mode-map (make-sparse-keymap))
   
   ;; Opcional: Si alguna vez quieres usar sus funciones, 
   ;; asígnalas a una tecla que no uses, como F8

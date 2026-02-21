@@ -9,6 +9,6 @@
   :ensure t
   :mode
   ("/sway/.*config.*/" . i3wm-config-mode)
-  ("/sway/config'" . i3wm-config-mode))
+  ("/sway/config\\'" . i3wm-config-mode))
 
 (provide 'os-config-modes)

@@ -8,6 +8,10 @@
  ;; Acelera el procesado de timers para que no se amontonen (el 17% que tenías)
  idle-update-delay 0.1)
 
+;;(add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
+;;(load-theme 'noctalia t)
+
+
 (use-package ef-themes
   :ensure (:host github :repo "protesilaos/ef-themes")
   :demand t
@@ -81,7 +85,7 @@
 ;; Uncomment the following line if line spacing needs adjusting.
 ;;(setq-default line-spacing 0.3)
 
-(add-to-list 'default-frame-alist '(alpha-background . 86)) ; For all new frames henceforth
+;;(add-to-list 'default-frame-alist '(alpha-background . 90)) ; For all new frames henceforth
 
 (use-package spacious-padding
   :ensure t

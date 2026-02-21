@@ -56,17 +56,15 @@
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-stay-out-of 'font-lock))
 
-;; Debugging (Dape) Config
 (with-eval-after-load 'dape
-  (add-to-list 'dape-configs
-	       `(python-debug
-		 :description "Python (debugpy)"
-		 modes (python-mode python-ts-mode)
-		 command "python3"
-		 command-args ("-m" "debugpy.adapter")
-		 :type "executable"
-		 :request "launch"
-		 :cwd dape-cwd-fn
-		 :program ,(or (buffer-file-name) "/tmp/fallback.py"))))
+  (setf (alist-get 'python-pet dape-configs)
+        '((python-mode python-ts-mode)
+          command "python3" ;; Dejamos que el PATH del venv haga el trabajo
+          command-args ("-m" "debugpy.adapter")
+          :type "executable"
+          :request "launch"
+          :cwd dape-cwd-fn
+          :program dape-buffer-default
+          :autoport t)))
 
 (provide 'os-python)

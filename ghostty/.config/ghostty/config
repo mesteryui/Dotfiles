@@ -1,17 +1,18 @@
 # Font Configuration
-font-size = 10.7
+font-size = 10.3
 
 # Window Configuration
 window-decoration = false
 window-padding-x = 14
 window-padding-y = 14
 background-opacity = 0.90
-#background-blur-radius = 1
 #font-family = GeistMono Nerd Font
 font-family = MapleMono NF CN
+font-style = Regular
+window-theme = ghostty
 # Cursor Configuration
-cursor-style = bar
-#cursor-style-blink = true
+cursor-style = "bar"
+cursor-style-blink = false
 
 # Scrollback
 scrollback-limit = 3023
@@ -20,8 +21,7 @@ scrollback-limit = 3023
 mouse-hide-while-typing = true
 copy-on-select = false
 confirm-close-surface = false
-
-# Disable annoying copied to clipboard
+#Disable annoying copied to clipboard
 app-notifications = no-clipboard-copy,no-config-reload
 
 # Key bindings for common actions
@@ -33,7 +33,6 @@ config-file = ./keybinds.conf
 quit-after-last-window-closed = true
 quit-after-last-window-closed-delay = 5m
 
-quit-after-last-window-closed = false
 # Tab configuration
 gtk-titlebar = false
 gtk-toolbar-style = flat
@@ -44,11 +43,12 @@ shell-integration-features = cursor,sudo,title,no-cursor
 # Rando stuff
 gtk-single-instance = true
 
-# Dank color generation
-#config-file = ./themes/Matugen
 theme = Matugen
-custom-shader = ./shaders/cursor_trail.glsl
+#custom-shader = ./shaders/cursor_trail.glsl
 
 # Ajustes para fuentes más suaves (estilo Kitty)
 font-thicken = true
 freetype-load-flags = no-hinting
+
+async-backend = epoll
+mouse-scroll-multiplier = 0.95

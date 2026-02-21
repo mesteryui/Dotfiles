@@ -1,10 +1,10 @@
-[22:03:23.225][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:71]: Lua Lsp startup, root: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
-[22:03:23.226][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:72]: ROOT:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
-[22:03:23.226][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:73]: LOGPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log
-[22:03:23.226][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:74]: METAPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/meta
-[22:03:23.226][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:75]: VERSION:	3.16.4
-[22:03:23.258][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
-[22:03:23.258][info] [#0:script/service/service.lua:145]: 
+[18:03:31.883][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:71]: Lua Lsp startup, root: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
+[18:03:31.883][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:72]: ROOT:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec
+[18:03:31.883][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:73]: LOGPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log
+[18:03:31.883][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:74]: METAPATH:	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/meta
+[18:03:31.884][info] [#0:/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/main.lua:75]: VERSION:	3.16.4
+[18:03:31.944][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[18:03:31.944][info] [#0:script/service/service.lua:145]: 
 ========= Medical Examination Report =========
     --------------- Memory ---------------
         Total: 1.899 MB
@@ -26,7 +26,7 @@
         Holdon:   0
         Waiting:  0
 ==============================================
-[22:03:23.364][info] [#0:script/client.lua:657]: Client init	{
+[18:03:32.055][info] [#0:script/client.lua:657]: Client init	{
   capabilities = {
     experimental = {},
     general = {
@@ -52,7 +52,7 @@
           resolveSupport = {
             properties = { "documentation", "details", "additionalTextEdits" }
           },
-          snippetSupport = true,
+          snippetSupport = false,
           tagSupport = {
             valueSet = { 1 }
           }
@@ -133,7 +133,7 @@
       showDocument = {
         support = true
       },
-      workDoneProgress = true
+      workDoneProgress = false
     },
     workspace = {
       applyEdit = true,
@@ -158,7 +158,7 @@
     version = "1.17.30"
   },
   initializationOptions = {},
-  processId = 767792,
+  processId = 2185,
   rootPath = "/home/oscar/.dotfiles/",
   rootUri = "file:///home/oscar/.dotfiles",
   workspaceFolders = { {
@@ -166,7 +166,7 @@
       uri = "file:///home/oscar/.dotfiles"
     } }
 }
-[22:03:23.364][info] [#0:script/language.lua:137]: VSC language: nil
-[22:03:23.364][info] [#0:script/language.lua:138]: LS  language: en-us
-[22:03:23.364][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///home/oscar/.dotfiles
-[22:03:23.364][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log/file_home_oscar_.dotfiles.log
+[18:03:32.056][info] [#0:script/language.lua:137]: VSC language: nil
+[18:03:32.056][info] [#0:script/language.lua:138]: LS  language: en-us
+[18:03:32.056][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///home/oscar/.dotfiles
+[18:03:32.056][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/home/oscar/.dotfiles/emacs/.config/emacs/mason/packages/lua-language-server/libexec/log/file_home_oscar_.dotfiles.log

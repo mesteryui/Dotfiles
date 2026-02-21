@@ -23,12 +23,12 @@
   :init
   ;; Añadimos al PATH antes de que otros paquetes busquen ejecutables
   (let ((mason-path (expand-file-name "mason/bin" user-emacs-directory)))
-    (add-to-list 'exec-path mason-path)
-    (setenv "PATH" (concat mason-path ":" (getenv "PATH"))))
+    ;; Usamos 'setq' para asegurar que el cambio sea global
+    (setq exec-path (append (list mason-path) exec-path))
+    (setenv "PATH" (concat mason-path path-separator (getenv "PATH"))))
   :config
-  (mason-ensure)
-  (mason-ensure
-   (lambda ()
+  (mason-setup
+    (mason-ensure
      (dolist (pkg '("basedpyright" "jdtls" "gopls" "ruff"))
        (unless (mason-installed-p pkg) (mason-install pkg))))))
 
@@ -121,7 +121,7 @@
 
 ;; Flymake y Diagnósticos
 (use-package flymake
-  :ensure t
+  :ensure nil
   :defer t
   :hook (prog-mode . flymake-mode)
   :config 

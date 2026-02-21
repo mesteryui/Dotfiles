@@ -25,7 +25,7 @@
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand (cons #'tempel-complete
                                             completion-at-point-functions))))
-  :hook ((conf-mode prog-mode text-mode org-mode eglot-managed-mode) . tempel-setup-capf)
+  :hook ((conf-mode prog-mode text-mode org-mode) . tempel-setup-capf)
   :config 
   (define-key tempel-map (kbd "TAB") #'tempel-next))
 

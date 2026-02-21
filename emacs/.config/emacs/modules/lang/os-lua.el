@@ -1,5 +1,10 @@
 ;;; os-lua.el --- Lua configuration -*- lexical-binding: t; -*-
 
+(defun os/lua-eglot-init ()
+  (setq-local eglot-workspace-configuration
+              '(:Lua (:diagnostics (:globals ["vim" "awesome" "client" "root" "love"]))))
+  (eglot-ensure))
+
 (use-package lua-mode
   :ensure t
   :custom
@@ -13,12 +18,10 @@
 (use-package lua-ts-mode
   :ensure nil
   :mode "\\.lua\\'"
-  :hook (lua-ts-mode . eglot-ensure)
+  :hook (lua-ts-mode . os/lua-eglot-init)
   :config
   ;; Tell Eglot to use lua-language-server
-  (with-eval-after-load 'eglot
-    (add-to-list 'eglot-server-programs
-                 '(lua-ts-mode . ("lua-language-server")))))
+  )
 
 ;; Formatting with Stylua (install via: cargo install stylua or pacman -S stylua)
 (with-eval-after-load 'apheleia
@@ -28,11 +31,6 @@
   (setf (alist-get 'lua-ts-mode apheleia-mode-alist) 'stylua))
 
 ;; Specific Eglot configuration for Lua to recognize globals (menus/awesome/etc)
-(defun os/lua-eglot-init ()
-  (setq-local eglot-workspace-configuration
-              '(:Lua (:diagnostics (:globals ["vim" "awesome" "client" "root" "love"])))))
 
-(add-hook 'lua-mode-hook #'os/lua-eglot-init)
-(add-hook 'lua-ts-mode-hook #'os/lua-eglot-init)
 
 (provide 'os-lua)

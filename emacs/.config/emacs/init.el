@@ -12,6 +12,7 @@
    (os-funcs :after os-macros)
    os-vars    ;; Variables básicas y configuración nativa
    os-defbinds
+   os-performance
    )
 
   ;; 4. Interfaz de Usuario (UI)
@@ -56,6 +57,7 @@
    os-treemacs
 
    ;; Languages
+   os-treesit
    os-common-lisp
    os-config-modes
    os-emacs-lisp
@@ -69,7 +71,7 @@
    os-nim
    os-python
    ;;os-qml
-   ;;os-ruby
+   os-ruby
    os-rune
    os-rust
    os-scheme
@@ -77,6 +79,7 @@
    os-toml
    os-typst
    os-zig
+   os-eca
    ))
 
 (provide 'init)

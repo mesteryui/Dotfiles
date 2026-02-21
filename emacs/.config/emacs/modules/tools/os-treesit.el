@@ -13,13 +13,10 @@
   (treesit-auto-install 'prompt)
   :config
   ;; (setq treesit-auto-langs (delete 'awk treesit-auto-langs))  ;; remove any grammar to avoid using ts-mode
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode)
-  ;; Cleanup auto-mode-alist from any invalid entries (nil car)
-  (setq auto-mode-alist (cl-delete-if (lambda (x) (null (car x))) auto-mode-alist)))
+  (treesit-auto-add-to-auto-mode-alist)
+  (global-treesit-auto-mode))
 
 (setopt treesit-font-lock-level 4)  ;; Maximum highlighting
-
 
 
 (provide 'os-treesit)

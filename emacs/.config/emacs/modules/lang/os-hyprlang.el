@@ -6,9 +6,9 @@
   :custom
   (hyprlang-ts-mode-indent-offset 4)
   :mode (("/hypr/.*config.*/" . hyprlang-ts-mode)
-         ("/hypr/config\'" . hyprlang-ts-mode)) ; Corrected escaping for backslash before single quote
+         ("/hypr/config\\'" . hyprlang-ts-mode))
   :config
-  (add-hook 'hyprlang-ts-mode #'eglot-ensure))
+  (add-hook 'hyprlang-ts-mode-hook #'eglot-ensure))
 
 (add-server hyprlang-ts-mode "hyprls")
 

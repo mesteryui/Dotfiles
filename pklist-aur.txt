@@ -27,6 +27,7 @@ xpm-pixbuf-git
 youtube-music-bin
 walker-bin
 elephant
+awww-bin
 elephant-menus
 elephant-desktopapplications
 elephant-clipboard
