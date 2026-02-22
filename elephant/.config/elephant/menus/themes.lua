@@ -6,21 +6,26 @@ Icon = ""
 Parent = "main"
 FixedOrder = true
 function GetEntries()
-    return {
-	{
-	    Text = "Fastfetch",
-	    Icon = "",
-	    SubMenu = "fastfetch",
-	},
-	 {
-           Text = "Waybar",
-           Icon = "",
-           SubMenu = "waybar-layout-selector",
-	 },
-	{
-	    Text = "Wallpapers",
-	    Icon = "",
-	    SubMenu = "wallpapers",
+	return {
+		{
+			Text = "Fastfetch",
+			Icon = "",
+			SubMenu = "fastfetch",
+		},
+		{
+			Text = "Waybar",
+			Icon = "",
+			SubMenu = "waybar-layout-selector",
+		},
+		{
+			Text = "Wallpapers",
+			Icon = "",
+			SubMenu = "wallpapers",
+		},
+		{
+			Text = "Animaciones",
+			Icon = "",
+			SubMenu = "hyprland-animations",
+		},
 	}
-    }
 end

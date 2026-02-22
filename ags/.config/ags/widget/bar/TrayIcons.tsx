@@ -5,7 +5,7 @@ export default function Tray() {
     const tray = AstalTray.Tray.get_default()
     const items = createBinding(tray, "items")
 
-    return <box cssClasses={["tray-box"]} spacing={4} visible={items(items => items.length >= 1)}>
+    return <box cssClasses={["tray-box"]} spacing={0} visible={items(items => items.length >= 1)}>
         <For each={items}>
             {(item) => (
                 <menubutton cssClasses={["tray-item"]}

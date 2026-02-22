@@ -1,15 +1,25 @@
-// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+// =============================================================================
+// Archivo de Estilos Globales de AGS (style.scss)
+// =============================================================================
+
+// Referencias de colores GTK Adwaita (no modificar directamente)
 $fg-color: #{"@theme_fg_color"};
 $bg-color: #{"@theme_bg_color"};
 $accent: #{"@accent_bg_color"};
-$bg-alt: rgba(255, 255, 255, 0.08);
-$bg-critical: #{"@error_bg_color"};
+$bg-alt: rgba(255, 255, 255, 0.08); // Fondo alternativo semi-transparente
+$bg-critical: #{"@error_bg_color"}; // Color de fondo para errores/crítico
 
+// -----------------------------------------------------------------------------
+// Estilos Globales
+// -----------------------------------------------------------------------------
 * {
   font-family: "Google Sans Flex", "JetBrainsMono Nerd Font";
   font-weight: 500;
 }
 
+// -----------------------------------------------------------------------------
+// Estilos de Ventanas y Elementos de la Barra Superior (window.Bar)
+// -----------------------------------------------------------------------------
 window.Bar {
   background: transparent;
   color: $fg-color;
@@ -21,17 +31,21 @@ window.Bar {
     margin: 8px;
   }
 
+  // Estilos genéricos de botones dentro de la barra
   button {
     border-radius: 8px;
     margin: 2px;
   }
+
+  // Colores de alerta de batería
   .battery-warning {
     color: yellow;
   }
   .battery-critical {
     color: $bg-critical;
   }
-  /* Multimedia en la barra principal - CON FONDO */
+
+  // Sección de Media (Reproductor)
   .media-box-1 {
     background: $bg-alt;
     border-radius: 10px;
@@ -45,11 +59,9 @@ window.Bar {
         color: $bg-color;
       }
     }
-
     .media-title {
       background: transparent;
     }
-    
     > menubutton {
       label {
         margin-left: 4px;
@@ -63,7 +75,7 @@ window.Bar {
     }
   }
 
-  /* Reloj - SIN FONDO (Transparente) */
+  // Reloj
   .clock {
     background: transparent;
     border: none;
@@ -74,14 +86,16 @@ window.Bar {
     }
   }
 
-  /* Imagen antes de espacios de trabajo */
+  // Lanzador de aplicaciones (icono de menú)
   .launcher {
-      background: transparent;
-      padding: 4px 8px;
-      &:hover {
-          background: $bg-alt;
-      }
+    background: transparent;
+    padding: 4px 8px;
+    &:hover {
+      background: $bg-alt;
+    }
   }
+
+  // Workspaces
   .workspaces {
     background: $bg-alt;
     border-radius: 20px;
@@ -93,7 +107,7 @@ window.Bar {
   .workspace:hover {
     background: $bg-alt;
   }
-  .active {
+  .active { // Workspace activo
     background: $accent;
     color: $bg-color;
   }
@@ -102,72 +116,67 @@ window.Bar {
     color: $bg-color;
   }
   
-
+  // Controles de volumen y red
   .volume-widget, .network-widget {
     background: transparent;
-  }
-  .volume-widget:hover, .network-widget:hover {
-    background: $accent;
-    color: $bg-color;
+    &:hover {
+      background: $accent;
+      color: $bg-color;
+    }
   }
   
+  // Área de iconos de bandeja (Tray Icons)
   .tray-box {
     background: $bg-alt;
     border-radius: 10px;
     padding: 0 6px;
   }
-  .notification-button {
+  .notification-button { // Botón que abre el popover de notificaciones
     > button {
       background: transparent;
-    }
-    > button:hover {
-      background: $bg-alt;
-    }
-    
-  }
-  .tray-item {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      margin: 0px;
-      border-radius: 6px;
-      > button {
-        background: transparent;
-        padding: 4px;
-        margin: 0px;
-      }
       &:hover {
         background: $bg-alt;
       }
+    }
+  }
+  .tray-item {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0px;
+    border-radius: 6px;
+    padding: 0; // Se aplica al menubutton directamente
 
-      > menubutton {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        padding: 0;
-      }  
+    > button {
+      background: transparent;
+      padding: 2px 4px; // Menos padding vertical
+      margin: 0px;
+    }
+    &:hover {
+      background: $bg-alt;
+    }
   }
 }
 
-/* Popover revertido a estilo con fondo estándar */
+// -----------------------------------------------------------------------------
+// Estilos Globales para Popovers
+// -----------------------------------------------------------------------------
 popover {
+  > * {
+    background: $bg-color;
+  }
   .media-dashboard {
     background: transparent;
     padding: 16px;
   }
-
   .media-progress-box {
     margin: 8px 0;
     min-width: 280px;
   }
-
-  
-
   .media-art {
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.1);
   }
-
   .media-control-btn {
     border-radius: 8px;
     &:hover {
@@ -175,41 +184,180 @@ popover {
       color: $bg-color;
     }
   }
-  
   calendar {
-      background: transparent;
-  }
-}
-window.notifications-popups {
-   .notification-popoup-container {
     background: transparent;
   }
-  
-  
+
+  // Estilos para el popover de notificaciones (dentro de un popover)
+  .notifications-container {
+    padding: 9px;
+    min-width: 460px;
+    min-height: 500px;
+
+    scrolledwindow {
+      min-height: 400px;
+    }
+  }
+  .notification-box {
+    margin: 2px;
+  }
 }
+
+// -----------------------------------------------------------------------------
+// Estilos para Popups de Notificación (ventanas individuales)
+// -----------------------------------------------------------------------------
+window.notifications-popups {
+   .notification-popoup-container { // Contenedor principal de los popups
+    background: transparent;
+    min-width: 460px;
+    padding: 10px;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Estilos del Panel de Notificaciones (window.notification-panel)
+// -----------------------------------------------------------------------------
 window.notification-panel {
   background: $bg-color;
   border-radius: 15px;
-  .notification-box {
-    background-color: $bg-alt;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 15px;
-    font-size: 15px;
-    min-width: 15px;
-    min-height: 10px; 
-  }
-}
-.notifications-container {
-  padding: 10px;
-}
-.notification-box {
-    background: #{"alpha(@theme_bg_color, 0.67)"};
-    padding: 10px;
-    margin: 10px;
-    border-radius: 15px;
-    font-size: 15px;
-    min-width: 30px;
-    min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  // Contenedor principal del panel de notificaciones
+  .notifications-container {
+    padding: 16px;
+    min-width: 460px;
+    min-height: 650px; // Altura mínima para el panel completo
   }
 
+  // Área de scroll dentro del panel
+  scrolledwindow {
+    min-width: 430px; 
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Estilos Generales para Cajas de Notificación (individuales)
+// Aplican a popups Y al panel, a menos que sean sobreescritos.
+// -----------------------------------------------------------------------------
+.notification-box {
+  background: #{"alpha(@theme_bg_color, 0.8)"}; // Transparencia del fondo de la notificación
+  padding: 14px;
+  margin: 8px; // Margen global para notificaciones (entre ellas y del borde)
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  min-width: 410px; // Ancho mínimo para la caja de notificación (popups)
+
+  .notification-icon-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 4px;
+    margin-right: 4px;
+    image {
+      border-radius: 8px;
+    }
+  }
+  .notification-app-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $accent;
+    opacity: 0.9;
+    margin-bottom: 2px;
+  }
+  .notification-summary {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $fg-color;
+  }
+  .notification-body {
+    font-size: 0.95rem;
+    color: $fg-color;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+  .notification-close-button {
+    background: transparent;
+    color: $fg-color;
+    opacity: 0.5;
+    padding: 4px;
+    border-radius: 6px;
+    &:hover {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff5555;
+      opacity: 1;
+    }
+  }
+  .notification-action-button {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 6px;
+    margin-top: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    &:hover {
+      background: $accent;
+      color: $bg-color;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Estilos Específicos para Elementos del Panel de Notificaciones
+// Estos sobreescriben los estilos generales si es necesario
+// -----------------------------------------------------------------------------
+
+// Contenedor de la lista de notificaciones dentro del panel (ya definido arriba, consolidado)
+/* .notifications-container { } */ 
+// Encabezado del panel
+.notifications-header {
+  margin-bottom: 4px;
+  padding: 4px;
+}
+
+// Botón "Limpiar todas"
+.clear-all-button {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  &:hover {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: rgba(255, 0, 0, 0.2);
+    color: #ff5555;
+  }
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+}
+
+// Contenedor del modo "No molestar"
+.dnd-container {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 16px;
+  margin: 0 4px 10px 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  label {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  switch {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    &:checked {
+      background: $accent;
+    }
+    slider {
+      background: $fg-color;
+      border-radius: 20px;
+      margin: 2px;
+    }
+  }
+}

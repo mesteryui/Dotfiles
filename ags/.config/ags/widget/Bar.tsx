@@ -46,6 +46,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
     <window
       visible
       name={`bar-${gdkmonitor.get_model() || "default"}`}
+      namespace={"status-bar"}
       class="Bar"
       layer={Astal.Layer.BOTTOM}
       gdkmonitor={gdkmonitor}

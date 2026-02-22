@@ -14,7 +14,7 @@ format = """
 $cmd_duration 󰜥 $directory $git_branch $rust $python $java
 $character"""
 palette = 'colors'
-
+command_timeout = 200
 [palettes.colors]
 mustard = '#af8700' # example
 color1 = '{{colors.primary_fixed_dim.default.hex}}'

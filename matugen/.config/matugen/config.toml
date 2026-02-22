@@ -22,8 +22,8 @@ input_path = '/home/oscar/.config/matugen/templates/television.toml'
 output_path = '/home/oscar/.config/television/themes/matugen.toml'
 
 [templates.walker]
-input_path = './templates/css_template.conf'
-output_path = '~/.config/walker/colors.css'
+input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
+output_path = '/home/oscar//.config/walker/colors.css'
 
 [templates.swayosd]
 input_path = '~/.config/matugen/templates/css_template.conf'
@@ -50,7 +50,7 @@ post_hook = 'pkill -SIGUSR2 ghostty'
 [templates.waybar]
 input_path = './templates/css_template.conf'
 output_path = '~/.config/waybar/colors.css'
-post_hook = 'launch-waybar'
+#post_hook = 'launch-waybar'
 
 [templates.nwgbar]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
@@ -59,7 +59,7 @@ output_path = '/home/oscar/.config/nwg-bar/colors.css'
 [templates.swaync]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
 output_path = '/home/oscar/.config/swaync/matugen/matugen-swaync.css'
-post_hook = 'swaync-client -rs'
+#post_hook = 'swaync-client -rs'
 
 [templates.hyprland]
 input_path = './templates/hyprland_template.conf'
@@ -78,6 +78,7 @@ post_hook = 'systemctl restart --user hyprpolkitagent'
 [templates.gtk4]
 input_path = './templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/colors.css'
+post_hook = "ags request restart"
 
 [templates.hyprtoolkit]
 input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
@@ -93,13 +94,13 @@ input_path = './templates/pywalfox-colors.json'
 output_path = '~/.cache/wal/colors.json'
 post_hook = 'pywalfox update'
 
-[templates.qt5]
-input_path = '/home/oscar/.config/matugen/templates/qtct-colors.conf'
-output_path = '/home/oscar/.config/qt5ct/colors/matugen-qt5ct.conf'
+# [templates.qt5]
+# input_path = '/home/oscar/.config/matugen/templates/qtct-colors.conf'
+# output_path = '/home/oscar/.config/qt5ct/colors/matugen-qt5ct.conf'
 
-[templates.starship]
-input_path = "/home/oscar/.config/matugen/templates/matugen-starship.toml"
-output_path = "/home/oscar/.config/starship.toml"
+ [templates.starship]
+ input_path = "/home/oscar/.config/matugen/templates/matugen-starship.toml"
+ output_path = "/home/oscar/.config/starship.toml"
 
 [templates.btop]
 input_path = '/home/oscar/.config/matugen/templates/btop-theme'

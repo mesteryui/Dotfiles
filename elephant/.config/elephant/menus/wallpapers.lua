@@ -8,7 +8,7 @@ function ApplyWallpaper(wallpaper)
 	local wallpapers_dir = os.getenv("HOME") .. "/Imágenes/Wallpapers"
 	os.execute('awww img "' .. wallpaper .. '" --transition-type center')
 	os.execute("cp '" .. wallpaper .. "' " .. wallpapers_dir .. "/.current_wallpaper")
-	os.execute("matugen image '" .. wallpaper .. "'")
+	os.execute("matugen image '" .. wallpaper .. "' --source-color-index 0")
 end
 
 function GetEntries()

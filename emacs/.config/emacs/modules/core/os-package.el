@@ -48,7 +48,7 @@
   (elpaca-use-package-mode)
   ;; Assume :elpaca t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
-
+(elpaca org)
 ;; Block until current queue processed.
 (use-package no-littering
   :ensure t

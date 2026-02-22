@@ -15,7 +15,7 @@ if status is-interactive
 end
 #set -Ux GEM_HOME $HOME/.gem/ruby/(ruby -e 'print RUBY_VERSION')
 fish_config theme choose Matugen
-alias ls lsd
+alias ls 'eza --icons'
 alias cat bat
 alias cd z
 set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/share/pipx/venvs "~/.gem/ruby/3.4.0/bin/" ~/.roswell/bin
@@ -24,6 +24,7 @@ set -U fish_user_paths -g ~/.cargo/bin ~/.local/bin ~/ /usr/local/bin ~/.local/s
 # set -Ux XDG_DATA_HOME $HOME/.local/share
 # set -Ux XDG_STATE_HOME $HOME/.local/state
 # set -Ux XDG_CACHE_HOME $HOME/.cache
+set TERM "xterm-256color"
 set VISUAL "emacsclient -c -a emacs"
 set EDITOR "emacsclient -t -a ''"
 set -Ux PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'

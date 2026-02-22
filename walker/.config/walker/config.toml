@@ -4,7 +4,7 @@ click_to_close = true           # closes walker if clicking outside of the main 
 selection_wrap = true          # wrap list if at bottom or top
 global_argument_delimiter = "#" # query: firefox#https://benz.dev => part after delimiter will be ignored when querying. this should be the same as in the elephant config
 exact_search_prefix = "'"       # disable fuzzy searching
-theme = "matugen"               # theme to use
+theme = "matugen"
 app_launch_prefix = "uwsm app -- "
 hide_action_hints = false       # globally hide the action hints
 hide_action_hints_dmenu = true  # hide the actions hints for dmenu
