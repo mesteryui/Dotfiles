@@ -1,0 +1,236 @@
+// =============================================================================
+// Archivo de Estilos de Popovers Globales (partials/_popovers.scss)
+// =============================================================================
+@use "base" as *;
+
+.osd-label {
+    font-size: 24px;
+    font-weight: 800;
+    color: $text-main;
+}
+
+.battery-osd {
+    @include card;
+    background-color: $bg-card;
+    border: 2px solid $accent;
+    padding: $spacing-lg $spacing-xl;
+    margin-bottom: 40px;
+}
+
+popover {
+  background: transparent;
+
+  > contents {
+    @include card;
+    padding: $spacing-xs;
+    margin: 0;
+  }
+
+  .media-dashboard { background: transparent; padding: $spacing-xl; }
+  .media-progress-box { margin: $spacing-md 0; min-width: 280px; }
+  .media-art { border-radius: $radius-inner; border: 1px solid $border-dim; }
+  .media-control-btn { @include pill-button; }
+  calendar { background: transparent; border: none; }
+}
+
+window.dashboard {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  scrollable { min-height: 800px; }
+}
+
+.dashboard-profile-img {
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: $radius-pill;
+  border: 2px solid $accent;
+}
+
+.dashboard-container {
+  background: $bg-surface;
+  min-width: 380px;
+  padding: $spacing-xl;
+  margin: 0;
+  border-right: 1px solid $border-dim;
+}
+
+.dashboard-card {
+  @include card;
+  padding: 20px;
+  border: 1px solid $border-dim;
+
+  &.header {
+    padding: $spacing-xl;
+    background-color: $bg-alt;
+  }
+}
+
+.welcome-text {
+  font-size: 24px;
+  font-weight: 800;
+  color: $text-main;
+}
+
+.system-text {
+  font-size: 14px;
+  color: $text-dim;
+  font-weight: 500;
+}
+
+.sys-info {
+  .sys-bar {
+    trough {
+      min-height: 8px;
+      background: $bg-alt;
+      border-radius: $radius-pill;
+    }
+    block.filled {
+      min-height: 8px;
+      border-radius: $radius-pill;
+      background: $accent;
+    }
+  }
+}
+
+.media-section {
+  padding: $spacing-lg;
+  .media-dashboard { padding: 0; }
+  .media-art {
+      min-width: 280px;
+      min-height: 180px;
+      border-radius: $radius-card;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+  }
+  .media-info {
+      label:first-child { font-size: 16px; color: $text-main; font-weight: 800; }
+      label:last-child { font-size: 12px; color: $text-dim; }
+  }
+  .media-control-btn {
+      @include pill-button;
+      padding: $spacing-sm $spacing-lg;
+      label { font-size: 16px; }
+  }
+}
+
+.dashboard-header { margin-bottom: $spacing-sm; }
+
+.dashboard-power-btn {
+  @include destructive-action;
+  padding: $spacing-md $spacing-lg;
+  margin: $spacing-xs;
+  border-radius: $radius-inner;
+  border: none;
+
+  &:hover {
+    background: $bg-critical;
+    color: $fg-critical;
+    filter: brightness(1.2);
+  }
+}
+
+.resource-box {
+  background: $bg-alt;
+  padding: $spacing-lg;
+  border-radius: $radius-inner;
+  border: 1px solid $border-dim;
+
+  levelbar {
+    margin-top: $spacing-sm;
+    trough {
+      background: $bg-surface;
+      min-height: 6px;
+      border-radius: $radius-pill;
+    }
+    block.filled {
+      min-height: 6px;
+      border-radius: $radius-pill;
+      background: $accent;
+    }
+  }
+}
+
+.dashboard-qs-btn {
+  @include pill-button;
+  background: $bg-alt;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-inner;
+  border: 1px solid $border-dim;
+  margin: 0;
+
+  image { font-size: 18px; margin-right: $spacing-sm; color: $text-main; }
+  label { color: $text-main; font-weight: 600; }
+
+  &:hover { background: $bg-hover; border-color: $border-color; }
+  &:checked {
+    background: $accent;
+    color: $accent-fg;
+    border-color: transparent;
+    image, label { color: $accent-fg; }
+  }
+}
+
+.dashboard-qs-settings-btn {
+  @include pill-button;
+  background: $bg-alt;
+  padding: $spacing-md;
+  border-radius: $radius-inner;
+  border: 1px solid $border-dim;
+  margin: 0;
+  
+  &:hover { background: $bg-hover; border-color: $border-color; }
+  image { font-size: 16px; color: $text-dim; }
+}
+
+.dashboard-volume {
+  background: $bg-alt;
+  padding: $spacing-xl;
+  border-radius: $radius-inner;
+  border: 1px solid $border-dim;
+}
+
+.dashboard-slider {
+  trough {
+    min-height: 10px;
+    background: $bg-surface;
+    border-radius: $radius-pill;
+    highlight { background: $accent; border-radius: $radius-pill; }
+  }
+  slider {
+    min-height: 16px; min-width: 16px;
+    margin: -3px; background-color: $text-main; border-radius: $radius-pill;
+  }
+}
+
+.dashboard-media-section {
+  background: $bg-alt;
+  border-radius: $radius-card;
+  padding: $spacing-sm;
+  border: 1px solid $border-dim;
+  .media-dashboard { padding: $spacing-lg; }
+}
+
+.wallpaper-preview {
+  min-width: 240px; min-height: 135px;
+  border-radius: $radius-inner; border: 1px solid $border-dim;
+  transition: $transition-main;
+}
+
+.wallpaper-switcher-container {
+  margin-top: $spacing-md;
+  .refresh-btn {
+    @include pill-button;
+    padding: $spacing-sm;
+    background: $bg-alt;
+    &:hover { background: $bg-hover; color: $accent; }
+  }
+}
+
+.wallpaper-btn {
+  padding: 0;
+  background-color: transparent;
+  border-radius: $radius-card;
+  &:hover { .wallpaper-preview { border-color: $accent; } }
+}

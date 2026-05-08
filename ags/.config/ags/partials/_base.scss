@@ -1,0 +1,128 @@
+// =============================================================================
+// Archivo de Estilos Base y Variables Globales (partials/_base.scss)
+// =============================================================================
+@use "colors" as *;
+
+// =============================================================================
+// Referencias Semanticas de Colores (Mapeo de Material Design)
+// =============================================================================
+
+// Colores Principales
+$fg-color: $on_background;
+$bg-color: $background;
+$accent: $primary;
+$accent-fg: $on_primary;
+
+// Variantes de Superficie
+$bg-alt: $surface_container;
+$bg-surface: $surface;
+$bg-card: $surface_container_low;
+$bg-hover: $surface_container_high;
+
+// Estados y Bordes
+$bg-critical: $error;
+$fg-critical: $on_error;
+$border-color: $outline_variant;
+$border-dim: $outline_variant;
+
+// Tipografia
+$text-main: $on_surface;
+$text-dim: $on_surface_variant;
+$text-on-accent: $on_primary;
+
+// =============================================================================
+// Escala de Espaciado (Professional Scale)
+// =============================================================================
+$spacing-xs: 2px;
+$spacing-sm: 4px;
+$spacing-md: 8px;
+$spacing-lg: 12px;
+$spacing-xl: 16px;
+
+// =============================================================================
+// Variables de Diseño
+// =============================================================================
+$radius-pill: 24px;   // Mas redondeado para un look moderno
+$radius-card: 20px;
+$radius-inner: 12px;
+$pill-padding: $spacing-xs $spacing-md;
+$pill-margin: $spacing-sm $spacing-md;
+
+// Animaciones
+$transition-main: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// -----------------------------------------------------------------------------
+// Mixins (Sustituyen a @extend por seguridad en GTK4)
+// -----------------------------------------------------------------------------
+
+@mixin pill-container {
+  background-color: $bg-alt;
+  border-radius: $radius-pill;
+  padding: $pill-padding;
+  margin: $pill-margin;
+  border: 1px solid $border-color;
+  transition: $transition-main;
+}
+
+@mixin pill-button {
+  background-color: transparent;
+  padding: $spacing-sm $spacing-md;
+  margin: $spacing-xs;
+  border-radius: $radius-inner;
+  border: none;
+  color: $text-main;
+  transition: $transition-main;
+
+  &:hover {
+    background-color: $bg-hover;
+    color: $text-main;
+    // Efecto sutil de hover
+  }
+
+  &:active, &:checked {
+    background-color: $accent;
+    color: $accent-fg;
+    transform: scale(0.96); // Efecto tactil profesional
+
+    label, image {
+      color: $accent-fg;
+    }
+  }
+}
+
+@mixin card {
+  background-color: $bg-card;
+  border-radius: $radius-card;
+  border: 1px solid $border-color;
+  padding: $spacing-xl;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@mixin destructive-action {
+  background-color: $bg-alt;
+  border: 1px solid $border-dim;
+  transition: $transition-main;
+
+  &:hover {
+    background-color: $bg-critical;
+    color: $fg-critical;
+    border-color: transparent;
+    label, image { color: $fg-critical; }
+  }
+
+  &:active {
+    filter: brightness(0.8);
+    transform: scale(0.96);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Estilos Globales
+// -----------------------------------------------------------------------------
+* {
+  font-family: "Google Sans Flex", "JetBrainsMono Nerd Font";
+  font-weight: 500;
+  -gtk-icon-shadow: none;
+  caret-color: $accent;
+}

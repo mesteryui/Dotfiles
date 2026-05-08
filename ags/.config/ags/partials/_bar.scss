@@ -1,0 +1,166 @@
+// =============================================================================
+// Archivo de Estilos de la Barra (partials/_bar.scss)
+// =============================================================================
+@use "base" as *;
+
+.Bar {
+  background: transparent;
+  color: $fg-color;
+
+  // Contenedor principal de la barra (el centrobox que la hace flotante)
+  centerbox {
+    background-color: $bg-color;
+    border-radius: $radius-pill;
+    margin: $spacing-sm $spacing-md;
+    padding: $spacing-xs $spacing-lg;
+    border: 1px solid $border-color;
+    transition: $transition-main;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Modulos de Tipo "Pill" (Contenedores con fondo y borde)
+  // ---------------------------------------------------------------------------
+  .workspaces,
+  .media-box-1,
+  .tray-box,
+  .system-pill,
+  .weather-btn-container,
+  .clock {
+    @include pill-container;
+  }
+
+  .workspaces {
+    padding: $spacing-xs;
+    gap: $spacing-xs;
+
+    .workspace {
+      padding: 0 $spacing-md;
+      min-width: 28px;
+      border-radius: $radius-pill;
+      color: $text-dim;
+      transition: $transition-main;
+    }
+    
+    .ocupado { color: $text-main; }
+    
+    .active {
+      background-color: $accent;
+      color: $accent-fg;
+      font-weight: 800;
+    }
+  }
+
+  .submap-pill {
+    @include pill-container;
+    background-color: $accent;
+    color: $accent-fg;
+    padding: $spacing-xs $spacing-lg;
+    font-weight: 800;
+    border: none;
+    label { font-size: 0.85rem; color: $accent-fg; }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Botones e Items Interactivos
+  // ---------------------------------------------------------------------------
+  .launcher,
+  .update-widget,
+  .notification-button,
+  .tray-item,
+  .tray-toggle,
+  .media-title,
+  .media-button,
+  .clock button,
+  .weather-btn-container button {
+    @include pill-button;
+    margin: 0;
+  }
+
+  // Ajustes especificos para que el UpdatePill se vea mas fino como pediste
+  .update-widget {
+    padding: 0;
+    > button { padding: 0 $spacing-md; }
+  }
+
+  .launcher {
+    margin-right: $spacing-sm;
+    padding: $spacing-sm;
+  }
+
+  .battery-warning { color: #f1c40f; }
+  .battery-critical { color: $bg-critical; }
+
+  // ---------------------------------------------------------------------------
+  // Popovers (Detalles y Paneles flotantes)
+  // ---------------------------------------------------------------------------
+  popover {
+    background: transparent;
+    
+    label { color: $text-main; }
+
+    > contents {
+      @include card;
+      padding: $spacing-md;
+      background: $bg-card;
+    }
+
+    // Botones dentro de popovers
+    .notification-close-button { @include destructive-action; padding: $spacing-sm; }
+
+    .notification-action-button {
+      @include pill-button;
+      background: $bg-alt;
+      border: 1px solid $border-dim;
+      padding: $spacing-sm $spacing-lg;
+      
+      label { font-size: 0.9rem; font-weight: 600; color: inherit; }
+
+      &:hover, &:active {
+        background-color: $accent;
+        color: $accent-fg;
+        border-color: transparent;
+      }
+    }
+
+    // Media Dashboard
+    .media-dashboard { padding: $spacing-lg; }
+    .media-progress-box { margin: $spacing-md 0; min-width: 280px; }
+    .media-art { border-radius: $radius-inner; border: 1px solid $border-dim; }
+    
+    // Updates List
+    .update-package-item {
+      background: $bg-color;
+      border: 1px solid $border-dim;
+      border-radius: $radius-inner;
+      padding: $spacing-md $spacing-lg;
+      margin-bottom: $spacing-sm;
+      transition: $transition-main;
+      
+      &:hover { background: $accent; color: $accent-fg; }
+      
+      .package-name { font-weight: 800; font-size: 0.95rem; }
+      .package-version {
+        font-size: 0.8rem;
+        color: $text-dim;
+        font-family: "JetBrainsMono Nerd Font";
+      }
+    }
+
+    .update-action-button {
+      @include pill-button;
+      border: 1px solid $border-color;
+      padding: $spacing-md $spacing-xl;
+      margin-top: $spacing-lg;
+      
+      label { font-weight: 800; }
+      
+      &:disabled {
+        background-color: $bg-surface;
+        color: $text-dim;
+        border-color: transparent;
+        opacity: 0.5;
+        transform: none;
+      }
+    }
+  }
+}
