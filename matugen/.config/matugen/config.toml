@@ -1,4 +1,8 @@
 [config]
+[templates.snappy-switcher]
+input_path = './templates/snappy-switcher.ini'
+output_path = '~/.config/snappy-switcher/themes/Matugen.ini'
+post_hook = 'killall -9 snappy-switcher && snappy-switcher --daemon & disown'
 
 [templates.kvantum_kvconfig]
 input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.kvconfig'
@@ -132,3 +136,11 @@ input_path = '~/.config/matugen/templates/spotify-colors.ini'
 output_path = '~/.config/spicetify/Themes/Sleek/color.ini'
 post_hook = 'spicetify apply --no-restart'
 
+[templates.steam]
+input_path = './templates/steam.css'
+output_path = '~/.config/AdwSteamGtk/custom.css'
+post_hook =  'adwaita-steam-gtk -i'
+
+[templates.ags]
+input_path = './templates/scss_colors.scss'
+output_path = "~/.config/ags/partials/colors.scss"
