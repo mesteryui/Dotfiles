@@ -1,0 +1,9 @@
+-- configs/env.lua
+hl.env("HYPRCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_SIZE", "24")
+hl.env("QT_QUICK_CONTROLS_STYLE", "org.hyprland.style")
+hl.env("GDK_SCALE", "1.75")
+hl.env("GDK_BACKEND", "wayland,x11,*")
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")

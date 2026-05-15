@@ -1,0 +1,2 @@
+-- configs/windowlayouts.lua
+-- Empty
