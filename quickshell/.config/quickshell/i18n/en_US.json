@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "mark_read": "Mark read",
+    "clear_all": "Clear all",
+    "empty": "No notifications"
+  },
+  "power": {
+    "shutdown": "Shutdown",
+    "reboot": "Reboot",
+    "suspend": "Suspend",
+    "logout": "Logout",
+    "lock": "Lock"
+  },
+  "media": {
+    "no_media": "No media playing"
+  },
+  "wallpaper": {
+    "title": "Wallpapers"
+  }
+}

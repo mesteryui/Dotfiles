@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Notificaciones",
+    "mark_read": "Marcar leídas",
+    "clear_all": "Limpiar todo",
+    "empty": "Sin notificaciones"
+  },
+  "power": {
+    "shutdown": "Apagar",
+    "reboot": "Reiniciar",
+    "suspend": "Suspender",
+    "logout": "Cerrar sesión",
+    "lock": "Bloquear"
+  },
+  "media": {
+    "no_media": "Nada reproduciendo"
+  },
+  "wallpaper": {
+    "title": "Fondos de Pantalla"
+  }
+}

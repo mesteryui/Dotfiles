@@ -1,2 +1,2 @@
 -- configs/animation.lua
-require("configs.animations.dynamic")
+require("configs.animations.hyde-default")

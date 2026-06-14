@@ -4,7 +4,7 @@ require("configs.rules_windows.btop")
 hl.window_rule({ match = { class = "vesktop" }, workspace = 5 })
 hl.window_rule({ match = { class = "gimp" },    workspace = 4 })
 
-hl.window_rule({ match = { class = "mpv" }, float = true, center = true, size = "900 500" })
+hl.window_rule({ match = { class = "^(mpv|io.github.diegopvlk.Cine)" }, float = true, center = true, size = "900 500" })
 
 require("configs.rules_windows.PictureInPicture")
 
@@ -32,7 +32,7 @@ hl.window_rule({
     match = { tag = "floating-term" },
     float = true,
     center = true,
-    size = "800 700",
+    size = {800, 700},
 })
 
 hl.window_rule({
@@ -40,7 +40,7 @@ hl.window_rule({
     match = { tag = "floating-window" },
     float = true,
     center = true,
-    size = "900 800",
+    size = {900, 800}
 })
 
 -- ASIGNACIÓN DE TAGS
@@ -54,7 +54,7 @@ hl.window_rule({
     name = "calculator-fix",
     match = { class = "^(galculator)$" },
     float = true,
-    size = "100 200",
+    size = {100, 200},
 })
 
 --hl.window_rule({ match = { class = "^(org\\.quickshell)$" }, float = true })

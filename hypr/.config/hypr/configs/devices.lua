@@ -6,6 +6,7 @@ hl.config({
         kb_options = "esperanto:qwerty,grp:alt_shift_toggle",
         follow_mouse = 1,
         sensitivity = 0,
+        repeat_rate = 40,
         natural_scroll = true, -- 1 in conf
         touchpad = {
             tap_to_click = true, -- 11? maybe true

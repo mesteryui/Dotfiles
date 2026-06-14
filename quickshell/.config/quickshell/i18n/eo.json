@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Sciigoj",
+    "mark_read": "Marki kiel legitajn",
+    "clear_all": "Viŝi ĉion",
+    "empty": "Neniu sciigo"
+  },
+  "power": {
+    "shutdown": "Malŝalti",
+    "reboot": "Restartigi",
+    "suspend": "Halti provizore",
+    "logout": "Elsaluti",
+    "lock": "ŝalti"
+  },
+  "media": {
+    "no_media": "Neniu aŭdvidaĵo ludas"
+  },
+  "wallpaper": {
+    "title": "Fonbildoj"
+  }
+}

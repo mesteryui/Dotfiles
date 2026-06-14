@@ -10,14 +10,14 @@ hl.window_rule({
 hl.window_rule({
     name = "steam-main",
     match = { class = "^(steam)$", title = "^(Steam)$" },
-    size = "1100 700",
+    size = {1100, 700},
     center = true,
 })
 
 hl.window_rule({
     name = "steam-friends",
     match = { class = "^(steam)$", title = "^(Friends List)$" },
-    size = "460 800",
+    size = {460, 800},
 })
 
 hl.window_rule({

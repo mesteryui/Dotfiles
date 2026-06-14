@@ -22,7 +22,11 @@ hl.layer_rule({
     animation = "fade",
     ignore_alpha = 0.5,
 })
-
+hl.layer_rule({
+  name = "wallpaper-menu",
+  match = {namespace = "wallpaper-menu"},
+  animation = "fade"
+})
 hl.layer_rule({
     name = "osd-visuals",
     match = { namespace = "^(swayosd)$" },

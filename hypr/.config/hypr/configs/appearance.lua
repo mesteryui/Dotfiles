@@ -20,6 +20,9 @@ hl.config({
         hotspot_padding = 1,
         hide_on_key_press = true,
         no_hardware_cursors = false,
+        enable_hyprcursor = true,
+        no_warps = true,
+        inactive_timeout = 7
     },
     render = {
         direct_scanout = 0,
@@ -48,11 +51,11 @@ hl.config({
             height = 22,
             gaps_in = 5,
             gaps_out = 0,
-            text_color = "rgb(ffffff)",
-            text_color_inactive = "rgba(ffffff90)",
+            text_color = Colors.on_primary,
+            text_color_inactive = Colors.surface,
             col = {
-                active = "rgba(00000040)",
-                inactive = "rgba(00000020)",
+                active = Colors.primary,
+                inactive = Colors.on_surface,
             },
             gradients = true,
             gradient_rounding = 0,
@@ -85,6 +88,7 @@ hl.config({
         },
         shadow = {
             enabled = true,
+            --offset = "0 1",
             range = 18,
             render_power = 2,
             color = Colors.shadow,

@@ -11,7 +11,7 @@ hl.config({
         animate_manual_resizes = false,
         animate_mouse_windowdragging = false,
         enable_swallow = false,
-        focus_on_activate = true,
-        on_focus_under_fullscreen = 1,
+        focus_on_activate = false,
+        on_focus_under_fullscreen = 0,
     },
 })
