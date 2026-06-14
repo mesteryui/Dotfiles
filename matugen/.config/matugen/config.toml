@@ -2,8 +2,10 @@
 [templates.snappy-switcher]
 input_path = './templates/snappy-switcher.ini'
 output_path = '~/.config/snappy-switcher/themes/Matugen.ini'
-post_hook = 'killall -9 snappy-switcher && snappy-switcher --daemon & disown'
-
+#post_hook = 'killall -9 snappy-switcher && snappy-switcher --daemon & disown'
+[templates.quickshell]
+input_path = "./templates/Colors.qml"
+output_path = "~/.config/quickshell/Colors.qml"
 [templates.kvantum_kvconfig]
 input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.kvconfig'
 output_path = '/home/oscar/.config/Kvantum/matugen/matugen.kvconfig'
@@ -32,7 +34,7 @@ output_path = '/home/oscar//.config/walker/colors.css'
 [templates.swayosd]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swayosd/colors.css'
-post_hook = '~/.config/hypr/scripts/restart_osd.sh'
+post_hook = 'systemctl restart --user swayosd'
 
 
 [templates.bat]
@@ -63,13 +65,15 @@ output_path = '/home/oscar/.config/nwg-bar/colors.css'
 [templates.swaync]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
 output_path = '/home/oscar/.config/swaync/matugen/matugen-swaync.css'
-#post_hook = 'swaync-client -rs'
+post_hook = 'swaync-client -rs'
 
 [templates.hyprland]
-input_path = './templates/hyprland_template.conf'
-output_path = "~/.config/hypr/colors.conf"
+input_path = './templates/hyprland_template.lua'
+output_path = "~/.config/hypr/colors.lua"
 post_hook = "hyprctl reload"
-
+[templates.hypr]
+input_path = './templates/hyprlock_template.conf'
+output_path = "~/.config/hypr/colors.conf"
 [templates.gtk3]
 input_path = './templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/colors.css'
@@ -82,7 +86,8 @@ post_hook = 'systemctl restart --user hyprpolkitagent'
 [templates.gtk4]
 input_path = './templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/colors.css'
-post_hook = "ags request restart"
+post_hook = '~/.config/matugen/scripts/gtk-themes-reload.sh'
+#post_hook = "ags request restart"
 
 [templates.hyprtoolkit]
 input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
@@ -121,6 +126,7 @@ output_path = '/home/oscar/.dotfiles/cava/.config/cava/config'
 [templates.fish]
 input_path = '/home/oscar/.config/matugen/templates/fish_theme.fish'
 output_path = '/home/oscar/.config/fish/themes/Matugen.theme'
+post_hook = "source ~/.config/fish/config.fish"
 
 [templates.zathura]
 input_path = '/home/oscar/.config/matugen/templates/matugen-zathurarc'
@@ -134,13 +140,10 @@ output_path = '/home/oscar/.config/yazi/theme.toml'
 [templates.spicetify]
 input_path = '~/.config/matugen/templates/spotify-colors.ini'
 output_path = '~/.config/spicetify/Themes/Sleek/color.ini'
-post_hook = 'spicetify apply --no-restart'
+#post_hook = 'spicetify apply --no-restart'
 
 [templates.steam]
 input_path = './templates/steam.css'
 output_path = '~/.config/AdwSteamGtk/custom.css'
 post_hook =  'adwaita-steam-gtk -i'
 
-[templates.ags]
-input_path = './templates/scss_colors.scss'
-output_path = "~/.config/ags/partials/colors.scss"
