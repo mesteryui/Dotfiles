@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import "../../"
+import "../../Core"
 
 PopupWindow {
     id: root

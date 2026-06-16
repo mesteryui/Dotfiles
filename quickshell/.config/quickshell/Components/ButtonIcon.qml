@@ -1,30 +1,28 @@
 import Quickshell
 import QtQuick
-import Quickshell.Widgets
-import ".."
+import "../Core"
+import "."
 
 Item {
     id: root
 
     required property string iconName
     signal clicked
-    property int size: 16
+    property int iconSize: 16
     property color iconColor: Colors.on_surface
 
-    implicitWidth: size
-    implicitHeight: size
+    implicitWidth: iconSize
+    implicitHeight: iconSize
 
     opacity: enabled ? 1.0 : 0.38
     Behavior on opacity { NumberAnimation { duration: 150 } }
 
-    IconImage {
+    MaterialIcon {
         anchors.centerIn: parent
-        width: root.size
-        height: root.size
-        source: Quickshell.iconPath(root.iconName)
-
-        // Tinte del icono si el theme lo requiere
-        layer.enabled: false
+        icon: root.iconName
+        size: root.iconSize
+        color: root.iconColor
+        //font.family: "Material Symbols Rounded"
     }
 
     scale: mouse.pressed ? 1.20 : 1.0

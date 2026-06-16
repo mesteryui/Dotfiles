@@ -4,8 +4,10 @@ import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import "Bar"
+import "Bar/Items"
 import "Bar/SystemTray"
-import "Services" as Services
+import "Core"
+import "Core/Services" as Services
 
 PanelWindow {
     id: root
@@ -60,6 +62,7 @@ PanelWindow {
                         isActive: Hyprland.focusedWorkspace?.id === modelData.id
                     }
                 }
+                HyprlandSubmap {}
             }
 
             // Espaciador flexible para centrar
@@ -87,6 +90,7 @@ PanelWindow {
                 }
                 
                 Network {}
+                Bluetooth {}
                 Battery {}
                 Volume {}
             }

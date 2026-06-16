@@ -1,7 +1,8 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import ".."
+import "../Core"
+import "."
 
 Rectangle {
     id: root
@@ -28,11 +29,11 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 6
 
-        IconImage {
+        MaterialIcon {
             anchors.horizontalCenter: parent.horizontalCenter
-            source: Quickshell.iconPath(root.iconName)
-            width: 22; height: 22
-            //color: root.active ? Colors.primary : Colors.on_surface_variant
+            icon: root.iconName
+            size: 22
+            color: root.active ? Colors.primary : Colors.on_surface_variant
         }
 
         Text {
