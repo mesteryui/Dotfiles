@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Hyprland
-import "@Core/Colors.qml" as Colors
+import "../../Core"
 import "../../Core/Services" as Services
 import "../../Components"
 import "."

@@ -9,10 +9,11 @@ BarItem {
     id: root
     PanelWithControls {
         id: popup
-        anchor.item: root          // ← ancla al texto
-        anchor.margins.top: 30
-        anchor.edges: Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom
-        anchor.gravity: Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom
+        anchor.item: root
+        anchor.margins.top: 13
+        anchor.margins.bottom: 13
+        anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
+        anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
     }
     clickable: true
     onClicked: popup.visible = !popup.visible
