@@ -20,7 +20,7 @@ BaseOSD {
     }
     Rectangle {
         anchors.fill: parent
-        color: Colors.surface
+        color: Colors.md3.surface
         radius: height / 2
 
         Row {
@@ -32,38 +32,22 @@ BaseOSD {
                 icon: root.icon
                 anchors.verticalCenter: parent.verticalCenter
                 size: 24
-                color: Colors.on_surface
+                color: Colors.md3.on_surface
                 width: 30
             }
 
-            Rectangle {
-                id: barBackground
-                height: 10
+            ProgressBar {
+                id: bar
+                percentage: root.percentage
+                barHeight: 10
                 width: 180
                 anchors.verticalCenter: parent.verticalCenter
-                color: Colors.surface_variant
-                radius: 5
-                
-
-                Rectangle {
-                    id: barForeground
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height
-                    width: parent.width * Math.min(Math.max(root.percentage, 0), 1)
-                    color: Colors.primary
-                    radius: parent.radius
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: 150
-                        }
-                    }
-                }
             }
 
             Text {
                 text: Math.round(root.percentage * 100) + "%"
                 font.pixelSize: 16
-                color: Colors.on_surface
+                color: Colors.md3.on_surface
                 width: 40
                 anchors.verticalCenter: parent.verticalCenter
             }

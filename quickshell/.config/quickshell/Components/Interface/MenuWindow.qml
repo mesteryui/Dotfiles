@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../../Core"
 import "../../Core/Services" as Services
-import "."
+
 PanelWindow {
     id: root
     
@@ -39,7 +39,7 @@ PanelWindow {
     Rectangle {
         id: menuRect
         anchors.fill: parent
-        color: Colors.surface
+        color: Colors.md3.surface
         radius: 20
         layer.enabled: true
         
@@ -64,7 +64,7 @@ PanelWindow {
             anchors.fill: parent
             color: "transparent"
             border.width: 1
-            border.color: Colors.outline_variant
+            border.color: Colors.md3.outline_variant
             radius: parent.radius
             z: 10
         }
@@ -79,7 +79,7 @@ PanelWindow {
                 text: root.menuTitle
                 visible: text !== ""
                 font.family: Services.ConfigService?.getConfig("fontSans") ?? "sans-serif"
-                color: Colors.on_surface
+                color: Colors.md3.on_surface
                 font.pixelSize: 18
                 font.bold: true
                 Layout.fillWidth: true

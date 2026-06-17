@@ -39,7 +39,7 @@ BaseOSD {
         }
     }
     Rectangle {
-        color: Colors.surface
+        color: Colors.md3.surface
         radius: 30
         anchors.fill: parent
         anchors.centerIn: parent
@@ -51,12 +51,12 @@ BaseOSD {
                 anchors.verticalCenter: parent.verticalCenter
                 icon: batteryOSD.osdIcon
                 size: 30
-                color: Colors.on_surface
+                color: Colors.md3.on_surface
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 26
-                color: Colors.on_surface
+                color: Colors.md3.on_surface
                 text: batteryOSD.osdText
             }
         }

@@ -20,7 +20,7 @@ RowLayout {
         source: Quickshell.iconPath(root.iconName)
         Layout.preferredWidth: 18
         Layout.preferredHeight: 18
-        //color: Colors.on_surface_variant
+        //color: Colors.md3.on_surface_variant
     }
 
     Slider {
@@ -35,13 +35,13 @@ RowLayout {
             width: parent.availableWidth
             height: 4
             radius: 2
-            color: Colors.surface_variant
+            color: Colors.md3.surface_variant
 
             Rectangle {
                 width: parent.width * parent.parent.visualPosition
                 height: parent.height
                 radius: parent.radius
-                color: Colors.primary
+                color: Colors.md3.primary
             }
         }
 
@@ -50,8 +50,8 @@ RowLayout {
             y: parent.topPadding + parent.availableHeight / 2 - height / 2
             width: 16; height: 16
             radius: 8
-            color: Colors.primary
-            border.color: Colors.surface
+            color: Colors.md3.primary
+            border.color: Colors.md3.surface
             border.width: 2
         }
     }

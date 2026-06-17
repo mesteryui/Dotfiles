@@ -4,7 +4,5 @@
     },
     "notifications": {
         "timeout": 5
-    },
-    "fontSans": "Google Sans Flex",
-    "fontMono": "JetBrains Mono NerdFont"
+    }
 }

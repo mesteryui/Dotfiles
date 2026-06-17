@@ -29,7 +29,7 @@ PopupWindow {
         anchors.fill: parent
         radius: 20
         color: "transparent"
-        border.color: Colors.outline_variant
+        border.color: Colors.md3.outline_variant
         border.width: 1
         z: 10
     }
@@ -38,7 +38,7 @@ PopupWindow {
         id: content
         anchors.fill: parent
         radius: 20
-        color: Colors.surface
+        color: Colors.md3.surface
         clip: true
 
         // ── Cabecera ──────────────────────────────────────────
@@ -53,7 +53,7 @@ PopupWindow {
 
             Rectangle {
                 anchors.fill: parent
-                color: Qt.alpha(Colors.primary_container, 0.6)
+                color: Qt.alpha(Colors.md3.primary_container, 0.6)
             }
 
             Rectangle {
@@ -67,7 +67,7 @@ PopupWindow {
                 gradient: Gradient {
                     orientation: Gradient.Vertical
                     GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 1.0; color: Qt.tint(Colors.surface, Qt.alpha(Colors.primary, 0.08)) }
+                    GradientStop { position: 1.0; color: Qt.tint(Colors.md3.surface, Qt.alpha(Colors.md3.primary, 0.08)) }
                 }
             }
 
@@ -87,7 +87,7 @@ PopupWindow {
                     icon: Services.UpdatesTracking.failed   ? "warning"          :
                           Services.UpdatesTracking.checking ? "sync"             :
                                                               "system_update_alt"
-                    color: Services.UpdatesTracking.failed  ? Colors.error : Colors.on_surface
+                    color: Services.UpdatesTracking.failed  ? Colors.md3.error : Colors.md3.on_surface
                     size: 20
                 }
 
@@ -96,16 +96,17 @@ PopupWindow {
                     spacing: 1
 
                     Text {
-                        text: Services.UpdatesTracking.failed   ? "Error al comprobar"                              :
-                              Services.UpdatesTracking.checking ? "Comprobando…"                                    :
-                              Services.UpdatesTracking.updateCount === 0 ? "Al día"                                 :
-                              Services.UpdatesTracking.updateCount + " paquete" +
-                              (Services.UpdatesTracking.updateCount !== 1 ? "s" : "") + " disponible" +
-                              (Services.UpdatesTracking.updateCount !== 1 ? "s" : "")
+                        text: {
+                            if (Services.UpdatesTracking.failed) return Services.I18nService.getTranslation("update.error");
+                            if (Services.UpdatesTracking.checking) return Services.I18nService.getTranslation("update.checking");
+                            if (Services.UpdatesTracking.updateCount === 0) return Services.I18nService.getTranslation("update.up_to_date");
+                            const key = Services.UpdatesTracking.updateCount === 1 ? "update.package_singular" : "update.package_plural";
+                            return Services.UpdatesTracking.updateCount + " " + Services.I18nService.getTranslation(key);
+                        }
                         font.family: Services.ConfigService.getConfig("fontSans","sans-serif")
                         font.pixelSize: 15
                         font.weight: Font.Bold
-                        color: Services.UpdatesTracking.failed ? Colors.error : Colors.on_surface
+                        color: Services.UpdatesTracking.failed ? Colors.md3.error : Colors.md3.on_surface
                     }
                 }
             }
@@ -144,13 +145,13 @@ PopupWindow {
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: 1
-                color: Colors.outline_variant
+                color: Colors.md3.outline_variant
                 z: 2
             }
             Rectangle {
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                 height: 1
-                color: Colors.outline_variant
+                color: Colors.md3.outline_variant
                 z: 2
             }
 
@@ -158,10 +159,10 @@ PopupWindow {
             Text {
                 anchors.centerIn: parent
                 visible: Services.UpdatesTracking.updateCount === 0 && !Services.UpdatesTracking.checking
-                text: "No hay actualizaciones pendientes"
+                text: Services.I18nService.getTranslation("update.no_pending")
                 font.pixelSize: 13
                 font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-                color: Colors.on_surface_variant
+                color: Colors.md3.on_surface_variant
             }
 
             ListView {
@@ -190,7 +191,7 @@ PopupWindow {
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         radius: 8
-                        color: Qt.alpha(Colors.primary, delegateHover.containsMouse ? 0.08 : 0)
+                        color: Qt.alpha(Colors.md3.primary, delegateHover.containsMouse ? 0.08 : 0)
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
@@ -209,7 +210,7 @@ PopupWindow {
                             text: model.name
                             font.pixelSize: 13
                             font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-                            color: Colors.on_surface
+                            color: Colors.md3.on_surface
                             elide: Text.ElideRight
                         }
 
@@ -217,21 +218,21 @@ PopupWindow {
                             text: model.oldVersion
                             font.pixelSize: 11
                             font.family: Services.ConfigService.getConfig("fontMono") || "monospace"
-                            color: Colors.on_surface_variant
+                            color: Colors.md3.on_surface_variant
                             opacity: 0.7
                         }
 
                         MaterialIcon {
                             icon: "arrow_forward"
                             size: 12
-                            color: Colors.primary
+                            color: Colors.md3.primary
                         }
 
                         Text {
                             text: model.newVersion
                             font.pixelSize: 11
                             font.family: Services.ConfigService.getConfig("fontMono","monospace")
-                            color: Colors.primary
+                            color: Colors.md3.primary
                         }
                     }
                 }
@@ -250,7 +251,7 @@ PopupWindow {
 
             Rectangle {
                 anchors.fill: parent
-                color: Qt.alpha(Colors.surface_variant, 0.3)
+                color: Qt.alpha(Colors.md3.surface_variant, 0.3)
             }
 
             // Botón actualizar
@@ -261,10 +262,10 @@ PopupWindow {
                 radius: 10
                 color: {
                     if (!updateBtn.enabled)
-                        return Qt.alpha(Colors.on_surface, 0.12);
+                        return Qt.alpha(Colors.md3.on_surface, 0.12);
                     if (updateBtn.containsMouse)
-                        return Qt.tint(Colors.primary, Qt.alpha(Colors.on_primary, 0.08));
-                    return Colors.primary;
+                        return Qt.tint(Colors.md3.primary, Qt.alpha(Colors.md3.on_primary, 0.08));
+                    return Colors.md3.primary;
                 }
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -276,7 +277,7 @@ PopupWindow {
                         id: icon
                         icon: Services.UpdatesTracking.updating ? "downloading" : "system_update_alt"
                         size: 16
-                        color: !updateBtn.enabled ? Qt.alpha(Colors.on_surface, 0.38) : Colors.on_primary
+                        color: !updateBtn.enabled ? Qt.alpha(Colors.md3.on_surface, 0.38) : Colors.md3.on_primary
 
                         RotationAnimation on rotation {
                             running: Services.UpdatesTracking.updating
@@ -288,15 +289,15 @@ PopupWindow {
                     }
 
                     Text {
-                        text: Services.UpdatesTracking.updating  ? "Actualizando…" :
-                              Services.UpdatesTracking.checking   ? "Comprobando…"  :
-                                                                    "Actualizar todo"
+                        text: Services.UpdatesTracking.updating  ? Services.I18nService.getTranslation("update.updating") :
+                              Services.UpdatesTracking.checking   ? Services.I18nService.getTranslation("update.checking")  :
+                                                                    Services.I18nService.getTranslation("update.update_all")
                         font.pixelSize: 13
                         font.weight: Font.Medium
                         font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
                         color: !updateBtn.enabled
-                               ? Qt.alpha(Colors.on_surface, 0.38)
-                               : Colors.on_primary
+                               ? Qt.alpha(Colors.md3.on_surface, 0.38)
+                               : Colors.md3.on_primary
                     }
                 }
 

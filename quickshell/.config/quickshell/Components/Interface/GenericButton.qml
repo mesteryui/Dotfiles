@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Hyprland
-import "../../Core"
+import "@Core/Colors.qml" as Colors
 import "../../Core/Services" as Services
 import "../../Components"
 import "."
@@ -16,7 +16,7 @@ Rectangle {
     required property string command
     
     // Opcional: color de acento por botón (rojo para apagar, etc.)
-    property color accentColor: Colors.primary
+    property color accentColor: Colors.md3.primary
     
     readonly property bool highlighted: activeFocus || btnMouse.containsMouse
     focus: true
@@ -26,7 +26,7 @@ Rectangle {
     radius: 20
     color: highlighted
         ? Qt.alpha(accentColor, 0.18)
-        : Qt.alpha(Colors.surface_container, 0.9)
+        : Qt.alpha(Colors.md3.surface_container, 0.9)
 
     Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -34,7 +34,7 @@ Rectangle {
     border.width: highlighted ? 2 : 1
     border.color: highlighted
         ? Qt.alpha(accentColor, 0.7)
-        : Colors.outline_variant
+        : Colors.md3.outline_variant
 
     Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -68,7 +68,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.buttonIcon
             size: 32
-            color: highlighted ? root.accentColor : Colors.on_surface
+            color: highlighted ? root.accentColor : Colors.md3.on_surface
 
             // Tinte del icono en hover
             layer.enabled: highlighted
@@ -83,7 +83,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: root.buttonText
                 font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-                color: highlighted ? root.accentColor : Colors.on_surface
+                color: highlighted ? root.accentColor : Colors.md3.on_surface
                 font.pixelSize: 12
                 font.weight: highlighted ? Font.Bold : Font.Normal
                 Behavior on color { ColorAnimation { duration: 150 } }

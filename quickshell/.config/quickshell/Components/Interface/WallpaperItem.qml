@@ -21,12 +21,12 @@ Rectangle {
 
     // M3: surface tokens según nivel de elevación
     color: isSelected
-        ? Colors.surface_container_highest
-        : Colors.surface_container_low
+        ? Colors.md3.surface_container_highest
+        : Colors.md3.surface_container_low
 
     // M3: borde primario solo cuando está seleccionado
     border.width: isSelected ? 2 : 0
-    border.color: Colors.primary
+    border.color: Colors.md3.primary
 
     Behavior on border.width {
         NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
@@ -36,7 +36,7 @@ Rectangle {
     layer.enabled: true
     layer.effect: MultiEffect {
         shadowEnabled: true
-        shadowColor: Colors.shadow
+        shadowColor: Colors.md3.shadow
         shadowBlur: isSelected ? 0.8 : 0.4
         shadowVerticalOffset: isSelected ? 4 : 2
         shadowHorizontalOffset: 0
@@ -62,7 +62,7 @@ Rectangle {
         anchors.centerIn: parent
         icon: "image"
         size: 32
-        color: Colors.on_surface_variant
+        color: Colors.md3.on_surface_variant
         opacity: 0.3
         visible: wallpaperPreview.status !== Image.Ready
     }
@@ -106,7 +106,7 @@ Rectangle {
         // M3 state layer: tinte primario sobre imagen al seleccionar
         Rectangle {
             anchors.fill: parent
-            color: Colors.primary
+            color: Colors.md3.primary
             opacity: isSelected ? 0.08 : 0
             Behavior on opacity {
                 NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
@@ -116,7 +116,7 @@ Rectangle {
         // M3 state layer: hover
         Rectangle {
             anchors.fill: parent
-            color: Colors.on_surface
+            color: Colors.md3.on_surface
             opacity: hoverArea.containsMouse ? 0.08 : 0
             Behavior on opacity {
                 NumberAnimation { duration: 100 }
@@ -142,9 +142,9 @@ Rectangle {
         height: 28
         radius: 14
 
-        color: Colors.primary_container
+        color: Colors.md3.primary_container
         border.width: 2
-        border.color: Colors.primary
+        border.color: Colors.md3.primary
 
         opacity: isSelected ? 1 : 0
         scale: isSelected ? 1 : 0.4
@@ -161,7 +161,7 @@ Rectangle {
             anchors.centerIn: parent
             icon: "check"
             size: 16
-            color: Colors.on_primary_container
+            color: Colors.md3.on_primary_container
         }
     }
 }

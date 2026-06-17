@@ -70,7 +70,7 @@ MenuWindow {
             buttonText: Services.I18nService.getTranslation("power.suspend")
             buttonIcon: "bedtime"
             command: "systemctl suspend"
-            accentColor: Colors.primary
+            accentColor: Colors.md3.primary
 
             KeyNavigation.left: rebootBtn
             KeyNavigation.right: lockBtn
@@ -83,7 +83,7 @@ MenuWindow {
             buttonText: Services.I18nService.getTranslation("power.lock")
             buttonIcon: "lock"
             command: "pidof hyprlock || hyprlock"
-            accentColor: Colors.primary
+            accentColor: Colors.md3.primary
 
             KeyNavigation.left: suspendBtn
             KeyNavigation.right: logoutBtn
@@ -96,7 +96,7 @@ MenuWindow {
             buttonText: Services.I18nService.getTranslation("power.logout")
             buttonIcon: "logout"
             command: "hyprctl dispatch 'hl.dsp.exit()'"
-            accentColor: Colors.secondary
+            accentColor: Colors.md3.secondary
             
             KeyNavigation.left: lockBtn
             KeyNavigation.right: shutdownBtn

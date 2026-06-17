@@ -27,7 +27,7 @@ BarItem {
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
         
-        color: Colors.on_surface
+        color: Colors.md3.on_surface
         font.pixelSize: 14
         
 

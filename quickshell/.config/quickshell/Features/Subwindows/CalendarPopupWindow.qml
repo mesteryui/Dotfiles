@@ -39,14 +39,14 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: 28
-        color: Colors.surface
-        border.color: Colors.outline_variant
+        color: Colors.md3.surface
+        border.color: Colors.md3.outline_variant
         border.width: 1
 
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Colors.shadow
+            shadowColor: Colors.md3.shadow
             shadowBlur: 0.85
             shadowVerticalOffset: 6
             shadowHorizontalOffset: 0
@@ -84,7 +84,7 @@ PopupWindow {
                     // State layer: hover 8 %, press 12 %
                     Rectangle {
                         anchors.fill: parent; radius: parent.radius
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                         opacity: prevArea.pressed ? 0.12 : prevArea.containsMouse ? 0.08 : 0.0
                         Behavior on opacity {
                             NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
@@ -95,7 +95,7 @@ PopupWindow {
                         anchors.centerIn: parent
                         text: "‹"
                         font.pixelSize: 22
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                     }
                 }
 
@@ -108,7 +108,7 @@ PopupWindow {
                           + " " + currentYear
                     font.bold: true
                     font.pixelSize: 16
-                    color: Colors.on_surface
+                    color: Colors.md3.on_surface
                 }
 
                 // M3 Icon Button — siguiente
@@ -130,7 +130,7 @@ PopupWindow {
 
                     Rectangle {
                         anchors.fill: parent; radius: parent.radius
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                         opacity: nextArea.pressed ? 0.12 : nextArea.containsMouse ? 0.08 : 0.0
                         Behavior on opacity {
                             NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
@@ -141,7 +141,7 @@ PopupWindow {
                         anchors.centerIn: parent
                         text: "›"
                         font.pixelSize: 22
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                     }
                 }
             }
@@ -168,7 +168,7 @@ PopupWindow {
                         text: modelData
                         font.bold: true
                         font.pixelSize: 11
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                     }
                 }
             }
@@ -177,7 +177,7 @@ PopupWindow {
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: Colors.outline_variant
+                color: Colors.md3.outline_variant
                 opacity: 0.5
             }
 
@@ -216,12 +216,12 @@ PopupWindow {
                         radius: 18
                         anchors.centerIn: parent
 
-                        color: isToday    ? Colors.primary
-                             : isSelected ? Colors.primary_container
+                        color: isToday    ? Colors.md3.primary
+                             : isSelected ? Colors.md3.primary_container
                              : "transparent"
 
                         border.width: isSelected && !isToday ? 1 : 0
-                        border.color: Colors.primary
+                        border.color: Colors.md3.primary
 
                         Behavior on color {
                             ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
@@ -231,9 +231,9 @@ PopupWindow {
                         Rectangle {
                             id: dayStateLayer
                             anchors.fill: parent; radius: parent.radius
-                            color: isToday    ? Colors.on_primary
-                                 : isSelected ? Colors.on_primary_container
-                                 : Colors.on_surface
+                            color: isToday    ? Colors.md3.on_primary
+                                 : isSelected ? Colors.md3.on_primary_container
+                                 : Colors.md3.on_surface
                             opacity: 0
                             Behavior on opacity {
                                 NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
@@ -247,10 +247,10 @@ PopupWindow {
                             text: model.day
                             font.pixelSize: 13
                             font.bold: isToday || isSelected
-                            color: isToday    ? Colors.on_primary
-                                 : isSelected ? Colors.on_primary_container
-                                 : isCurrentMonth ? Colors.on_surface
-                                 : Colors.on_surface_variant
+                            color: isToday    ? Colors.md3.on_primary
+                                 : isSelected ? Colors.md3.on_primary_container
+                                 : isCurrentMonth ? Colors.md3.on_surface
+                                 : Colors.md3.on_surface_variant
                             // M3 disabled state = 38 % opacidad
                             opacity: isCurrentMonth ? 1.0 : 0.38
                         }

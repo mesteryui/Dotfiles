@@ -37,9 +37,9 @@ BarItem {
                   service.failed    ? "warning"            :
                                       "system_update_alt"
 
-            color: service.failed   ? Colors.error         :
-                   service.updating ? Colors.primary        :
-                                      Colors.on_surface
+            color: service.failed   ? Colors.md3.error         :
+                   service.updating ? Colors.md3.primary        :
+                                      Colors.md3.on_surface
 
             // Rotación animada mientras sincroniza
             RotationAnimation on rotation {
@@ -62,7 +62,7 @@ BarItem {
             anchors.verticalCenter: parent.verticalCenter
             visible:   !service.checking && !service.updating
             text:      service.updateCount
-            color:     service.failed ? Colors.error : Colors.on_surface
+            color:     service.failed ? Colors.md3.error : Colors.md3.on_surface
             font.pixelSize: 16
             font.family:    Services.ConfigService.getConfig("fontSans", "sans-serif")
         }

@@ -18,7 +18,7 @@ PanelWindow {
     IdleInhibitor {
         id: idleInhibitor
         window: root
-        // ✅ binding reactivo — cuando el singleton cambia, esto cambia
+        
         enabled: Services.IdleInhibitedService.inhibited
     }
     
@@ -41,7 +41,7 @@ PanelWindow {
     Rectangle {
         id: bar
         anchors.fill: parent
-        color: Colors.surface
+        color: Colors.md3.surface
         radius: 30
         
         RowLayout {
@@ -73,6 +73,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignCenter | Qt.AlignVCenter
                 spacing: 12
                 MprisPlayer {}
+                UpdateCounter {}
                 Clock {}
             }
 

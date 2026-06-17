@@ -4,7 +4,6 @@ import "../../Core"
 import "../../Core/Services" as Services
 import "../../Features/Windows"
 import "../../Components"
-import "."
 
 BarItem {
     id: root
@@ -20,7 +19,7 @@ BarItem {
     MaterialIcon {
         icon: "rocket_launch"
         size: 20
-        color: Colors.on_surface
+        color: Colors.md3.on_surface
         anchors.centerIn: parent
     }
 }

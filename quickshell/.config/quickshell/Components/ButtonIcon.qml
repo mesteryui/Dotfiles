@@ -9,7 +9,7 @@ Item {
     required property string iconName
     signal clicked
     property int iconSize: 16
-    property color iconColor: Colors.on_surface
+    property color iconColor: Colors.md3.on_surface
 
     implicitWidth: iconSize
     implicitHeight: iconSize

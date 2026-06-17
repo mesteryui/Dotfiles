@@ -17,5 +17,15 @@
   },
   "wallpaper": {
     "title": "Wallpapers"
+  },
+  "update": {
+    "error": "Error checking",
+    "checking": "Checking…",
+    "up_to_date": "Up to date",
+    "package_singular": "package available",
+    "package_plural": "packages available",
+    "no_pending": "No pending updates",
+    "updating": "Updating…",
+    "update_all": "Update all"
   }
 }

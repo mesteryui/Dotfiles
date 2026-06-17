@@ -17,5 +17,15 @@
   },
   "wallpaper": {
     "title": "Fondos de Pantalla"
+  },
+  "update": {
+    "error": "Error al comprobar",
+    "checking": "Comprobando…",
+    "up_to_date": "Al día",
+    "package_singular": "paquete disponible",
+    "package_plural": "paquetes disponibles",
+    "no_pending": "No hay actualizaciones pendientes",
+    "updating": "Actualizando…",
+    "update_all": "Actualizar todo"
   }
 }

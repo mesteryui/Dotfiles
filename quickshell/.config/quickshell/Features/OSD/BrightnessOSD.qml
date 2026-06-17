@@ -1,5 +1,5 @@
 import "../../Core/Services" as Services
-import "../../Core"
+import "@Core/Colors.qml" as Colors
 import "."
 import QtQuick
 import Quickshell

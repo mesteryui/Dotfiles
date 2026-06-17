@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import ".."
+import "@Core/Colors.qml" as Colors
 import "../Services" as Services
 import "../Components"
 
@@ -124,7 +124,7 @@ PanelWindow {
                     }
                     height: 2
                     radius: 1
-                    color: Colors.primary
+                    color: Colors.md3.primary
                     opacity: 0.45
 
                     NumberAnimation on width {

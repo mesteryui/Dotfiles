@@ -72,7 +72,7 @@ PanelWindow {
             anchors.fill: parent
             radius: 20
             color: "transparent"
-            border.color: Colors.outline_variant  // ✅ era outline
+            border.color: Colors.md3.outline_variant  // ✅ era outline
             border.width: 1
             z: 10
         }
@@ -82,7 +82,7 @@ PanelWindow {
             anchors.fill: parent
             radius: 20
             // ✅ surface_container_high — token MD3 para popups elevados
-            color: Colors.surface
+            color: Colors.md3.surface
             clip: true
             // ✅ layer.enabled eliminado — no hay effect asignado
 
@@ -101,7 +101,7 @@ PanelWindow {
                         font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
                         font.pixelSize: 18
                         font.weight: Font.Medium
-                        color: Colors.on_surface
+                        color: Colors.md3.on_surface
                         Layout.fillWidth: true
                         verticalAlignment: Text.AlignVCenter
                     }

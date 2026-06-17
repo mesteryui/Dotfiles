@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Hyprland
 import "../../"
 import "../../Core"
-
 PopupWindow {
     id: root
 
@@ -26,8 +25,8 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: 12
-        color: Colors.surface
-        border.color: Colors.outline
+        color: Colors.md3.surface
+        border.color: Colors.md3.outline
         border.width: 1
         
         // QsMenuOpener lee los hijos del handle
@@ -63,7 +62,7 @@ PopupWindow {
                         Rectangle {
                             width: parent?.width ?? 0
                             height: 1
-                            color: Colors.outline_variant
+                            color: Colors.md3.outline_variant
                             opacity: 0.5
                         }
                     }
@@ -76,7 +75,7 @@ PopupWindow {
                             implicitHeight: 36
                             radius: 8
                             color: itemMouse.containsMouse
-                                ? Colors.primary
+                                ? Colors.md3.primary
                                 : "transparent"
 
                             Behavior on color {
@@ -108,7 +107,7 @@ PopupWindow {
                                 Text {
                                     Layout.fillWidth: true
                                     text: modelData.text
-                                    color: itemMouse.containsMouse ? Colors.on_primary : Colors.on_surface
+                                    color: itemMouse.containsMouse ? Colors.md3.on_primary : Colors.md3.on_surface
                                     font.pixelSize: 13
                                     elide: Text.ElideRight
                                     Behavior on color {
@@ -120,7 +119,7 @@ PopupWindow {
                                 Text {
                                     visible: modelData.hasChildren
                                     text: "›"
-                                    color: Colors.on_surface_variant
+                                    color: Colors.md3.on_surface_variant
                                     font.pixelSize: 16
                                 }
 
@@ -130,9 +129,9 @@ PopupWindow {
                                     width: 16; height: 16
                                     radius: modelData.buttonType === QsMenuButtonType.Radio ? 8 : 4
                                     color: modelData.checkState === Qt.Checked
-                                        ? Colors.primary
+                                        ? Colors.md3.primary
                                         : "transparent"
-                                    border.color: Colors.outline
+                                    border.color: Colors.md3.outline
                                     border.width: 1
                                 }
                             }

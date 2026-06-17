@@ -1,10 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
-import "../../Core"
 import "../../Core/Services" as Services
 import "../../Components"
-import "."
+import "../../Core"
 
 BarItem {
     id: root
@@ -24,7 +23,7 @@ BarItem {
         MaterialIcon {
             id: volumeIcon
             size: 20
-            color: Colors.on_surface
+            color: Colors.md3.on_surface
             icon: {
                 if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return "volume_off"
                 if (Pipewire.defaultAudioSink.audio.muted) return "volume_off"
@@ -43,7 +42,7 @@ BarItem {
                 if (!audio) return "0%";
                 return Math.round(audio.volume * 100) + "%";
             }
-            color: Colors.on_surface
+            color: Colors.md3.on_surface
             font.pixelSize: 14
             font.weight: Font.Medium
         }

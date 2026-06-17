@@ -21,7 +21,7 @@ BarItem {
         id: networkIcon
         anchors.centerIn: parent
         size: 20
-        color: Colors.on_surface
+        color: Colors.md3.on_surface
         icon: {
             if (Networking.connectivity === NetworkConnectivity.None) {
                 return "signal_wifi_off"

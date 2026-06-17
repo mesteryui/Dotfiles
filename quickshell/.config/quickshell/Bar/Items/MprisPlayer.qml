@@ -13,7 +13,7 @@ Rectangle {
     property var player: Services.MprisService.currentMprisPlayer
     implicitWidth: childrenRect.width + (12 * 2)
     implicitHeight: 30
-    color: Colors.surface_container_high
+    color: Colors.md3.surface_container_high
     radius: 20
 
     // Helpers para no repetir la guardia null en cada binding
@@ -36,7 +36,7 @@ Rectangle {
         Text {
             id: titleText
             text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
-            color: Colors.on_surface
+            color: Colors.md3.on_surface
             anchors.verticalCenter: parent.verticalCenter
             font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
             font.pixelSize: 14

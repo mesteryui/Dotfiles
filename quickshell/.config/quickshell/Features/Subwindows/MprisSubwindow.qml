@@ -64,7 +64,7 @@ PopupWindow {
         anchors.fill: parent
         radius: 20
         color: "transparent"
-        border.color: Colors.outline_variant
+        border.color: Colors.md3.outline_variant
         border.width: 1
         z: 10  // siempre encima del contenido
     }
@@ -73,7 +73,7 @@ PopupWindow {
         id: content
         anchors.fill: parent
         radius: 20
-        color: Colors.surface
+        color: Colors.md3.surface
         clip: true  // ahora clip solo afecta al contenido, no al borde
         implicitHeight: header.implicitHeight + controls.implicitHeight
 
@@ -86,7 +86,7 @@ PopupWindow {
             // Fondo base con color primario
             Rectangle {
                 anchors.fill: parent
-                color: Qt.alpha(Colors.primary_container, 0.6)
+                color: Qt.alpha(Colors.md3.primary_container, 0.6)
             }
 
             // Art encima del color — visible solo cuando carga
@@ -108,7 +108,7 @@ PopupWindow {
                 gradient: Gradient {
                     orientation: Gradient.Vertical
                     GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 1.0; color: Qt.tint(Colors.surface, Qt.alpha(Colors.primary, 0.08)) }
+                    GradientStop { position: 1.0; color: Qt.tint(Colors.md3.surface, Qt.alpha(Colors.md3.primary, 0.08)) }
                 }
             }
 
@@ -131,7 +131,7 @@ PopupWindow {
                     font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
                     font.pixelSize: 15
                     font.weight: Font.Bold
-                    color: Colors.on_surface
+                    color: Colors.md3.on_surface
                     elide: Text.ElideRight
                 }
 
@@ -142,7 +142,7 @@ PopupWindow {
                           || ""
                     font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
                     font.pixelSize: 12
-                    color: Colors.on_surface_variant
+                    color: Colors.md3.on_surface_variant
                     elide: Text.ElideRight
                     visible: text !== ""
                 }
@@ -177,7 +177,7 @@ PopupWindow {
                     Text {
                         text: formatTime(root.currentPosition ?? 0)
                         font.pixelSize: 11
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                         font.family: Services.ConfigService.getConfig("fontMono") || "monospace"
                     }
 
@@ -186,7 +186,7 @@ PopupWindow {
                     Text {
                         text: formatTime(root.currentLength ?? 0)
                         font.pixelSize: 11
-                        color: Colors.on_surface_variant
+                        color: Colors.md3.on_surface_variant
                         font.family: Services.ConfigService.getConfig("fontMono") || "monospace"
                     }
                 }
@@ -199,14 +199,14 @@ PopupWindow {
                 x: 0
                 height: 4
                 radius: 2
-                color: Colors.surface_variant
+                color: Colors.md3.surface_variant
                 implicitHeight: 4
 
                 Rectangle {
                     width: parent.width * Math.min(1, root.currentPosition / Math.max(1, root.currentLength))
                     height: parent.height
                     radius: parent.radius
-                    color: Colors.primary
+                    color: Colors.md3.primary
                     Behavior on width { NumberAnimation { duration: 1000; easing.type: Easing.Linear } }
                 }
             }
@@ -237,7 +237,7 @@ PopupWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: 22
-                        color: Colors.primary_container
+                        color: Colors.md3.primary_container
                     }
 
                     ButtonIcon {
@@ -249,7 +249,7 @@ PopupWindow {
                             : "play_arrow"
                         enabled: Services.MprisService.hasPlayer
                         onClicked: Services.MprisService.togglePlaying()
-                        iconColor: Colors.on_primary_container
+                        iconColor: Colors.md3.on_primary_container
                     }
                 }
 

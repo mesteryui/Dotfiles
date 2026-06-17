@@ -17,5 +17,15 @@
   },
   "wallpaper": {
     "title": "Fonbildoj"
+  },
+  "update": {
+    "error": "Eraro dum kontrolado",
+    "checking": "Kontrolante…",
+    "up_to_date": "Ĝisdata",
+    "package_singular": "pako havebla",
+    "package_plural": "pakoj haveblaj",
+    "no_pending": "Neniuj pritraktataj ĝisdatigoj",
+    "updating": "Ĝisdatigante…",
+    "update_all": "Ĝisdatigi ĉion"
   }
 }

@@ -19,7 +19,7 @@ BarItem {
         MaterialIcon {
             id: batteryIcon
             size: 20
-            color: Colors.on_surface_variant
+            color: Colors.md3.on_surface_variant
             
             icon: {
                 const device = UPower.displayDevice;
@@ -54,7 +54,7 @@ BarItem {
                 const p = UPower.displayDevice?.percentage ?? 0;
                 return Math.round(p * 100) + "%";
             }
-            color: Colors.on_surface
+            color: Colors.md3.on_surface
             verticalAlignment: Text.AlignVCenter
         }
     }

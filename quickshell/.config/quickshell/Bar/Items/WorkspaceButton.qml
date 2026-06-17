@@ -12,7 +12,7 @@ Rectangle {
     width: isActive ? 40 : 30   // se expande al activarse
     height: 30
     radius: 30
-    color: isActive ? Colors.primary : Colors.secondary_container
+    color: isActive ? Colors.md3.primary : Colors.md3.secondary_container
 
     Behavior on color {
         ColorAnimation { duration: 200 }
@@ -29,7 +29,7 @@ Rectangle {
         font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
         anchors.centerIn: parent
         text: root.modelData.id
-        color: root.isActive ? Colors.on_primary : Colors.on_surface
+        color: root.isActive ? Colors.md3.on_primary : Colors.md3.on_surface
     }
     MouseArea {
         id: mouseArea

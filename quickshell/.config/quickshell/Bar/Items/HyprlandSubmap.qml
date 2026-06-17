@@ -7,8 +7,8 @@ import "../../Components"
 Rectangle {
     id: root
     visible: inSubmap
-    color: Colors.primary_container
-    radius: 12
+    color: Colors.md3.primary_container
+    radius: 20
     implicitWidth: submapRow.implicitWidth + 16
     implicitHeight: 30
 
@@ -20,7 +20,7 @@ Rectangle {
 
         function onRawEvent(event: HyprlandEvent) {
             if (event.name === "submap") {
-                root.activeSubmap = event.data;
+                root.activeSubmap = event.data.trim();
             }
         }
     }
@@ -33,12 +33,12 @@ Rectangle {
         MaterialIcon {
             icon: "layers"
             size: 16
-            color: Colors.on_primary_container
+            color: Colors.md3.on_primary_container
         }
         
         Text {
             text: root.activeSubmap
-            color: Colors.on_primary_container
+            color: Colors.md3.on_primary_container
             font.pixelSize: 13
             font.weight: Font.Medium
             font.family: "sans-serif"
