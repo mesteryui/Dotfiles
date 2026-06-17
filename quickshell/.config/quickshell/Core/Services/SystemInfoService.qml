@@ -13,6 +13,7 @@ Singleton {
     readonly property real   cpuUsage:     _cpu.usage      // 0.0 – 1.0
     readonly property int    cpuCores:     _cpu.coreCount
     readonly property string cpuUsagePct:  Math.round(_cpu.usage * 100) + "%"
+    readonly property int    cpuTemp:      _temp.value     // Celsius
 
     // ── API pública: Memoria ──────────────────────────────────────
     readonly property int    memTotalMiB:  _mem.totalMiB
@@ -45,6 +46,7 @@ Singleton {
             cpuFile.reload()
             memFile.reload()
             uptimeFile.reload()
+            tempFile.reload()
         }
     }
 
@@ -53,6 +55,22 @@ Singleton {
         id: cpuFile
         path: "/proc/stat"
         onTextChanged: _cpu.parse(text)
+    }
+
+    // ── /sys/class/thermal/thermal_zone0/temp → Temperatura ──────
+    FileView {
+        id: tempFile
+        path: "/sys/class/thermal/thermal_zone0/temp"
+        onTextChanged: _temp.parse(text)
+    }
+
+    QtObject {
+        id: _temp
+        property int value: 0
+        function parse(raw) {
+            const t = parseInt(raw.trim())
+            if (!isNaN(t)) value = Math.round(t / 1000)
+        }
     }
 
     QtObject {

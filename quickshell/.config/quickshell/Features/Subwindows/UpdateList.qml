@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import QtQuick.Controls
 import Quickshell.Hyprland
 import "../../Core/Services" as Services
@@ -26,6 +27,7 @@ PopupWindow {
 
     // Borde exterior
     Rectangle {
+        id: externalBorder
         anchors.fill: parent
         radius: 20
         color: "transparent"
@@ -50,9 +52,10 @@ PopupWindow {
                 right: parent.right
             }
             implicitHeight: 70
-
+            
             Rectangle {
                 anchors.fill: parent
+                radius: content.radius
                 color: Qt.alpha(Colors.md3.primary_container, 0.6)
             }
 

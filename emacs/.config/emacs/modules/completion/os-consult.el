@@ -1,12 +1,4 @@
-;;; os-consult.el --- Consult configuration -*- lexical-binding: t; -*-
-
-;; Author: Oscar
-;; Keywords: completion, tools
-
-;;; Commentary:
-;; Configuration for Consult (search and navigation).
-
-;;; Code:
+;;; -*- lexical-binding: t -*-
 
 (use-package consult
   :after (orderless)
@@ -45,5 +37,5 @@
   :bind (:map eglot-mode-map
               ("M-g s" . consult-eglot-symbols))) ;; "Go to Symbol"
 
+
 (provide 'os-consult)
-;;; os-consult.el ends here

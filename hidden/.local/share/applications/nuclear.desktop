@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Nuclear
+Comment=Music streaming app for your desktop
+Icon=/home/oscar/.appimages/.icons/nuclear.png
+TryExec=/home/oscar/.appimages/nuclear.appimage
+Exec=env DESKTOPINTEGRATION=1 EGL_PLATFORM=x11 /home/oscar/.appimages/nuclear.appimage
+Terminal=false
+Categories=AudioVideo;Audio;Music;
+StartupWMClass=nuclear-music-player
+X-AppImage-Name=Nuclear

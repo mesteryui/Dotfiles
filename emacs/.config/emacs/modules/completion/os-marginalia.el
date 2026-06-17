@@ -1,14 +1,6 @@
-;;; os-marginalia.el --- Marginalia configuration -*- lexical-binding: t; -*-
-
-;; Author: Oscar
-;; Keywords: completion, help
-
-;;; Commentary:
-;; Configuration for Marginalia (rich annotations in minibuffer).
-
-;;; Code:
-
+;;; -*- lexical-binding: t -*-
 (use-package marginalia
+  :ensure t
   :commands (marginalia-mode marginalia-cycle)
   :custom
   (marginalia-annotators
@@ -23,4 +15,3 @@
   :init (nerd-icons-completion-mode))
 
 (provide 'os-marginalia)
-;;; os-marginalia.el ends here

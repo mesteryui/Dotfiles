@@ -60,6 +60,11 @@ helper.load_plugin_conf("hyprexpo", function ()
         ["plugin.hyprexpo"] = {
             columns = 3,
             gaps_in = 5,
+            gaps_out = 3,
+            keynav_enable = 1,
+            label_enable = 0,
+            border_width = 2,
+            border_color_current = Colors.primary,
             bg_col = Colors.surface,
             workspace_method = "center current", -- [center/first] [workspace] e.g. first 1 or center m+1
                                           -- Per-monitor: DP-1 first 1, HDMI-1 center current

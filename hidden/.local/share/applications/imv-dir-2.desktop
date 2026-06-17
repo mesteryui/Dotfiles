@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=imv-dir
+MimeType=image/jpeg;
+Name=imv-dir
+NoDisplay=true
+Type=Application

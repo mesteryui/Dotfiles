@@ -1,3 +1,7 @@
+#source /usr/share/cachyos-fish-config/cachyos-config.fish
+
+# overwrite greeting
+# potentially disabling fastfetch
 if status is-interactive
     # Commands to run in interactive sessions can go here
     set -g fish_greeting
@@ -30,3 +34,13 @@ set EDITOR "emacsclient -t -a ''"
 set -Ux PASSWORD_STORE_DIR '/home/oscar/.local/share/pass'
 set -x NNTPSERVER 'snews://news.eternal-september.org'
 alias config "git --git-dir=$HOME/.dotfiles/.git --work-tree=$HOME/.dotfiles"
+
+
+# Added by LM Studio CLI (lms)
+set -gx PATH $PATH /home/oscar/.lmstudio/bin
+# End of LM Studio CLI section
+
+
+
+# Added by Antigravity CLI installer
+set -gx PATH "/home/oscar/.local/bin" $PATH

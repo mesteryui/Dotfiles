@@ -22,7 +22,7 @@ org-mode
 js-mode
 (func "function " (r> "nombreFuncion") "(" r> ") {" n "\t" q n "}"
       :doc "JavaScript fucntion")
-(apiQuest "fetch(" r> ").then(" r> ")")
+(apiQuest "fetch(" r> ").then(" r> ")" :doc "Basic api request in JS")
 
 html-mode mhtml-mode
 (html5-document "<!DOCTYPE html>" n "<html lang=\"" (r> "en") "\">" n  "<head>" n "\t" "<meta charset=\"UTF-8\">" n

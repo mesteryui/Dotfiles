@@ -1,24 +1,24 @@
 [[plugin.deps]]
-use = "Ape/mediainfo"
-rev = "df17c4f"
-hash = "b25c2acb08d9ca5ff5cf71ea764fed8d"
-
-[[plugin.deps]]
 use = "Rolv-Apneseth/starship"
-rev = "6c639b4"
-hash = "5614c46d5de76623c283d415bfac8025"
+rev = "a837101"
+hash = "eb1daba6a0f5ff45de8aceb7847d9dbf"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:chmod"
-rev = "9a09505"
-hash = "2f1053f89d1a301a648ab181d0948e38"
+rev = "598cdb6"
+hash = "f0c8c378184d5f8abd1b095a443d336d"
 
 [[plugin.deps]]
 use = "atareao/mdcat"
 rev = "485fafc"
 hash = "35aa47114658c135124f9ba7f44b9b43"
 
+[[plugin.deps]]
+use = "Ape/smart-enter"
+rev = "1c835cc"
+hash = "d6d6fa001c2cda9dda6eb5bc6beb96b7"
+
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "68326b4"
-hash = "2ac87e1b3a61f5887472899e86535d29"
+rev = "0f9204b"
+hash = "7dfe41c9c3d9be76da8a844263d0bbed"

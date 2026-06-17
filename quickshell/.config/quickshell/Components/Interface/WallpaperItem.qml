@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Widgets
 import QtQuick.Effects
 import "../../Core"
 import "../../Core/Services" as Services
@@ -20,16 +21,17 @@ Rectangle {
     clip: true
 
     // M3: surface tokens según nivel de elevación
-    color: isSelected
-        ? Colors.md3.surface_container_highest
-        : Colors.md3.surface_container_low
+    color: isSelected ? Colors.md3.surface_container_highest : Colors.md3.surface_container_low
 
     // M3: borde primario solo cuando está seleccionado
     border.width: isSelected ? 2 : 0
     border.color: Colors.md3.primary
 
     Behavior on border.width {
-        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 150
+            easing.type: Easing.OutCubic
+        }
     }
 
     // M3 elevación: sombra más pronunciada al seleccionar
@@ -44,17 +46,26 @@ Rectangle {
         shadowOpacity: isSelected ? 0.25 : 0.08
 
         Behavior on shadowOpacity {
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
         }
         Behavior on shadowVerticalOffset {
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
         }
     }
 
     // M3: escala sutil (el badge ya comunica selección)
     scale: isSelected ? 1.02 : 1.0
     Behavior on scale {
-        NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutQuart
+        }
     }
 
     // Placeholder mientras carga
@@ -74,52 +85,54 @@ Rectangle {
         radius: delegateRoot.radius
         color: "transparent"
 
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            maskEnabled: true
-            maskThresholdMin: 0.5
-            maskSpreadAtMin: 1.0
-            maskSource: ShaderEffectSource {
-                sourceItem: Rectangle {
-                    width: imageMask.width
-                    height: imageMask.height
-                    radius: imageMask.radius
+        ClippingRectangle {
+            anchors.fill: parent
+            radius: delegateRoot.radius
+            border.color: Colors.md3.primary
+            border.width: isSelected ? 1 : 0
+            color: "transparent"
+            Image {
+                id: wallpaperPreview
+                anchors.fill: parent
+                source: "file://" + model.filePath
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: true
+                sourceSize.width: 560
+                sourceSize.height: 400
+                opacity: status === Image.Ready ? 1 : 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.OutQuad
+                    }
                 }
             }
         }
-
-        Image {
-            id: wallpaperPreview
-            anchors.fill: parent
-            source: "file://" + model.filePath
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: true
-            sourceSize.width: 560
-            sourceSize.height: 400
-            opacity: status === Image.Ready ? 1 : 0
-            Behavior on opacity {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
-            }
-        }
-
         // M3 state layer: tinte primario sobre imagen al seleccionar
         Rectangle {
             anchors.fill: parent
+            radius: delegateRoot.radius
             color: Colors.md3.primary
             opacity: isSelected ? 0.08 : 0
             Behavior on opacity {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                NumberAnimation {
+                    duration: 200
+                    easing.type: Easing.OutQuad
+                }
             }
         }
 
         // M3 state layer: hover
         Rectangle {
             anchors.fill: parent
+            radius: delegateRoot.radius
             color: Colors.md3.on_surface
             opacity: hoverArea.containsMouse ? 0.08 : 0
             Behavior on opacity {
-                NumberAnimation { duration: 100 }
+                NumberAnimation {
+                    duration: 100
+                }
             }
         }
 
@@ -150,11 +163,17 @@ Rectangle {
         scale: isSelected ? 1 : 0.4
 
         Behavior on opacity {
-            NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutQuart
+            }
         }
         // OutBack da el "pop" característico de M3
         Behavior on scale {
-            NumberAnimation { duration: 300; easing.type: Easing.OutBack }
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutBack
+            }
         }
 
         MaterialIcon {

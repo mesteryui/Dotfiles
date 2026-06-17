@@ -10,7 +10,7 @@ function GetEntries()
  return {
      {
 	    Text = "Sobre el sistema",
-	    Icon = "",
+	    Icon = "󰋽",
 	    Actions = {
 		["about_system"] = "xdg-terminal-exec --app-id=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'"
 	    },

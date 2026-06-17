@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Flatworld
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/1296540
+Icon=steam_icon_1296540
+Terminal=false
+Type=Application
+Categories=Game;

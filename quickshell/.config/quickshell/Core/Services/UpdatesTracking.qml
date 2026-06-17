@@ -17,7 +17,7 @@ Singleton {
     Component.onCompleted: countUpdates.running = true
 
     Timer {
-        interval: 3600000 // cada hora
+        interval: ConfigService.getConfig("updates.countTime",60) * 60000
         running:  true
         repeat:   true
         onTriggered: countUpdates.running = true
@@ -68,7 +68,9 @@ Singleton {
 
     Process {
         id: updateProcess
-        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", "sudo", "pacman", "-Syu"]
+        // Construcción segura del comando como array: ["xdg-terminal-exec", "--app-id=local.floating", "-e", "topgrade"]
+        // Se asume que ConfigService.getConfig("updates.command","topgrade") devuelve una string.
+        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e"].concat(ConfigService.getConfig("updates.command", "topgrade").split(" "))
 
         onRunningChanged: {
             root.updating = running

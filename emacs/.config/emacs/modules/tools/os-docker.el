@@ -1,6 +1,0 @@
-;; -*- lexical-binding: t; -*-
-(use-package docker
-  :ensure t
-  :bind ("C-c d" . docker))
-
-(provide 'os-docker)

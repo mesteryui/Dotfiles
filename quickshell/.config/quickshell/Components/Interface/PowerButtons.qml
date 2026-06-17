@@ -4,7 +4,6 @@ import Quickshell.Io
 import Quickshell.Wayland
 import "../../Core"
 import "../../Core/Services" as Services
-import "."
 import QtQuick.Layouts
 
 MenuWindow {

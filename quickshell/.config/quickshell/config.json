@@ -4,5 +4,9 @@
     },
     "notifications": {
         "timeout": 5
+    },
+    "updates": {
+        "countTime": 20,
+        "command": "sudo pacman -Syu"
     }
 }

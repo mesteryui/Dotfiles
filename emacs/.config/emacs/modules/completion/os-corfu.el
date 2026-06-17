@@ -1,8 +1,5 @@
-;;; os-corfu.el --- Corfu and Cape configuration -*- lexical-binding: t; -*-
+;;; -*- lexical-binding: t -*-
 
-;;; Code:
-
-(require 'os-macros)
 
 (use-package corfu
   :ensure t
@@ -23,7 +20,7 @@
   (corfu-history-mode 1)
   (corfu-popupinfo-mode 1)
   ;; Guardar el historial de completado
-  (os/after savehist
+  (with-eval-after-load 'savehist
 	    (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 
@@ -36,5 +33,6 @@
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block))
+
 
 (provide 'os-corfu)

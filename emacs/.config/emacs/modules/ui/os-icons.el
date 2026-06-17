@@ -22,4 +22,5 @@
   :config
   (nerd-icons-xref-mode 1))
 
+
 (provide 'os-icons)

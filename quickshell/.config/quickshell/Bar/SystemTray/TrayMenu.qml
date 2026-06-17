@@ -4,6 +4,8 @@ import Quickshell
 import Quickshell.Hyprland
 import "../../"
 import "../../Core"
+import "../../Core/Services" as Services
+
 PopupWindow {
     id: root
 

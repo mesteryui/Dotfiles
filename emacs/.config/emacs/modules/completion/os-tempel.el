@@ -1,12 +1,4 @@
-;;; os-tempel.el --- Tempel configuration -*- lexical-binding: t; -*-
-
-;; Author: Oscar
-;; Keywords: completion, templates
-
-;;; Commentary:
-;; Configuration for Tempel (templates).
-
-;;; Code:
+;;; -*- lexical-binding: t -*-
 
 (use-package tempel
   :bind (("M-+" . tempel-complete) ;; o el keybinding que prefieras
@@ -31,5 +23,5 @@
 
 (use-package tempel-collection :ensure t :after tempel)
 
+
 (provide 'os-tempel)
-;;; os-tempel.el ends here

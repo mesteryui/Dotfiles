@@ -1,6 +1,6 @@
 [opener]
 play = [
-	{ run = 'mpv "$@"', orphan = true, for = "unix" },
+	{ run = 'xdg-open "$@"', orphan = true, for = "unix" },
 	{ run = '"C:\Program Files\mpv.exe" %*', orphan = true, for = "windows" }
 ]
 edit = [
@@ -10,7 +10,4 @@ edit = [
 open = [
 	{ run = 'xdg-open "$@"', desc = "Open" },
 ]
-[plugin]
-prepend_previewers = [
-  { name = "*.md", run = "mdcat" },
-]
+

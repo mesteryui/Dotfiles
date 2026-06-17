@@ -5,10 +5,10 @@ Description = "Menu de animacion"
 FixedOrder = true
 function ObtenerAnimacionActual()
 	-- Usamos la función de ruta para ser consistentes
-	local archivo_config = ObtenerHyprAnimsLayoutDir() .. "../animation.conf"
+	local archivo_config = ObtenerHyprAnimsLayoutDir() .. "../animation.lua"
 
-	-- Buscamos la línea 'source =', extraemos lo que hay tras la última / y limpiamos espacios
-	local comando = "grep 'source =' " .. archivo_config .. " | sed 's|.*/||' | tr -d '[:space:]'"
+	-- Buscamos la línea 'require', extraemos lo que hay tras el último punto
+	local comando = string.format("grep 'require(' \"%s\" | sed 's/.*\\.//;s/\").*//' | tr -d '[:space:]'", archivo_config)
 
 	local handle = io.popen(comando)
 	if handle then
@@ -16,17 +16,18 @@ function ObtenerAnimacionActual()
 		handle:close()
 
 		if resultado and resultado ~= "" then
-			-- Solo eliminamos la extensión aquí para comparar limpio
-			return EliminarExtension(resultado)
+			return resultado:gsub("%s+","")
 		end
 	end
 	return ""
 end
 function ApplyAnimation(val)
-	local archivo = ObtenerHyprAnimsLayoutDir() .. "../animation.conf"
-	local comando = string.format("sed -i 's|\\(source = .*/\\).*|\\1%s|' %s && hyprctl reload", val, archivo)
-	os.execute(comando)
-	os.execute("notify-send 'Hyprland Animations' 'Animacion cambiada a " .. val .. "'")
+	local name = EliminarExtension(val)
+	local archivo = ObtenerHyprAnimsLayoutDir() .. "../animation.lua"
+	-- Cambia lo que está después del último punto dentro del require
+	local sed_cmd = string.format("sed -i 's|\\(require(\".*\\.\\)[^\".]*|\\1%s|' \"%s\"", name, archivo)
+	local notify_cmd = string.format("notify-send 'Hyprland Animations' 'Animacion cambiada a %s'", name)
+	os.execute(sed_cmd .. " && hyprctl reload && " .. notify_cmd)
 end
 function ObtenerHyprAnimsLayoutDir()
 	local dir = os.getenv("XDG_CONFIG_HOME")

@@ -12,7 +12,7 @@
 }
 {
     "label" : "shutdown",
-    "action" : "systemctl poweroff",
+    "action" : "hyprshutdown -t 'Apagando equipo' -p 'systemctl poweroff'",
     "text" : "Shutdown",
     "keybind" : "s"
 }
@@ -24,7 +24,7 @@
 }
 {
     "label" : "reboot",
-    "action" : "systemctl reboot",
+    "action" : "hyprshutdown -t 'Reinciando equipo' -p systemctl reboot",
     "text" : "Reboot",
     "keybind" : "r"
 }

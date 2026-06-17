@@ -14,8 +14,6 @@ PopupWindow {
     visible: false
     implicitWidth: 320
     implicitHeight: 400
-    anchor.margins.top: 40
-    anchor.margins.bottom: 40
     grabFocus: true
 
     property date currentDate: new Date()

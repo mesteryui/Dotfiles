@@ -1,0 +1,19 @@
+[Desktop Entry]
+Version=1.0
+Name=JKAnime
+Comment=Aplicacion para ver anime online
+Exec=sh -c 'XAPP_FORCE_GTKWINDOW_ICON="/home/oscar/.local/share/ice/icons/JKAnime.png" firefox --class WebApp-JKAnime9884 --name WebApp-JKAnime9884 --profile /home/oscar/.local/share/ice/firefox/JKAnime9884 --no-remote "https://jkanime.net/"'
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/home/oscar/.local/share/ice/icons/JKAnime.png
+Categories=GTK;WebApps;
+MimeType=text/html;text/xml;application/xhtml_xml;
+StartupWMClass=WebApp-JKAnime9884
+StartupNotify=true
+X-WebApp-Browser=Firefox
+X-WebApp-URL=https://jkanime.net/
+X-WebApp-CustomParameters=
+X-WebApp-Navbar=false
+X-WebApp-PrivateWindow=false
+X-WebApp-Isolated=true

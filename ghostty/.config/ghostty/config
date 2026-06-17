@@ -6,8 +6,8 @@ window-decoration = false
 window-padding-x = 14
 window-padding-y = 14
 background-opacity = 0.90
-#font-family = GeistMono Nerd Font
-font-family = MapleMono NF CN
+font-family = GeistMono Nerd Font
+#font-family = MapleMono NF CN
 font-style = Regular
 window-theme = ghostty
 # Cursor Configuration

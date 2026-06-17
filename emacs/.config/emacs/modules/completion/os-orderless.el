@@ -1,14 +1,7 @@
-;;; os-orderless.el --- Orderless configuration -*- lexical-binding: t; -*-
-
-;; Author: Oscar
-;; Keywords: completion
-
-;;; Commentary:
-;; Configuration for Orderless (completion style).
-
-;;; Code:
+;;; -*- lexical-binding: t -*-
 
 (use-package orderless
+  :ensure t
   :demand t
   :custom
   (completion-styles '(orderless basic))
@@ -17,4 +10,3 @@
    '((file (styles basic partial-completion)))))
 
 (provide 'os-orderless)
-;;; os-orderless.el ends here

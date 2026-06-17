@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Prism Launcher (Cracked)
+Comment=Discover, manage, and play Minecraft instances
+Icon=/home/oscar/.appimages/.icons/prism_launcher_cracked
+TryExec=/home/oscar/.appimages/prism_launcher_cracked.appimage
+Exec=env DESKTOPINTEGRATION=1 /home/oscar/.appimages/prism_launcher_cracked.appimage %U
+Terminal=false
+MimeType=application/zip;application/x-modrinth-modpack+zip;x-scheme-handler/curseforge;x-scheme-handler/prismlauncher;x-scheme-handler/prismlauncher;
+Categories=Game;ActionGame;AdventureGame;Simulation;PackageManager;
+Keywords=game;minecraft;mc;
+StartupNotify=true
+StartupWMClass=PrismLauncher
+X-AppImage-Version=11.0.2-1
+X-AppImage-Name=Prism Launcher (Cracked)

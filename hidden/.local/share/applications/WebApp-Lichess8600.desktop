@@ -1,0 +1,19 @@
+[Desktop Entry]
+Version=1.0
+Name=Lichess
+Comment=Ajedrez
+Exec=sh -c 'XAPP_FORCE_GTKWINDOW_ICON="/home/oscar/.local/share/ice/icons/Lichess.png" firefox --class WebApp-Lichess8600 --name WebApp-Lichess8600 --profile /home/oscar/.local/share/ice/firefox/Lichess8600 --no-remote "https://lichess.org/"'
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/home/oscar/.local/share/ice/icons/Lichess.png
+Categories=GTK;Game;
+MimeType=text/html;text/xml;application/xhtml_xml;
+StartupWMClass=WebApp-Lichess8600
+StartupNotify=true
+X-WebApp-Browser=Firefox
+X-WebApp-URL=https://lichess.org/
+X-WebApp-CustomParameters=
+X-WebApp-Navbar=false
+X-WebApp-PrivateWindow=false
+X-WebApp-Isolated=true

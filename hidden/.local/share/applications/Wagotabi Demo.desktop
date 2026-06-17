@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Wagotabi Demo
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/2882400
+Icon=steam_icon_2882400
+Terminal=false
+Type=Application
+Categories=Game;

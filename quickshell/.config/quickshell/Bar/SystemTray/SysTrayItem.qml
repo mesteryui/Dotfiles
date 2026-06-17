@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Io
-import QtQuick
+import "../../Core/Services" as Services
 
 Item {
     id: itemContainer
@@ -20,9 +20,10 @@ Item {
         id: trayMenu
         menu: itemContainer.modelData?.menu ?? null
         anchor.item: itemContainer
-        anchor.edges: Edges.Bottom
-        anchor.gravity: Edges.Bottom
-        anchor.margins.top: 4
+        anchor.margins.top: 13
+        anchor.margins.bottom: 13
+        anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
+        anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
     }
 
     Item {

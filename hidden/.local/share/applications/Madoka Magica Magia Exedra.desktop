@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Madoka Magica Magia Exedra
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/2987800
+Icon=steam_icon_2987800
+Terminal=false
+Type=Application
+Categories=Game;

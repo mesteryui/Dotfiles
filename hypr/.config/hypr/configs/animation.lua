@@ -1,2 +1,2 @@
 -- configs/animation.lua
-require("configs.animations.hyde-default")
+require("configs.animations.end-4")

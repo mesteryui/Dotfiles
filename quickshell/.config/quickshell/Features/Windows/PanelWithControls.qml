@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import QtQuick.Controls
+import Quickshell.Widgets
 import Quickshell.Networking
 import Quickshell.Io
 import Quickshell.Bluetooth
@@ -33,7 +34,6 @@ PopupWindow {
     readonly property bool btEnabled: btAdapter?.enabled ?? false
     readonly property var audioSink: pwTracker.objects.length > 0 ? pwTracker.objects[0] : null
     readonly property bool wifiEnabled: Networking.wifiEnabled
-
 
     Process {
         command: ["hostname"]
@@ -99,28 +99,26 @@ PopupWindow {
 
                 // Avatar — M3 circular image + ring outline
                 Rectangle {
+                    id: imageRectangle
                     width: 48
                     height: 48
                     radius: 24
                     color: Colors.md3.primary_container ?? Colors.md3.surface_variant
                     clip: true
-
-                    Image {
+                    ClippingRectangle {
                         anchors.fill: parent
-                        source: "/home/oscar/.face"
-                        fillMode: Image.PreserveAspectCrop
-                        sourceSize.width: 48
-                        sourceSize.height: 48
+                        radius: imageRectangle.radius
+                        border.color: Colors.md3.primary
+                        border.width: 2
+                        Image {
+                            anchors.fill: parent
+                            source: "/home/oscar/.face"
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize.width: 48
+                            sourceSize.height: 48
+                        }
                     }
-
-                    // Anillo sutil — on_surface al 12 %
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 24
-                        color: "transparent"
-                        border.color: Qt.alpha(Colors.md3.on_surface, 0.12)
-                        border.width: 1
-                    }
+                    
                 }
 
                 // Nombre + host
@@ -128,7 +126,7 @@ PopupWindow {
                     spacing: 1
                     Layout.fillWidth: true
 
-                    Text { 
+                    Text {
                         text: root.username || "usuario"
                         color: Colors.md3.on_surface
                         font.pixelSize: 14

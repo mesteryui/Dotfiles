@@ -15,19 +15,18 @@ Singleton {
         return players.find(p => p.playbackState === MprisPlaybackState.Playing) ?? players.find(p => p.playbackState === MprisPlaybackState.Paused) ?? players[0] ?? null;
     }
     property string lastTrackArtUrl: ""
-    onCurrentMprisPlayerChanged: {
+    onCurrentMprisPlayerChanged: updateLastTrack()
+    function updateLastTrack() {
         const url = root.currentMprisPlayer?.trackArtUrl ?? "";
         if (url !== "")
             root.lastTrackArtUrl = url;
     }
+    Component.onCompleted: updateLastTrack()
     Connections {
         target: root.currentMprisPlayer
         enabled: root.currentMprisPlayer !== null
         function onTrackArtUrlChanged(): void {
-            const new_url = root.currentMprisPlayer?.trackArtUrl ?? "";
-            if (new_url != "") {
-                root.lastTrackArtUrl = new_url;
-            }
+            root.updateLastTrack()
         }
     }
     function togglePlaying() {

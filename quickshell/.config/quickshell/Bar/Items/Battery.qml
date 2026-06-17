@@ -19,7 +19,7 @@ BarItem {
         MaterialIcon {
             id: batteryIcon
             size: 20
-            color: Colors.md3.on_surface_variant
+            color: Colors.md3.on_surface
             
             icon: {
                 const device = UPower.displayDevice;

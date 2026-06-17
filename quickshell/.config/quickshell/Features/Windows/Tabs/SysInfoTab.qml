@@ -42,7 +42,7 @@ Item {
                 CpuArc {
                     id: cpuArc
                     size:  72
-                    value: Services.SystemService.cpuUsage   // 0–1
+                    value: Services.SystemInfoService.cpuUsage   // 0–1
                 }
 
                 // Textos
@@ -70,16 +70,32 @@ Item {
                             Text {
                                 id: coreLabel
                                 anchors.centerIn: parent
-                                text:  Services.SystemService.cpuCores + " cores"
+                                text:  Services.SystemInfoService.cpuCores + " cores"
                                 font { pixelSize: 11; weight: Font.Medium }
                                 color: Colors.md3.on_secondary_container
+                            }
+                        }
+
+                        // Chip de temperatura
+                        Rectangle {
+                            implicitWidth:  tempLabel.implicitWidth + 12
+                            implicitHeight: 20
+                            radius:         10
+                            color:          Colors.md3.tertiary_container
+
+                            Text {
+                                id: tempLabel
+                                anchors.centerIn: parent
+                                text:  Services.SystemInfoService.cpuTemp + "°C"
+                                font { pixelSize: 11; weight: Font.Medium }
+                                color: Colors.md3.on_tertiary_container
                             }
                         }
                     }
 
                     // Porcentaje grande
                     Text {
-                        text: Services.SystemService.cpuUsagePct ?? "0%"
+                        text: Services.SystemInfoService.cpuUsagePct ?? "0%"
                         font { pixelSize: 32; weight: Font.Bold }
                         color: Colors.md3.primary
 
@@ -89,7 +105,7 @@ Item {
                     // Barra de progreso
                     M3ProgressBar {
                         Layout.fillWidth: true
-                        value: Services.SystemService.cpuUsage ?? 0
+                        value: Services.SystemInfoService.cpuUsage ?? 0
                         accentColor: Colors.md3.primary
                     }
                 }
@@ -117,7 +133,7 @@ Item {
                             Layout.fillWidth: true
                         }
                         Text {
-                            text: Services.SystemService.memUsagePct ?? "0%"
+                            text: Services.SystemInfoService.memUsagePct ?? "0%"
                             font { pixelSize: 14; weight: Font.Bold }
                             color: Colors.md3.tertiary
                         }
@@ -125,14 +141,14 @@ Item {
 
                     M3ProgressBar {
                         Layout.fillWidth: true
-                        value: Services.SystemService.memUsage ?? 0
+                        value: Services.SystemInfoService.memUsage ?? 0
                         accentColor: Colors.md3.tertiary
                     }
 
                     Text {
-                        text: fmtMem(Services.SystemService.memUsedMiB ?? 0)
+                        text: fmtMem(Services.SystemInfoService.memUsedMiB ?? 0)
                              + " / "
-                             + fmtMem(Services.SystemService.memTotalMiB ?? 0)
+                             + fmtMem(Services.SystemInfoService.memTotalMiB ?? 0)
                         font.pixelSize: 11
                         color: Colors.md3.on_surface_variant
                     }
@@ -143,7 +159,7 @@ Item {
             M3Card {
                 Layout.fillWidth: true
                 // Atenúa la card si no hay swap configurado
-                opacity: (Services.SystemService.swapTotalMiB ?? 0) > 0 ? 1.0 : 0.45
+                opacity: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? 1.0 : 0.45
                 Behavior on opacity { NumberAnimation { duration: 300 } }
 
                 ColumnLayout {
@@ -158,8 +174,8 @@ Item {
                             Layout.fillWidth: true
                         }
                         Text {
-                            text: (Services.SystemService.swapTotalMiB ?? 0) > 0
-                                ? Math.round((Services.SystemService.swapUsage ?? 0) * 100) + "%"
+                            text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
+                                ? Math.round((Services.SystemInfoService.swapUsage ?? 0) * 100) + "%"
                                 : "—"
                             font { pixelSize: 14; weight: Font.Bold }
                             color: Colors.md3.error
@@ -168,15 +184,15 @@ Item {
 
                     M3ProgressBar {
                         Layout.fillWidth: true
-                        value: Services.SystemService.swapUsage ?? 0
+                        value: Services.SystemInfoService.swapUsage ?? 0
                         accentColor: Colors.md3.error
                     }
 
                     Text {
-                        text: (Services.SystemService.swapTotalMiB ?? 0) > 0
-                            ? fmtMem(Services.SystemService.swapUsedMiB ?? 0)
+                        text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
+                            ? fmtMem(Services.SystemInfoService.swapUsedMiB ?? 0)
                               + " / "
-                              + fmtMem(Services.SystemService.swapTotalMiB ?? 0)
+                              + fmtMem(Services.SystemInfoService.swapTotalMiB ?? 0)
                             : "No swap"
                         font.pixelSize: 11
                         color: Colors.md3.on_surface_variant
@@ -201,7 +217,7 @@ Item {
                 }
 
                 Text {
-                    text: Services.SystemService.uptime ?? "N/A"
+                    text: Services.SystemInfoService.uptime ?? "N/A"
                     font { pixelSize: 14; weight: Font.Medium }
                     color: Colors.md3.on_surface
                 }

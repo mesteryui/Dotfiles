@@ -1,0 +1,12 @@
+[Unit]
+Description=Omabat battery history collector
+After=dbus.service
+
+[Service]
+Type=simple
+ExecStart=/home/oscar/.local/bin/omabat collect --daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

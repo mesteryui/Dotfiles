@@ -1,86 +1,75 @@
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
 
-;; 1. Bootstrapping del gestor de paquetes
-(load (expand-file-name "modules/core/os-package.el" user-emacs-directory))
-;; 2. Cargar el cargador de módulos (Moon Loader)
-(use-package moon-loader
-  :ensure nil
-  :load-path "os-lisp/moon-loader/"
-  :config
-  ;; 3. Cargar el núcleo (CORE) - El orden importa aquí
-  (moon-loader-add-modules
-   (os-funcs :after os-macros)
-   os-vars    ;; Variables básicas y configuración nativa
-   os-defbinds
-   os-performance
-   )
+(defvar no-littering-etc-directory (expand-file-name "~/.local/share/emacs/etc/"))
+(defvar no-littering-var-directory (expand-file-name "~/.local/share/emacs/var/"))
 
-  ;; 4. Interfaz de Usuario (UI)
-  (moon-loader-add-modules
-   os-ui
-   os-icons
-   os-modeline
-   )
-  ;; 5. Otros módulos (se añadirán conforme se creen)
-  (moon-loader-add-modules
-   ;; Completion
-   os-orderless
-   os-vertico
-   os-marginalia
-   os-consult
-   os-embark
-   os-which-key
-   os-corfu
-   os-tempel
-   os-programming
-   os-editing
-   os-indent-bars
-   
-   ;; Tools/UI
-   os-org
-   os-org-roam
-   os-dashboard
-   os-spelling
-   os-colorful-mode
-   ;; Multiple tools
-   os-vterm
-   os-no-distraction
-   os-ligatures
-   os-treesit
-   os-tramp
-   os-eat
-   os-git
-   os-eshell
-   os-productivity
-   os-eldoc
-   os-docker
-   os-treemacs
+(when (boundp 'native-comp-eln-load-path)
+  (startup-redirect-eln-cache (expand-file-name "eln-cache" no-littering-var-directory)))
 
-   ;; Languages
-   os-treesit
-   os-common-lisp
-   os-config-modes
-   os-emacs-lisp
-   os-golang
-   os-hyprlang
-   os-java
-   os-javascript
-   os-kdl
-   os-lua
-   os-markdown
-   os-nim
-   os-python
-   ;;os-qml
-   os-ruby
-   os-rune
-   os-rust
-   os-scheme
-   os-systemd
-   os-toml
-   os-typst
-   os-zig
-   os-eca
-   ))
+(defvar elpaca-installer-version 0.12)
+(defvar elpaca-directory (expand-file-name "elpaca/" no-littering-var-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+(elpaca org)
+(elpaca elpaca-use-package
+        (elpaca-use-package-mode))
+(elpaca-wait)
+;; 1. Cargar el cargador de módulos (Moon Loader)
+(add-to-list 'load-path (expand-file-name "os-lisp/moon-loader/" user-emacs-directory))
+(require 'moon-loader)
+
+(moon-loader-add-modules
+ basic-configs
+ visual-theme
+ editing-settings
+ os-icons
+ os-modeline
+ os-dashboard
+ )
+
+(moon-loader-add-modules
+ os-corfu
+ os-tempel
+ os-orderless
+ os-consult
+ os-marginalia
+ os-vertico)
+
+(moon-loader-add-modules
+ os-org)
 
 (provide 'init)
-;;; init.el ends here

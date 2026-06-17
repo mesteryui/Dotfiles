@@ -30,7 +30,8 @@ PanelWindow {
     }
     
     margins {
-        top: 3
+        top: Services.ConfigService.getConfig("bar.position") == "bottom" ? 0 : 3
+        bottom: Services.ConfigService.getConfig("bar.position") == "bottom" ? 3 : 0
         right: 3
         left: 3
     }

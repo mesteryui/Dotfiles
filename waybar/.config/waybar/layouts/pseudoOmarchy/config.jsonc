@@ -131,7 +131,7 @@
   },
   "pulseaudio": {
     "format": "{icon}",
-    "on-click": "kitty --class float_kitty -e wiremix",
+    "on-click": "xdg-terminal-exec --app-id=local.floating -e wiremix",
     "on-click-right": "pamixer -t",
     "tooltip-format": "Playing at {volume}%",
     "scroll-step": 5,

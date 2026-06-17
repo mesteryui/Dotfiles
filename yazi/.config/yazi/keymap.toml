@@ -1,7 +1,4 @@
-[mgr]
-prepend_keymap = [
-	{on = ["y", "y"], run='yank', desc="Copy files"},
-	{on = ["y", "c"], run='yank --cut', desc="Cut files"},
-        {on = [ "c", "m" ],run  = "plugin chmod",desc = "Chmod on selected files"},
-
-]
+[[manager.prepend_keymap]]
+on   = "<Enter>"
+run  = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"
