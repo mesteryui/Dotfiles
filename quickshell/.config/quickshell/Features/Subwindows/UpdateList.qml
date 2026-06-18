@@ -4,9 +4,9 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick.Controls
 import Quickshell.Hyprland
-import "../../Core/Services" as Services
-import "../../Core"
-import "../../Components"
+import qs.Core.Services as Services
+import qs.Core
+import qs.Components
 
 PopupWindow {
     id: root

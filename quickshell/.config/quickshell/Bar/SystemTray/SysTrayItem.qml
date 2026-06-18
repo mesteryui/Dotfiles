@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Io
-import "../../Core/Services" as Services
+import qs.Core.Services as Services
 
 Item {
     id: itemContainer

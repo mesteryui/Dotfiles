@@ -26,6 +26,9 @@ PanelWindow {
             root.visible = false;
         }
     }
+    function show(): void {
+        root.visible = true
+    }
     Item {
         id: container
         anchors.fill: parent

@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "@Core/Colors.qml" as Colors
-import "../Services" as Services
-import "../Components"
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components
 
 // ── Toast overlay (top-right) ──────────────────────────────────────────────
 PanelWindow {
@@ -24,46 +24,32 @@ PanelWindow {
     // ── Modelo local de toasts activos ────────────────────────────────────
     ListModel { id: toastModel }
 
-    // Cuenta vista la última vez — inicializada en onCompleted para no
-    // tratar las notificaciones ya existentes como "nuevas".
-    property int seenCount: 0
-
-    // ── Detectar notificaciones nuevas via countChanged del modelo ────────
-    // Usamos Connections sobre el modelo de notificaciones, que sí emite
-    // countChanged (señal real de Qt). Evitamos así inventar señales en el
-    // servicio wrapper o usar nombres de propiedad con underscore.
+    // ── Detectar notificaciones nuevas via señal del servicio ─────────────
     Connections {
-        target: Services.NotificationService.notifications
+        target: Services.NotificationService
 
-        function onCountChanged() {
-            const model  = Services.NotificationService.notifications
-            const current = model.count
+        function onNotificationAdded(notif) {
+            // 1. Ignorar si DND está activo
+            if (Services.NotificationService.dnd) return;
+            
+            // 2. Ignorar notificaciones de la "generación anterior" (evita spam al recargar la config)
+            if (notif.lastGeneration) return;
 
-            if (current > root.seenCount && !Services.NotificationService.dnd) {
-                const added = current - root.seenCount
-                // Quickshell inserta las más nuevas al principio (índice 0).
-                for (let i = 0; i < added; i++) {
-                    const entry = model.get(i)
-                    if (!entry) continue
-                    // El wrapper puede exponer la notif bajo .notif o directamente.
-                    const notif = entry.notif ?? entry
-                    if (!notif) continue
-                    const nid = notif.id ?? (current - 1 - i)
-                    // Deduplicar por id
-                    let dup = false
-                    for (let j = 0; j < toastModel.count; j++) {
-                        if (toastModel.get(j).notifId === nid) { dup = true; break }
-                    }
-                    if (!dup) toastModel.append({ notifId: nid, notif: notif })
+            console.log("[NotificationLister] Mostrando Toast para:", notif.summary);
+
+            // Deduplicar por id
+            let dup = false
+            for (let j = 0; j < toastModel.count; j++) {
+                if (toastModel.get(j).notifId === notif.id) { 
+                    dup = true; 
+                    break;
                 }
             }
-            root.seenCount = current
+            
+            if (!dup) {
+                toastModel.append({ notifId: notif.id, notif: notif });
+            }
         }
-    }
-
-    Component.onCompleted: {
-        // Marcar el estado inicial para no tostar notificaciones pre-existentes
-        seenCount = Services.NotificationService.notifications.count
     }
 
     // ── Columna de toasts ─────────────────────────────────────────────────

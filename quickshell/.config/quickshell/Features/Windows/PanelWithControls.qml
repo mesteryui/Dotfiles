@@ -1,40 +1,47 @@
+// --- ControlPanel ---
+// Panel popup principal: perfil, toggles y tabs de sistema/weather.
+// PopupWindow con foco capturado, sombra M3 via MultiEffect.
+
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
-import QtQuick.Controls
 import Quickshell.Widgets
 import Quickshell.Networking
 import Quickshell.Io
 import Quickshell.Bluetooth
 import Quickshell.Services.Pipewire
 import Quickshell.Hyprland
-import "../../Core/Services" as Services
-import "../../Components"
-import "../../Core/"
+import qs.Core.Services as Services
+import qs.Components
+import qs.Core
+import qs.Features.Windows.Tabs
 
 PopupWindow {
     id: root
     grabFocus: true
     color: "transparent"
     implicitWidth: 340
-    implicitHeight: content.implicitHeight
+    implicitHeight: content.implicitHeight + 16   // margen inferior para la sombra
 
     property string username: Quickshell.env("USER")
     property string hostname: ""
 
-    // ── PwObjectTracker fuera del árbol visual ─────────────────
+    // ── PwObjectTracker fuera del árbol visual ─────────────────────────────
     PwObjectTracker {
         id: pwTracker
         objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
     }
 
-    // ── Accesos seguros a los adapters ────────────────────────
+    // ── Accesos seguros ────────────────────────────────────────────────────
     readonly property var btAdapter: Bluetooth.defaultAdapter
     readonly property bool btEnabled: btAdapter?.enabled ?? false
     readonly property var audioSink: pwTracker.objects.length > 0 ? pwTracker.objects[0] : null
     readonly property bool wifiEnabled: Networking.wifiEnabled
 
+    // ── Hostname ───────────────────────────────────────────────────────────
     Process {
         command: ["hostname"]
         running: true
@@ -43,6 +50,7 @@ PopupWindow {
         }
     }
 
+    // ── Focus grab ────────────────────────────────────────────────────────
     HyprlandFocusGrab {
         windows: [root]
         active: root.visible
@@ -52,35 +60,31 @@ PopupWindow {
         }
     }
 
-    // ── M3 elevation shadow level 2 ───────────────────────────
-    Rectangle {
-        anchors.centerIn: content
-        width: content.width + 2
-        height: content.height + 8
-        radius: content.radius + 1
-        color: Colors.md3.shadow ?? "#000000"
-        opacity: 0.10
-        z: -2
-    }
-    Rectangle {
-        anchors.centerIn: content
-        anchors.verticalCenterOffset: 3
-        width: content.width + 1
-        height: content.height + 4
-        radius: content.radius
-        color: Colors.md3.shadow ?? "#000000"
-        opacity: 0.06
+    // ── M3 Elevation shadow level 2 (MultiEffect) ─────────────────────────
+    MultiEffect {
+        source: content
+        anchors.fill: content
+        shadowEnabled: true
+        shadowColor: Colors.md3.shadow ?? "#000000"
+        shadowOpacity: 0.18
+        shadowBlur: 0.8
+        shadowVerticalOffset: 6
+        shadowHorizontalOffset: 0
         z: -1
     }
 
-    // ── M3 Surface Container — shape extraLarge (28 dp) ───────
+    // ── M3 Surface — extraLarge (28 dp) ────────────────────────────────────
     Rectangle {
         id: content
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        implicitHeight: mainColumn.implicitHeight + 24
         radius: 28
         color: Colors.md3.surface
         clip: true
-        implicitHeight: mainColumn.implicitHeight + 24
 
         ColumnLayout {
             id: mainColumn
@@ -93,11 +97,11 @@ PopupWindow {
             }
             spacing: 16
 
-            // ── Perfil ────────────────────────────────────────
+            // ── Perfil ─────────────────────────────────────────────────────
             RowLayout {
                 spacing: 14
 
-                // Avatar — M3 circular image + ring outline
+                // Avatar — ClippingRectangle (Quickshell) evita desborde de imagen
                 Rectangle {
                     id: imageRectangle
                     width: 48
@@ -105,11 +109,13 @@ PopupWindow {
                     radius: 24
                     color: Colors.md3.primary_container ?? Colors.md3.surface_variant
                     clip: true
+
                     ClippingRectangle {
                         anchors.fill: parent
                         radius: imageRectangle.radius
                         border.color: Colors.md3.primary
                         border.width: 2
+
                         Image {
                             anchors.fill: parent
                             source: "/home/oscar/.face"
@@ -118,16 +124,15 @@ PopupWindow {
                             sourceSize.height: 48
                         }
                     }
-                    
                 }
 
                 // Nombre + host
                 Column {
-                    spacing: 1
+                    spacing: 2
                     Layout.fillWidth: true
 
                     Text {
-                        text: root.username || "usuario"
+                        text: root.username || Services.I18nService.getTranslation("panel.user", "usuario")
                         color: Colors.md3.on_surface
                         font.pixelSize: 14
                         font.weight: Font.Medium
@@ -135,7 +140,7 @@ PopupWindow {
                     }
 
                     Text {
-                        text: root.hostname || "localhost"
+                        text: root.hostname || Services.I18nService.getTranslation("panel.host", "localhost")
                         color: Colors.md3.on_surface_variant
                         font.pixelSize: 12
                         font.family: Services.ConfigService.getConfig("fontSans") ?? "sans-serif"
@@ -143,7 +148,7 @@ PopupWindow {
                 }
             }
 
-            // ── Divisor M3 — outline_variant al 40 % ─────────
+            // ── Divisor M3 — outline_variant ──────────────────────────────
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
@@ -151,7 +156,7 @@ PopupWindow {
                 opacity: 0.4
             }
 
-            // ── Toggles ───────────────────────────────────────
+            // ── Toggles ───────────────────────────────────────────────────
             GridLayout {
                 Layout.fillWidth: true
                 columns: 3
@@ -160,7 +165,7 @@ PopupWindow {
 
                 ControlToggle {
                     Layout.fillWidth: true
-                    label: "WiFi"
+                    label: Services.I18nService.getTranslation("panel.wifi", "WiFi")
                     iconName: root.wifiEnabled ? "wifi" : "wifi_off"
                     active: root.wifiEnabled
                     enabled: Networking.wifiHardwareEnabled
@@ -169,7 +174,7 @@ PopupWindow {
 
                 ControlToggle {
                     Layout.fillWidth: true
-                    label: "Bluetooth"
+                    label: Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
                     iconName: root.btEnabled ? "bluetooth" : "bluetooth_disabled"
                     active: root.btEnabled
                     enabled: root.btAdapter !== null
@@ -181,137 +186,136 @@ PopupWindow {
 
                 ControlToggle {
                     Layout.fillWidth: true
-                    label: Services.IdleInhibitedService.inhibited ? "Idle On" : "Idle Off"
-                    iconName: "bedtime"
+                    label: Services.IdleInhibitedService.inhibited ? Services.I18nService.getTranslation("panel.caffeine_on", "Caffeine On") : Services.I18nService.getTranslation("panel.caffeine_off", "Caffeine Off")
+                    iconName: "local_cafe"
                     active: Services.IdleInhibitedService.inhibited
                     onToggled: Services.IdleInhibitedService.toggle()
                 }
-            }
-
-            // ── Sliders ───────────────────────────────────────
-            // (espacio reservado para futuros sliders de volumen/brillo)
-            Item {
-                height: 4
-            }
-
-            ColumnLayout {
-                TabBar {
-                    id: navBar
+                ControlToggle {
                     Layout.fillWidth: true
+                    label: Services.I18nService.getTranslation("panel.dnd", "Do Not Disturb")
+                    iconName: "bedtime"
+                    active: Services.NotificationService.dnd
+                    onToggled: Services.NotificationService.dnd = !Services.NotificationService.dnd
+                }
+            }
 
-                    background: Rectangle {
-                        color: Colors.md3.surface_container
-                        radius: 0
+            // ── TabBar ────────────────────────────────────────────────────
+            TabBar {
+                id: navBar
+                Layout.fillWidth: true
 
-                        // Línea indicadora inferior M3
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            width: parent.width
-                            height: 1
-                            color: Colors.md3.outline_variant
-                        }
+                background: Rectangle {
+                    color: Colors.md3.surface_container
+                    radius: 15
+
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: 1
+                        color: Colors.md3.outline_variant
                     }
+                }
 
-                    Repeater {
-                        model: [
-                            {
-                                label: "System",
-                                icon: "󰍛"
-                            }  // nerd font / unicode
-                            ,
-                            {
-                                label: "Wallpapers",
-                                icon: "wallpaper"
-                            },
-                        ]
+                Repeater {
+                    model: [
+                        {
+                            label: Services.I18nService.getTranslation("panel.system", "System"),
+                            icon: "memory"
+                        },
+                        {
+                            label: Services.I18nService.getTranslation("panel.weather", "Weather"),
+                            icon: "filter_drama"
+                        }
+                    ]
 
-                        TabButton {
-                            required property var modelData
-                            required property int index
+                    TabButton {
+                        id: tabButton
+                        required property var modelData
+                        required property int index
 
-                            text: modelData.label
-                            width: Math.max(80, navBar.width / 2)
+                        // TabButton hereda AbstractButton: `checked` es true cuando está activo
+                        readonly property color fgColor: checked ? Colors.md3.primary : Colors.md3.on_surface_variant
 
-                            // ── Estado activo / inactivo ──────────────────────────
-                            readonly property bool active: navBar.currentIndex === index
-                            readonly property color fgColor: active ? Colors.md3.primary : Colors.md3.on_surface_variant
+                        text: modelData.label
+                        Layout.fillWidth: true
+                        implicitHeight: 64
+                        padding: 0
+                        topPadding: 10
+                        bottomPadding: 10
 
-                            // ── Indicador pill debajo del contenido ───────────────
-                            background: Item {
-                                // State layer hover/press
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: parent.parent.active ? Colors.md3.primary : Colors.md3.on_surface_variant
-                                    opacity: parent.parent.hovered ? 0.08 : parent.parent.pressed ? 0.12 : 0
-                                    Behavior on opacity {
-                                        NumberAnimation {
-                                            duration: 100
-                                        }
-                                    }
-                                }
-
-                                // Pill indicator (M3 style)
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    width: parent.parent.active ? 64 : 0
-                                    height: 3
-                                    radius: 2
-                                    color: Colors.md3.primary
-
-                                    Behavior on width {
-                                        NumberAnimation {
-                                            duration: 200
-                                            easing.type: Easing.OutCubic
-                                        }
+                        background: Item {
+                            // State layer hover / press
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 20
+                                color: tabButton.checked ? Colors.md3.primary : Colors.md3.on_surface_variant
+                                opacity: tabButton.hovered ? 0.08 : tabButton.pressed ? 0.12 : 0
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 100
                                     }
                                 }
                             }
 
-                            // ── Contenido: icono + texto en columna ───────────────
-                            contentItem: ColumnLayout {
-                                spacing: 2
-
-                                // Cambia esto por tu sistema de iconos preferido:
-                                // - Text con nerd fonts
-                                // - Image / Svg source
-                                // - Quickshell MaterialIcon si lo tienes
-                                MaterialIcon {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    icon: modelData.icon
-                                    size: 20
-                                    color: parent.parent.fgColor
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 150
-                                        }
+                            // Pill indicator
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: tabButton.checked ? 64 : 0
+                                height: 3
+                                radius: 2
+                                color: Colors.md3.primary
+                                Behavior on width {
+                                    NumberAnimation {
+                                        duration: 200
+                                        easing.type: Easing.OutCubic
                                     }
                                 }
+                            }
+                        }
 
-                                Text {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: modelData.label
-                                    font.pixelSize: 11
-                                    font.weight: parent.parent.active ? Font.Medium : Font.Normal
-                                    color: parent.parent.fgColor
+                        contentItem: ColumnLayout {
+                            spacing: 2
 
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 150
-                                        }
+                            MaterialIcon {
+                                Layout.alignment: Qt.AlignHCenter
+                                icon: modelData.icon
+                                size: 20
+                                color: tabButton.fgColor
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 150
                                     }
                                 }
                             }
 
-                            // Altura fija M3 (nav bar secundaria = 48–64dp)
-                            implicitHeight: 64
-                            padding: 0
-                            topPadding: 10
-                            bottomPadding: 10
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: modelData.label
+                                font.pixelSize: 11
+                                font.weight: tabButton.checked ? Font.Medium : Font.Normal
+                                color: tabButton.fgColor
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 150
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+            }
+
+            // ── StackLayout — FUERA del TabBar ────────────────────────────
+            // Importante: debe ser hermano de TabBar, no hijo.
+            StackLayout {
+                id: stackLayout
+                Layout.fillWidth: true
+                currentIndex: navBar.currentIndex
+
+                SysInfoTab {}
+                WeatherTab {}
             }
         }
     }

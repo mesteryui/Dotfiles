@@ -1,19 +1,18 @@
 import Quickshell
 import QtQuick
 import Quickshell.Hyprland
-import "../../Core"
-import "../../Components"
+import qs.Core
+import qs.Components
 
 Rectangle {
     id: root
-    visible: inSubmap
+    visible: activeSubmap !== ""
     color: Colors.md3.primary_container
     radius: 20
     implicitWidth: submapRow.implicitWidth + 16
     implicitHeight: 30
 
     property string activeSubmap: ""
-    property bool inSubmap: activeSubmap !== ""
 
     Connections {
         target: Hyprland

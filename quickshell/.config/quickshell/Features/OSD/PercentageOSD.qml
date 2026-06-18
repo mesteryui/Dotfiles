@@ -1,9 +1,8 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
-import "../../Core"
-import "../../Components"
-import "."
+import qs.Core
+import qs.Components
 import Quickshell.Wayland
 
 BaseOSD {

@@ -1,15 +1,17 @@
 import QtQuick
 import QtQuick.Effects
-import "../Core" 
+import qs.Core
 
 Item {
     id: root
     default property alias content: _inner.data
     
-    // Asumimos que los tokens se definen en el componente padre o se ajustan aquí
     readonly property int _radius: 16
+    property int padding: 0
 
-    implicitHeight: _inner.childrenRect.height + 0
+    // Dimensiones naturales basadas en el contenido
+    implicitWidth: _inner.childrenRect.x + _inner.childrenRect.width + padding
+    implicitHeight: _inner.childrenRect.y + _inner.childrenRect.height + padding
 
     // Sombra tonal (elevation 1)
     MultiEffect {
@@ -32,6 +34,11 @@ Item {
 
     Item {
         id: _inner
-        anchors.fill: parent
+        x: padding
+        y: padding
+        // El contenedor interno no se ancla para que childrenRect sea útil
+        // pero permitimos que los hijos crezcan si el padre (root) es estirado
+        width: root.width - (padding * 2)
+        height: root.height - (padding * 2)
     }
 }

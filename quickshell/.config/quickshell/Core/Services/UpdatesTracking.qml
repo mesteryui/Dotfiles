@@ -7,14 +7,28 @@ Singleton {
     id: root
 
     // Propiedades que consume UpdateCounter
-    property int  updateCount: 0
-    property bool checking:    false
-    property bool updating:    false
-    property bool failed:      false
+    property alias updateCount: persistent.updateCount
+    property bool  checking:    false
+    property bool  updating:    false
+    property bool  failed:      false
 
     property ListModel packagesToUpdate: ListModel {}
 
-    Component.onCompleted: countUpdates.running = true
+    PersistentProperties {
+        id: persistent
+        property int updateCount: 0
+        property var packageList: []
+    }
+
+    Component.onCompleted: {
+        // Cargar datos persistidos al inicio
+        if (persistent.packageList.length > 0) {
+            for (const pkg of persistent.packageList) {
+                root.packagesToUpdate.append(pkg);
+            }
+        }
+        countUpdates.running = true;
+    }
 
     Timer {
         interval: ConfigService.getConfig("updates.countTime",60) * 60000
@@ -54,12 +68,17 @@ Singleton {
             }
         }
 
-        // Señal correcta en Quickshell: exited(exitCode, exitStatus)
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0 || exitCode === 2) {
-                // checkupdates sale con 2 cuando no hay updates; ambos son éxito
                 root.updateCount = root.packagesToUpdate.count
                 root.failed      = false
+                
+                // Persistir lista de paquetes
+                let list = []
+                for (let i = 0; i < root.packagesToUpdate.count; i++) {
+                    list.push(root.packagesToUpdate.get(i))
+                }
+                persistent.packageList = list
             } else {
                 root.failed = true
             }
@@ -68,8 +87,6 @@ Singleton {
 
     Process {
         id: updateProcess
-        // Construcción segura del comando como array: ["xdg-terminal-exec", "--app-id=local.floating", "-e", "topgrade"]
-        // Se asume que ConfigService.getConfig("updates.command","topgrade") devuelve una string.
         command: ["xdg-terminal-exec", "--app-id=local.floating", "-e"].concat(ConfigService.getConfig("updates.command", "topgrade").split(" "))
 
         onRunningChanged: {

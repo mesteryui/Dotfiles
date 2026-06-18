@@ -27,5 +27,26 @@
     "no_pending": "Neniuj pritraktataj ĝisdatigoj",
     "updating": "Ĝisdatigante…",
     "update_all": "Ĝisdatigi ĉion"
+  },
+  "panel": {
+    "user": "uzanto",
+    "host": "localhost",
+    "wifi": "Vifio",
+    "bluetooth": "Bludento",
+    "caffeine_on": "Kafeino Ŝaltita",
+    "caffeine_off": "Kafeino Malŝaltita",
+    "dnd": "Ne ĝenu",
+    "system": "Sistemo",
+    "weather": "Vetero",
+    "cores": "kernoj",
+    "off": "Malŝaltita",
+    "disk": "Disko",
+    "of": "el",
+    "uptime": "Funkcia tempo"
+  },
+   "battery": {
+    "critical": "Critical battery (%1%)! Connect the charger immediately",
+    "low": "Low battery (%1%): We recommend charging your device",
+    "charging": "Charging battery"
   }
 }

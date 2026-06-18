@@ -4,10 +4,9 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick.Controls
-import "../Core"
-import "../Core/Services" as Services
-import "../Components/Interface"
-import "."
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components.Interface
 import QtQuick.Layouts
 
 PanelWindow {
@@ -115,7 +114,7 @@ PanelWindow {
                     model: Services.WallpaperService.wallpaperList
                     orientation: ListView.Horizontal
                     spacing: 12          // ✅ 16 → 12, más compacto y MD3
-                    clip: true
+                    clip: false
                     focus: true
 
                     pixelAligned: true

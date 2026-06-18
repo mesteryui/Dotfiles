@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
-import "../../Core/Services" as Services
-import "../../Components"
-import "../../Core"
+import qs.Core.Services as Services
+import qs.Components
+import qs.Core
 
 BarItem {
     id: root

@@ -27,5 +27,26 @@
     "no_pending": "No pending updates",
     "updating": "Updating…",
     "update_all": "Update all"
+  },
+  "panel": {
+    "user": "user",
+    "host": "localhost",
+    "wifi": "WiFi",
+    "bluetooth": "Bluetooth",
+    "caffeine_on": "Caffeine On",
+    "caffeine_off": "Caffeine Off",
+    "dnd": "Do Not Disturb",
+    "system": "System",
+    "weather": "Weather",
+    "cores": "cores",
+    "off": "Off",
+    "disk": "Disk",
+    "of": "of",
+    "uptime": "Uptime"
+  },
+  "battery": {
+    "critical": "Critical battery (%1%)! Connect the charger immediately",
+    "low": "Low battery (%1%): We recommend charging your device",
+    "charging": "Charging battery"
   }
 }

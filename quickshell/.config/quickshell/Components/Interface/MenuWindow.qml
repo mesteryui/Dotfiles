@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "../../Core"
-import "../../Core/Services" as Services
+import qs.Core
+import qs.Core.Services as Services
 
 PanelWindow {
     id: root
@@ -13,6 +13,11 @@ PanelWindow {
     property alias content: contentContainer.data
     default property alias data: contentContainer.data
     
+    // Las ventanas (PanelWindow) usan implicitWidth/Height según la nueva API.
+    // Usamos tamaños fijos mínimos o calculados en base al contenido, pero sin enlazar directamente el layout.
+    implicitWidth: 300
+    implicitHeight: 400
+
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: WlrLayershell.Ignore
@@ -71,11 +76,13 @@ PanelWindow {
 
         ColumnLayout {
             id: mainLayout
-            anchors.fill: parent
-            anchors.margins: 12
+            x: 12
+            y: 12
+            width: parent.width - 24
             spacing: 8
 
             Text {
+                id: titleText
                 text: root.menuTitle
                 visible: text !== ""
                 font.family: Services.ConfigService?.getConfig("fontSans") ?? "sans-serif"
@@ -84,12 +91,16 @@ PanelWindow {
                 font.bold: true
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                
+                // Text ya calcula su implicitWidth automáticamente
             }
 
             Item {
                 id: contentContainer
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                
+                // Quitamos el binding loop: Layout gestiona el tamaño automáticamente
             }
         }
     }

@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import "../../"
-import "../../Core"
-import "../../Core/Services" as Services
+import qs
+import qs.Core
+import qs.Core.Services as Services
 
 PopupWindow {
     id: root

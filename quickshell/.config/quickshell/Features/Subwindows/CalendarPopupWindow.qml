@@ -5,8 +5,8 @@ import QtQuick.Effects
 import Quickshell.Hyprland
 import Quickshell
 import Quickshell.Widgets
-import "../../Core"
-import "../../Core/Services" as Services
+import qs.Core
+import qs.Core.Services as Services
 
 PopupWindow {
     id: calendarPopup

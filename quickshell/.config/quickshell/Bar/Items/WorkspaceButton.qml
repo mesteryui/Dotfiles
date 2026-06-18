@@ -1,14 +1,13 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import "../../Core"
-import "../../Core/Services" as Services
-import "."
+import qs.Core
+import qs.Core.Services as Services
 Rectangle {
     id: root
     required property var modelData
     required property bool isActive
-    
+    visible: modelData.id > 0
     width: isActive ? 40 : 30   // se expande al activarse
     height: 30
     radius: 30

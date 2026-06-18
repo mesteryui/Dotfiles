@@ -2,9 +2,9 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import Quickshell.Services.UPower
-import "../../Core"
-import "../../Components"
-import "."
+import qs.Core
+import qs.Components
+import qs.Core.Services as Services
 import Quickshell.Wayland
 
 BaseOSD {
@@ -22,19 +22,19 @@ BaseOSD {
                 if (rounded_percentage === 20 || rounded_percentage === 10) {
                     batteryOSD.osdIcon = rounded_percentage === 10 ? "battery_alert" : "battery_low";
                     if (rounded_percentage === 10) {
-                        batteryOSD.osdText = "¡Batería crítica (" + rounded_percentage + "%)! Conecta el cargador de inmediato";
+                        batteryOSD.osdText = Services.I18nService.getTranslation("battery.critical", "¡Batería crítica (%1%)! Conecta el cargador de inmediato").arg(rounded_percentage);
                     } else {
-                        batteryOSD.osdText = "Batería baja (" + rounded_percentage + "%): Te recomendamos cargar el equipo";
+                        batteryOSD.osdText = Services.I18nService.getTranslation("battery.low", "Batería baja (%1%): Te recomendamos cargar el equipo").arg(rounded_percentage);
                     }
-                    batteryOSD.visible = true;
+                    batteryOSD.show()
                 }
             }
         }
         function onStateChanged(): void {
             if (UPower.displayDevice.state === UPowerDeviceState.Charging) {
                 batteryOSD.osdIcon = "battery_charging_full";
-                batteryOSD.osdText = "Cargando bateria";
-                batteryOSD.visible = true;
+                batteryOSD.osdText = Services.I18nService.getTranslation("battery.charging", "Cargando batería");
+                batteryOSD.show();
             }
         }
     }

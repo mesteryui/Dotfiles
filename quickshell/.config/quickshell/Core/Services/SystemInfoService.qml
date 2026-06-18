@@ -28,8 +28,14 @@ Singleton {
     readonly property real   swapUsage:    _mem.swapUsage
 
     // ── API pública: Uptime ───────────────────────────────────────
-    readonly property string uptime:       _uptime.formatted   // "3d 4h 12m"
+    readonly property string uptime:       _uptime.formatted
     readonly property real   uptimeSecs:   _uptime.seconds
+
+    // ── API pública: Disco ─────────────────────────────────────────
+    readonly property string diskUsagePct: _disk.usagePct
+    readonly property string diskUsed:     _disk.used
+    readonly property string diskTotal:    _disk.total
+    readonly property real   diskUsage:    _disk.usage
 
     // ═════════════════════════════════════════════════════════════
     // Internals
@@ -47,6 +53,36 @@ Singleton {
             memFile.reload()
             uptimeFile.reload()
             tempFile.reload()
+            diskProcess.running = true // Trigger disk check
+        }
+    }
+
+    // ── Proceso directo para obtener datos de disco ──────────────
+    Process {
+        id: diskProcess
+        command: ["df", "-h", "/"]
+        stdout: StdioCollector {
+            onStreamFinished: _disk.parse(this.text)
+        }
+    }
+
+    QtObject {
+        id: _disk
+        property string total:    "0G"
+        property string used:     "0G"
+        property string usagePct: "0%"
+        property real   usage:    0.0
+
+        function parse(raw) {
+            const lines = raw.trim().split("\n")
+            if (lines.length < 2) return
+            const parts = lines[1].trim().split(/\s+/)
+            if (parts.length >= 6) {
+                total    = parts[1]
+                used     = parts[2]
+                usagePct = parts[4]
+                usage    = parseInt(parts[4]) / 100
+            }
         }
     }
 
@@ -54,14 +90,14 @@ Singleton {
     FileView {
         id: cpuFile
         path: "/proc/stat"
-        onTextChanged: _cpu.parse(text)
+        onTextChanged: _cpu.parse(text())
     }
 
     // ── /sys/class/thermal/thermal_zone0/temp → Temperatura ──────
     FileView {
         id: tempFile
         path: "/sys/class/thermal/thermal_zone0/temp"
-        onTextChanged: _temp.parse(text)
+        onTextChanged: _temp.parse(text())
     }
 
     QtObject {
@@ -118,7 +154,7 @@ Singleton {
     FileView {
         id: memFile
         path: "/proc/meminfo"
-        onTextChanged: _mem.parse(text)
+        onTextChanged: _mem.parse(text())
     }
 
     QtObject {
@@ -159,7 +195,7 @@ Singleton {
     FileView {
         id: uptimeFile
         path: "/proc/uptime"
-        onTextChanged: _uptime.parse(text)
+        onTextChanged: _uptime.parse(text())
     }
 
     QtObject {

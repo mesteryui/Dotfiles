@@ -2,10 +2,9 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import Quickshell.Hyprland // Módulo para GlobalShortcut
-import "@Core/Colors.qml" as Colors
-import "../../Core/Services" as Services
-import "../../Components"
-import "."
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components
 
 BaseOSD {
     id: keyOSD

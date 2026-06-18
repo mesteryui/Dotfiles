@@ -25,6 +25,6 @@ Singleton {
         let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
         applyProcess.command = ["awww", "img", fullPath, "--transition-type", "center"];
         applyProcess.running = true;
-        Quickshell.execDetached(["matugen", "image", fullPath, "--source-color-index", "0"]);
+        Quickshell.execDetached(["matugen", "image", fullPath, "--source-color-index", "0","-t",ConfigService.getConfig("matugen.type","scheme-tonal-spot")]);
     }
 }

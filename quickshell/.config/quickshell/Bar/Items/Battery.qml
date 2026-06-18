@@ -2,9 +2,9 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.UPower
 import QtQuick
-import "../../Core"
-import "../../Core/Services" as Services
-import "../../Components"
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components
 
 BarItem {
     id: root

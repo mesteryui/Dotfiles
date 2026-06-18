@@ -27,5 +27,26 @@
     "no_pending": "No hay actualizaciones pendientes",
     "updating": "Actualizando…",
     "update_all": "Actualizar todo"
+  },
+  "panel": {
+    "user": "usuario",
+    "host": "localhost",
+    "wifi": "WiFi",
+    "bluetooth": "Bluetooth",
+    "caffeine_on": "Caffeine encendido",
+    "caffeine_off": "Caffeine apagado",
+    "dnd": "No molestar",
+    "system": "Sistema",
+    "weather": "Clima",
+    "cores": "núcleos",
+    "off": "Apagado",
+    "disk": "Disco",
+    "of": "de",
+    "uptime": "Tiempo de uso"
+  },
+  "battery": {
+    "critical": "¡Batería crítica (%1%)! Conecta el cargador de inmediato",
+    "low": "Batería baja (%1%): Te recomendamos cargar el equipo",
+    "charging": "Cargando batería"
   }
 }

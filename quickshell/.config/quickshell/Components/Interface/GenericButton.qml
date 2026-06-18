@@ -5,32 +5,32 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Hyprland
-import "../../Core"
-import "../../Core/Services" as Services
-import "../../Components"
-import "."
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components
+
 Rectangle {
     id: root
     required property string buttonIcon
     required property string buttonText
     required property string command
     
-    // Opcional: color de acento por botón (rojo para apagar, etc.)
     property color accentColor: Colors.md3.primary
     
     readonly property bool highlighted: activeFocus || btnMouse.containsMouse
     focus: true
 
-    implicitWidth: 100
-    implicitHeight: 100
+    // Tamaño dinámico: mínimo 100x100 o lo que pida el contenido + margen
+    implicitWidth: Math.max(100, contentColumn.implicitWidth + 32)
+    implicitHeight: Math.max(100, contentColumn.implicitHeight + 32)
+    
     radius: 20
     color: highlighted
-        ? Qt.alpha(accentColor, 0.18)
-        : Qt.alpha(Colors.md3.surface_container, 0.9)
+        ? accentColor
+        : Colors.md3.surface_container
 
     Behavior on color { ColorAnimation { duration: 150 } }
 
-    // Borde que se ilumina en hover
     border.width: highlighted ? 2 : 1
     border.color: highlighted
         ? Qt.alpha(accentColor, 0.7)
@@ -38,56 +38,46 @@ Rectangle {
 
     Behavior on border.color { ColorAnimation { duration: 150 } }
 
-    // Escala en hover/press
     scale: btnMouse.pressed ? 0.93 : (highlighted ? 1.06 : 1.0)
     Behavior on scale {
         NumberAnimation { duration: 150; easing.type: Easing.OutBack }
     }
 
-    // Glow al hacer hover
-    layer.enabled: true
-    layer.effect: MultiEffect {
-        shadowEnabled: highlighted
-        shadowColor: Qt.alpha(root.accentColor, 0.5)
-        shadowBlur: 0.9
-        shadowVerticalOffset: 0
-        shadowHorizontalOffset: 0
-        blurMax: 24
-        shadowOpacity: highlighted ? 0.8 : 0
-        Behavior on shadowOpacity { NumberAnimation { duration: 200 } }
-    }
+    // Eliminado el MultiEffect para quitar sombras y efectos planos
+
     Process {
         id: runCommand
         command: ["bash", "-c", root.command]
     }
+
     Column {
+        id: contentColumn
         anchors.centerIn: parent
         spacing: 10
+        
+        // Exponemos el tamaño para el cálculo de implicitWidth/Height del root
+        readonly property real implicitWidth: Math.max(iconItem.width, buttonTextItem.implicitWidth)
+        readonly property real implicitHeight: iconItem.height + spacing + buttonTextItem.implicitHeight
 
         MaterialIcon {
+            id: iconItem
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.buttonIcon
             size: 32
-            color: highlighted ? root.accentColor : Colors.md3.on_surface
-
-            // Tinte del icono en hover
-            layer.enabled: highlighted
-            layer.effect: MultiEffect {
-                colorization: highlighted ? 1.0 : 0.0
-                colorizationColor: root.accentColor
-            }
+            // Color plano basado en si está resaltado o no
+            color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
         }
 
-            Text {
-                id: buttonTextItem
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: root.buttonText
-                font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-                color: highlighted ? root.accentColor : Colors.md3.on_surface
-                font.pixelSize: 12
-                font.weight: highlighted ? Font.Bold : Font.Normal
-                Behavior on color { ColorAnimation { duration: 150 } }
-            }
+        Text {
+            id: buttonTextItem
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.buttonText
+            font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+            color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
+            font.pixelSize: 12
+            font.weight: highlighted ? Font.Bold : Font.Normal
+            Behavior on color { ColorAnimation { duration: 150 } }
+        }
     }
 
     MouseArea {

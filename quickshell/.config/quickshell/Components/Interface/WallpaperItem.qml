@@ -5,9 +5,9 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Widgets
 import QtQuick.Effects
-import "../../Core"
-import "../../Core/Services" as Services
-import "../"
+import qs.Core
+import qs.Core.Services as Services
+import qs.Components
 
 Rectangle {
     id: delegateRoot
@@ -15,8 +15,10 @@ Rectangle {
 
     readonly property bool isSelected: ListView.isCurrentItem
 
-    width: 280
-    height: 200
+    // Usar tamaños implícitos en lugar de fijos para mejor integración con Layouts
+    implicitWidth: 280
+    implicitHeight: 200
+    
     radius: 16
     clip: true
 
@@ -89,7 +91,7 @@ Rectangle {
             anchors.fill: parent
             radius: delegateRoot.radius
             border.color: Colors.md3.primary
-            border.width: isSelected ? 1 : 0
+            border.width: isSelected ? 2 : 0
             color: "transparent"
             Image {
                 id: wallpaperPreview

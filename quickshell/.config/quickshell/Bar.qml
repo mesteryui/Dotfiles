@@ -3,24 +3,19 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
-import "Bar"
-import "Bar/Items"
-import "Bar/SystemTray"
-import "Core"
-import "Core/Services" as Services
+import qs.Bar
+import qs.Bar.Items
+import qs.Bar.SystemTray
+import qs.Core
+import qs.Core.Services as Services
 
 PanelWindow {
     id: root
     
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.exclusiveZone: 38
+    WlrLayershell.namespace: "bar"
 
-    IdleInhibitor {
-        id: idleInhibitor
-        window: root
-        
-        enabled: Services.IdleInhibitedService.inhibited
-    }
     
     anchors {
         top: Services.ConfigService.getConfig("bar.position") == "top" || Services.ConfigService.getConfig("bar.position") == "" ? true : false

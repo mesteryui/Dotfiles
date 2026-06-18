@@ -6,109 +6,118 @@ import Quickshell.Services.Notifications
 
 Singleton {
     id: root
+    property alias dnd: settings.dnd
+    
+    // Acceso directo al modelo nativo de Quickshell
+    readonly property alias notifications: server.trackedNotifications
+    
+    PersistentProperties {
+        id: settings
+        property bool dnd: false
+        property var meta: ({})
+    }
 
-    // Lista de notificaciones activas
-    property var notifications: []
     readonly property int unreadCount: {
         let count = 0;
-        for (const n of notifications) {
-            if (!n._read) count++;
+        for (let i = 0; i < notifications.count; i++) {
+            const notif = notifications.get(i);
+            if (notif && !isRead(notif.id)) count++;
         }
         return count;
     }
 
-    // Tiempo por defecto antes de expirar (ms). 0 = no expira
-    property int defaultTimeout: 5000
-
     NotificationServer {
         id: server
 
-        // Permisos que aceptamos de las apps
-        keepOnReload: true          // sobrevive al hot-reload
+        // Forzar persistencia y capacidades completas para mejor integración con el OS
+        keepOnReload: true
         actionsSupported: true
         bodySupported: true
         bodyMarkupSupported: true
         imageSupported: true
         persistenceSupported: true
+        
+        // Añadir estas para máxima compatibilidad
+        bodyHyperlinksSupported: true
+        bodyImagesSupported: true
+        inlineReplySupported: true
+
+        Component.onCompleted: {
+            console.log("[NotificationServer] Iniciado y escuchando en org.freedesktop.Notifications");
+        }
 
         onNotification: (notif) => {
-            // Añade metadatos propios
-            notif._timestamp = Date.now();
-            notif._read = false;
+            console.log("[NotificationServer] Nueva notificación de:", notif.appName, "| Resumen:", notif.summary);
+            
+            // Inicializar metadatos para la nueva notificación
+            const newMeta = Object.assign({}, settings.meta);
+            newMeta[notif.id] = { 
+                read: false, 
+                timestamp: Date.now() 
+            };
+            settings.meta = newMeta;
 
-            root.notifications = [notif, ...root.notifications];
-
-            // Auto-expirar si la notif pide timeout o usamos el default
-            const timeout = notif.expireTimeout > 0
-                ? notif.expireTimeout
-                : root.defaultTimeout;
-
-            if (timeout > 0) {
-                expireTimer.createTimer(notif, timeout);
-            }
-
-            // Señal hacia afuera para que el popup reaccione
+            // Emitimos la señal para el popup de toasts
             root.notificationAdded(notif);
         }
     }
 
     // Señales públicas
     signal notificationAdded(var notif)
-    signal notificationRemoved(int id)
     signal allCleared()
 
     // --- API pública ---
 
+    function isRead(id) {
+        return settings.meta[id] ? settings.meta[id].read : false;
+    }
+
+    function getTimestamp(id) {
+        return settings.meta[id] ? settings.meta[id].timestamp : Date.now();
+    }
+
     function dismiss(notif) {
-        notif.dismiss();
-        _remove(notif.id);
+        if (notif) {
+            console.log("[NotificationService] Descartando notificación:", notif.id);
+            notif.dismiss();
+        }
     }
 
     function dismissAll() {
-        for (const n of notifications) n.dismiss();
-        notifications = [];
+        console.log("[NotificationService] Descartando todas las notificaciones");
+        while (notifications.count > 0) {
+            const n = notifications.get(0);
+            if (n) n.dismiss();
+            else break;
+        }
+        settings.meta = {};
         allCleared();
     }
 
     function markRead(notif) {
-        notif._read = true;
-        // Forzar refresco del binding
-        notifications = [...notifications];
+        if (!notif) return;
+        const newMeta = Object.assign({}, settings.meta);
+        if (!newMeta[notif.id]) newMeta[notif.id] = { timestamp: Date.now() };
+        newMeta[notif.id].read = true;
+        settings.meta = newMeta;
     }
 
     function markAllRead() {
-        notifications.forEach(n => n._read = true);
-        notifications = [...notifications];
+        const newMeta = Object.assign({}, settings.meta);
+        for (let i = 0; i < notifications.count; i++) {
+            const n = notifications.get(i);
+            if (!n) continue;
+            const id = n.id;
+            if (!newMeta[id]) newMeta[id] = { timestamp: Date.now() };
+            newMeta[id].read = true;
+        }
+        settings.meta = newMeta;
     }
 
     function invokeAction(notif, actionId) {
-        notif.invokeAction(actionId);
-        _remove(notif.id);
-    }
-
-    // --- Interno ---
-
-    function _remove(id) {
-        notifications = notifications.filter(n => n.id !== id);
-        notificationRemoved(id);
-    }
-
-    // Gestor de timers de expiración
-    QtObject {
-        id: expireTimer
-
-        function createTimer(notif, ms) {
-            const t = timerComponent.createObject(root, { interval: ms });
-            t.triggered.connect(() => {
-                root._remove(notif.id);
-                t.destroy();
-            });
-            t.start();
+        if (notif) {
+            console.log("[NotificationService] Invocando acción:", actionId, "en notif:", notif.id);
+            notif.invokeAction(actionId);
         }
-    }
-
-    Component {
-        id: timerComponent
-        Timer { repeat: false }
     }
 }

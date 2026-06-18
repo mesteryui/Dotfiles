@@ -1,8 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import "../Core"
-import "."
+import qs.Core
 
 Rectangle {
     id: root
@@ -12,7 +11,10 @@ Rectangle {
     property bool active: false
     signal toggled
 
-    implicitHeight: 64
+    // Tamaño implícito dinámico
+    implicitWidth: Math.max(80, contentColumn.implicitWidth + 32)
+    implicitHeight: Math.max(64, contentColumn.implicitHeight + 20)
+    
     radius: 14
     color: active
         ? Colors.md3.secondary_container
@@ -26,10 +28,15 @@ Rectangle {
         : Colors.md3.outline_variant
 
     Column {
+        id: contentColumn
         anchors.centerIn: parent
         spacing: 6
+        
+        readonly property real implicitWidth: Math.max(toggleIcon.width, toggleLabel.implicitWidth)
+        readonly property real implicitHeight: toggleIcon.height + spacing + toggleLabel.implicitHeight
 
         MaterialIcon {
+            id: toggleIcon
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.iconName
             size: 22
@@ -37,6 +44,7 @@ Rectangle {
         }
 
         Text {
+            id: toggleLabel
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.label
             font.pixelSize: 11

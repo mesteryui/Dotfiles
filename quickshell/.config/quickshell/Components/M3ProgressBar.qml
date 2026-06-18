@@ -1,22 +1,31 @@
 import QtQuick
-import "@Core/Colors.qml" as Colors
+import qs.Core
 
 Item {
     id: root
     property real  value:       0.0   // 0–1
     property color accentColor: Colors.md3.primary
+    
+    implicitWidth: 200
     implicitHeight: 6
 
     Rectangle {
+        id: track
         anchors.fill: parent
-        radius: 3
+        radius: height / 2
         color:  Colors.md3.surface_container   // track
     }
 
     Rectangle {
+        id: bar
         anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-        width:  Math.max(radius * 2, root.width * Math.min(1, Math.max(0, root.value)))
-        radius: 3
+        width: {
+            if (root.value <= 0) return 0;
+            const targetWidth = root.width * Math.min(1, root.value);
+            // Ensure we at least show a circle if there is some value, but don't exceed root.width
+            return Math.min(root.width, Math.max(root.height, targetWidth));
+        }
+        radius: height / 2
         color:  root.accentColor
 
         Behavior on width {

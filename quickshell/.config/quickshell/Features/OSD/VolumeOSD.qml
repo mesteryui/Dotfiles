@@ -2,26 +2,47 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import Quickshell.Services.Pipewire
-import "."
+import qs.Core
 
 PercentageOSD {
     id: root
+
+    property bool ready: false
     
-    Connections {
-        target: Pipewire.defaultAudioSink?.audio
-        function onVolumeChanged() { root.show() }
-        function onMutedChanged() { root.show() }
-    }
-    
+    // Rastreador para asegurar que el objeto no sea recolectado y sea estable
     PwObjectTracker {
+        id: tracker
         objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
     }
+
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property var audio: sink ? sink.audio : null
+
+    Connections {
+        target: root.audio
+        ignoreUnknownSignals: true // Por si el objeto es nulo momentáneamente
+
+        function onVolumeChanged() { 
+            if (root.ready) root.show() 
+        }
+        function onMutedChanged() { 
+            if (root.ready) root.show() 
+        }
+    }
+
+    Timer {
+        id: readyTimer
+        interval: 1000
+        running: true
+        repeat: false
+        onTriggered: root.ready = true
+    }
     
-    percentage: Pipewire.defaultAudioSink?.audio?.volume ?? 0
+    percentage: root.audio ? root.audio.volume : 0
     icon: {
-        if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return "volume_off"
-        if (Pipewire.defaultAudioSink.audio.muted) return "volume_off"
-        const vol = Pipewire.defaultAudioSink.audio.volume
+        if (!root.audio) return "volume_off"
+        if (root.audio.muted) return "volume_off"
+        const vol = root.audio.volume
         if (vol > 0.6) return "volume_up"
         if (vol > 0.2) return "volume_down"
         return "volume_mute"

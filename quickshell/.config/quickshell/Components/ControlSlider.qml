@@ -3,8 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Widgets
-import "../Core"
-import ".."
+import qs.Core
 
 RowLayout {
     id: root

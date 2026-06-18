@@ -2,9 +2,8 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import Quickshell.Networking
-import "../../Core"
-import "../../Components"
-import "."
+import qs.Core
+import qs.Components
 
 BarItem {
     id: root
@@ -23,6 +22,11 @@ BarItem {
         size: 20
         color: Colors.md3.on_surface
         icon: {
+            // 1. Manejo explícito de Ethernet
+            if (Networking.connectivity === NetworkConnectivity.Wired) {
+                return "settings_ethernet"
+            }
+            
             if (Networking.connectivity === NetworkConnectivity.None) {
                 return "signal_wifi_off"
             }
@@ -32,6 +36,7 @@ BarItem {
             if (signal > 50) return "network_wifi_3_bar";
             if (signal > 25) return "network_wifi_2_bar";
             return "network_wifi_1_bar";
+
         }
     }
 }

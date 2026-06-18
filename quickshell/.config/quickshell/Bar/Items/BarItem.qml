@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import "../../Core"
+import qs.Core
 
 Rectangle {
     id: root

@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
-import "../../Components"
-import "../../Core"
-import "../../Core/Services" as Services
+import qs.Components
+import qs.Core
+import qs.Core.Services as Services
 import Quickshell.Bluetooth
 
 BarItem {
