@@ -1,7 +1,7 @@
 //@ pragma UseQApplication
 //@ pragma DefaultEnv QS_DROP_EXPENSIVE_FONTS=1
-//@ pragma DefaultEnv QSG_RENDER_LOOP=threaded
-//@ pragma DefaultEnv QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+//@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
+//@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
 
 import Quickshell
 import Quickshell.Services.Notifications
@@ -20,6 +20,12 @@ ShellRoot {
     BrightnessOSD {}
     VolumeOSD {}
     BatteryOSD {}
+
+    LazyLoader {
+        id: notificationCenter
+        loading: true
+        NotificationCenter {}
+    }
     
     // Widgets pesados: LazyLoader para no bloquear el inicio
     LazyLoader {
@@ -32,12 +38,6 @@ ShellRoot {
         id: powerButtonsLoader
         loading: true
         PowerButtons {}
-    }
-
-    LazyLoader {
-        id: notificationWindowLoader
-        loading: true
-        NotificationWindow {}
     }
 
     Variants {

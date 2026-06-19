@@ -11,13 +11,11 @@ import Quickshell.Services.Mpris
 Singleton {
     id: root
 
-    // ── Estado ────────────────────────────────────────────────
     readonly property bool hasPlayer: currentMprisPlayer !== null
     readonly property bool isPlaying: hasPlayer
         && currentMprisPlayer.playbackState === MprisPlaybackState.Playing
 
-    // ── Player activo ─────────────────────────────────────────
-    // Prioridad: Playing > Paused > primero disponible
+    
     property MprisPlayer currentMprisPlayer: {
         const players = Mpris.players.values;
         return players.find(p => p.playbackState === MprisPlaybackState.Playing)
@@ -28,8 +26,13 @@ Singleton {
 
     // ── Metadatos cacheados ───────────────────────────────────
 
-    // Arte: persiste entre cambios de pista para evitar flash de imagen vacía
-    property string lastTrackArtUrl: ""
+    
+    property alias lastTrackArtUrl: persistent.lastTrackArtUrl
+
+    PersistentProperties {
+        id: persistent
+        property string lastTrackArtUrl: ""
+    }
 
     // Duración: binding reactivo, se reevalúa solo cuando cambia el player
     // o cuando el player emite lengthChanged. Los componentes la leen de aquí
@@ -38,8 +41,6 @@ Singleton {
 
     // ── Reacciones a cambio de player ─────────────────────────
     onCurrentMprisPlayerChanged: updateLastTrack()
-
-    Component.onCompleted: updateLastTrack()
 
     Connections {
         target: root.currentMprisPlayer

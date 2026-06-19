@@ -1,11 +1,16 @@
+// NotificationToast.qml
+// ── Toast overlay (top-right) ──────────────────────────────────────────────
+
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Wayland
+import Quickshell.Services.Notifications
 import qs.Core
 import qs.Core.Services as Services
 import qs.Components
 
-// ── Toast overlay (top-right) ──────────────────────────────────────────────
 PanelWindow {
     id: root
 
@@ -14,126 +19,118 @@ PanelWindow {
     color: "transparent"
 
     anchors { top: true; right: true }
-    margins { top: 12; right: 12; bottom: 0; left: 0 }
+    margins { top: 50; right: 20; bottom: 0; left: 0 }
 
-    visible: toastModel.count > 0
+    visible: toastColumn.count > 0
 
     implicitWidth: 360
     implicitHeight: Math.max(1, toastColumn.implicitHeight)
 
-    // ── Modelo local de toasts activos ────────────────────────────────────
-    ListModel { id: toastModel }
-
-    // ── Detectar notificaciones nuevas via señal del servicio ─────────────
-    Connections {
-        target: Services.NotificationService
-
-        function onNotificationAdded(notif) {
-            // 1. Ignorar si DND está activo
-            if (Services.NotificationService.dnd) return;
-            
-            // 2. Ignorar notificaciones de la "generación anterior" (evita spam al recargar la config)
-            if (notif.lastGeneration) return;
-
-            console.log("[NotificationLister] Mostrando Toast para:", notif.summary);
-
-            // Deduplicar por id
-            let dup = false
-            for (let j = 0; j < toastModel.count; j++) {
-                if (toastModel.get(j).notifId === notif.id) { 
-                    dup = true; 
-                    break;
-                }
-            }
-            
-            if (!dup) {
-                toastModel.append({ notifId: notif.id, notif: notif });
-            }
-        }
-    }
-
-    // ── Columna de toasts ─────────────────────────────────────────────────
+    // ── Columna de toasts ──────────────────────────────────────────────────
     Column {
         id: toastColumn
-        width: parent.width
-        spacing: 10
 
-        Repeater {
-            model: toastModel
+        // BUG FIX 1: Column no soporta Layout.* — usar width/height directos
+        // 'count' es una propiedad auxiliar para visible arriba
+        property int count: repeater.count
 
-            delegate: Item {
-                id: toastDelegate
+            width: parent.width
+            spacing: 10
 
-                readonly property var notif: model.notif
+            Repeater {
+                id: repeater
+                // trackedNotifications es un ObjectModel<Notification>, funciona directo
+                model: Services.NotificationService.notifications
+                // Dentro de Repeater en NotificationToast.qml
+                delegate: // Delegate del toast — reemplaza el Timer y el onHoveredChanged
+                Item {
+                    id: toastWrapper
 
-                width: toastColumn.width
-                height: notifItem.implicitHeight
-                clip: true
+                    required property var modelData
 
-                // ── Auto-dismiss ──────────────────────────────────────────
-                Timer {
-                    id: autoDismiss
-                    interval: 6000
-                    running: true
-                    repeat: false
-                    onTriggered: removeToast()
-                }
+                    width: toastColumn.width
+                    height: notifItem.implicitHeight
 
-                function removeToast() {
-                    for (let i = 0; i < toastModel.count; i++) {
-                        if (toastModel.get(i).notifId === model.notifId) {
-                            toastModel.remove(i)
-                            break
+                    opacity: 0
+                    x: 40
+
+                    // ── Timeout manual sin pause/resume ───────────────────────────────────
+                    readonly property int totalMs: 6000
+                        property int remainingMs: totalMs
+                            property real pausedAt: 0
+
+                                function startDismissTimer()
+                                {
+                                    if (notifItem.isCritical) return
+                                    pausedAt = Date.now()
+                                    dismissTimer.interval = remainingMs
+                                    dismissTimer.restart()
+                                }
+
+                                function pauseDismissTimer()
+                                {
+                                    if (!dismissTimer.running) return
+                                    dismissTimer.stop()
+                                    // Cuánto tiempo quedaba cuando pausamos
+                                    remainingMs = Math.max(0, remainingMs - (Date.now() - pausedAt))
+                                }
+
+                                function resumeDismissTimer()
+                                {
+                                    if (notifItem.isCritical || remainingMs <= 0) return
+                                    pausedAt = Date.now()
+                                    dismissTimer.interval = remainingMs
+                                    dismissTimer.start()
+                                }
+
+                                Timer {
+                                    id: dismissTimer
+                                    repeat: false
+                                    onTriggered: exitAnim.start()
+                                }
+
+                                Component.onCompleted: {
+                                    enterAnim.start()
+                                    startDismissTimer()
+                                }
+
+                                // ── Animaciones ───────────────────────────────────────────────────────
+                                ParallelAnimation {
+                                    id: enterAnim
+                                    NumberAnimation { target: toastWrapper; property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: toastWrapper; property: "x"; to: 0; duration: 220; easing.type: Easing.OutCubic }
+                                }
+
+                                SequentialAnimation {
+                                    id: exitAnim
+                                    ParallelAnimation {
+                                        NumberAnimation { target: toastWrapper; property: "opacity"; to: 0; duration: 180; easing.type: Easing.InCubic }
+                                        NumberAnimation { target: toastWrapper; property: "x"; to: 40; duration: 180; easing.type: Easing.InCubic }
+                                    }
+                                    ScriptAction {
+                                        script: Qt.callLater(() => toastWrapper.modelData.expire())
+                                    }
+                                }
+
+                                // ── NotificationItem ──────────────────────────────────────────────────
+                                NotificationItem {
+                                    id: notifItem
+                                    width: parent.width
+                                    notification: toastWrapper.modelData
+
+                                    onHoveredChanged: {
+                                        if (notifItem.hovered)
+                                        {
+                                            toastWrapper.pauseDismissTimer()
+                                        } else {
+                                        toastWrapper.resumeDismissTimer()
+                                    }
+                                }
+
+                                onDismissed: exitAnim.start()
+                                onActionInvoked: id => toastWrapper.modelData.invoke()
+                            }
                         }
                     }
                 }
-
-                // ── Contenido ─────────────────────────────────────────────
-                NotificationItem {
-                    id: notifItem
-                    modelData: toastDelegate.notif
-                    width: parent.width
-                }
-
-                // ── Pausa el timer mientras el cursor está encima ─────────
-                HoverHandler {
-                    onHoveredChanged: hovered ? autoDismiss.stop() : autoDismiss.restart()
-                }
-
-                // ── Barra de progreso del timeout ─────────────────────────
-                Rectangle {
-                    anchors {
-                        bottom: parent.bottom
-                        left: parent.left; right: parent.right
-                        bottomMargin: 3
-                        leftMargin: 16; rightMargin: 16
-                    }
-                    height: 2
-                    radius: 1
-                    color: Colors.md3.primary
-                    opacity: 0.45
-
-                    NumberAnimation on width {
-                        from: toastDelegate.width - 32
-                        to: 0
-                        duration: autoDismiss.interval
-                        easing.type: Easing.Linear
-                        running: autoDismiss.running
-                    }
-                }
-
-                // ── Slide-in desde la derecha + fade ──────────────────────
-                NumberAnimation on x {
-                    from: 380; to: 0
-                    duration: 320; easing.type: Easing.OutCubic
-                    running: true
-                }
-                NumberAnimation on opacity {
-                    from: 0; to: 1
-                    duration: 260; easing.type: Easing.OutCubic
-                    running: true
-                }
             }
-        }
-    }
-}

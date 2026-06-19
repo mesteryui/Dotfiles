@@ -3,44 +3,26 @@ import QtQuick
 import Quickshell.Hyprland
 import qs.Core
 import qs.Components
-
-Rectangle {
+import qs.Bar.Content
+import qs.Bar
+import qs.Core.Services
+Item {
     id: root
-    visible: activeSubmap !== ""
-    color: Colors.md3.primary_container
-    radius: 20
-    implicitWidth: submapRow.implicitWidth + 16
+    visible: currentSubmap !== ""
+    implicitWidth: content.implicitWidth + 16
     implicitHeight: 30
-
-    property string activeSubmap: ""
-
-    Connections {
-        target: Hyprland
-
-        function onRawEvent(event: HyprlandEvent) {
-            if (event.name === "submap") {
-                root.activeSubmap = event.data.trim();
-            }
-        }
+    
+    readonly property string currentSubmap: HyprlandSubmap.activeSubmap
+    
+    BarBackground {
+        color: Colors.md3.primary_container
+        anchors.fill: parent
+     }
+    
+    HyprlandSubmapContent {
+        id: content
+        anchors.centerIn: parent
+        text: root.currentSubmap
     }
     
-    Row {
-        id: submapRow
-        anchors.centerIn: parent
-        spacing: 6
-        
-        MaterialIcon {
-            icon: "layers"
-            size: 16
-            color: Colors.md3.on_primary_container
-        }
-        
-        Text {
-            text: root.activeSubmap
-            color: Colors.md3.on_primary_container
-            font.pixelSize: 13
-            font.weight: Font.Medium
-            font.family: "sans-serif"
-        }
-    }
 }

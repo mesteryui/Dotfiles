@@ -6,20 +6,20 @@ import QtQuick
 Singleton {
     id: root
 
-    // ── Intervalo de polling (ms) ─────────────────────────────────
+    // ── Intervalo de actualización (ms) ───────────────────────────
     readonly property int pollInterval: 2000
 
     // ── API pública: CPU ──────────────────────────────────────────
-    readonly property real   cpuUsage:     _cpu.usage      // 0.0 – 1.0
+    readonly property real   cpuUsage:     _cpu.usage
     readonly property int    cpuCores:     _cpu.coreCount
     readonly property string cpuUsagePct:  Math.round(_cpu.usage * 100) + "%"
-    readonly property int    cpuTemp:      _temp.value     // Celsius
+    readonly property int    cpuTemp:      _temp.value
 
     // ── API pública: Memoria ──────────────────────────────────────
     readonly property int    memTotalMiB:  _mem.totalMiB
     readonly property int    memUsedMiB:   _mem.usedMiB
     readonly property int    memFreeMiB:   _mem.availableMiB
-    readonly property real   memUsage:     _mem.usage      // 0.0 – 1.0
+    readonly property real   memUsage:     _mem.usage
     readonly property string memUsagePct:  Math.round(_mem.usage * 100) + "%"
 
     // ── API pública: Swap ─────────────────────────────────────────
@@ -31,40 +31,57 @@ Singleton {
     readonly property string uptime:       _uptime.formatted
     readonly property real   uptimeSecs:   _uptime.seconds
 
-    // ── API pública: Disco ─────────────────────────────────────────
+    // ── API pública: Disco ────────────────────────────────────────
     readonly property string diskUsagePct: _disk.usagePct
     readonly property string diskUsed:     _disk.used
     readonly property string diskTotal:    _disk.total
     readonly property real   diskUsage:    _disk.usage
 
     // ═════════════════════════════════════════════════════════════
-    // Internals
+    // Internals: Motor Centralizado Asíncrono
     // ═════════════════════════════════════════════════════════════
 
-    // watchChanges: true NO funciona en /proc/ (sin inotify en sysfs/procfs).
-    // Usamos un Timer que llama a reload() manualmente.
-    Timer {
-        interval: root.pollInterval
-        running:  true
-        repeat:   true
-        triggeredOnStart: true
-        onTriggered: {
-            cpuFile.reload()
-            memFile.reload()
-            uptimeFile.reload()
-            tempFile.reload()
-            diskProcess.running = true // Trigger disk check
+    Process {
+        id: sysProcess
+        // Bucle infinito en bash que extrae toda la info en una sola pasada.
+        // Mantiene 1 solo proceso vivo, reduciendo la carga del hilo principal.
+        command: [
+            "bash",
+            "-c",
+            `while true; do
+                cat /proc/stat
+                echo '---SEP---'
+                cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0
+                echo '---SEP---'
+                cat /proc/meminfo
+                echo '---SEP---'
+                cat /proc/uptime
+                echo '---SEP---'
+                df -h /
+                echo '===END==='
+                sleep ${root.pollInterval / 1000}
+            done`
+        ]
+        running: true
+
+        stdout: SplitParser {
+            // Este delimitador agrupa todo el ciclo en un solo callback
+            splitMarker: "===END===\n"
+            
+            onRead: data => {
+                const chunks = data.split("---SEP---\n")
+                if (chunks.length >= 5) {
+                    _cpu.parse(chunks[0])
+                    _temp.parse(chunks[1])
+                    _mem.parse(chunks[2])
+                    _uptime.parse(chunks[3])
+                    _disk.parse(chunks[4])
+                }
+            }
         }
     }
 
-    // ── Proceso directo para obtener datos de disco ──────────────
-    Process {
-        id: diskProcess
-        command: ["df", "-h", "/"]
-        stdout: StdioCollector {
-            onStreamFinished: _disk.parse(this.text)
-        }
-    }
+    // ── Adaptadores de Datos ──────────────────────────────────────
 
     QtObject {
         id: _disk
@@ -86,20 +103,6 @@ Singleton {
         }
     }
 
-    // ── /proc/stat → uso de CPU (delta entre muestras) ───────────
-    FileView {
-        id: cpuFile
-        path: "/proc/stat"
-        onTextChanged: _cpu.parse(text())
-    }
-
-    // ── /sys/class/thermal/thermal_zone0/temp → Temperatura ──────
-    FileView {
-        id: tempFile
-        path: "/sys/class/thermal/thermal_zone0/temp"
-        onTextChanged: _temp.parse(text())
-    }
-
     QtObject {
         id: _temp
         property int value: 0
@@ -111,16 +114,12 @@ Singleton {
 
     QtObject {
         id: _cpu
-
         property real usage:     0.0
         property int  coreCount: 0
-
-        // Estado previo para el cálculo delta
         property real _prevTotal: 0
         property real _prevIdle:  0
 
         function parse(raw) {
-            // Línea 0: "cpu  user nice system idle iowait irq softirq steal ..."
             const parts = raw.split("\n")[0].trim().split(/\s+/)
 
             const user    = parseInt(parts[1])
@@ -145,21 +144,12 @@ Singleton {
             _prevTotal = total
             _prevIdle  = totalIdle
 
-            // Número de cores lógicos (líneas "cpu0", "cpu1", ...)
             coreCount = raw.split("\n").filter(l => /^cpu\d+/.test(l)).length
         }
     }
 
-    // ── /proc/meminfo → RAM y Swap ────────────────────────────────
-    FileView {
-        id: memFile
-        path: "/proc/meminfo"
-        onTextChanged: _mem.parse(text())
-    }
-
     QtObject {
         id: _mem
-
         property int  totalMiB:     0
         property int  usedMiB:      0
         property int  availableMiB: 0
@@ -169,7 +159,6 @@ Singleton {
         property real swapUsage:    0.0
 
         function parse(raw) {
-            // Helper: extrae el valor en KiB de una línea "Key: 12345 kB"
             function get(key) {
                 const m = raw.match(new RegExp(`^${key}:\\s+(\\d+)`, "m"))
                 return m ? parseInt(m[1]) : 0
@@ -191,16 +180,8 @@ Singleton {
         }
     }
 
-    // ── /proc/uptime → tiempo encendido ──────────────────────────
-    FileView {
-        id: uptimeFile
-        path: "/proc/uptime"
-        onTextChanged: _uptime.parse(text())
-    }
-
     QtObject {
         id: _uptime
-
         property real   seconds:   0
         property string formatted: ""
 

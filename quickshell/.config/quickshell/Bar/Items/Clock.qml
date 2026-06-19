@@ -1,45 +1,41 @@
+import qs.Bar.Content
+import qs.Bar
 import QtQuick
 import Quickshell
-import qs.Core
 import qs.Features.Subwindows
-import qs.Core.Services as Services
+MouseArea {
+    id: wrapper
+    implicitWidth: content.implicitWidth + 24
+    implicitHeight: 30
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
+    BarBackground {
+        anchors.fill: parent
+        active: wrapper.containsMouse
+        scale: wrapper.pressed ? 0.92: (wrapper.containsMouse ? 1.05 : 1.0)
+        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
+    }
+    ClockContent {
+        id: content
+        anchors.centerIn: parent
+    }
 
-BarItem {
-    id: root
-    clickable: true
     onClicked: {
         const w = popupLoader.item
         if (w) w.visible = !w.visible
     }
-    SystemClock {
-        id: clock
-        precision: SystemClock.Seconds
-    }
+
     LazyLoader {
         id: popupLoader
         loading: true
         CalendarPopupWindow {
             id: popup
-            anchor.item: root
+            anchor.item: wrapper
             anchor.margins.top: 20
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
             anchor.margins.bottom: 20
             anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
             anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
         }
-    }
-    Text {
-        id: clockText
-        anchors.centerIn: parent
-        font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-
-        // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
-
-        color: Colors.md3.on_surface
-        font.pixelSize: 14
-
-
-        // Corrección: Usar el objeto clock.date correctamente en ambas partes
-        text: clock.date.toLocaleDateString(Services.I18nService.locale, "ddd") + " " + clock.date.toLocaleTimeString(Services.I18nService.locale, "hh:mm")
     }
 }
