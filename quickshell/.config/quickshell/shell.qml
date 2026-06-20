@@ -10,7 +10,6 @@ import qs.Core.Services as Services
 import qs.Components.Interface
 import qs.Features.OSD
 import qs.Widgets
-import qs.Notifications
 
 ShellRoot {
     id: root
@@ -20,12 +19,6 @@ ShellRoot {
     BrightnessOSD {}
     VolumeOSD {}
     BatteryOSD {}
-
-    LazyLoader {
-        id: notificationCenter
-        loading: true
-        NotificationCenter {}
-    }
     
     // Widgets pesados: LazyLoader para no bloquear el inicio
     LazyLoader {
@@ -46,7 +39,6 @@ ShellRoot {
             id: delegateScope
             required property ShellScreen modelData
             Bar { screen: delegateScope.modelData }
-            NotificationLister { screen: delegateScope.modelData }
         }
     }
 }

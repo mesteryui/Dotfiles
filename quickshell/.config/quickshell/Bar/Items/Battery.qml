@@ -3,59 +3,34 @@ import Quickshell.Widgets
 import Quickshell.Services.UPower
 import QtQuick
 import qs.Core
-import qs.Core.Services as Services
-import qs.Components
-
-BarItem {
+import qs.Bar.Content
+import qs.Bar
+Item {
     id: root
+    implicitWidth: content.implicitWidth + 10
+    implicitHeight: 30
 
-    clickable: true
-    onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
-    
-    Row {
+    MouseArea {
+        id: interaction
+        anchors.fill: parent
+        enabled: true
+        onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
+        cursorShape: Qt.PointingHandCursor
+    }
+    BarBackground {
+        id: background
+        anchors.fill: parent
+        scale: interaction.pressed ? 0.92 : (interaction.enabled && interaction.containsMouse ? 1.05 : 1.0)
+        Behavior on scale {
+        NumberAnimation {
+            duration: 100
+            easing.type: Easing.OutQuad
+        }
+        }
+    }
+    BatteryContent {
+        id: content
         anchors.centerIn: parent
-        spacing: 6
         
-        MaterialIcon {
-            id: batteryIcon
-            size: 20
-            color: Colors.md3.on_surface
-            
-            icon: {
-                const device = UPower.displayDevice;
-                if (!device) return "battery_unknown";
-                
-                const p = device.percentage;
-                const isCharging = device.state === UPowerDeviceState.Charging;
-                
-                if (isCharging) {
-                    if (p > 0.9) return "battery_charging_full";
-                    if (p > 0.75) return "battery_charging_80";
-                    if (p > 0.55) return "battery_charging_60";
-                    if (p > 0.4) return "battery_charging_50";
-                    if (p > 0.25) return "battery_charging_30";
-                    return "battery_charging_20";
-                }
-                
-                if (p > 0.9) return "battery_full";
-                if (p > 0.7) return "battery_6_bar";
-                if (p > 0.5) return "battery_4_bar";
-                if (p > 0.3) return "battery_3_bar";
-                if (p > 0.15) return "battery_1_bar";
-                return "battery_0_bar";
-            }
-        }
-        
-        Text {
-            // Mostramos el porcentaje redondeado
-            anchors.verticalCenter: parent.verticalCenter
-            font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
-            text: {
-                const p = UPower.displayDevice?.percentage ?? 0;
-                return Math.round(p * 100) + "%";
-            }
-            color: Colors.md3.on_surface
-            verticalAlignment: Text.AlignVCenter
-        }
     }
 }

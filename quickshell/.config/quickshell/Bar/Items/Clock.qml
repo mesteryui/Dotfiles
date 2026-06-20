@@ -1,5 +1,6 @@
 import qs.Bar.Content
 import qs.Bar
+import qs.Core.Services as Services
 import QtQuick
 import Quickshell
 import qs.Features.Subwindows

@@ -1,22 +1,36 @@
 import Quickshell
 import QtQuick
 import qs.Core.Services as Services
-import qs.Components
 import qs.Core
+import qs.Bar.Content
 import qs.Features.Subwindows
 import qs.Bar.Items
-BarItem {
+Item {
     id: root
+
+    implicitWidth: content.implicitWidth + 24 // Padding horizontal
+    implicitHeight: 30
 
     readonly property var service: Services.UpdatesTracking
 
-        visible: service.updateCount > 0 || service.checking
-        clickable: !service.updating && !service.checking
-        onClicked: {
-            const w = popupLoader.item
-            if (w) w.visible = !w.visible
+    visible: service.updateCount > 0 || service.checking
+
+
+        MouseArea {
+            id: interaction
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                const w = popupLoader.item
+                if (w) w.visible = !w.visible
+            }
+            enabled: !root.service.updating && !root.service.checking
         }
-        radius: 20
+
+        BarBackground {
+            anchors.fill: parent
+            highlighted: interaction.containsMouse
+        }
         LazyLoader {
             id: popupLoader
             loading: true
@@ -29,49 +43,10 @@ BarItem {
                 anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
             }
         }
-
-        Row {
+        UpdateCounterContent {
+            id: content
             anchors.centerIn: parent
-            spacing: 6
-
-            MaterialIcon {
-                id: icon
-                anchors.verticalCenter: parent.verticalCenter
-                size: 20
-                icon: service.updating ? "downloading" :
-                service.checking ? "sync" :
-                service.failed ? "warning" :
-                "system_update_alt"
-
-                color: service.failed ? Colors.md3.error :
-                service.updating ? Colors.md3.primary :
-                Colors.md3.on_surface
-
-                // Rotación animada mientras sincroniza
-                RotationAnimation on rotation {
-                running: service.checking || service.updating
-                from: 0
-                to: 360
-                duration: 1000
-                loops: Animation.Infinite
-
-                onRunningChanged: {
-                    if (!running)
-                    {
-                        icon.rotation = 0
-                    }
-                }
-
-            }
+            service: root.service
         }
 
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            visible: !service.checking && !service.updating
-            text: service.updateCount
-            color: service.failed ? Colors.md3.error : Colors.md3.on_surface
-            font.pixelSize: 16
-            font.family: Services.ConfigService.getConfig("fontSans", "sans-serif")
-        }
     }
-}

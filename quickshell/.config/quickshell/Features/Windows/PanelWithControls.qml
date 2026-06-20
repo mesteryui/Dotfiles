@@ -191,13 +191,13 @@ PopupWindow {
                     active: Services.IdleInhibitedService.inhibited
                     onToggled: Services.IdleInhibitedService.toggle()
                 }
-                ControlToggle {
-                    Layout.fillWidth: true
-                    label: Services.I18nService.getTranslation("panel.dnd", "Do Not Disturb")
-                    iconName: "bedtime"
-                    active: Services.NotificationService.dnd
-                    onToggled: Services.NotificationService.dnd = !Services.NotificationService.dnd
-                }
+                //ControlToggle {
+                //    Layout.fillWidth: true
+                //    label: Services.I18nService.getTranslation("panel.dnd", "Do Not Disturb")
+                //    iconName: "bedtime"
+                //    active: Services.NotificationService.dnd
+                //    onToggled: Services.NotificationService.dnd = !Services.NotificationService.dnd
+                //}
             }
 
             // ── TabBar ────────────────────────────────────────────────────
