@@ -7,9 +7,9 @@ import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
 import qs.Core.Services as Services
-import qs.Components.Interface
+import qs.Panels.System
 import qs.Features.OSD
-import qs.Widgets
+import qs.Panels.Wallpaper
 
 ShellRoot {
     id: root

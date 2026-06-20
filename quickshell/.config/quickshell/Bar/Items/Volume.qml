@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
 import qs.Core.Services as Services
-import qs.Components
+import qs.Primitives
 import qs.Core
 
 BarItem {

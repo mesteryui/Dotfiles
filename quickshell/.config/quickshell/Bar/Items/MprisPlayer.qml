@@ -3,8 +3,8 @@ import Quickshell
 import Quickshell.Services.Mpris
 import qs.Core.Services as Services
 import qs.Core
-import qs.Features.Subwindows
-import qs.Components
+import qs.Panels.MediaPlayer
+import qs.Primitives
 import qs.Bar.Content
 import qs.Bar
 import QtQuick.Layouts
@@ -15,11 +15,8 @@ Item {
     implicitHeight: 30
     BarBackground {
         anchors.fill: parent
-        highlighted: titleInteraction.containsMouse
         active: titleInteraction.pressed
-        border.width: highlighted ? 1 : 0
-        border.color: Colors.md3.primary
-        Behavior on color { ColorAnimation { duration: 200 } }
+        
     }
 
     PlayerContent {

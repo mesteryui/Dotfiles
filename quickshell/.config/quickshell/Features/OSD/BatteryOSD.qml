@@ -3,7 +3,7 @@ import Quickshell.Widgets
 import QtQuick
 import Quickshell.Services.UPower
 import qs.Core
-import qs.Components
+import qs.Primitives
 import qs.Core.Services as Services
 import Quickshell.Wayland
 

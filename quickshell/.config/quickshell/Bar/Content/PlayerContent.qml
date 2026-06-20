@@ -1,9 +1,7 @@
-import Quickshell.Services.Mpris
 import qs.Core.Services as Services
 import qs.Core
-import Quickshell
 import QtQuick
-import qs.Components
+import qs.Primitives
 Item {
     id: root
     property bool isHovered: false
@@ -13,7 +11,7 @@ Item {
             Row {
                 id: layout
                 x: 12
-                spacing: 5
+                spacing: 3
                 anchors.centerIn: parent
                 visible: true
 
@@ -24,7 +22,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
                     font.pixelSize: 14
-                    scale: isHovered ? 1.08 : 1.00
+                    scale: root.isHovered ? 1.08 : 1.00
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     width: Math.min(implicitWidth, 150)
@@ -37,13 +35,13 @@ Item {
 
             }
             ButtonIcon {
-                iconSize: 20
+                iconSize: 16
                 iconName: "skip_previous"
                 enabled: Services.MprisService.hasPlayer
                 onClicked: Services.MprisService.previousTrack()
             }
             ButtonIcon {
-                iconSize: 20
+                iconSize: 16
                 iconName: Services.MprisService.isPlaying
                 ? "pause"
                 : "play_arrow"
@@ -51,7 +49,7 @@ Item {
                 onClicked: Services.MprisService.togglePlaying()
             }
             ButtonIcon {
-                iconSize: 20
+                iconSize: 16
                 iconName: "skip_next"
                 enabled: Services.MprisService.hasPlayer
                 onClicked: {

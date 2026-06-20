@@ -2,8 +2,8 @@ import Quickshell
 import QtQuick
 import qs.Core
 import qs.Core.Services as Services
-import qs.Features.Windows
-import qs.Components
+import qs.Panels.Controls
+import qs.Primitives
 
 BarItem {
     id: root

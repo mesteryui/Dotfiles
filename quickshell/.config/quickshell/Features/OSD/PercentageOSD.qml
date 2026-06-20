@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import qs.Core
-import qs.Components
+import qs.Primitives
 import Quickshell.Wayland
 
 BaseOSD {

@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import qs.Core
-import qs.Features.Subwindows
 import qs.Core.Services as Services
 
 Item {

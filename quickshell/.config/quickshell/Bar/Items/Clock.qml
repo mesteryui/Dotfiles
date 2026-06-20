@@ -3,7 +3,7 @@ import qs.Bar
 import qs.Core.Services as Services
 import QtQuick
 import Quickshell
-import qs.Features.Subwindows
+import qs.Panels.Calendar
 MouseArea {
     id: wrapper
     implicitWidth: content.implicitWidth + 24

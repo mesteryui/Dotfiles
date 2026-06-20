@@ -9,24 +9,20 @@ Item {
     id: root
     implicitWidth: content.implicitWidth + 10
     implicitHeight: 30
+    scale: interaction.pressed ? 0.92: (interaction.containsMouse ? 1.05 : 1.0)
 
     MouseArea {
         id: interaction
         anchors.fill: parent
         enabled: true
+        hoverEnabled: true
         onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
         cursorShape: Qt.PointingHandCursor
     }
     BarBackground {
         id: background
         anchors.fill: parent
-        scale: interaction.pressed ? 0.92 : (interaction.enabled && interaction.containsMouse ? 1.05 : 1.0)
-        Behavior on scale {
-        NumberAnimation {
-            duration: 100
-            easing.type: Easing.OutQuad
-        }
-        }
+        active: interaction.containsMouse
     }
     BatteryContent {
         id: content

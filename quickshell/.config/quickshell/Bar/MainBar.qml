@@ -1,13 +1,9 @@
-import Quickshell
-import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
-import qs.Bar
 import qs.Bar.Items
 import qs.Bar.SystemTray
 import qs.Core
-import qs.Core.Services as Services
 
 Rectangle {
         id: bar

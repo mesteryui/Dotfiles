@@ -1,9 +1,7 @@
 import Quickshell
 import Quickshell.Widgets
 import QtQuick
-import qs.Core.Services
-import qs.Core
-import qs.Components
+import qs.Bar.Content
 
 BarItem {
     id: root
@@ -16,11 +14,8 @@ BarItem {
         "impala"
     ])
 
-    MaterialIcon {
-        id: networkIcon
+    NetworkContent {
+        id: content
         anchors.centerIn: parent
-        size: 20
-        color: Colors.md3.on_surface
-        icon: NetworkService.materialIconBySignal
     }
 }

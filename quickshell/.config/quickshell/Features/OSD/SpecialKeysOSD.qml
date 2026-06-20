@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell.Hyprland // Módulo para GlobalShortcut
 import qs.Core
 import qs.Core.Services as Services
-import qs.Components
+import qs.Primitives
 
 BaseOSD {
     id: keyOSD

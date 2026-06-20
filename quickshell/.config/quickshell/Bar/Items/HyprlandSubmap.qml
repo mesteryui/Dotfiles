@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import Quickshell.Hyprland
 import qs.Core
-import qs.Components
+import qs.Primitives
 import qs.Bar.Content
 import qs.Bar
 import qs.Core.Services
@@ -17,7 +17,7 @@ Item {
     BarBackground {
         color: Colors.md3.primary_container
         anchors.fill: parent
-     }
+    }
     
     HyprlandSubmapContent {
         id: content

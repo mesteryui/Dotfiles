@@ -1,5 +1,5 @@
 import QtQuick
-import qs.Components
+import qs.Primitives
 import qs.Core
 Item {
     id: root

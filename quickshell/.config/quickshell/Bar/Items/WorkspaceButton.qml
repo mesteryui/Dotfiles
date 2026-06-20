@@ -1,6 +1,4 @@
 import QtQuick
-import Quickshell
-import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 Rectangle {

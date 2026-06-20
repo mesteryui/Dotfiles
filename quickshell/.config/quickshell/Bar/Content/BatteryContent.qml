@@ -1,15 +1,15 @@
 import QtQuick
-import qs.Components
+import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
 Item {
     id: root
-    implicitWidth: layout.childrenRect.width
+    implicitWidth: layout.childrenRect.width + 5
     implicitHeight: 30
 
     Row {
         id: layout
-        spacing: 6
+        spacing: 5
         anchors.verticalCenter: parent.verticalCenter
         MaterialIcon {
             id: batteryIcon

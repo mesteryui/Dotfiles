@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import qs.Components
+import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
 import Quickshell.Bluetooth
