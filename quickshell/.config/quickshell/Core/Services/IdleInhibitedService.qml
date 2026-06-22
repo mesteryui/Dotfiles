@@ -7,6 +7,7 @@ Singleton {
     property alias inhibited: persistent.activated
     PersistentProperties {
         id: persistent
+        reloadableId: "persitentIdle"
         property bool activated: false
     }
     function toggle(): void {

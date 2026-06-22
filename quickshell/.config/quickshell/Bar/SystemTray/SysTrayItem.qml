@@ -8,28 +8,32 @@ Item {
     id: itemContainer
 
     required property var modelData  // <-- required
-    required property var rootWindow // <-- required también por consistencia
-    
+
     implicitWidth: 26
     implicitHeight: 26
-    
-    function showMenu() {
-        trayMenu.visible = !trayMenu.visible
-    }
-    TrayMenu {
-        id: trayMenu
-        menu: itemContainer.modelData?.menu ?? null
-        anchor.item: itemContainer
-        anchor.margins.top: 13
-        anchor.margins.bottom: 13
-        anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
-        anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
-    }
 
+    function showMenu()
+    {
+        const w = loader.item
+        if (w) w.visible = !w.visible
+    }
+    LazyLoader {
+        id: loader
+        loading: true
+        component: TrayMenu {
+            id: trayMenu
+            menu: itemContainer.modelData?.menu ?? null
+            anchor.item: itemContainer
+            anchor.margins.top: 13
+            anchor.margins.bottom: 13
+            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
+            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
+        }
+    }
     Item {
         id: visualContent
         anchors.fill: parent
-        
+
         IconImage {
             source: modelData?.icon ?? ""
             // Centrado absoluto con márgenes limpios
@@ -39,48 +43,49 @@ Item {
             visible: source !== ""
         }
 
-        // El efecto de escala se aplica al contenido visual, 
+        // El efecto de escala se aplica al contenido visual,
         // evitando que el MouseArea o el sistema de layouts se vuelva loco
         scale: mouseManagement.pressed ? 1.25 : hoverHandler.hovered ? 1.10 : 1.0
 
         Behavior on scale {
-            NumberAnimation {
-                duration: 100
-                easing.type: Easing.OutQuad
-            }
+        NumberAnimation {
+            duration: 100
+            easing.type: Easing.OutQuad
         }
     }
+}
 
-    MouseArea {
-        id: mouseManagement
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        hoverEnabled: false
+MouseArea {
+    id: mouseManagement
+    anchors.fill: parent
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    hoverEnabled: false
 
-        onClicked: mouse => {
-            if (!modelData) return;
-            const isRight = mouse.button === Qt.RightButton;
-            const needsMenu = isRight || modelData.onlyMenu;
-            if (needsMenu && modelData.hasMenu) {
-                itemContainer.showMenu();
-            } else if (!isRight) {
-                modelData.activate();
-            }
-        }
-    }
+    onClicked: mouse => {
+    if (!modelData) return;
+    const isRight = mouse.button === Qt.RightButton;
+    const needsMenu = isRight || modelData.onlyMenu;
+    if (needsMenu && modelData.hasMenu)
+    {
+        itemContainer.showMenu();
+    } else if (!isRight) {
+    modelData.activate();
+}
+}
+}
 
-    HoverHandler {
-        id: hoverHandler
-    }
+HoverHandler {
+    id: hoverHandler
+}
 
-    WheelHandler {
-        onWheel: event => {
-            if (!modelData) return;
-            const isHorizontal = event.angleDelta.x !== 0;
-            modelData.scroll(
-                isHorizontal ? Qt.Horizontal : Qt.Vertical,
-                isHorizontal ? event.angleDelta.x : event.angleDelta.y
-            );
-        }
-    }
+WheelHandler {
+    onWheel: event => {
+    if (!modelData) return;
+    const isHorizontal = event.angleDelta.x !== 0;
+    modelData.scroll(
+        isHorizontal ? Qt.Horizontal : Qt.Vertical,
+        isHorizontal ? event.angleDelta.x : event.angleDelta.y
+    );
+}
+}
 }

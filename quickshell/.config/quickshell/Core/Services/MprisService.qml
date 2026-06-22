@@ -15,22 +15,37 @@ Singleton {
     readonly property bool isPlaying: hasPlayer
         && currentMprisPlayer.playbackState === MprisPlaybackState.Playing
 
-    
-    property MprisPlayer currentMprisPlayer: {
-        const players = Mpris.players.values;
+    readonly property list<MprisPlayer> players: Mpris.players.values.filter(p => isRealPlayer(p)) ?? []
+
+    // Player seleccionado manualmente desde las pestañas.
+    // null = selección automática por estado de reproducción.
+    property MprisPlayer selectedPlayer: null
+
+    // Limpia la selección si el player desaparece de la lista.
+    onPlayersChanged: {
+        if (selectedPlayer && !players.some(p => p === selectedPlayer))
+            selectedPlayer = null
+    }
+
+    readonly property MprisPlayer currentMprisPlayer: {
+        if (selectedPlayer && players.some(p => p === selectedPlayer))
+            return selectedPlayer
         return players.find(p => p.playbackState === MprisPlaybackState.Playing)
             ?? players.find(p => p.playbackState === MprisPlaybackState.Paused)
             ?? players[0]
-            ?? null;
+            ?? null
+    }
+    function isRealPlayer(player: MprisPlayer): bool {
+        return (!player.dbusName.startsWith('org.mpris.MediaPlayer2.playerctld') &&
+            // Non-instance mpd bus
+            !(player.dbusName.endsWith('.mpd') && !player.dbusName.endsWith('MediaPlayer2.mpd')))
     }
 
-    // ── Metadatos cacheados ───────────────────────────────────
-
-    
     property alias lastTrackArtUrl: persistent.lastTrackArtUrl
 
     PersistentProperties {
         id: persistent
+        reloadableId: "persitentMpris"
         property string lastTrackArtUrl: ""
     }
 

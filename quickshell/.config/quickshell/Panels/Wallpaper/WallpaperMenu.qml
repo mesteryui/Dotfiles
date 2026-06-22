@@ -13,13 +13,18 @@ PanelWindow {
     id: wallpaperMenu
     implicitWidth: 800
     implicitHeight: 280
-    visible: true           // ✅ siempre visible — la animación va en el contenido
+    visible: content.opacity > 0           // ✅ siempre visible — la animación va en el contenido
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: WlrLayershell.Ignore
     WlrLayershell.namespace: "wallpaper-menu"
 
+    Region { id: emptyRegion }
+    Region { id: activeRegion; item: content }
+
+    mask: showing ? activeRegion : emptyRegion
+    
     property bool showing: false
 
     function show() { showing = true }
@@ -52,6 +57,7 @@ PanelWindow {
 
     // ── Contenido animado — la ventana no se toca ─────────────
     Item {
+        id: content
         anchors.fill: parent
 
         // ✅ la animación va aquí, no en la PanelWindow
@@ -80,10 +86,8 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             radius: 20
-            // ✅ surface_container_high — token MD3 para popups elevados
             color: Colors.md3.surface
             clip: true
-            // ✅ layer.enabled eliminado — no hay effect asignado
 
             Column {
                 anchors.fill: parent
@@ -96,8 +100,8 @@ PanelWindow {
                     height: 20
 
                     Label {
-                        text: Services.I18nService?.getTranslation("wallpaper.title") ?? "Wallpapers"
-                        font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+                        text: Services.I18nService?.getTranslation("wallpaper.title","Wallpapers")
+                        font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 18
                         font.weight: Font.Medium
                         color: Colors.md3.on_surface

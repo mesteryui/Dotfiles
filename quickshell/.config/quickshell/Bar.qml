@@ -1,9 +1,8 @@
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Layouts
 import qs.Bar
+import qs.Core
 import qs.Core.Services as Services
 
 PanelWindow {
@@ -15,22 +14,33 @@ PanelWindow {
 
     
     anchors {
-        top: Services.ConfigService.getConfig("bar.position") == "top" || Services.ConfigService.getConfig("bar.position") == "" ? true : false
+        top: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == "" ? true : false
         right: true
         left: true
-        bottom: Services.ConfigService.getConfig("bar.position") == "bottom" ? true : false
+        bottom: Services.ConfigService.configs.bar.position == "bottom" ? true : false
     }
     
     margins {
-        top: Services.ConfigService.getConfig("bar.position") == "bottom" ? 0 : 3
-        bottom: Services.ConfigService.getConfig("bar.position") == "bottom" ? 3 : 0
+        top: Services.ConfigService.configs.bar.position == "bottom" ? 0 : 3
+        bottom: Services.ConfigService.configs.bar.position == "bottom" ? 3 : 0
         right: 3
         left: 3
     }
-    
+    implicitWidth: content.width
     implicitHeight: 40
     color: "transparent"
     
-    MainBar { anchors.fill: parent }
+    BarBackground {
+        anchors.fill: parent
+        color: Qt.alpha(Colors.md3.surface,0.93)
+        radius: 30
+    }
+
+    MainBar { 
+        id: content
+        anchors.fill: parent
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+    }
    
 }

@@ -44,7 +44,7 @@ BaseOSD {
             }
 
             Text {
-                font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+                font.family: Services.ConfigService.configs.appearence.fontSans
                 font.pixelSize: 22
                 font.bold: true
                 color: Colors.md3.on_surface

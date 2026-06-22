@@ -5,7 +5,7 @@ import qs.Primitives
 Item {
     id: root
     property bool isHovered: false
-    property var player: Services.MprisService.currentMprisPlayer
+        property var player: Services.MprisService.currentMprisPlayer
             implicitWidth: layout.childrenRect.width
             implicitHeight: 30
             Row {
@@ -20,7 +20,7 @@ Item {
                     text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
                     color: Colors.md3.on_surface
                     anchors.verticalCenter: parent.verticalCenter
-                    font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+                    font.family: Services.ConfigService.configs.appearence.fontSans
                     font.pixelSize: 14
                     scale: root.isHovered ? 1.08 : 1.00
                     elide: Text.ElideRight

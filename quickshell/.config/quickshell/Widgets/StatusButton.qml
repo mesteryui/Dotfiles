@@ -12,7 +12,7 @@ MouseArea {
     Rectangle {
         anchors.fill: parent
         radius: 8
-        color: root.containsMouse ? Qt.tint(root.backgroundColor, Qt.alpha(Colors.md3.on_surface, 0.08)) : backgroundColor
+        color: root.containsMouse ? Qt.tint(root.backgroundColor, Qt.alpha(Colors.md3.on_surface, 0.08)) : root.backgroundColor
         Behavior on color { ColorAnimation { duration: 200 } }
     }
     

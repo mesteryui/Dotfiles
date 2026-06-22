@@ -6,7 +6,7 @@
         "timeout": 5
     },
     "updates": {
-        "countTime": 2,
-        "command": "sudo pacman -Syu"
+        "command": "sudo pacman -Syu",
+        "countTime": 10
     }
 }

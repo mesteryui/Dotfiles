@@ -43,6 +43,7 @@ Singleton {
 
     PersistentProperties {
         id: settings
+        reloadableId: "persitentNotifications"
         property bool dnd: false
         property var history: []
     }

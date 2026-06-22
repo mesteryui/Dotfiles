@@ -22,7 +22,7 @@ Item {
         Text {
             // Mostramos el porcentaje redondeado
             anchors.verticalCenter: parent.verticalCenter
-            font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+            font.family: Services.ConfigService.configs.appearence.fontSans
             text: Services.BatteryService.percentage + "%";
             color: Colors.md3.on_surface
             verticalAlignment: Text.AlignVCenter

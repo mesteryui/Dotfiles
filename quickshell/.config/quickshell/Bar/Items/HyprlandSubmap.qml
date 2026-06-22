@@ -1,8 +1,5 @@
-import Quickshell
 import QtQuick
-import Quickshell.Hyprland
 import qs.Core
-import qs.Primitives
 import qs.Bar.Content
 import qs.Bar
 import qs.Core.Services

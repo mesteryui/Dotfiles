@@ -51,7 +51,7 @@ Item {
         text: root.service.updateCount
         color: root.service.failed ? Colors.md3.error : Colors.md3.on_surface
         font.pixelSize: 16
-        font.family: Services.ConfigService.getConfig("fontSans", "sans-serif")
+        font.family: Services.ConfigService.configs.appearence.fontSans
     }
 }
 }

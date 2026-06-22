@@ -16,7 +16,7 @@ Item {
     Text {
         id: clockText
         anchors.centerIn: parent
-        font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+        font.family: Services.ConfigService.configs.appearence.fontSans
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
 

@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import qs.Bar.Content
 import qs.Bar
 import qs.Core.Services as Services
@@ -14,7 +15,9 @@ MouseArea {
         anchors.fill: parent
         active: wrapper.containsMouse
         scale: wrapper.pressed ? 0.92: (wrapper.containsMouse ? 1.05 : 1.0)
-        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
+        Behavior on scale { 
+            NumberAnimation { duration: 100; easing.type: Easing.OutQuad } 
+        }
     }
     ClockContent {
         id: content
@@ -29,14 +32,14 @@ MouseArea {
     LazyLoader {
         id: popupLoader
         loading: true
-        CalendarPopupWindow {
+        component: CalendarPopupWindow {
             id: popup
             anchor.item: wrapper
             anchor.margins.top: 20
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
             anchor.margins.bottom: 20
-            anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
-            anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
+            anchor.edges: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
+            anchor.gravity: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
         }
     }
 }

@@ -7,7 +7,7 @@ import qs.Bar.Content
 import qs.Bar
 Item {
     id: root
-    implicitWidth: content.implicitWidth + 10
+    implicitWidth: content.implicitWidth + 18
     implicitHeight: 30
     scale: interaction.pressed ? 0.92: (interaction.containsMouse ? 1.05 : 1.0)
 

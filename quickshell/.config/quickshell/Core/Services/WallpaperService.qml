@@ -7,7 +7,7 @@ import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 Singleton {
     id: service
     property alias wallpaperList: folderModel
-    readonly property string wallpaperDir: ConfigService.getConfig("wallpapersDir","/home/oscar/Imágenes/Wallpapers/")
+    readonly property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers/"
     FolderListModel {
         id: folderModel
         folder: "file://" + service.wallpaperDir
@@ -16,7 +16,6 @@ Singleton {
         showDotAndDotDot: false
         sortField: FolderListModel.Name
     }
-
     Process {
         id: applyProcess
     }
@@ -25,6 +24,6 @@ Singleton {
         let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
         applyProcess.command = ["awww", "img", fullPath, "--transition-type", "center"];
         applyProcess.running = true;
-        Quickshell.execDetached(["matugen", "image", fullPath, "--source-color-index", "0","-t",ConfigService.getConfig("matugen.type","scheme-tonal-spot")]);
+        ThemeApplier.applyTheme(fullPath)
     }
 }

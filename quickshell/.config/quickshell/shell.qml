@@ -4,9 +4,7 @@
 //@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
 
 import Quickshell
-import Quickshell.Services.Notifications
 import QtQuick
-import qs.Core.Services as Services
 import qs.Panels.System
 import qs.Features.OSD
 import qs.Panels.Wallpaper
@@ -14,7 +12,7 @@ import qs.Panels.Wallpaper
 ShellRoot {
     id: root
     settings.watchFiles: true
-    
+
     // OSDs: Carga inmediata (pequeños y críticos)
     BrightnessOSD {}
     VolumeOSD {}

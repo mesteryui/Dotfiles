@@ -1,13 +1,10 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Services.Mpris
 import qs.Core.Services as Services
-import qs.Core
 import qs.Panels.MediaPlayer
-import qs.Primitives
 import qs.Bar.Content
 import qs.Bar
-import QtQuick.Layouts
 
 Item {
     id: root
@@ -27,6 +24,7 @@ Item {
 
     MouseArea {
         id: titleInteraction
+        enabled: Services.MprisService.hasPlayer
         width: 150
         height: parent.height
         anchors.left: parent.left
@@ -49,8 +47,8 @@ Item {
             anchor.item: root
             anchor.margins.top: 20
             anchor.margins.bottom: 20
-            anchor.edges: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
-            anchor.gravity: (Services.ConfigService.getConfig("bar.position") == "bottom" ? Edges.Top : Edges.Bottom)
+            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom)
+            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom)
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
         }
     }

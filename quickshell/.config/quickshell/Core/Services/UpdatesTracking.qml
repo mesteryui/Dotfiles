@@ -16,22 +16,12 @@ Singleton {
 
     PersistentProperties {
         id: persistent
+        reloadableId: "updatePersistence"
         property int updateCount: 0
-        property var packageList: []
-    }
-
-    Component.onCompleted: {
-        // Cargar datos persistidos al inicio
-        if (persistent.packageList.length > 0) {
-            for (const pkg of persistent.packageList) {
-                root.packagesToUpdate.append(pkg);
-            }
-        }
-        countUpdates.running = true;
     }
 
     Timer {
-        interval: ConfigService.getConfig("updates.countTime",60) * 60000
+        interval: ConfigService.configs.updates.countTime * 60000
         running:  true
         repeat:   true
         onTriggered: countUpdates.running = true
@@ -87,7 +77,8 @@ Singleton {
 
     Process {
         id: updateProcess
-        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e"].concat(ConfigService.getConfig("updates.command", "topgrade").split(" "))
+        // Separa el comando de la config por espacios y expande los argumentos dentro del array base
+        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...ConfigService.configs.updates.command.split(" ")]
 
         onRunningChanged: {
             root.updating = running
@@ -97,7 +88,9 @@ Singleton {
             countUpdates.running = true
         }
     }
-
+    function checkNow() {
+        countUpdates.running = true
+    }
     function update() {
         updateProcess.running = true
     }

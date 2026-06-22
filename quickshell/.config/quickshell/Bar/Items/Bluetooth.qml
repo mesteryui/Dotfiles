@@ -3,7 +3,6 @@ import Quickshell
 import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
-import Quickshell.Bluetooth
 
 BarItem {
     clickable: true

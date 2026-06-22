@@ -1,4 +1,3 @@
-// Services/I18nService.qml
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -8,7 +7,7 @@ Singleton {
     id: root
 
     // Idioma actual. Podría detectarse automáticamente o guardarse en una config.
-    property string userDefinedLang: ConfigService.getConfig("language")
+    property string userDefinedLang: ConfigService.configs.language
     property var locale: userDefinedLang == "" ? Qt.locale() : Qt.locale(userDefinedLang)
     property string language: userDefinedLang == "" ? Qt.locale().name : userDefinedLang
 

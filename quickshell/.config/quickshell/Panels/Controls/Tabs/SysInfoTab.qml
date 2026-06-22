@@ -1,27 +1,27 @@
+// SysInfoTab — Content
+// Tab de información del sistema. No tiene Background propio —
+// vive dentro del Background del ControlPanel.
+
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Effects
 import qs.Primitives
 import qs.Core.Services as Services
 import qs.Core
 
 Item {
     id: root
-    implicitWidth: mainColumn.implicitWidth
+    implicitWidth:  mainColumn.implicitWidth
     implicitHeight: mainColumn.implicitHeight
 
-    // ── Tokens ────────────────────────────────────────────────────
     readonly property int _pad: 20
     readonly property int _gap: 12
 
-    // ── Helper: formatea MiB → "X.X GiB" o "XXX MiB" ────────────
     function fmtMem(mib) {
         return mib >= 1024
             ? (mib / 1024).toFixed(1) + " GiB"
             : mib + " MiB"
     }
 
-    // ─────────────────────────────────────────────────────────────
     ColumnLayout {
         id: mainColumn
         anchors {
@@ -32,7 +32,7 @@ Item {
         }
         spacing: root._gap
 
-        // ══ CPU Card ══════════════════════════════════════════════
+        // ══ CPU ═══════════════════════════════════════════════════
         M3Card {
             Layout.fillWidth: true
             padding: root._pad
@@ -42,19 +42,15 @@ Item {
                 anchors.right: parent.right
                 spacing: 16
 
-                // Donut / arc de uso
                 CpuArc {
-                    id: cpuArc
                     size: 72
                     value: Services.SystemInfoService.cpuUsage
                 }
 
-                // Textos
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 6
 
-                    // Header: CPU + badge de temperatura
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -62,7 +58,7 @@ Item {
                         Text {
                             text: "CPU"
                             font {
-                                family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                                family: Services.ConfigService.configs.appearence.fontSans
                                 pixelSize: 11
                                 weight: Font.Medium
                                 letterSpacing: 0.8
@@ -72,7 +68,6 @@ Item {
 
                         Item { Layout.fillWidth: true }
 
-                        // Chip de temperatura
                         Rectangle {
                             implicitWidth: tempLabel.implicitWidth + 14
                             implicitHeight: 20
@@ -84,7 +79,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: Services.SystemInfoService.cpuTemp + "°C"
                                 font {
-                                    family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                                    family: Services.ConfigService.configs.appearence.fontSans
                                     pixelSize: 10
                                     weight: Font.Medium
                                 }
@@ -93,18 +88,16 @@ Item {
                         }
                     }
 
-                    // Porcentaje grande
                     Text {
                         text: Services.SystemInfoService.cpuUsagePct ?? "0%"
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 24
                             weight: Font.Bold
                         }
                         color: Colors.md3.primary
                     }
 
-                    // Barra de progreso
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.cpuUsage ?? 0
@@ -113,9 +106,10 @@ Item {
                     }
 
                     Text {
-                        text: Services.SystemInfoService.cpuCores + " " + Services.I18nService.getTranslation("panel.cores", "núcleos")
+                        text: Services.SystemInfoService.cpuCores + " "
+                            + Services.I18nService.getTranslation("panel.cores", "núcleos")
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
                         color: Colors.md3.on_surface_variant
@@ -124,12 +118,11 @@ Item {
             }
         }
 
-        // ══ RAM + Swap Cards (fila) ════════════════════════════════
+        // ══ RAM + Swap ════════════════════════════════════════════
         RowLayout {
             Layout.fillWidth: true
             spacing: root._gap
 
-            // ── RAM ─────────────────────────────────────────────
             M3Card {
                 Layout.fillWidth: true
                 padding: root._pad
@@ -141,10 +134,11 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
+
                         Text {
                             text: "RAM"
                             font {
-                                family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                                family: Services.ConfigService.configs.appearence.fontSans
                                 pixelSize: 11
                                 weight: Font.Medium
                                 letterSpacing: 0.8
@@ -155,7 +149,7 @@ Item {
                         Text {
                             text: Services.SystemInfoService.memUsagePct ?? "0%"
                             font {
-                                family: Services.ConfigService.getConfig("font")
+                                family: Services.ConfigService.configs.appearence.fontSans
                                 pixelSize: 13
                                 weight: Font.Bold
                             }
@@ -171,9 +165,9 @@ Item {
                     }
 
                     Text {
-                        text: fmtMem(Services.SystemInfoService.memUsedMiB ?? 0)
+                        text: root.fmtMem(Services.SystemInfoService.memUsedMiB ?? 0)
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
                         color: Colors.md3.on_surface_variant
@@ -182,7 +176,6 @@ Item {
                 }
             }
 
-            // ── Swap ─────────────────────────────────────────────
             M3Card {
                 Layout.fillWidth: true
                 padding: root._pad
@@ -199,7 +192,7 @@ Item {
                         Text {
                             text: "Swap"
                             font {
-                                family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                                family: Services.ConfigService.configs.appearence.fontSans
                                 pixelSize: 11
                                 weight: Font.Medium
                                 letterSpacing: 0.8
@@ -212,7 +205,7 @@ Item {
                                 ? Math.round((Services.SystemInfoService.swapUsage ?? 0) * 100) + "%"
                                 : "—"
                             font {
-                                family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                                family: Services.ConfigService.configs.appearence.fontSans
                                 pixelSize: 13
                                 weight: Font.Bold
                             }
@@ -229,10 +222,10 @@ Item {
 
                     Text {
                         text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
-                            ? fmtMem(Services.SystemInfoService.swapUsedMiB ?? 0)
+                            ? root.fmtMem(Services.SystemInfoService.swapUsedMiB ?? 0)
                             : Services.I18nService.getTranslation("panel.off", "Off")
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
                         color: Colors.md3.on_surface_variant
@@ -242,7 +235,7 @@ Item {
             }
         }
 
-        // ══ Disk Card ═════════════════════════════════════════════
+        // ══ Disco ═════════════════════════════════════════════════
         M3Card {
             Layout.fillWidth: true
             padding: root._pad
@@ -257,7 +250,7 @@ Item {
                     Text {
                         text: Services.I18nService.getTranslation("panel.disk", "Disco") + " (/)"
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 11
                             weight: Font.Medium
                             letterSpacing: 0.8
@@ -268,7 +261,7 @@ Item {
                     Text {
                         text: Services.SystemInfoService.diskUsagePct ?? "0%"
                         font {
-                            family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                            family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 13
                             weight: Font.Bold
                         }
@@ -284,11 +277,11 @@ Item {
                 }
 
                 Text {
-                    text: (Services.SystemInfoService.diskUsed ?? "0") + " " +
-                          Services.I18nService.getTranslation("panel.of", "de") + " " +
-                          (Services.SystemInfoService.diskTotal ?? "0")
+                    text: (Services.SystemInfoService.diskUsed ?? "0") + " "
+                        + Services.I18nService.getTranslation("panel.of", "de") + " "
+                        + (Services.SystemInfoService.diskTotal ?? "0")
                     font {
-                        family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                        family: Services.ConfigService.configs.appearence.fontSans
                         pixelSize: 10
                     }
                     color: Colors.md3.on_surface_variant
@@ -297,7 +290,7 @@ Item {
             }
         }
 
-        // ══ Uptime Card ═══════════════════════════════════════════
+        // ══ Uptime ════════════════════════════════════════════════
         M3Card {
             Layout.fillWidth: true
             padding: root._pad
@@ -316,7 +309,7 @@ Item {
                 Text {
                     text: Services.I18nService.getTranslation("panel.uptime", "Uptime")
                     font {
-                        family: Services.ConfigService.getConfig("fontSans","sans-serif")
+                        family: Services.ConfigService.configs.appearence.fontSans
                         pixelSize: 11
                         weight: Font.Medium
                         letterSpacing: 0.8
@@ -328,85 +321,13 @@ Item {
                 Text {
                     text: Services.SystemInfoService.uptime ?? "N/A"
                     font {
-                        family: Services.ConfigService.getConfig("font")
+                        family: Services.ConfigService.configs.appearence.fontSans
                         pixelSize: 12
                         weight: Font.Bold
                     }
                     color: Colors.md3.on_surface
                 }
             }
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // Componentes inline
-    // ══════════════════════════════════════════════════════════════
-
-    // ── CpuArc (canvas donut) ─────────────────────────────────────
-    component CpuArc: Item {
-        id: _arc
-        property real value: 0.0    // 0–1
-        property int  size:  72
-
-        implicitWidth:  size
-        implicitHeight: size
-
-        onValueChanged: canvas.requestPaint()
-
-        Canvas {
-            id: canvas
-            anchors.fill: parent
-
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.clearRect(0, 0, width, height)
-
-                const cx    = width  / 2
-                const cy    = height / 2
-                const r     = (Math.min(width, height) / 2) - 6
-                const start = -Math.PI / 2
-                const end   = start + 2 * Math.PI * _arc.value
-
-                // Track
-                ctx.beginPath()
-                ctx.arc(cx, cy, r, 0, 2 * Math.PI)
-                ctx.strokeStyle = Colors.md3.surface_container.toString()
-                ctx.lineWidth   = 8
-                ctx.lineCap     = "round"
-                ctx.stroke()
-
-                // Arco activo
-                if (_arc.value > 0) {
-                    ctx.beginPath()
-                    ctx.arc(cx, cy, r, start, end)
-                    ctx.strokeStyle = Colors.md3.primary.toString()
-                    ctx.lineWidth   = 8
-                    ctx.lineCap     = "round"
-                    ctx.stroke()
-                }
-            }
-
-            Connections {
-                target: Colors.md3
-                function onPrimaryChanged()           { canvas.requestPaint() }
-                function onSurface_containerChanged() { canvas.requestPaint() }
-            }
-        }
-
-        // Porcentaje en el centro del donut
-        Text {
-            anchors.centerIn: parent
-            text: Math.round(_arc.value * 100) + "%"
-            font {
-                family: Services.ConfigService.getConfig("fontSans","sans-serif")
-                pixelSize: 13
-                weight: Font.Bold
-            }
-            color: Colors.md3.primary
-        }
-
-        Behavior on value {
-            NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
         }
     }
 }

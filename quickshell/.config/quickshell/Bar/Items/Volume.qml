@@ -1,50 +1,33 @@
 import QtQuick
 import Quickshell
-import Quickshell.Services.Pipewire
+import qs.Bar.Content
 import qs.Core.Services as Services
-import qs.Primitives
-import qs.Core
+import qs.Shared.Background
 
-BarItem {
+Item {
     id: root
-
-    clickable: true
-    onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "wiremix"])
-
-    PwObjectTracker {
-        objects: [Pipewire.defaultAudioSink]
+    implicitWidth: content.implicitWidth + 20
+    implicitHeight: 30
+    MouseArea {
+        id: interaction
+        anchors.fill: parent
+        hoverEnabled: true
+        enabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "wiremix"])
+    }
+    SurfaceBackground {
+        anchors.fill: parent
+        active: interaction.containsMouse
+        scale: interaction.pressed ? 0.92: (interaction.containsMouse ? 1.05 : 1.0)
+        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
     }
 
-    Row {
-        id: volumeLayout
-        spacing: 8
+    VolumeContent {
+        id: content
         anchors.centerIn: parent
-
-        MaterialIcon {
-            id: volumeIcon
-            size: 20
-            color: Colors.md3.on_surface
-            icon: {
-                if (!Pipewire.defaultAudioSink || !Pipewire.defaultAudioSink.audio) return "volume_off"
-                if (Pipewire.defaultAudioSink.audio.muted) return "volume_off"
-                const vol = Pipewire.defaultAudioSink.audio.volume
-                if (vol > 0.6) return "volume_up"
-                if (vol > 0.2) return "volume_down"
-                return "volume_mute"
-            }
-        }
-
-        Text {
-            id: volumeLabel
-            anchors.verticalCenter: parent.verticalCenter
-            text: {
-                const audio = Pipewire.defaultAudioSink?.audio;
-                if (!audio) return "0%";
-                return Math.round(audio.volume * 100) + "%";
-            }
-            color: Colors.md3.on_surface
-            font.pixelSize: 14
-            font.weight: Font.Medium
-        }
+        iconName: Services.AudioService.materialIcon
+        text: Math.round(Services.AudioService.volume * 100) + "%"
     }
+    
 }

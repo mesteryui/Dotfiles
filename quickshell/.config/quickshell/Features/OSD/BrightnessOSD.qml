@@ -1,7 +1,5 @@
-import qs.Core
 import qs.Core.Services as Services
 import QtQuick
-import Quickshell
 
 PercentageOSD {
     id: root

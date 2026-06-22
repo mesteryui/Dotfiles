@@ -72,7 +72,7 @@ Rectangle {
             id: buttonTextItem
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.buttonText
-            font.family: Services.ConfigService.getConfig("fontSans") || "sans-serif"
+            font.family: Services.ConfigService.configs.appearence.fontSans
             color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
             font.pixelSize: 12
             font.weight: highlighted ? Font.Bold : Font.Normal

@@ -85,7 +85,7 @@ PanelWindow {
                 id: titleText
                 text: root.menuTitle
                 visible: text !== ""
-                font.family: Services.ConfigService?.getConfig("fontSans") ?? "sans-serif"
+                font.family: Services.ConfigService.configs.appearence.fontSans
                 color: Colors.md3.on_surface
                 font.pixelSize: 18
                 font.bold: true
