@@ -1,17 +1,14 @@
 pragma Singleton
 import Quickshell
 import Quickshell.Wayland
+import qs.Core.Modules
 Singleton {
     id: root
 
-    property alias inhibited: persistent.activated
-    PersistentProperties {
-        id: persistent
-        reloadableId: "persitentIdle"
-        property bool activated: false
-    }
+    readonly property bool inhibited: Persistent.persistence.idle.inhibit
+
     function toggle(): void {
-        root.inhibited = !root.inhibited
+        Persistent.persistence.idle.inhibit = !root.inhibited
     }
     IdleInhibitor {
         id: idleInhibitor

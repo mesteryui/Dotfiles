@@ -15,14 +15,12 @@ Item {
                 anchors.centerIn: parent
                 visible: true
 
-                Text {
+                StyledText {
                     id: titleText
                     text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
                     color: Colors.md3.on_surface
                     anchors.verticalCenter: parent.verticalCenter
-                    font.family: Services.ConfigService.configs.appearence.fontSans
-                    font.pixelSize: 14
-                    scale: root.isHovered ? 1.08 : 1.00
+                    scale: root.isHovered ? 1.04 : 1.00
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     width: Math.min(implicitWidth, 150)
@@ -41,7 +39,7 @@ Item {
                 onClicked: Services.MprisService.previousTrack()
             }
             ButtonIcon {
-                iconSize: 16
+                iconSize: 17
                 iconName: Services.MprisService.isPlaying
                 ? "pause"
                 : "play_arrow"

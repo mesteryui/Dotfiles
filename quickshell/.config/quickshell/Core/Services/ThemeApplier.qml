@@ -1,12 +1,18 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import qs.Core.Modules
 
 Singleton {
     id: root
 
+    property string currentWallpaper: Persistent.persistence.currentWallpaper
+    property string matugenMode: ConfigService.configs.appearence.darkMode ? "dark" : "light"
+
+
     function applyTheme(wallpaperPath: string) {
-        updateMatugenColors(wallpaperPath);
+        Persistent.persistence.currentWallpaper = wallpaperPath
+        updateMatugenColors(root.currentWallpaper);
     }
 
     function updateMatugenColors(wallpaperPath: string) {
@@ -17,7 +23,8 @@ Singleton {
             "matugen", 
             "image", wallpaperPath, 
             "--source-color-index", "0",
-            "-t", ConfigService.configs.appearence.matugen.type
+            "-t", ConfigService.configs.appearence.matugen.type,
+            "-m", root.matugenMode
         ]);
     }
 }

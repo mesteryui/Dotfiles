@@ -1,8 +1,8 @@
 import QtQuick
 import qs.Core.Services as Services
-Text {
+import qs.Primitives
+StyledText {
     property string workspaceButton
     font.family: Services.ConfigService.configs.appearence.fontSans
-    anchors.centerIn: parent
     text: workspaceButton
 }

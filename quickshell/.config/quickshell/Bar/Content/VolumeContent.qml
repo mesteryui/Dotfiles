@@ -19,13 +19,12 @@ Item {
             icon: root.iconName
         }
 
-        Text {
+        StyledText {
             id: volumeLabel
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: Colors.md3.on_surface
             font.pixelSize: 14
-            font.weight: Font.Medium
         }
     }
 }

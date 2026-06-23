@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import qs.Core
 import qs.Core.Services as Services
 
@@ -28,7 +29,7 @@ Item {
     Text {
         anchors.centerIn: parent
         visible: Services.UpdatesTracking.updateCount === 0
-              && !Services.UpdatesTracking.checking
+            && !Services.UpdatesTracking.checking
         text: Services.I18nService.getTranslation("update.no_pending")
         font.pixelSize: 13
         font.family: Services.ConfigService.configs.appearence.fontSans
@@ -47,16 +48,19 @@ Item {
         spacing: 0
 
         ScrollBar.vertical: ScrollBar {
+            Material.accent: Colors.md3.primary
+            Material.background: Colors.md3.background
+            Material.foreground: Colors.md3.on_background
             policy: packageList.contentHeight > packageList.height
-                    ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+            ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
         }
 
         delegate: UpdatePackageDelegate {
             required property var modelData
             width: packageList.width
             packageName: modelData.name
-            oldVersion:  modelData.oldVersion
-            newVersion:  modelData.newVersion
+            oldVersion: modelData.oldVersion
+            newVersion: modelData.newVersion
         }
     }
 }

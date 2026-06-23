@@ -19,13 +19,11 @@ Item {
             icon: Services.BatteryService.materialIcon
         }
 
-        Text {
+        StyledText {
             // Mostramos el porcentaje redondeado
             anchors.verticalCenter: parent.verticalCenter
-            font.family: Services.ConfigService.configs.appearence.fontSans
             text: Services.BatteryService.percentage + "%";
             color: Colors.md3.on_surface
-            verticalAlignment: Text.AlignVCenter
         }
     }
 }

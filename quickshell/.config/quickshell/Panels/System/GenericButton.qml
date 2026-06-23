@@ -68,7 +68,7 @@ Rectangle {
             color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
         }
 
-        Text {
+        StyledText {
             id: buttonTextItem
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.buttonText

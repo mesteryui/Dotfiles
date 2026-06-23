@@ -55,7 +55,7 @@ Item {
                         Layout.fillWidth: true
                         spacing: 8
 
-                        Text {
+                        StyledText {
                             text: "CPU"
                             font {
                                 family: Services.ConfigService.configs.appearence.fontSans
@@ -74,7 +74,7 @@ Item {
                             radius: 9999
                             color: Colors.md3.tertiary_container
 
-                            Text {
+                            StyledText {
                                 id: tempLabel
                                 anchors.centerIn: parent
                                 text: Services.SystemInfoService.cpuTemp + "°C"
@@ -88,7 +88,7 @@ Item {
                         }
                     }
 
-                    Text {
+                    StyledText {
                         text: Services.SystemInfoService.cpuUsagePct ?? "0%"
                         font {
                             family: Services.ConfigService.configs.appearence.fontSans
@@ -105,7 +105,7 @@ Item {
                         implicitHeight: 6
                     }
 
-                    Text {
+                    StyledText {
                         text: Services.SystemInfoService.cpuCores + " "
                             + Services.I18nService.getTranslation("panel.cores", "núcleos")
                         font {
@@ -135,7 +135,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
 
-                        Text {
+                        StyledText {
                             text: "RAM"
                             font {
                                 family: Services.ConfigService.configs.appearence.fontSans
@@ -146,7 +146,7 @@ Item {
                             color: Colors.md3.on_surface_variant
                             Layout.fillWidth: true
                         }
-                        Text {
+                        StyledText {
                             text: Services.SystemInfoService.memUsagePct ?? "0%"
                             font {
                                 family: Services.ConfigService.configs.appearence.fontSans
@@ -164,7 +164,7 @@ Item {
                         implicitHeight: 6
                     }
 
-                    Text {
+                    StyledText {
                         text: root.fmtMem(Services.SystemInfoService.memUsedMiB ?? 0)
                         font {
                             family: Services.ConfigService.configs.appearence.fontSans
@@ -189,7 +189,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        Text {
+                        StyledText {
                             text: "Swap"
                             font {
                                 family: Services.ConfigService.configs.appearence.fontSans
@@ -200,7 +200,7 @@ Item {
                             color: Colors.md3.on_surface_variant
                             Layout.fillWidth: true
                         }
-                        Text {
+                        StyledText {
                             text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
                                 ? Math.round((Services.SystemInfoService.swapUsage ?? 0) * 100) + "%"
                                 : "—"
@@ -220,7 +220,7 @@ Item {
                         implicitHeight: 6
                     }
 
-                    Text {
+                    StyledText {
                         text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
                             ? root.fmtMem(Services.SystemInfoService.swapUsedMiB ?? 0)
                             : Services.I18nService.getTranslation("panel.off", "Off")
@@ -247,7 +247,7 @@ Item {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Text {
+                    StyledText {
                         text: Services.I18nService.getTranslation("panel.disk", "Disco") + " (/)"
                         font {
                             family: Services.ConfigService.configs.appearence.fontSans
@@ -258,7 +258,7 @@ Item {
                         color: Colors.md3.on_surface_variant
                         Layout.fillWidth: true
                     }
-                    Text {
+                    StyledText {
                         text: Services.SystemInfoService.diskUsagePct ?? "0%"
                         font {
                             family: Services.ConfigService.configs.appearence.fontSans
@@ -276,7 +276,7 @@ Item {
                     implicitHeight: 6
                 }
 
-                Text {
+                StyledText {
                     text: (Services.SystemInfoService.diskUsed ?? "0") + " "
                         + Services.I18nService.getTranslation("panel.of", "de") + " "
                         + (Services.SystemInfoService.diskTotal ?? "0")
@@ -306,7 +306,7 @@ Item {
                     color: Colors.md3.on_surface_variant
                 }
 
-                Text {
+                StyledText {
                     text: Services.I18nService.getTranslation("panel.uptime", "Uptime")
                     font {
                         family: Services.ConfigService.configs.appearence.fontSans
@@ -318,7 +318,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                Text {
+                StyledText {
                     text: Services.SystemInfoService.uptime ?? "N/A"
                     font {
                         family: Services.ConfigService.configs.appearence.fontSans

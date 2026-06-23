@@ -1,9 +1,5 @@
 import QtQuick
-import QtQuick.Controls
-import Quickshell
-import Quickshell.Widgets
 import Quickshell.Services.SystemTray
-import qs
 import QtQuick.Layouts
 Row {
     id: root

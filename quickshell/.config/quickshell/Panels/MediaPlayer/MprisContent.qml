@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import Quickshell.Widgets
 import qs.Core.Services as Services
 import qs.Core
@@ -91,7 +92,7 @@ Item {
             spacing: 3
             z: 3
 
-            Text {
+            StyledText {
                 width: parent.width
                 text: Services.MprisService.currentMprisPlayer?.trackTitle
                       ?? Services.I18nService.getTranslation("media.no_media")
@@ -102,7 +103,7 @@ Item {
                 elide: Text.ElideRight
             }
 
-            Text {
+            StyledText {
                 width: parent.width
                 text: Services.MprisService.currentMprisPlayer?.trackArtist
                       || Services.MprisService.currentMprisPlayer?.trackAlbumArtist
@@ -154,6 +155,10 @@ Item {
         // Slider de progreso
         Slider {
             id: progressSlider
+            Material.accent: Colors.md3.primary
+            Material.background: Colors.md3.background
+            Material.foreground: Colors.md3.on_background
+    
             width: parent.width - parent.leftPadding - parent.rightPadding
             from: 0.0
             to: 1.0
@@ -284,7 +289,7 @@ Item {
                     }
 
                     // Nombre del reproductor
-                    Text {
+                    StyledText {
                         id: chipLabel
                         anchors.centerIn: parent
                         text: chipWrapper.player.identity ?? chipWrapper.player.dbusName

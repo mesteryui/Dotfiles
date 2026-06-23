@@ -45,7 +45,7 @@ Item {
         }
     }
 
-    Text {
+    StyledText {
         anchors.verticalCenter: parent.verticalCenter
         visible: !root.service.checking && !root.service.updating
         text: root.service.updateCount

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import Quickshell
 import Quickshell.Widgets
 import qs.Core
@@ -12,7 +13,9 @@ RowLayout {
     property string iconName: ""
     property real value: 0
     signal moved(real val)
-
+    Material.accent: Colors.md3.primary
+Material.background: Colors.md3.background
+Material.foreground: Colors.md3.on_background
     spacing: 10
 
     IconImage {

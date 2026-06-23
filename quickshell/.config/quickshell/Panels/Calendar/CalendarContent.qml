@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import qs.Core
 import qs.Core.Services as Services
 
@@ -138,6 +139,7 @@ Item {
             locale: root.currentLocale
             Layout.fillWidth: true
             Layout.fillHeight: true
+            
 
             delegate: Item {
                 id: delegateItem

@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import qs
+import qs.Primitives
 import qs.Core
-import qs.Core.Services as Services
 
 PopupWindow {
     id: root
@@ -106,7 +105,7 @@ PopupWindow {
                                 }
                                 
                                 // Texto
-                                Text {
+                                StyledText {
                                     Layout.fillWidth: true
                                     text: modelData.text
                                     color: itemMouse.containsMouse ? Colors.md3.on_primary : Colors.md3.on_surface
@@ -118,9 +117,9 @@ PopupWindow {
                                 }
 
                                 // Indicador de submenú
-                                Text {
+                                MaterialIcon {
                                     visible: modelData.hasChildren
-                                    text: "›"
+                                    text: "chevron_right"
                                     color: Colors.md3.on_surface_variant
                                     font.pixelSize: 16
                                 }

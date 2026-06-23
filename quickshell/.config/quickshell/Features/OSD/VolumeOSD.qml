@@ -1,8 +1,4 @@
-import Quickshell
-import Quickshell.Io
 import QtQuick
-import Quickshell.Services.Pipewire
-import qs.Core
 import qs.Core.Services
 
 PercentageOSD {

@@ -17,12 +17,10 @@ Item {
             color: Colors.md3.on_primary_container
         }
 
-        Text {
+        StyledText {
             text: root.text
             color: Colors.md3.on_primary_container
-            font.pixelSize: 13
-            font.weight: Font.Medium
-            font.family: "sans-serif"
+            font.pixelSize: 14
         }
     }
 }

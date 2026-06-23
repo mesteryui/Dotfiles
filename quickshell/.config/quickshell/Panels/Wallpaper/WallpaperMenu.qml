@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Wallpaper
@@ -60,6 +61,12 @@ PanelWindow {
         id: content
         anchors.fill: parent
 
+        Material.accent: Colors.md3.primary
+        Material.background: Colors.md3.background
+        Material.foreground: Colors.md3.on_background
+
+         
+
         // ✅ la animación va aquí, no en la PanelWindow
         opacity: wallpaperMenu.showing ? 1.0 : 0.0
         scale: wallpaperMenu.showing ? 1.0 : 0.95
@@ -104,7 +111,6 @@ PanelWindow {
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 18
                         font.weight: Font.Medium
-                        color: Colors.md3.on_surface
                         Layout.fillWidth: true
                         verticalAlignment: Text.AlignVCenter
                     }

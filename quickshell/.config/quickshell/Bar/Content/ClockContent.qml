@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import qs.Core
 import qs.Core.Services as Services
+import qs.Primitives
 
 Item {
     id: root
@@ -13,9 +14,9 @@ Item {
         precision: SystemClock.Seconds
     }
     
-    Text {
+    StyledText {
         id: clockText
-        anchors.centerIn: parent
+       
         font.family: Services.ConfigService.configs.appearence.fontSans
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')

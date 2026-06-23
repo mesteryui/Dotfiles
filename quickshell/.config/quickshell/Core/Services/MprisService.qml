@@ -43,6 +43,7 @@ Singleton {
 
     property alias lastTrackArtUrl: persistent.lastTrackArtUrl
 
+
     PersistentProperties {
         id: persistent
         reloadableId: "persitentMpris"
@@ -65,6 +66,7 @@ Singleton {
             root.updateLastTrack()
         }
     }
+
 
     function updateLastTrack(): void {
         const url = root.currentMprisPlayer?.trackArtUrl ?? "";

@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import Quickshell.Io
@@ -7,12 +8,30 @@ Singleton {
     id: root
     property alias configs: jsonAdapter
 
+
+    Timer {
+        id: fileReloader
+        interval: 100
+        repeat: false
+        onTriggered: {
+            fileManagment.reload()
+        }
+    }
+    Timer {
+        id: fileWriter
+        interval: 100
+        repeat: false
+        onTriggered: {
+            fileManagment.writeAdapter()
+        }
+    }
+    
     FileView {
         id: fileManagment
         path: Quickshell.shellPath("config.json")
         watchChanges: true
-        onFileChanged: reload()
-        onAdapterUpdated: writeAdapter()
+        onFileChanged: fileReloader.restart()
+        onAdapterUpdated: fileWriter.restart()
         JsonAdapter {
             id: jsonAdapter
             property string language: Qt.locale().name
@@ -23,6 +42,7 @@ Singleton {
         }
     }
     component Appearence: JsonObject {
+        property bool darkMode: true
         property string fontSans: "Google Sans Flex"
         property string monospace: "JetBrains Mono Nerd Font"
         property Matugen matugen: Matugen {}

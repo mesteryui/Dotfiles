@@ -7,7 +7,7 @@ Item {
     id: root
     implicitHeight: 100
 
-    Text {
+    StyledText {
         anchors.centerIn: parent
         text: "Weather content placeholder"
         color: Colors.md3.on_surface_variant

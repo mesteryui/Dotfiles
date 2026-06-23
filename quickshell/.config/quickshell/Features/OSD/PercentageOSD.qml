@@ -2,24 +2,22 @@ import QtQuick
 import qs.Core
 import qs.Primitives
 import qs.Shared.Background
+
 BaseOSD {
     id: root
 
     required property real percentage
     required property string icon
+
     implicitWidth: 320
     implicitHeight: 60
 
-
-    function show()
-    {
-        root.visible = true;
-    }
     PopupBackground {
         anchors.fill: parent
         color: Colors.md3.surface
         radius: height / 2
     }
+
     Row {
         anchors.centerIn: parent
         spacing: 15
@@ -33,15 +31,16 @@ BaseOSD {
             width: 30
         }
 
-        ProgressBar {
+        StyledProgressBar {
             id: bar
-            percentage: root.percentage
-            barHeight: 10
+            from:  0.0
+            to:    1.0
+            value: root.percentage
             width: 180
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: Math.round(root.percentage * 100) + "%"
             font.pixelSize: 16
             color: Colors.md3.on_surface
