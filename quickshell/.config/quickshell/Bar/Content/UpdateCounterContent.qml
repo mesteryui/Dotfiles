@@ -23,9 +23,9 @@ Item {
             root.service.failed ? "warning" :
             "system_update_alt"
 
-            color: root.service.failed ? Colors.md3.error :
-            root.service.updating ? Colors.md3.primary :
-            Colors.md3.on_surface
+            color: root.service.failed ? Appearance.md3.error :
+            root.service.updating ? Appearance.md3.primary :
+            Appearance.md3.on_surface
 
             // Rotación animada mientras sincroniza
             RotationAnimation on rotation {
@@ -49,9 +49,8 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         visible: !root.service.checking && !root.service.updating
         text: root.service.updateCount
-        color: root.service.failed ? Colors.md3.error : Colors.md3.on_surface
+        color: root.service.failed ? Appearance.md3.error : Appearance.md3.on_surface
         font.pixelSize: 16
-        font.family: Services.ConfigService.configs.appearence.fontSans
     }
 }
 }

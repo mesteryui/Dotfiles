@@ -7,7 +7,7 @@ Item {
     required property string iconName
     signal clicked
     property int iconSize: 16
-    property color iconColor: Colors.md3.on_surface
+    property color iconColor: Appearance.md3.on_surface
     property int padding: 4
 
     // Dimensiones implícitas que incluyen el padding para la zona interactiva
@@ -23,11 +23,6 @@ Item {
         icon: root.iconName
         size: root.iconSize
         color: root.iconColor
-    }
-
-    scale: mouse.pressed ? 1.20 : 1.0
-    Behavior on scale {
-        NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
     }
 
     MouseArea {

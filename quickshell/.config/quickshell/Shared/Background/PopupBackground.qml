@@ -5,7 +5,7 @@ Rectangle {
     id: root
 
     // ── Apariencia ──────────────────────────────────────────
-    property color baseColor: Colors.md3.surface
+    property color baseColor: Appearance.md3.surface
     property real  surfaceRadius: 20
     property bool  showBorder: true
 
@@ -19,7 +19,7 @@ Rectangle {
         anchors.fill: parent
         radius:       parent.radius
         color:        "transparent"
-        border.color: Colors.md3.outline_variant
+        border.color: Appearance.md3.outline_variant
         border.width: root.showBorder ? 1 : 0
         z:            10
     }

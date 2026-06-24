@@ -11,7 +11,7 @@ Item {
     // ── Background ───────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
-        color: Qt.alpha(Colors.md3.surface_variant, 0.3)
+        color: Qt.alpha(Appearance.md3.surface_variant, 0.3)
     }
 
     // ── Content ──────────────────────────────────────────────

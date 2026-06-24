@@ -6,7 +6,7 @@ Rectangle {
 
     property int horizontalPadding: 12
     property int verticalPadding: 0
-    property color backgroundColor: Colors.md3.surface_container_high
+    property color backgroundColor: Appearance.md3.surface_container_high
     property int itemRadius: 20
 
     property bool clickable: false
@@ -21,20 +21,12 @@ Rectangle {
 
     radius: itemRadius
     color: clickable && mouseArea.containsMouse
-    ? Qt.tint(backgroundColor, Qt.alpha(Colors.md3.on_surface, 0.08))
+    ? Qt.tint(backgroundColor, Qt.alpha(Appearance.md3.on_surface, 0.08))
     : backgroundColor
 
     Behavior on color {
         ColorAnimation {
             duration: 150
-        }
-    }
-
-    scale: clickable && mouseArea.pressed ? 0.92 : (clickable && mouseArea.containsMouse ? 1.05 : 1.0)
-    Behavior on scale {
-        NumberAnimation {
-            duration: 100
-            easing.type: Easing.OutQuad
         }
     }
 

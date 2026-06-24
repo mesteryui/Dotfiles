@@ -20,7 +20,7 @@ Item {
         source: cardRect
         anchors.fill: cardRect
         shadowEnabled: true
-        shadowColor: Colors.md3.shadow ?? "#000000"
+        shadowColor: Appearance.md3.shadow ?? "#000000"
         shadowOpacity: 0.12
         shadowBlur: 0.4
         shadowVerticalOffset: 3
@@ -33,15 +33,19 @@ Item {
         width: parent.width
         height: contentLayout.implicitHeight + 24
         radius: 16
-        color: Colors.md3.surface_container_high
+        color: Appearance.md3.surface_container_high
         border.width: 1
-        border.color: Colors.md3.outline_variant
+        border.color: Appearance.md3.outline_variant
 
         // Área para pausar el temporizador al pasar el cursor
         MouseArea {
             id: hoverArea
             anchors.fill: parent
             hoverEnabled: true
+            // Pausa/reanuda la animación explícitamente — no via binding,
+            // para evitar que running:true la reinicie al terminar.
+            onEntered: progressAnim.pause()
+            onExited:  progressAnim.resume()
             onClicked: {
                 // Click en la notificación puede activar la primera acción
                 if (root.notification.actions.length > 0) {
@@ -68,12 +72,15 @@ Item {
 
                 IconImage {
                     id: appIcon
-                    source: root.notification.appIcon !== ""
-                        ? (root.notification.appIcon.startsWith("/") ? "file://" + root.notification.appIcon : root.notification.appIcon)
-                        : "dialog-information"
+                    source: {
+        const icon = root.notification.appIcon
+        if (!icon || icon === "")        return "image://icon/dialog-information"
+        if (icon.startsWith("/"))        return "file://" + icon
+        if (icon.startsWith("http"))     return icon
+        return "image://icon/" + icon   // "vesktop" → "image://icon/vesktop"
+    }
                     width: 16
                     height: 16
-                    fillMode: Image.PreserveAspectFit
                 }
 
                 Text {
@@ -81,7 +88,7 @@ Item {
                     font.family: Services.ConfigService.configs.appearence.fontSans
                     font.pixelSize: 11
                     font.weight: Font.DemiBold
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     Layout.fillWidth: true
                     elide: Text.ElideRight
                 }
@@ -90,7 +97,7 @@ Item {
                     iconName: "close"
                     iconSize: 12
                     padding: 4
-                    iconColor: Colors.md3.on_surface_variant
+                    iconColor: Appearance.md3.on_surface_variant
                     onClicked: root.notification.dismiss()
                 }
             }
@@ -99,7 +106,6 @@ Item {
             RowLayout {
                 spacing: 12
                 Layout.fillWidth: true
-                alignment: Qt.AlignTop
 
                 ColumnLayout {
                     spacing: 4
@@ -110,22 +116,22 @@ Item {
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 14
                         font.weight: Font.Bold
-                        color: Colors.md3.on_surface
+                        color: Appearance.md3.on_surface
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         elide: Text.ElideRight
-                        maxVisibleLines: 2
+                        maximumLineCount: 2
                     }
 
                     Text {
                         text: root.notification.body
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 12
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         elide: Text.ElideRight
-                        maxVisibleLines: 3
+                        maximumLineCount: 3
                     }
                 }
 
@@ -160,9 +166,9 @@ Item {
                         implicitWidth: actionText.implicitWidth + 24
                         implicitHeight: 28
                         radius: 6
-                        color: actionMouse.containsMouse ? Colors.md3.primary_container : Colors.md3.surface_container
+                        color: actionMouse.containsMouse ? Appearance.md3.primary_container : Appearance.md3.surface_container
                         border.width: 1
-                        border.color: Colors.md3.outline_variant
+                        border.color: Appearance.md3.outline_variant
 
                         Text {
                             id: actionText
@@ -171,7 +177,7 @@ Item {
                             font.family: Services.ConfigService.configs.appearence.fontSans
                             font.pixelSize: 11
                             font.weight: Font.Medium
-                            color: Colors.md3.on_surface
+                            color: Appearance.md3.on_surface
                         }
 
                         MouseArea {
@@ -196,7 +202,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 3
-            color: Colors.md3.outline_variant
+            color: Appearance.md3.outline_variant
             opacity: 0.2
             radius: 2
         }
@@ -206,7 +212,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             height: 3
-            color: Colors.md3.primary
+            color: Appearance.md3.primary
             radius: 2
             width: cardRect.width * root.progress
         }
@@ -222,14 +228,10 @@ Item {
             const timeout = root.notification.expireTimeout;
             return (timeout > 0 ? timeout : Services.ConfigService.configs.notifications.timeout) * 1000;
         }
-        paused: hoverArea.containsMouse
-        running: true
-        onFinished: {
-            root.notification.expire();
-        }
+        // Sin running:true como binding — si estuviera, el binding lo
+        // reiniciaría inmediatamente al terminar antes de que expire() se ejecute.
+        onFinished: Qt.callLater(() => root.notification.expire())
     }
 
-    Component.onCompleted: {
-        progressAnim.start();
-    }
+    Component.onCompleted: progressAnim.start()
 }

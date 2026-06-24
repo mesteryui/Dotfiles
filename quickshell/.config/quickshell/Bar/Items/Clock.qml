@@ -31,7 +31,7 @@ MouseArea {
 
     LazyLoader {
         id: popupLoader
-        loading: true
+        loading: wrapper.hoveredChanged || wrapper.pressed
         component: CalendarPopupWindow {
             id: popup
             anchor.item: wrapper

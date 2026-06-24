@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Services.UPower
 import qs.Core
 import qs.Primitives
+import QtQuick.Layouts
 import qs.Core.Services as Services
 import qs.Shared.Background
 
@@ -56,27 +57,28 @@ BaseOSD {
     // anchors.fill ya posiciona y dimensiona el componente correctamente.
     PopupBackground {
         anchors.fill: parent
-        color: Colors.md3.surface
-        radius: 30
+        color: Appearance.md3.surface
+        radius: Appearance.shape.full
     }
 
-    Row {
+    RowLayout {
         id: contentRow
         anchors.centerIn: parent
         spacing: 10
 
         MaterialIcon {
-            anchors.verticalCenter: parent.verticalCenter
             icon: batteryOSD.osdIcon
             size: 30
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
+            Layout.alignment: Qt.AlignVCenter
         }
 
         StyledText {
-            anchors.verticalCenter: parent.verticalCenter
+            Layout.alignment: Qt.AlignVCenter
             font.pixelSize: 26
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
             text: batteryOSD.osdText
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

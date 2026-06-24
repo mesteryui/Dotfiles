@@ -13,7 +13,7 @@ Item {
     implicitHeight: 30
     LazyLoader {
         id: popupLoader
-        loading: true
+        loading: interaction.pressed || interaction.hoveredChanged
         PanelWithControls {
             id: popup
             anchor.item: root
@@ -47,8 +47,8 @@ Item {
     MaterialIcon {
         id: content
         icon: "rocket_launch"
-        size: 20
-        color: Colors.md3.on_surface
+        size: Appearance.font.pixelSize.larger
+        color: Appearance.md3.on_surface
         anchors.centerIn: parent
     }
 

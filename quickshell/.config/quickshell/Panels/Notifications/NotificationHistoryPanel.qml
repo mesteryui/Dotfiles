@@ -36,7 +36,7 @@ Item {
                 font.family: Services.ConfigService.configs.appearence.fontSans
                 font.pixelSize: 18
                 font.weight: Font.Bold
-                color: Colors.md3.on_surface
+                color: Appearance.md3.on_surface
                 Layout.fillWidth: true
             }
 
@@ -46,9 +46,9 @@ Item {
                 height: 20
                 width: dndText.implicitWidth + 12
                 radius: 10
-                color: Qt.alpha(Colors.md3.error, 0.15)
+                color: Qt.alpha(Appearance.md3.error, 0.15)
                 border.width: 1
-                border.color: Colors.md3.error
+                border.color: Appearance.md3.error
 
                 Text {
                     id: dndText
@@ -57,7 +57,7 @@ Item {
                     font.family: Services.ConfigService.configs.appearence.fontSans
                     font.pixelSize: 9
                     font.weight: Font.Bold
-                    color: Colors.md3.error
+                    color: Appearance.md3.error
                 }
             }
         }
@@ -82,9 +82,9 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 64
                 radius: 14
-                color: Colors.md3.surface_variant
+                color: Appearance.md3.surface_variant
                 border.width: 1
-                border.color: Colors.md3.outline_variant
+                border.color: Appearance.md3.outline_variant
 
                 RowLayout {
                     anchors.centerIn: parent
@@ -93,7 +93,7 @@ Item {
                     MaterialIcon {
                         icon: "delete_sweep"
                         size: 20
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                     }
 
                     Text {
@@ -101,7 +101,7 @@ Item {
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 11
                         font.weight: Font.Medium
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                     }
                 }
 
@@ -109,8 +109,8 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onEntered: clearBtn.border.color = Colors.md3.primary
-                    onExited: clearBtn.border.color = Colors.md3.outline_variant
+                    onEntered: clearBtn.border.color = Appearance.md3.primary
+                    onExited: clearBtn.border.color = Appearance.md3.outline_variant
                     onClicked: Services.NotificationService.clearHistory()
                 }
             }
@@ -120,7 +120,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Colors.md3.outline_variant
+            color: Appearance.md3.outline_variant
             opacity: 0.3
         }
 
@@ -140,7 +140,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     icon: Services.NotificationService.dnd ? "notifications_paused" : "notifications"
                     size: 48
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     opacity: 0.35
                 }
 
@@ -151,7 +151,7 @@ Item {
                         : "No tienes notificaciones pendientes"
                     font.family: Services.ConfigService.configs.appearence.fontSans
                     font.pixelSize: 12
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     opacity: 0.6
                     horizontalAlignment: Text.AlignHCenter
                     lineHeight: 1.2
@@ -197,9 +197,9 @@ Item {
                     width: historyListView.width
                     height: cardLayout.implicitHeight + 20
                     radius: 12
-                    color: Colors.md3.surface_container
+                    color: Appearance.md3.surface_container
                     border.width: 1
-                    border.color: Colors.md3.outline_variant
+                    border.color: Appearance.md3.outline_variant
                     opacity: 1
 
                     RowLayout {
@@ -212,7 +212,6 @@ Item {
                             topMargin: 10
                         }
                         spacing: 10
-                        alignment: Qt.AlignTop
 
                         // Icono App o Genérico
                         IconImage {
@@ -238,7 +237,7 @@ Item {
                                     font.family: Services.ConfigService.configs.appearence.fontSans
                                     font.pixelSize: 10
                                     font.weight: Font.DemiBold
-                                    color: Colors.md3.primary
+                                    color: Appearance.md3.primary
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
                                 }
@@ -247,7 +246,7 @@ Item {
                                     text: root.formatTime(modelData.time)
                                     font.family: Services.ConfigService.configs.appearence.fontSans
                                     font.pixelSize: 9
-                                    color: Colors.md3.on_surface_variant
+                                    color: Appearance.md3.on_surface_variant
                                     opacity: 0.7
                                 }
                             }
@@ -257,22 +256,20 @@ Item {
                                 font.family: Services.ConfigService.configs.appearence.fontSans
                                 font.pixelSize: 13
                                 font.weight: Font.Bold
-                                color: Colors.md3.on_surface
+                                color: Appearance.md3.on_surface
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 wrapMode: Text.Wrap
-                                maxVisibleLines: 1
                             }
 
                             Text {
                                 text: modelData.body
                                 font.family: Services.ConfigService.configs.appearence.fontSans
                                 font.pixelSize: 11
-                                color: Colors.md3.on_surface_variant
+                                color: Appearance.md3.on_surface_variant
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 wrapMode: Text.Wrap
-                                maxVisibleLines: 2
                             }
                         }
 
@@ -298,7 +295,7 @@ Item {
                             iconName: "delete"
                             iconSize: 14
                             padding: 4
-                            iconColor: Colors.md3.on_surface_variant
+                            iconColor: Appearance.md3.on_surface_variant
                             opacity: 0.6
                             Layout.alignment: Qt.AlignTop
                             onClicked: Services.NotificationService.removeFromHistory(modelData.id)

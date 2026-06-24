@@ -7,7 +7,7 @@ ApplicationWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Colors.md3.background
+        color: Appearance.md3.background
     }
 
     Item {

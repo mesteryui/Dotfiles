@@ -59,7 +59,7 @@ PanelWindow {
     // Fondo oscuro semitransparente que cubre toda la ventana
     Rectangle {
         anchors.fill: parent
-        color: Qt.alpha(Colors.md3.surface,0.6)
+        color: Qt.alpha(Appearance.md3.surface,0.6)
 
         opacity: root.visible ? 1 : 0
         Behavior on opacity {
@@ -72,7 +72,7 @@ PanelWindow {
         anchors.centerIn: parent
         width: powerButtonsLayout.implicitWidth + 48
         height: powerButtonsLayout.implicitHeight + 48
-        color: Colors.md3.surface
+        color: Appearance.md3.surface
         radius: 28
 
         scale: root.visible ? 1 : 0.94
@@ -89,7 +89,7 @@ PanelWindow {
             anchors.fill: parent
             color: "transparent"
             border.width: 1
-            border.color: Colors.md3.outline_variant
+            border.color: Appearance.md3.outline_variant
             radius: parent.radius
             z: 10
         }

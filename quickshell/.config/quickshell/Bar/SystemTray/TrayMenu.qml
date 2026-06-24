@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -26,8 +27,8 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: 12
-        color: Colors.md3.surface
-        border.color: Colors.md3.outline
+        color: Appearance.md3.surface
+        border.color: Appearance.md3.outline
         border.width: 1
         
         // QsMenuOpener lee los hijos del handle
@@ -50,6 +51,7 @@ PopupWindow {
                 model: opener.children
 
                 delegate: Loader {
+                    id: menuLoader
                     required property QsMenuEntry modelData
                     width: menuColumn.width
 
@@ -63,7 +65,7 @@ PopupWindow {
                         Rectangle {
                             width: parent?.width ?? 0
                             height: 1
-                            color: Colors.md3.outline_variant
+                            color: Appearance.md3.outline_variant
                             opacity: 0.5
                         }
                     }
@@ -76,14 +78,14 @@ PopupWindow {
                             implicitHeight: 36
                             radius: 8
                             color: itemMouse.containsMouse
-                                ? Colors.md3.primary
+                                ? Appearance.md3.primary
                                 : "transparent"
 
                             Behavior on color {
                                 ColorAnimation { duration: 100 }
                             }
 
-                            opacity: modelData.enabled ? 1.0 : 0.4
+                            opacity: menuLoader.modelData.enabled ? 1.0 : 0.4
 
                             RowLayout {
                                 anchors {
@@ -95,8 +97,8 @@ PopupWindow {
 
                                 // Icono (si tiene)
                                 Image {
-                                    visible: modelData.icon !== ""
-                                    source: modelData.icon
+                                    visible: menuLoader.modelData.icon !== ""
+                                    source: menuLoader.modelData.icon
                                     Layout.preferredWidth: 16
                                     Layout.preferredHeight: 16
                                     sourceSize.width: 16
@@ -107,8 +109,8 @@ PopupWindow {
                                 // Texto
                                 StyledText {
                                     Layout.fillWidth: true
-                                    text: modelData.text
-                                    color: itemMouse.containsMouse ? Colors.md3.on_primary : Colors.md3.on_surface
+                                    text: menuLoader.modelData.text
+                                    color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
                                     font.pixelSize: 13
                                     elide: Text.ElideRight
                                     Behavior on color {
@@ -118,21 +120,21 @@ PopupWindow {
 
                                 // Indicador de submenú
                                 MaterialIcon {
-                                    visible: modelData.hasChildren
+                                    visible: menuLoader.modelData.hasChildren
                                     text: "chevron_right"
-                                    color: Colors.md3.on_surface_variant
-                                    font.pixelSize: 16
+                                    color: Appearance.md3.on_surface_variant
+                                    font.pixelSize: Appearance.font.pixelSize.normal
                                 }
 
                                 // Checkbox / radio
                                 Rectangle {
-                                    visible: modelData.buttonType !== QsMenuButtonType.None
-                                    width: 16; height: 16
-                                    radius: modelData.buttonType === QsMenuButtonType.Radio ? 8 : 4
-                                    color: modelData.checkState === Qt.Checked
-                                        ? Colors.md3.primary
+                                    visible: menuLoader.modelData.buttonType !== QsMenuButtonType.None
+                                    Layout.preferredWidth: 16; Layout.preferredHeight: 16
+                                    radius: menuLoader.modelData.buttonType === QsMenuButtonType.Radio ? 8 : 4
+                                    color: menuLoader.modelData.checkState === Qt.Checked
+                                        ? Appearance.md3.primary
                                         : "transparent"
-                                    border.color: Colors.md3.outline
+                                    border.color: Appearance.md3.outline
                                     border.width: 1
                                 }
                             }
@@ -141,14 +143,14 @@ PopupWindow {
                                 id: itemMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                enabled: modelData.enabled
+                                enabled: menuLoader.modelData.enabled
                                 onClicked: {
-                                    if (modelData.hasChildren) {
+                                    if (menuLoader.modelData.hasChildren) {
                                         // submenú — por ahora usa display nativo
                                         const pos = itemRoot.mapToGlobal(itemRoot.width, 0)
-                                        modelData.display(root.QsWindow.window, pos.x, pos.y)
+                                        menuLoader.modelData.display(root.QsWindow.window, pos.x, pos.y)
                                     } else {
-                                        modelData.triggered()
+                                        menuLoader.modelData.triggered()
                                         root.visible = false
                                     }
                                 }

@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Widgets
 import QtQuick
 import qs.Bar.Content
 

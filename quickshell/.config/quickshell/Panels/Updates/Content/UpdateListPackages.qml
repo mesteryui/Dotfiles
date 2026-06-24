@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import qs.Core
+import qs.Primitives
 import qs.Core.Services as Services
 
 Item {
@@ -15,25 +16,24 @@ Item {
     Rectangle {
         anchors { top: parent.top; left: parent.left; right: parent.right }
         height: 1
-        color: Colors.md3.outline_variant
+        color: Appearance.md3.outline_variant
         z: 2
     }
     Rectangle {
         anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
         height: 1
-        color: Colors.md3.outline_variant
+        color: Appearance.md3.outline_variant
         z: 2
     }
 
     // ── Content ──────────────────────────────────────────────
-    Text {
+    StyledText {
         anchors.centerIn: parent
         visible: Services.UpdatesTracking.updateCount === 0
             && !Services.UpdatesTracking.checking
         text: Services.I18nService.getTranslation("update.no_pending")
         font.pixelSize: 13
-        font.family: Services.ConfigService.configs.appearence.fontSans
-        color: Colors.md3.on_surface_variant
+        color: Appearance.md3.on_surface_variant
     }
 
     ListView {
@@ -47,13 +47,7 @@ Item {
         model: Services.UpdatesTracking.packagesToUpdate
         spacing: 0
 
-        ScrollBar.vertical: ScrollBar {
-            Material.accent: Colors.md3.primary
-            Material.background: Colors.md3.background
-            Material.foreground: Colors.md3.on_background
-            policy: packageList.contentHeight > packageList.height
-            ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
-        }
+        ScrollBar.vertical: StyledScrollBar {}
 
         delegate: UpdatePackageDelegate {
             required property var modelData

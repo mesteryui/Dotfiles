@@ -10,7 +10,8 @@ import QtQuick
 import qs.Panels.System
 import qs.Features.OSD
 import qs.Panels.Wallpaper
-
+import qs.Features.Notifications
+import qs.Panels.Notifications
 ShellRoot {
     id: root
     settings.watchFiles: true
@@ -34,6 +35,7 @@ ShellRoot {
         loading: true
         PowerButtons {}
     }
+    //NotificationCenterWindow {}
 
     Variants {
         model: Quickshell.screens

@@ -21,7 +21,7 @@ Item {
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
 
-        color: Colors.md3.on_surface
+        color: Appearance.md3.on_surface
         font.pixelSize: 14
 
 

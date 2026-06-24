@@ -15,14 +15,14 @@ BaseOSD {
 
     property string osdIcon: "keyboard"
     property string osdText: ""
-    property color activeColor: Colors.md3.on_surface
+    property color activeColor: Appearance.md3.on_surface
 
     property bool capsActive: false
     property bool numActive: false
 
     PopupBackground {
         anchors.fill: parent
-        color: Colors.md3.surface
+        color: Appearance.md3.surface
         radius: 30
     }
 
@@ -34,7 +34,7 @@ BaseOSD {
         MaterialIcon {
             icon: keyOSD.osdIcon
             size: 30
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
             anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -42,7 +42,7 @@ BaseOSD {
             font.family: Services.ConfigService.configs.appearence.fontSans
             font.pixelSize: 22
             font.bold: true
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
             text: keyOSD.osdText
             anchors.verticalCenter: parent.verticalCenter
         }

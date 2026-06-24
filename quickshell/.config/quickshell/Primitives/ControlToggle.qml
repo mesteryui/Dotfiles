@@ -17,15 +17,15 @@ Rectangle {
     
     radius: 14
     color: active
-        ? Colors.md3.secondary_container
-        : Colors.md3.surface_variant
+        ? Appearance.md3.secondary_container
+        : Appearance.md3.surface_variant
 
     Behavior on color { ColorAnimation { duration: 150 } }
 
     border.width: 1
     border.color: active
-        ? Qt.alpha(Colors.md3.primary, 0.5)
-        : Colors.md3.outline_variant
+        ? Qt.alpha(Appearance.md3.primary, 0.5)
+        : Appearance.md3.outline_variant
 
     Column {
         id: contentColumn
@@ -40,7 +40,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.iconName
             size: 22
-            color: root.active ? Colors.md3.primary : Colors.md3.on_surface_variant
+            color: root.active ? Appearance.md3.primary : Appearance.md3.on_surface_variant
         }
 
         Text {
@@ -48,7 +48,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.label
             font.pixelSize: 11
-            color: root.active ? Colors.md3.primary : Colors.md3.on_surface_variant
+            color: root.active ? Appearance.md3.primary : Appearance.md3.on_surface_variant
         }
     }
 

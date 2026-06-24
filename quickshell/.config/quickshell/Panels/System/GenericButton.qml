@@ -1,10 +1,5 @@
 import QtQuick
-import QtQuick.Effects
-import Quickshell
-import Quickshell.Wayland
 import Quickshell.Io
-import Quickshell.Widgets
-import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
@@ -15,7 +10,7 @@ Rectangle {
     required property string buttonText
     required property string command
     
-    property color accentColor: Colors.md3.primary
+    property color accentColor: Appearance.md3.primary
     
     readonly property bool highlighted: activeFocus || btnMouse.containsMouse
     focus: true
@@ -27,21 +22,16 @@ Rectangle {
     radius: 20
     color: highlighted
         ? accentColor
-        : Colors.md3.surface_container
+        : Appearance.md3.surface_container
 
     Behavior on color { ColorAnimation { duration: 150 } }
 
     border.width: highlighted ? 2 : 1
     border.color: highlighted
         ? Qt.alpha(accentColor, 0.7)
-        : Colors.md3.outline_variant
+        : Appearance.md3.outline_variant
 
     Behavior on border.color { ColorAnimation { duration: 150 } }
-
-    scale: btnMouse.pressed ? 0.93 : (highlighted ? 1.06 : 1.0)
-    Behavior on scale {
-        NumberAnimation { duration: 150; easing.type: Easing.OutBack }
-    }
 
     // Eliminado el MultiEffect para quitar sombras y efectos planos
 
@@ -65,7 +55,7 @@ Rectangle {
             icon: root.buttonIcon
             size: 32
             // Color plano basado en si está resaltado o no
-            color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
+            color: root.highlighted ? Appearance.md3.on_primary : Appearance.md3.on_surface
         }
 
         StyledText {
@@ -73,9 +63,9 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.buttonText
             font.family: Services.ConfigService.configs.appearence.fontSans
-            color: highlighted ? Colors.md3.on_primary : Colors.md3.on_surface
+            color: root.highlighted ? Appearance.md3.on_primary : Appearance.md3.on_surface
             font.pixelSize: 12
-            font.weight: highlighted ? Font.Bold : Font.Normal
+            font.weight: root.highlighted ? Font.Bold : Font.Normal
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }

@@ -26,7 +26,7 @@ Rectangle {
 
     // ── Apariencia ──────────────────────────────────────────────────────────
     /// Color base del fondo. Por defecto usa el token MD3 surface_container_high
-    property color baseColor: Colors.md3.surface_container_high
+    property color baseColor: Appearance.md3.surface_container_high
 
     /// Radio de esquinas
     property real surfaceRadius: 20
@@ -34,11 +34,11 @@ Rectangle {
     // ── Computed ─────────────────────────────────────────────────────────────
     radius: surfaceRadius
     color: active
-        ? Qt.tint(baseColor, Qt.alpha(Colors.md3.on_surface, 0.08))
+        ? Qt.tint(baseColor, Qt.alpha(Appearance.md3.on_surface, 0.08))
         : baseColor
 
     border.width: highlighted ? 1 : 0
-    border.color: Colors.md3.primary
+    border.color: Appearance.md3.primary
 
     // ── Animaciones ──────────────────────────────────────────────────────────
     Behavior on color {

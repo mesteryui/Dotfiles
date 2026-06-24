@@ -13,9 +13,9 @@ RowLayout {
     property string iconName: ""
     property real value: 0
     signal moved(real val)
-    Material.accent: Colors.md3.primary
-Material.background: Colors.md3.background
-Material.foreground: Colors.md3.on_background
+    Material.accent: Appearance.md3.primary
+    Material.background: Appearance.md3.background
+    Material.foreground: Appearance.md3.on_background
     spacing: 10
 
     IconImage {
@@ -37,13 +37,13 @@ Material.foreground: Colors.md3.on_background
             width: parent.availableWidth
             height: 4
             radius: 2
-            color: Colors.md3.surface_variant
+            color: Appearance.md3.surface_variant
 
             Rectangle {
                 width: parent.width * parent.parent.visualPosition
                 height: parent.height
                 radius: parent.radius
-                color: Colors.md3.primary
+                color: Appearance.md3.primary
             }
         }
 
@@ -52,8 +52,8 @@ Material.foreground: Colors.md3.on_background
             y: parent.topPadding + parent.availableHeight / 2 - height / 2
             width: 16; height: 16
             radius: 8
-            color: Colors.md3.primary
-            border.color: Colors.md3.surface
+            color: Appearance.md3.primary
+            border.color: Appearance.md3.surface
             border.width: 2
         }
     }

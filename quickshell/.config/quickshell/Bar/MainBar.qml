@@ -10,7 +10,7 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Row {
+        RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             spacing: 8
             Launcher {}
@@ -27,7 +27,7 @@ Item {
         Item { Layout.fillWidth: true }
 
         
-        Row {
+        RowLayout {
             Layout.alignment: Qt.AlignCenter | Qt.AlignVCenter
             spacing: 12
             MprisPlayer {}
@@ -38,7 +38,7 @@ Item {
         Item { Layout.fillWidth: true }
 
         
-        Row {
+        RowLayout {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             spacing: 8
 

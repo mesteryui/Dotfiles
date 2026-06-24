@@ -37,7 +37,7 @@ PopupWindow {
         source: bg
         anchors.fill: bg
         shadowEnabled: true
-        shadowColor: Colors.md3.shadow
+        shadowColor: Appearance.md3.shadow
         shadowBlur: 0.85
         shadowVerticalOffset: 6
         shadowHorizontalOffset: 0

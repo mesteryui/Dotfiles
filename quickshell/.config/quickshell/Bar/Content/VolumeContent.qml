@@ -14,8 +14,8 @@ Item {
 
         MaterialIcon {
             id: volumeIcon
-            size: 20
-            color: Colors.md3.on_surface
+            size: Appearance.font.pixelSize.larger
+            color: Appearance.md3.on_surface
             icon: root.iconName
         }
 
@@ -23,7 +23,7 @@ Item {
             id: volumeLabel
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
             font.pixelSize: 14
         }
     }

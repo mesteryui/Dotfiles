@@ -19,8 +19,6 @@ Item {
     SurfaceBackground {
         anchors.fill: parent
         active: interaction.containsMouse
-        scale: interaction.pressed ? 0.92: (interaction.containsMouse ? 1.05 : 1.0)
-        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
     }
 
     VolumeContent {

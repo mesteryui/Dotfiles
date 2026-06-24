@@ -10,7 +10,7 @@ Item {
     StyledText {
         anchors.centerIn: parent
         text: "Weather content placeholder"
-        color: Colors.md3.on_surface_variant
+        color: Appearance.md3.on_surface_variant
         font.pixelSize: 14
     }
 }

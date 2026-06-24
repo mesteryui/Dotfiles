@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.Core
 import qs.Primitives
 import qs.Shared.Background
@@ -14,21 +15,21 @@ BaseOSD {
 
     PopupBackground {
         anchors.fill: parent
-        color: Colors.md3.surface
-        radius: height / 2
+        color: Appearance.md3.surface
+        radius: Appearance.shape.full
     }
 
-    Row {
+    RowLayout {
         anchors.centerIn: parent
         spacing: 15
         width: parent.width - 40
 
         MaterialIcon {
             icon: root.icon
-            anchors.verticalCenter: parent.verticalCenter
             size: 24
-            color: Colors.md3.on_surface
-            width: 30
+            color: Appearance.md3.on_surface
+            Layout.preferredWidth: 30
+            Layout.alignment: Qt.AlignVCenter
         }
 
         StyledProgressBar {
@@ -36,16 +37,17 @@ BaseOSD {
             from:  0.0
             to:    1.0
             value: root.percentage
-            width: 180
-            anchors.verticalCenter: parent.verticalCenter
+            Layout.fillWidth: true 
+            Layout.alignment: Qt.AlignVCenter
         }
 
         StyledText {
             text: Math.round(root.percentage * 100) + "%"
             font.pixelSize: 16
-            color: Colors.md3.on_surface
-            width: 40
-            anchors.verticalCenter: parent.verticalCenter
+            color: Appearance.md3.on_surface
+            Layout.preferredWidth: 40 
+            horizontalAlignment: Text.AlignRight
+            Layout.alignment: Qt.AlignVCenter
         }
     }
 }

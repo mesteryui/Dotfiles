@@ -6,8 +6,8 @@ import qs.Core.Modules
 Singleton {
     id: root
 
-    property string currentWallpaper: Persistent.persistence.currentWallpaper
-    property string matugenMode: ConfigService.configs.appearence.darkMode ? "dark" : "light"
+    readonly property string currentWallpaper: Persistent.persistence.currentWallpaper
+    readonly property string matugenMode: ConfigService.configs.appearence.darkMode ? "dark" : "light"
 
 
     function applyTheme(wallpaperPath: string) {

@@ -43,7 +43,7 @@ PopupWindow {
         source: bg
         anchors.fill: bg
         shadowEnabled: true
-        shadowColor: Colors.md3.shadow ?? "#000000"
+        shadowColor: Appearance.md3.shadow ?? "#000000"
         shadowOpacity: 0.18
         shadowBlur: 0.8
         shadowVerticalOffset: 6
@@ -60,7 +60,7 @@ PopupWindow {
         }
         implicitHeight: root.implicitHeight
         radius: 28
-        color: Colors.md3.surface
+        color: Appearance.md3.surface
     }
 
     // ── Content ────────────────────────────────────────────────────

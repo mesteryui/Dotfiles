@@ -27,14 +27,14 @@ Item {
         anchors.fill: parent               // ← faltaba esto
         radius: delegateRoot.surfaceRadius
         color: delegateRoot.isSelected
-            ? Colors.md3.surface_container_highest
-            : Colors.md3.surface_container_low
+            ? Appearance.md3.surface_container_highest
+            : Appearance.md3.surface_container_low
     }
 
     layer.enabled: true
     layer.effect: MultiEffect {
         shadowEnabled: true
-        shadowColor: Colors.md3.shadow
+        shadowColor: Appearance.md3.shadow
         shadowBlur: delegateRoot.isSelected ? 0.8 : 0.4
         shadowVerticalOffset: delegateRoot.isSelected ? 4 : 2
         shadowHorizontalOffset: 0

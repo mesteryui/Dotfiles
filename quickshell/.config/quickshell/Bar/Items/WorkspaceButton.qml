@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Core
+import QtQuick.Layouts
 import qs.Shared.Background
 import qs.Bar.Content
 Item {
@@ -8,8 +9,9 @@ Item {
     required property bool isActive
     visible: modelData.id > 0
     width: isActive ? 40 : 30   // se expande al activarse
-    height: 30
-
+    height: 27
+    Layout.preferredWidth: width
+    Layout.preferredHeight: height
 
     Behavior on width {
     NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
@@ -22,7 +24,7 @@ NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
 SurfaceBackground {
     id: background
     anchors.fill: parent
-    color: root.isActive ? Colors.md3.primary : Colors.md3.secondary_container
+    color: root.isActive ? Appearance.md3.primary : Appearance.md3.secondary_container
     radius: 30
     Behavior on color {
     ColorAnimation { duration: 200 }
@@ -32,7 +34,7 @@ SurfaceBackground {
 WorkspaceButtonContent {
     anchors.centerIn: parent
     workspaceButton: root.modelData.id
-    color: root.isActive ? Colors.md3.on_primary : Colors.md3.on_surface
+    color: root.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface
 }
 
 MouseArea {

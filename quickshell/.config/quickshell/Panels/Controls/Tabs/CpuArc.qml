@@ -33,7 +33,7 @@ Item {
             // Track
             ctx.beginPath()
             ctx.arc(cx, cy, r, 0, 2 * Math.PI)
-            ctx.strokeStyle = Colors.md3.surface_container.toString()
+            ctx.strokeStyle = Appearance.md3.surface_container.toString()
             ctx.lineWidth   = 8
             ctx.lineCap     = "round"
             ctx.stroke()
@@ -42,7 +42,7 @@ Item {
             if (root.value > 0) {
                 ctx.beginPath()
                 ctx.arc(cx, cy, r, start, end)
-                ctx.strokeStyle = Colors.md3.primary.toString()
+                ctx.strokeStyle = Appearance.md3.primary.toString()
                 ctx.lineWidth   = 8
                 ctx.lineCap     = "round"
                 ctx.stroke()
@@ -50,7 +50,7 @@ Item {
         }
 
         Connections {
-            target: Colors.md3
+            target: Appearance.md3
             function onPrimaryChanged()           { canvas.requestPaint() }
             function onSurface_containerChanged() { canvas.requestPaint() }
         }
@@ -64,7 +64,7 @@ Item {
             pixelSize: 13
             weight: Font.Bold
         }
-        color: Colors.md3.primary
+        color: Appearance.md3.primary
     }
 
     Behavior on value {

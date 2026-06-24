@@ -12,7 +12,7 @@ Item {
     readonly property string currentSubmap: HyprlandSubmap.activeSubmap
     
     BarBackground {
-        color: Colors.md3.primary_container
+        color: Appearance.md3.primary_container
         anchors.fill: parent
     }
     

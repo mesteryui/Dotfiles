@@ -22,12 +22,12 @@ Item {
             icon: Services.UpdatesTracking.failed   ? "warning"          :
                   Services.UpdatesTracking.checking ? "sync"             :
                                                       "system_update_alt"
-            color: Services.UpdatesTracking.failed  ? Colors.md3.error
-                                                    : Colors.md3.on_surface
+            color: Services.UpdatesTracking.failed  ? Appearance.md3.error
+                                                    : Appearance.md3.on_surface
             size: 20
         }
 
-        Text {
+        StyledText {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (Services.UpdatesTracking.failed)
@@ -42,11 +42,10 @@ Item {
                 return Services.UpdatesTracking.updateCount + " "
                      + Services.I18nService.getTranslation(key);
             }
-            font.family: Services.ConfigService.configs.appearence.fontSans
             font.pixelSize: 15
-            font.weight: Font.Bold
-            color: Services.UpdatesTracking.failed ? Colors.md3.error
-                                                   : Colors.md3.on_surface
+            font.variableAxes: Appearance.font.variableAxes.title
+            color: Services.UpdatesTracking.failed ? Appearance.md3.error
+                                                   : Appearance.md3.on_surface
         }
     }
 

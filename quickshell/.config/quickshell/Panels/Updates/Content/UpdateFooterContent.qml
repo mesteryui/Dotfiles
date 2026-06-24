@@ -25,15 +25,15 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: 10
-            color: root.btnEnabled ? Colors.md3.primary
-                                   : Qt.alpha(Colors.md3.on_surface, 0.12)
+            color: root.btnEnabled ? Appearance.md3.primary
+                                   : Qt.alpha(Appearance.md3.on_surface, 0.12)
             Behavior on color { ColorAnimation { duration: 150 } }
 
             // State layer
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                color: Colors.md3.on_primary
+                color: Appearance.md3.on_primary
                 opacity: btnHover.hovered && root.btnEnabled ? 0.08 : 0
                 Behavior on opacity { NumberAnimation { duration: 100 } }
             }
@@ -48,8 +48,8 @@ Item {
                 id: btnIcon
                 icon: Services.UpdatesTracking.updating ? "downloading" : "system_update_alt"
                 size: 12
-                color: root.btnEnabled ? Colors.md3.on_primary
-                                       : Qt.alpha(Colors.md3.on_surface, 0.38)
+                color: root.btnEnabled ? Appearance.md3.on_primary
+                                       : Qt.alpha(Appearance.md3.on_surface, 0.38)
 
                 RotationAnimation on rotation {
                     running: Services.UpdatesTracking.updating
@@ -69,8 +69,8 @@ Item {
                 font.pixelSize: 13
                 font.weight: Font.Medium
                 font.family: Services.ConfigService.configs.appearence.fontSans
-                color: root.btnEnabled ? Colors.md3.on_primary
-                                       : Qt.alpha(Colors.md3.on_surface, 0.38)
+                color: root.btnEnabled ? Appearance.md3.on_primary
+                                       : Qt.alpha(Appearance.md3.on_surface, 0.38)
             }
         }
 

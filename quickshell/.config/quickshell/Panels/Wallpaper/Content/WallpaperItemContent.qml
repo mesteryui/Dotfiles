@@ -15,7 +15,7 @@ Item {
         anchors.centerIn: parent
         icon: "image"
         size: 32
-        color: Colors.md3.on_surface_variant
+        color: Appearance.md3.on_surface_variant
         opacity: 0.3
         visible: wallpaperPreview.status !== Image.Ready
     }
@@ -31,7 +31,7 @@ Item {
             anchors.fill: parent
             radius: root.radius
             color: "transparent"
-            border.color: Colors.md3.primary
+            border.color: Appearance.md3.primary
             border.width: root.isSelected ? 2 : 0
 
             Image {
@@ -53,7 +53,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: root.radius
-                color: Colors.md3.primary
+                color: Appearance.md3.primary
                 opacity: root.isSelected ? 0.08 : 0
                 Behavior on opacity {
                     NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
@@ -64,7 +64,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: root.radius
-                color: Colors.md3.on_surface
+                color: Appearance.md3.on_surface
                 opacity: root.hovered ? 0.08 : 0   // ← usa el bool
                 Behavior on opacity {
                     NumberAnimation { duration: 100 }
@@ -84,9 +84,9 @@ Item {
         width: 28
         height: 28
         radius: 14
-        color: Colors.md3.primary_container
+        color: Appearance.md3.primary_container
         border.width: 2
-        border.color: Colors.md3.primary
+        border.color: Appearance.md3.primary
 
         opacity: root.isSelected ? 1 : 0
         scale: root.isSelected ? 1 : 0.4
@@ -102,7 +102,7 @@ Item {
             anchors.centerIn: parent
             icon: "check"
             size: 16
-            color: Colors.md3.on_primary_container
+            color: Appearance.md3.on_primary_container
         }
     }
 }

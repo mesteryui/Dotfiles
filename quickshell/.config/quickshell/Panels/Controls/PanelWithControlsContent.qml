@@ -49,13 +49,13 @@ Item {
                         width: 48
                         height: 48
                         radius: 24
-                        color: Colors.md3.primary_container ?? Colors.md3.surface_variant
+                        color: Appearance.md3.primary_container ?? Appearance.md3.surface_variant
                         clip: true
 
                         ClippingRectangle {
                             anchors.fill: parent
                             radius: parent.radius
-                            border.color: Colors.md3.primary
+                            border.color: Appearance.md3.primary
                             border.width: 2
 
                             Image {
@@ -75,7 +75,7 @@ Item {
 
                         StyledText {
                             text: root.username || Services.I18nService.getTranslation("panel.user", "usuario")
-                            color: Colors.md3.on_surface
+                            color: Appearance.md3.on_surface
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             font.family: Services.ConfigService.configs.appearence.fontSans
@@ -83,7 +83,7 @@ Item {
 
                         StyledText {
                             text: root.hostname || Services.I18nService.getTranslation("panel.host", "localhost")
-                            color: Colors.md3.on_surface_variant
+                            color: Appearance.md3.on_surface_variant
                             font.pixelSize: 12
                             font.family: Services.ConfigService.configs.appearence.fontSans
                         }
@@ -95,7 +95,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1
-                    color: Colors.md3.outline_variant
+                    color: Appearance.md3.outline_variant
                     opacity: 0.4
                 }
 
@@ -143,9 +143,9 @@ Item {
                     id: navBar
                     Layout.fillWidth: true
 
-                    Material.accent: Colors.md3.primary
-                    Material.background: Colors.md3.surface_container
-                    Material.foreground: Colors.md3.on_surface
+                    Material.accent: Appearance.md3.primary
+                    Material.background: Appearance.md3.surface_container
+                    Material.foreground: Appearance.md3.on_surface
                     Material.roundedScale: Material.FullScale
                     
 
@@ -158,8 +158,8 @@ Item {
                             required property int index
 
                             readonly property color fgColor: checked
-                                ? Colors.md3.primary
-                                : Colors.md3.on_surface_variant
+                                ? Appearance.md3.primary
+                                : Appearance.md3.on_surface_variant
 
                                 text: modelData.label
                                 Layout.fillWidth: true

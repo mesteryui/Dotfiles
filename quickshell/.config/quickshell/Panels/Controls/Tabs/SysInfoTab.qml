@@ -63,7 +63,7 @@ Item {
                                 weight: Font.Medium
                                 letterSpacing: 0.8
                             }
-                            color: Colors.md3.on_surface_variant
+                            color: Appearance.md3.on_surface_variant
                         }
 
                         Item { Layout.fillWidth: true }
@@ -71,8 +71,8 @@ Item {
                         Rectangle {
                             implicitWidth: tempLabel.implicitWidth + 14
                             implicitHeight: 20
-                            radius: 9999
-                            color: Colors.md3.tertiary_container
+                            radius: Appearance.shape.full
+                            color: Appearance.md3.tertiary_container
 
                             StyledText {
                                 id: tempLabel
@@ -83,7 +83,7 @@ Item {
                                     pixelSize: 10
                                     weight: Font.Medium
                                 }
-                                color: Colors.md3.on_tertiary_container
+                                color: Appearance.md3.on_tertiary_container
                             }
                         }
                     }
@@ -95,13 +95,13 @@ Item {
                             pixelSize: 24
                             weight: Font.Bold
                         }
-                        color: Colors.md3.primary
+                        color: Appearance.md3.primary
                     }
 
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.cpuUsage ?? 0
-                        accentColor: Colors.md3.primary
+                        accentColor: Appearance.md3.primary
                         implicitHeight: 6
                     }
 
@@ -112,7 +112,7 @@ Item {
                             family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                     }
                 }
             }
@@ -143,7 +143,7 @@ Item {
                                 weight: Font.Medium
                                 letterSpacing: 0.8
                             }
-                            color: Colors.md3.on_surface_variant
+                            color: Appearance.md3.on_surface_variant
                             Layout.fillWidth: true
                         }
                         StyledText {
@@ -153,14 +153,14 @@ Item {
                                 pixelSize: 13
                                 weight: Font.Bold
                             }
-                            color: Colors.md3.primary
+                            color: Appearance.md3.primary
                         }
                     }
 
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.memUsage ?? 0
-                        accentColor: Colors.md3.primary
+                        accentColor: Appearance.md3.primary
                         implicitHeight: 6
                     }
 
@@ -170,7 +170,7 @@ Item {
                             family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                     }
                 }
@@ -197,7 +197,7 @@ Item {
                                 weight: Font.Medium
                                 letterSpacing: 0.8
                             }
-                            color: Colors.md3.on_surface_variant
+                            color: Appearance.md3.on_surface_variant
                             Layout.fillWidth: true
                         }
                         StyledText {
@@ -209,14 +209,14 @@ Item {
                                 pixelSize: 13
                                 weight: Font.Bold
                             }
-                            color: Colors.md3.secondary
+                            color: Appearance.md3.secondary
                         }
                     }
 
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.swapUsage ?? 0
-                        accentColor: Colors.md3.secondary
+                        accentColor: Appearance.md3.secondary
                         implicitHeight: 6
                     }
 
@@ -228,7 +228,7 @@ Item {
                             family: Services.ConfigService.configs.appearence.fontSans
                             pixelSize: 10
                         }
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                     }
                 }
@@ -255,7 +255,7 @@ Item {
                             weight: Font.Medium
                             letterSpacing: 0.8
                         }
-                        color: Colors.md3.on_surface_variant
+                        color: Appearance.md3.on_surface_variant
                         Layout.fillWidth: true
                     }
                     StyledText {
@@ -265,14 +265,14 @@ Item {
                             pixelSize: 13
                             weight: Font.Bold
                         }
-                        color: Colors.md3.primary
+                        color: Appearance.md3.primary
                     }
                 }
 
                 M3ProgressBar {
                     Layout.fillWidth: true
                     value: Services.SystemInfoService.diskUsage ?? 0
-                    accentColor: Colors.md3.primary
+                    accentColor: Appearance.md3.primary
                     implicitHeight: 6
                 }
 
@@ -284,7 +284,7 @@ Item {
                         family: Services.ConfigService.configs.appearence.fontSans
                         pixelSize: 10
                     }
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     elide: Text.ElideRight
                 }
             }
@@ -303,7 +303,7 @@ Item {
                 MaterialIcon {
                     icon: "schedule"
                     size: 16
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                 }
 
                 StyledText {
@@ -314,7 +314,7 @@ Item {
                         weight: Font.Medium
                         letterSpacing: 0.8
                     }
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     Layout.fillWidth: true
                 }
 
@@ -325,7 +325,7 @@ Item {
                         pixelSize: 12
                         weight: Font.Bold
                     }
-                    color: Colors.md3.on_surface
+                    color: Appearance.md3.on_surface
                 }
             }
         }

@@ -9,6 +9,9 @@ Singleton {
 	property alias base16: jsonAdapter.base16
 	property alias palette: jsonAdapter.palette
 
+	readonly property Shape   shape:   Shape   {}
+    readonly property Font    font:    Font    {}
+	
 	FileView {
 		path: Quickshell.env("HOME") + "/.local/state/quickshell/generated/colors.json"
 		watchChanges: true
@@ -22,6 +25,49 @@ Singleton {
 			readonly property Palette palette: Palette {}
 		}
 	}
+
+	component Shape: QtObject {
+       	property int unsharpen: 2
+        property int unsharpenmore: 6
+        property int verysmall: 8
+        property int small: 12
+        property int normal: 17
+        property int large: 23
+        property int verylarge: 30
+        property int full: 9999
+        property int screenRounding: large
+        property int windowRounding: 18
+    }
+
+    component Font: QtObject {
+        readonly property string sans: ConfigService.configs.appearence.fontSans
+        readonly property string mono: ConfigService.configs.appearence.monospace
+		property string iconMaterial: "Material Symbols Rounded"
+		property QtObject variableAxes: QtObject {
+            property var main: ({
+                "wght": 490,
+                "wdth": 100
+            })
+            property var numbers: ({
+                "wght": 450,
+            })
+            property var title: ({ // Slightly bold weight for title
+                "wght": 550, // Weight (Lowered to compensate for increased grade)
+            })
+        }
+		property QtObject pixelSize: QtObject {
+            property int smallest: 10
+            property int smaller: 12
+            property int smallie: 13
+            property int small: 15
+            property int normal: 16
+            property int large: 17
+            property int larger: 19
+            property int huge: 22
+            property int hugeass: 23
+            property int title: huge
+        }
+    }
 
 	component Md3: JsonObject {
 		property string background: "transparent"

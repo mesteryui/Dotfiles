@@ -10,10 +10,10 @@ Item {
     id: root
     implicitWidth: content.implicitWidth + 24
     implicitHeight: 30
+
     BarBackground {
         anchors.fill: parent
         active: titleInteraction.pressed
-        
     }
 
     PlayerContent {
@@ -25,7 +25,7 @@ Item {
     MouseArea {
         id: titleInteraction
         enabled: Services.MprisService.hasPlayer
-        width: 150
+        width: content.width / 2
         height: parent.height
         anchors.left: parent.left
         anchors.leftMargin: 12
@@ -41,8 +41,8 @@ Item {
     // Helpers para no repetir la guardia null en cada binding
     LazyLoader {
         id: popupLoader
-        loading: true
-        MprisSubwindow {
+        loading: titleInteraction.pressed || titleInteraction.hoveredChanged
+        component: MprisSubwindow {
             id: popup
             anchor.item: root
             anchor.margins.top: 20

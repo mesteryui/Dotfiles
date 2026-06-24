@@ -1,7 +1,7 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import Quickshell.Io
 import qs.Core.Services as Services
 
 Item {
@@ -9,8 +9,8 @@ Item {
 
     required property var modelData  // <-- required
 
-    implicitWidth: 26
-    implicitHeight: 26
+    implicitWidth: 32
+    implicitHeight: 32
 
     function showMenu()
     {
@@ -19,7 +19,7 @@ Item {
     }
     LazyLoader {
         id: loader
-        loading: true
+        loading: mouseManagement.pressed
         component: TrayMenu {
             id: trayMenu
             menu: itemContainer.modelData?.menu ?? null
@@ -35,7 +35,7 @@ Item {
         anchors.fill: parent
 
         IconImage {
-            source: modelData?.icon ?? ""
+            source: itemContainer.modelData?.icon ?? ""
             // Centrado absoluto con márgenes limpios
             anchors.centerIn: parent
             width: parent.width - 8  // Equivalente a margins: 4 por cada lado
@@ -62,14 +62,14 @@ MouseArea {
     hoverEnabled: false
 
     onClicked: mouse => {
-    if (!modelData) return;
+    if (!itemContainer.modelData) return;
     const isRight = mouse.button === Qt.RightButton;
-    const needsMenu = isRight || modelData.onlyMenu;
-    if (needsMenu && modelData.hasMenu)
+    const needsMenu = isRight || itemContainer.modelData.onlyMenu;
+    if (needsMenu && itemContainer.modelData.hasMenu)
     {
         itemContainer.showMenu();
     } else if (!isRight) {
-    modelData.activate();
+    itemContainer.modelData.activate();
 }
 }
 }
@@ -80,9 +80,9 @@ HoverHandler {
 
 WheelHandler {
     onWheel: event => {
-    if (!modelData) return;
+    if (!itemContainer.modelData) return;
     const isHorizontal = event.angleDelta.x !== 0;
-    modelData.scroll(
+    itemContainer.modelData.scroll(
         isHorizontal ? Qt.Horizontal : Qt.Vertical,
         isHorizontal ? event.angleDelta.x : event.angleDelta.y
     );

@@ -18,7 +18,7 @@ Item {
         anchors.fill: _bg
         source:       _bg
         shadowEnabled:    true
-        shadowColor:      Colors.md3.shadow
+        shadowColor:      Appearance.md3.shadow
         shadowOpacity:    0.08
         shadowBlur:       0.4
         shadowVerticalOffset:   2
@@ -29,7 +29,7 @@ Item {
         id: _bg
         anchors.fill: parent
         radius: root._radius
-        color:  Colors.md3.surface_container_high
+        color:  Appearance.md3.surface_container_high
     }
 
     Item {

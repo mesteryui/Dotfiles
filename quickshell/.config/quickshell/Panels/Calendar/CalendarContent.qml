@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
 
@@ -34,23 +35,23 @@ Item {
 
             // Botón anterior — Wrapper + Background + Content
             Item {
-                width: 40; height: 40
+                implicitWidth: 40; implicitHeight: 40
 
                 Rectangle {
                     anchors.fill: parent
                     radius: 20
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     opacity: prevTap.pressed ? 0.12 : prevHover.hovered ? 0.08 : 0
                     Behavior on opacity {
                         NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
                     }
                 }
 
-                Text {
+                MaterialIcon {
                     anchors.centerIn: parent
-                    text: "‹"
+                    text: "chevron_backward"
                     font.pixelSize: 22
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                 }
 
                 HoverHandler { id: prevHover; cursorShape: Qt.PointingHandCursor }
@@ -58,36 +59,36 @@ Item {
             }
 
             // Título mes + año
-            Text {
+            StyledText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: root.currentLocale.standaloneMonthName(root.currentMonth)
                       + " " + root.currentYear
-                font.family: Services.ConfigService.configs.appearence.fontSans
-                font.bold: true
+                font.variableAxes: Appearance.font.variableAxes.title
                 font.pixelSize: 16
-                color: Colors.md3.on_surface
+                color: Appearance.md3.on_surface
             }
 
             // Botón siguiente — Wrapper + Background + Content
             Item {
-                width: 40; height: 40
+                implicitWidth: 40; 
+                implicitHeight: 40
 
                 Rectangle {
                     anchors.fill: parent
                     radius: 20
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                     opacity: nextTap.pressed ? 0.12 : nextHover.hovered ? 0.08 : 0
                     Behavior on opacity {
                         NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
                     }
                 }
 
-                Text {
+                MaterialIcon {
                     anchors.centerIn: parent
-                    text: "›"
+                    text: "chevron_forward"
                     font.pixelSize: 22
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                 }
 
                 HoverHandler { id: nextHover; cursorShape: Qt.PointingHandCursor }
@@ -110,15 +111,14 @@ Item {
                     return days
                 }
 
-                delegate: Text {
+                delegate: StyledText {
                     required property var modelData
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: modelData
-                    font.family: Services.ConfigService.configs.appearence.fontSans
                     font.bold: true
                     font.pixelSize: 11
-                    color: Colors.md3.on_surface_variant
+                    color: Appearance.md3.on_surface_variant
                 }
             }
         }
@@ -126,8 +126,8 @@ Item {
         // Divisor
         Rectangle {
             Layout.fillWidth: true
-            height: 1
-            color: Colors.md3.outline_variant
+            Layout.preferredHeight: 1
+            color: Appearance.md3.outline_variant
             opacity: 0.5
         }
 
@@ -168,12 +168,12 @@ Item {
                     radius: 18
                     anchors.centerIn: parent
 
-                    color: delegateItem.isToday    ? Colors.md3.primary
-                         : delegateItem.isSelected ? Colors.md3.primary_container
+                    color: delegateItem.isToday    ? Appearance.md3.primary
+                         : delegateItem.isSelected ? Appearance.md3.primary_container
                          : "transparent"
 
                     border.width: delegateItem.isSelected && !delegateItem.isToday ? 1 : 0
-                    border.color: Colors.md3.primary
+                    border.color: Appearance.md3.primary
 
                     Behavior on color {
                         ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
@@ -184,9 +184,9 @@ Item {
                         id: dayStateLayer
                         anchors.fill: parent
                         radius: parent.radius
-                        color: delegateItem.isToday    ? Colors.md3.on_primary
-                             : delegateItem.isSelected ? Colors.md3.on_primary_container
-                             : Colors.md3.on_surface
+                        color: delegateItem.isToday    ? Appearance.md3.on_primary
+                             : delegateItem.isSelected ? Appearance.md3.on_primary_container
+                             : Appearance.md3.on_surface
                         opacity: 0
                         Behavior on opacity {
                             NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
@@ -194,16 +194,16 @@ Item {
                     }
 
                     // ── Content: número del día ────────────────
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: delegateItem.model.day
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 13
                         font.bold: delegateItem.isToday || delegateItem.isSelected
-                        color: delegateItem.isToday    ? Colors.md3.on_primary
-                             : delegateItem.isSelected ? Colors.md3.on_primary_container
-                             : delegateItem.isCurrentMonth ? Colors.md3.on_surface
-                             : Colors.md3.on_surface_variant
+                        color: delegateItem.isToday    ? Appearance.md3.on_primary
+                             : delegateItem.isSelected ? Appearance.md3.on_primary_container
+                             : delegateItem.isCurrentMonth ? Appearance.md3.on_surface
+                             : Appearance.md3.on_surface_variant
                         opacity: delegateItem.isCurrentMonth ? 1.0 : 0.38
                     }
                 }

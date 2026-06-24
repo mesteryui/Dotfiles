@@ -28,6 +28,9 @@ Item {
                   + controls.implicitHeight
                   + (multiPlayer ? playerSelector.implicitHeight : 0)
 
+    
+
+
     // ── Cabecera: arte, título, artista ───────────────────────
     Item {
         id: header
@@ -42,7 +45,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: 20
-            color: Qt.alpha(Colors.md3.primary_container, 0.6)
+            color: Qt.alpha(Appearance.md3.primary_container, 0.6)
         }
 
         // Arte de la pista recortado al radio del panel
@@ -75,7 +78,7 @@ Item {
                 GradientStop { position: 0.0; color: "transparent" }
                 GradientStop {
                     position: 1.0
-                    color: Qt.tint(Colors.md3.surface, Qt.alpha(Colors.md3.primary, 0.08))
+                    color: Qt.tint(Appearance.md3.surface, Qt.alpha(Appearance.md3.primary, 0.08))
                 }
             }
         }
@@ -96,11 +99,11 @@ Item {
                 width: parent.width
                 text: Services.MprisService.currentMprisPlayer?.trackTitle
                       ?? Services.I18nService.getTranslation("media.no_media")
-                font.family: Services.ConfigService.configs.appearence.fontSans
-                font.pixelSize: 15
-                font.weight: Font.Bold
-                color: Colors.md3.on_surface
+                font.pixelSize: Appearance.font.pixelSize.title
+                font.variableAxes: Appearance.font.variableAxes.title
+                color: Appearance.md3.on_surface
                 elide: Text.ElideRight
+                
             }
 
             StyledText {
@@ -108,9 +111,8 @@ Item {
                 text: Services.MprisService.currentMprisPlayer?.trackArtist
                       || Services.MprisService.currentMprisPlayer?.trackAlbumArtist
                       || ""
-                font.family: Services.ConfigService.configs.appearence.fontSans
                 font.pixelSize: 12
-                color: Colors.md3.on_surface_variant
+                color: Appearance.md3.on_surface_variant
                 elide: Text.ElideRight
                 visible: text !== ""
             }
@@ -139,7 +141,7 @@ Item {
                 text: root.formatTime(root.currentPosition)
                 font.pixelSize: 11
                 font.family: Services.ConfigService.configs.appearence.monospace
-                color: Colors.md3.on_surface_variant
+                color: Appearance.md3.on_surface_variant
             }
 
             Item { Layout.fillWidth: true }
@@ -148,16 +150,16 @@ Item {
                 text: root.formatTime(Services.MprisService.trackLength)
                 font.pixelSize: 11
                 font.family: Services.ConfigService.configs.appearence.monospace
-                color: Colors.md3.on_surface_variant
+                color: Appearance.md3.on_surface_variant
             }
         }
 
         // Slider de progreso
         Slider {
             id: progressSlider
-            Material.accent: Colors.md3.primary
-            Material.background: Colors.md3.background
-            Material.foreground: Colors.md3.on_background
+            Material.accent: Appearance.md3.primary
+            Material.background: Appearance.md3.background
+            Material.foreground: Appearance.md3.on_background
     
             width: parent.width - parent.leftPadding - parent.rightPadding
             from: 0.0
@@ -195,7 +197,7 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     radius: 22
-                    color: Colors.md3.primary_container
+                    color: Appearance.md3.primary_container
                 }
 
                 ButtonIcon {
@@ -203,7 +205,7 @@ Item {
                     iconSize: 22
                     iconName: Services.MprisService.isPlaying ? "pause" : "play_arrow"
                     enabled: Services.MprisService.hasPlayer
-                    iconColor: Colors.md3.on_primary_container
+                    iconColor: Appearance.md3.on_primary_container
                     onClicked: Services.MprisService.togglePlaying()
                 }
             }
@@ -268,10 +270,10 @@ Item {
                         anchors.fill: parent
                         radius: 9999
                         color: chipWrapper.isActive
-                               ? Colors.md3.primary_container
+                               ? Appearance.md3.primary_container
                                : "transparent"
                         border.width: chipWrapper.isActive ? 0 : 1
-                        border.color: Colors.md3.outline_variant
+                        border.color: Appearance.md3.outline_variant
 
                         Behavior on color { ColorAnimation { duration: 120 } }
                     }
@@ -282,8 +284,8 @@ Item {
                         anchors.fill: parent
                         radius: 9999
                         color: chipWrapper.isActive
-                               ? Colors.md3.on_primary_container
-                               : Colors.md3.on_surface
+                               ? Appearance.md3.on_primary_container
+                               : Appearance.md3.on_surface
                         opacity: 0
                         Behavior on opacity { NumberAnimation { duration: 100 } }
                     }
@@ -296,8 +298,8 @@ Item {
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 11
                         color: chipWrapper.isActive
-                               ? Colors.md3.on_primary_container
-                               : Colors.md3.on_surface_variant
+                               ? Appearance.md3.on_primary_container
+                               : Appearance.md3.on_surface_variant
                         Behavior on color { ColorAnimation { duration: 120 } }
                     }
 

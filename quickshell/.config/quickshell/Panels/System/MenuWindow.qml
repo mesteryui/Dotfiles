@@ -44,7 +44,7 @@ PanelWindow {
     Rectangle {
         id: menuRect
         anchors.fill: parent
-        color: Colors.md3.surface
+        color: Appearance.md3.surface
         radius: 20
         layer.enabled: true
         
@@ -69,7 +69,7 @@ PanelWindow {
             anchors.fill: parent
             color: "transparent"
             border.width: 1
-            border.color: Colors.md3.outline_variant
+            border.color: Appearance.md3.outline_variant
             radius: parent.radius
             z: 10
         }
@@ -86,7 +86,7 @@ PanelWindow {
                 text: root.menuTitle
                 visible: text !== ""
                 font.family: Services.ConfigService.configs.appearence.fontSans
-                color: Colors.md3.on_surface
+                color: Appearance.md3.on_surface
                 font.pixelSize: 18
                 font.bold: true
                 Layout.fillWidth: true

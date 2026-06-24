@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs.Core
@@ -9,10 +10,17 @@ import qs.Primitives
 
 PanelWindow {
     id: root
-    visible: false
+
+    // ── Estado ────────────────────────────────────────────────────────────────
+    // "showing" controla la lógica; "visible" se mantiene activo durante la
+    // animación de salida para que el fade tenga tiempo de completarse.
+    property bool showing: false
+    visible: showing || backgroundRect.opacity > 0
 
     WlrLayershell.namespace: "notifications_center"
     WlrLayershell.layer: WlrLayer.Overlay
+    // Necesario para que el Shortcut de Escape reciba eventos de teclado.
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     exclusionMode: WlrLayershell.Ignore
 
     // Pantalla completa para interceptar clics en el fondo
@@ -23,71 +31,61 @@ PanelWindow {
 
     color: "transparent"
 
-    // Captura de foco de Hyprland para cerrar al hacer clic fuera
+    // ── FocusGrab ─────────────────────────────────────────────────────────────
     HyprlandFocusGrab {
         windows: [root]
-        active: root.visible
+        active: root.showing
         onCleared: {
-            if (root.visible)
-                root.visible = false;
+            // Qt.callLater obligatorio en onCleared — regla del proyecto.
+            if (root.showing)
+                Qt.callLater(() => root.showing = false)
         }
     }
 
-    // Atajo para cerrar con Escape
     Shortcut {
         sequence: "Escape"
-        onActivated: {
-            if (root.visible)
-                root.visible = false;
-        }
+        onActivated: root.showing = false
     }
 
-    // Manejador de IPC para abrir y cerrar el panel de control
     IpcHandler {
         target: "ui.notifications"
-        
-        function toggle(): void {
-            root.visible = !root.visible;
-        }
-
-        function show(): void {
-            root.visible = true;
-        }
-
-        function hide(): void {
-            root.visible = false;
-        }
+        function toggle(): void { root.showing = !root.showing }
+        function show(): void   { root.showing = true }
+        function hide(): void   { root.showing = false }
     }
 
-    // Fondo oscuro semitransparente con transición
+    // ── Fondo oscuro semitransparente ─────────────────────────────────────────
+    // El fade aquí sí ocurre porque "visible" de la ventana se mantiene
+    // activo mientras opacity > 0.
     Rectangle {
+        id: backgroundRect
         anchors.fill: parent
-        color: Qt.alpha(Colors.md3.background ?? Colors.md3.surface, 0.45)
+        color: Qt.alpha(Appearance.md3.background ?? Appearance.md3.surface, 0.45)
 
-        opacity: root.visible ? 1 : 0
+        opacity: root.showing ? 1 : 0
         Behavior on opacity {
             NumberAnimation { duration: 180; easing.type: Easing.OutQuad }
         }
 
         MouseArea {
             anchors.fill: parent
-            onClicked: root.visible = false
+            onClicked: root.showing = false
         }
     }
 
-    // Panel de control flotante en el centro
+    // ── Panel flotante centrado ────────────────────────────────────────────────
     Rectangle {
         id: centerCard
         anchors.centerIn: parent
         width: historyPanel.implicitWidth
         height: historyPanel.implicitHeight
-        color: Colors.md3.surface
+        color: Appearance.md3.surface
         radius: 24
 
-        scale: root.visible ? 1 : 0.95
-        opacity: root.visible ? 1 : 0
+        scale: root.showing ? 1.0 : 0.95
+        opacity: root.showing ? 1.0 : 0.0
         Behavior on scale {
-            NumberAnimation { duration: 200; easing.type: Easing.OutBack; overshoot: 1.1 }
+            NumberAnimation { duration: 200; easing.type: Easing.OutBack; }
         }
         Behavior on opacity {
             NumberAnimation { duration: 180; easing.type: Easing.OutQuad }
@@ -98,7 +96,7 @@ PanelWindow {
             anchors.fill: parent
             color: "transparent"
             border.width: 1
-            border.color: Colors.md3.outline_variant
+            border.color: Appearance.md3.outline_variant
             radius: parent.radius
             z: 10
         }
@@ -108,7 +106,7 @@ PanelWindow {
             source: centerCard
             anchors.fill: centerCard
             shadowEnabled: true
-            shadowColor: Colors.md3.shadow ?? "#000000"
+            shadowColor: Appearance.md3.shadow ?? "#000000"
             shadowOpacity: 0.18
             shadowBlur: 0.8
             shadowVerticalOffset: 6

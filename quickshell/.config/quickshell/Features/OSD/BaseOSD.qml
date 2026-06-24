@@ -2,13 +2,12 @@ import Quickshell
 import QtQuick
 import Quickshell.Wayland
 import Quickshell.Hyprland
-PanelWindow {
-    id: window
-    visible: false
-    WlrLayershell.namespace: "osd_window"
-    WlrLayershell.layer: WlrLayer.Overlay
-    exclusionMode: WlrLayershell.Ignore
-    color: "transparent"
+Scope {
+    id: root
+    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+    property int implicitHeight: 20
+    property int implicitWidth: 20
+    default property alias content: container.data
     Timer {
         id: osdTimer
         repeat: false
@@ -18,26 +17,44 @@ PanelWindow {
             window.visible = false;
         }
     }
-    function show(): void
-    {
+    function show(): void {
         window.visible = true
     }
-    default property alias content: container.data
-    anchors {
-        bottom: false
-        top: true
-    }
-    margins.bottom: 50
-    margins.top: 50
-    Item {
-        id: container
-        anchors.fill: parent
-        opacity: window.visible ? 1.0 : 0.0
-        Behavior on opacity {
-        NumberAnimation {
-            duration: 150
-            easing.type: Easing.OutQuad
+
+    PanelWindow {
+        id: window
+        visible: false
+        screen: root.focusedScreen
+        WlrLayershell.namespace: "osd_window"
+        WlrLayershell.layer: WlrLayer.Overlay
+        implicitHeight: root.implicitHeight
+        implicitWidth: root.implicitWidth
+        exclusionMode: WlrLayershell.Ignore
+        color: "transparent"
+
+                Connections {
+                    target: root
+                    function onFocusedScreenChanged() {
+                        window.screen = root.focusedScreen;
+                    }
+                }
+
+                anchors {
+                    bottom: false
+                    top: true
+                }
+                margins.bottom: 50
+                margins.top: 50
+                Item {
+                    id: container
+                    anchors.fill: parent
+                    opacity: window.visible ? 1.0 : 0.0
+                    Behavior on opacity {
+                    NumberAnimation {
+                        duration: 150
+                        easing.type: Easing.OutQuad
+                    }
+                }
+            }
         }
     }
-}
-}

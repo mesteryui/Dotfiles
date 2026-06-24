@@ -8,7 +8,7 @@ BarItem {
     clickable: true
     onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "bluetui"])
     MaterialIcon {
-        color: Colors.md3.on_surface
+        color: Appearance.md3.on_surface
         anchors.centerIn: parent
         size: 20
         icon: {

@@ -13,7 +13,7 @@ PopupWindow {
     visible: false
     color: "transparent"
     grabFocus: true
-    implicitWidth: 300
+    implicitWidth: 350
     implicitHeight: mprisContent.implicitHeight
 
     // ── Estado de posición ────────────────────────────────────

@@ -26,7 +26,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            color: Colors.md3.primary
+            color: Appearance.md3.primary
             opacity: delegateHover.hovered ? 0.08 : 0
             Behavior on opacity { NumberAnimation { duration: 150 } }
         }
@@ -46,7 +46,7 @@ Item {
             text: root.packageName
             font.pixelSize: 13
             font.family: Services.ConfigService.configs.appearence.fontSans
-            color: Colors.md3.on_surface
+            color: Appearance.md3.on_surface
             elide: Text.ElideRight
         }
 
@@ -54,21 +54,21 @@ Item {
             text: root.oldVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
-            color: Colors.md3.on_surface_variant
+            color: Appearance.md3.on_surface_variant
             opacity: 0.7
         }
 
         MaterialIcon {
             icon: "arrow_forward"
             size: 12
-            color: Colors.md3.primary
+            color: Appearance.md3.primary
         }
 
         Text {
             text: root.newVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
-            color: Colors.md3.primary
+            color: Appearance.md3.primary
         }
     }
 
