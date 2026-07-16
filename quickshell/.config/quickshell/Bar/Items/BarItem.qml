@@ -7,7 +7,7 @@ Rectangle {
     property int horizontalPadding: 12
     property int verticalPadding: 0
     property color backgroundColor: Appearance.md3.surface_container_high
-    property int itemRadius: 20
+    property int itemRadius: Appearance.shape.normal
 
     property bool clickable: false
     signal clicked(variant mouse)
@@ -41,7 +41,7 @@ Rectangle {
         anchors.fill: parent
         enabled: root.clickable
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: mouse => root.clicked(mouse)
     }
 }

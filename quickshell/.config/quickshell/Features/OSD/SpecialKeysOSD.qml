@@ -1,7 +1,5 @@
-import Quickshell
-import Quickshell.Widgets
+
 import QtQuick
-import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
@@ -40,7 +38,7 @@ BaseOSD {
 
         StyledText {
             font.family: Services.ConfigService.configs.appearence.fontSans
-            font.pixelSize: 22
+            font.pixelSize: Appearance.font.pixelSize.title
             font.bold: true
             color: Appearance.md3.on_surface
             text: keyOSD.osdText

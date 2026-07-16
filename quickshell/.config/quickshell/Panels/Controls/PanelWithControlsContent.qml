@@ -11,7 +11,7 @@ import qs.Primitives
 import qs.Core
 import Quickshell.Widgets
 import qs.Panels.Controls.Tabs
-
+import qs.Features.Notifications
 Item {
     id: root
 
@@ -135,6 +135,13 @@ Item {
                         iconName: "local_cafe"
                         active: Services.IdleInhibitedService.inhibited
                         onToggled: Services.IdleInhibitedService.toggle()
+                    }
+                    ControlToggle {
+                        Layout.fillWidth: true
+                        label: "Modo no molestar"
+                        iconName: "bedtime"
+                        active: NotificationManager.dnd
+                        onToggled: NotificationManager.toggleDnd()
                     }
                 }
 

@@ -97,31 +97,38 @@ Item {
         }
 
         // ── Cabecera de días de la semana ─────────────────────
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 0
+        // ── Cabecera de días de la semana ─────────────────────
+    Row {
+        Layout.fillWidth: true
+        spacing: 0
 
-            Repeater {
-                model: {
-                    const first = root.currentLocale.firstDayOfWeek
-                    const days = []
-                    for (let i = 0; i < 7; i++)
-                        days.push(root.currentLocale.standaloneDayName(
-                            (first + i) % 7, Locale.ShortFormat))
-                    return days
-                }
+    Repeater {
+        model: {
+            const first = root.currentLocale.firstDayOfWeek
+            const days = []
+            for (let i = 0; i < 7; i++)
+                days.push(root.currentLocale.standaloneDayName(
+                    (first + i) % 7, Locale.ShortFormat))
+            return days
+        }
 
-                delegate: StyledText {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: modelData
-                    font.bold: true
-                    font.pixelSize: 11
-                    color: Appearance.md3.on_surface_variant
-                }
+        delegate: Item {
+            width: monthGrid.width / 7   // ← misma fórmula que el delegate de MonthGrid
+            implicitHeight: dayLabel.implicitHeight
+            required property var modelData
+
+            StyledText {
+                id: dayLabel
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: parent.modelData
+                font.bold: true
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.md3.on_surface_variant
             }
         }
+    }
+}
 
         // Divisor
         Rectangle {
@@ -151,12 +158,12 @@ Item {
                 readonly property bool isToday: {
                     const today = new Date()
                     return model.day   === today.getDate()
-                        && monthGrid.month === today.getMonth()
-                        && monthGrid.year  === today.getFullYear()
+                        && model.month === today.getMonth()
+                        && model.year  === today.getFullYear()
                 }
                 readonly property bool isCurrentMonth: model.month === monthGrid.month
                 readonly property bool isSelected: root.selectedDay === model.day
-                                                && isCurrentMonth
+                                && isCurrentMonth
 
                 // ── Background: círculo M3 con 3 estados ──────
                 // Hoy → primary lleno

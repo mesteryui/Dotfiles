@@ -6,8 +6,8 @@ import qs.Primitives
 Item {
     id: root
     property bool isHovered: false
-        property var player: Services.MprisService.currentMprisPlayer
-            implicitWidth: layout.childrenRect.width
+        property var player: Services.MprisService.activePlayer
+            implicitWidth: layout.width
             implicitHeight: 30
             RowLayout {
                 id: layout
@@ -21,41 +21,34 @@ Item {
                     text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
                     color: Appearance.md3.on_surface
                     Layout.alignment: Qt.AlignVCenter
-                    scale: root.isHovered ? 1.04 : 1.00
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     Layout.preferredWidth: Math.min(implicitWidth, 150)
-                    Behavior on scale {
-                    NumberAnimation {
-                        duration: 100
-                        easing: Easing.OutQuad
-                    }
-                }
 
             }
             ButtonIcon {
                 iconSize: Appearance.font.pixelSize.normal
                 iconName: "skip_previous"
-                enabled: Services.MprisService.hasPlayer
-                onClicked: Services.MprisService.previousTrack()
+                enabled: Services.MprisService.activePlayer != null
+                onClicked: Services.MprisService.previous()
                 Layout.alignment: Qt.AlignVCenter
             }
             ButtonIcon {
                 iconSize: Appearance.font.pixelSize.normal
                 iconName: Services.MprisService.isPlaying
                 ? "pause"
-                : "play_arrow"
-                enabled: Services.MprisService.hasPlayer
+                : "music_note"
+                enabled: Services.MprisService.activePlayer != null
                 onClicked: Services.MprisService.togglePlaying()
                 Layout.alignment: Qt.AlignVCenter
             }
             ButtonIcon {
                 iconSize: Appearance.font.pixelSize.normal
                 iconName: "skip_next"
-                enabled: Services.MprisService.hasPlayer
+                enabled: Services.MprisService.activePlayer != null
                 onClicked: {
                     console.log("next button clicked, hasPlayer:", Services.MprisService.hasPlayer);
-                    Services.MprisService.nextTrack();
+                    Services.MprisService.next();
                 }
                 Layout.alignment: Qt.AlignVCenter
             }

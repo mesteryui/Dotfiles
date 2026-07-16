@@ -26,7 +26,7 @@ BaseOSD {
 
         MaterialIcon {
             icon: root.icon
-            size: 24
+            size: Appearance.font.pixelSize.huge
             color: Appearance.md3.on_surface
             Layout.preferredWidth: 30
             Layout.alignment: Qt.AlignVCenter

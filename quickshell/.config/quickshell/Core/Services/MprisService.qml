@@ -1,109 +1,182 @@
-// --- MprisService ---
-// Singleton que gestiona el player MPRIS activo.
-// Expone metadatos cacheados (arte, duración) y controles de reproducción.
 pragma Singleton
+pragma ComponentBehavior: Bound
 
+// From https://git.outfoxxed.me/outfoxxed/nixnew
+// It does not have a license, but the author is okay with redistribution.
+
+import QtQml.Models
 import QtQuick
-import Quickshell.Io
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Mpris
 
+
+/**
+ * A service that provides easy access to the active Mpris player.
+ */
 Singleton {
-    id: root
+	id: root;
+	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
+	property MprisPlayer trackedPlayer: null;
+	property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null;
+	signal trackChanged(reverse: bool);
 
-    readonly property bool hasPlayer: currentMprisPlayer !== null
-    readonly property bool isPlaying: hasPlayer
-        && currentMprisPlayer.playbackState === MprisPlaybackState.Playing
+	property bool __reverse: false;
 
-    readonly property list<MprisPlayer> players: Mpris.players.values.filter(p => isRealPlayer(p)) ?? []
+	property var activeTrack;
 
-    // Player seleccionado manualmente desde las pestañas.
-    // null = selección automática por estado de reproducción.
-    property MprisPlayer selectedPlayer: null
-
-    // Limpia la selección si el player desaparece de la lista.
-    onPlayersChanged: {
-        if (selectedPlayer && !players.some(p => p === selectedPlayer))
-            selectedPlayer = null
-    }
-
-    readonly property MprisPlayer currentMprisPlayer: {
-        if (selectedPlayer && players.some(p => p === selectedPlayer))
-            return selectedPlayer
-        return players.find(p => p.playbackState === MprisPlaybackState.Playing)
-            ?? players.find(p => p.playbackState === MprisPlaybackState.Paused)
-            ?? players[0]
-            ?? null
-    }
-    function isRealPlayer(player: MprisPlayer): bool {
-        return (!player.dbusName.startsWith('org.mpris.MediaPlayer2.playerctld') &&
+	readonly property bool hasActivePlasmaIntegration: Mpris.players.values.some(
+		p => p.dbusName?.startsWith('org.mpris.MediaPlayer2.plasma-browser-integration')
+	)
+	
+	function isRealPlayer(player) {
+        return (
+            // Remove native browser buses only if plasma-browser-integration is actually active on D-Bus
+            !(hasActivePlasmaIntegration && player.dbusName.startsWith('org.mpris.MediaPlayer2.firefox')) && !(hasActivePlasmaIntegration && player.dbusName.startsWith('org.mpris.MediaPlayer2.chromium')) &&
+            // playerctld just copies other buses and we don't need duplicates
+            !player.dbusName?.startsWith('org.mpris.MediaPlayer2.playerctld') &&
             // Non-instance mpd bus
-            !(player.dbusName.endsWith('.mpd') && !player.dbusName.endsWith('MediaPlayer2.mpd')))
-    }
-
-    property alias lastTrackArtUrl: persistent.lastTrackArtUrl
-
-
-    PersistentProperties {
-        id: persistent
-        reloadableId: "persitentMpris"
-        property string lastTrackArtUrl: ""
-    }
-
-    // Duración: binding reactivo, se reevalúa solo cuando cambia el player
-    // o cuando el player emite lengthChanged. Los componentes la leen de aquí
-    // en lugar de escuchar onLengthChanged ellos mismos.
-    readonly property real trackLength: currentMprisPlayer?.length ?? 0
-
-    // ── Reacciones a cambio de player ─────────────────────────
-    onCurrentMprisPlayerChanged: updateLastTrack()
-
-    Connections {
-        target: root.currentMprisPlayer
-        enabled: root.currentMprisPlayer !== null
-
-        function onTrackArtUrlChanged(): void {
-            root.updateLastTrack()
-        }
+            !(player.dbusName?.endsWith('.mpd') && !player.dbusName.endsWith('MediaPlayer2.mpd')));
     }
 
 
-    function updateLastTrack(): void {
-        const url = root.currentMprisPlayer?.trackArtUrl ?? "";
-        if (url !== "")
-            root.lastTrackArtUrl = url;
-    }
+	// Original stuff from fox below
+	Instantiator {
+		model: Mpris.players;
 
-    // ── Controles ─────────────────────────────────────────────
-    function togglePlaying(): void {
-        if (currentMprisPlayer?.canTogglePlaying)
-            currentMprisPlayer.togglePlaying();
-    }
+		Connections {
+			required property MprisPlayer modelData;
+			target: modelData;
 
-    function previousTrack(): void {
-        currentMprisPlayer?.previous();
-    }
+			Component.onCompleted: {
+				if (root.trackedPlayer == null || modelData.isPlaying) {
+					root.trackedPlayer = modelData;
+				}
+			}
 
-    function nextTrack(): void {
-        if (!currentMprisPlayer) return;
+			Component.onDestruction: {
+				if (root.trackedPlayer == null || !root.trackedPlayer.isPlaying) {
+					for (const player of Mpris.players.values) {
+						if (player.playbackState.isPlaying) {
+							root.trackedPlayer = player;
+							break;
+						}
+					}
 
-        if (currentMprisPlayer.canGoNext) {
-            currentMprisPlayer.next();
-        } else {
-            // Fallback via playerctl para players que no implementan canGoNext
-            goNext.command = ["playerctl", "next", "--player", currentMprisPlayer.dbusName];
-            goNext.running = true;
-        }
-    }
+					if (root.trackedPlayer == null && Mpris.players.values.length != 0) {
+						root.trackedPlayer = Mpris.players.values[0];
+					}
+				}
+			}
 
-    // ── Seek ──────────────────────────────────────────────────
-    // Centralizado aquí para que cualquier componente pueda llamarlo
-    // sin tocar el player directamente.
-    function seekTo(positionMicroseconds: real): void {
-        if (currentMprisPlayer)
-            currentMprisPlayer.position = positionMicroseconds;
-    }
+			function onPlaybackStateChanged() {
+				if (root.trackedPlayer !== modelData) root.trackedPlayer = modelData;
+			}
+		}
+	}
 
-    // ── Procesos internos ─────────────────────────────────────
-    Process { id: goNext }
+	Connections {
+		target: root.activePlayer
+
+		function onPostTrackChanged() {
+			root.updateTrack();
+		}
+
+		function onTrackArtUrlChanged() {
+			// console.log("arturl:", activePlayer.trackArtUrl)
+			// root.updateTrack();
+			if (root.activePlayer.uniqueId == root.activeTrack.uniqueId && root.activePlayer.trackArtUrl != root.activeTrack.artUrl) {
+				// cantata likes to send cover updates *BEFORE* updating the track info.
+				// as such, art url changes shouldn't be able to break the reverse animation
+				const r = root.__reverse;
+				root.updateTrack();
+				root.__reverse = r;
+
+			}
+		}
+	}
+
+	onActivePlayerChanged: this.updateTrack();
+
+	function updateTrack() {
+		//console.log(`update: ${this.activePlayer?.trackTitle ?? ""} : ${this.activePlayer?.trackArtists}`)
+		this.activeTrack = {
+			uniqueId: this.activePlayer?.uniqueId ?? 0,
+			artUrl: this.activePlayer?.trackArtUrl ?? "",
+			title: this.activePlayer?.trackTitle || "Unknown Title",
+			artist: this.activePlayer?.trackArtist || "Unknown Artist",
+			album: this.activePlayer?.trackAlbum || "Unknown Album",
+		};
+
+		this.trackChanged(__reverse);
+		this.__reverse = false;
+	}
+
+	property bool isPlaying: this.activePlayer && this.activePlayer.isPlaying;
+	property bool canTogglePlaying: this.activePlayer?.canTogglePlaying ?? false;
+	function togglePlaying() {
+		if (this.canTogglePlaying) this.activePlayer.togglePlaying();
+	}
+
+	property bool canGoPrevious: this.activePlayer?.canGoPrevious ?? false;
+	function previous() {
+		if (this.canGoPrevious) {
+			this.__reverse = true;
+			this.activePlayer.previous();
+		}
+	}
+
+	property bool canGoNext: this.activePlayer?.canGoNext ?? false;
+	function next() {
+		if (this.canGoNext) {
+			this.__reverse = false;
+			this.activePlayer.next();
+		}
+	}
+
+	property bool canChangeVolume: this.activePlayer && this.activePlayer.volumeSupported && this.activePlayer.canControl;
+
+	property bool loopSupported: this.activePlayer && this.activePlayer.loopSupported && this.activePlayer.canControl;
+	property var loopState: this.activePlayer?.loopState ?? MprisLoopState.None;
+	function setLoopState(loopState: var) {
+		if (this.loopSupported) {
+			this.activePlayer.loopState = loopState;
+		}
+	}
+
+	property bool shuffleSupported: this.activePlayer && this.activePlayer.shuffleSupported && this.activePlayer.canControl;
+	property bool hasShuffle: this.activePlayer?.shuffle ?? false;
+	function setShuffle(shuffle: bool) {
+		if (this.shuffleSupported) {
+			this.activePlayer.shuffle = shuffle;
+		}
+	}
+
+	function setActivePlayer(player: MprisPlayer) {
+		const targetPlayer = player ?? Mpris.players.values[0];
+		console.log(`[Mpris] Active player ${targetPlayer} << ${activePlayer}`)
+
+		if (targetPlayer && this.activePlayer) {
+			this.__reverse = Mpris.players.indexOf(targetPlayer) < Mpris.players.indexOf(this.activePlayer);
+		} else {
+			// always animate forward if going to null
+			this.__reverse = false;
+		}
+
+		this.trackedPlayer = targetPlayer;
+	}
+
+	IpcHandler {
+		target: "mpris"
+
+		function pauseAll(): void {
+			for (const player of Mpris.players.values) {
+				if (player.canPause) player.pause();
+			}
+		}
+
+		function playPause(): void { root.togglePlaying(); }
+		function previous(): void { root.previous(); }
+		function next(): void { root.next(); }
+	}
 }

@@ -7,16 +7,20 @@
 
 import Quickshell
 import QtQuick
+import qs.Core.Services
 import qs.Panels.System
 import qs.Features.OSD
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
-import qs.Panels.Notifications
 ShellRoot {
     id: root
     settings.watchFiles: true
 
     ReloadPopup {}
+
+    Component.onCompleted: {
+        ConfigService.load()
+    }
 
     // OSDs: Carga inmediata (pequeños y críticos)
     BrightnessOSD {}
@@ -35,8 +39,7 @@ ShellRoot {
         loading: true
         PowerButtons {}
     }
-    //NotificationCenterWindow {}
-
+    Notifications {}
     Variants {
         model: Quickshell.screens
         delegate: Scope {

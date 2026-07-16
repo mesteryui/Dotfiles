@@ -10,7 +10,7 @@ BarItem {
     MaterialIcon {
         color: Appearance.md3.on_surface
         anchors.centerIn: parent
-        size: 20
+        size: Appearance.font.pixelSize.larger
         icon: {
             if (!Services.BluetoothService.available)
                 return "bluetooth_disabled";

@@ -5,6 +5,7 @@
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Wallpaper
@@ -37,6 +38,7 @@ Item {
                 text: Services.I18nService?.getTranslation("wallpaper.title", "Wallpapers") ?? "Wallpapers"
                 font.pixelSize: Appearance.font.pixelSize.title
                 font.variableAxes: Appearance.font.variableAxes.title
+                font.family: Appearance.font.fontSans
                 color: Appearance.md3.on_surface
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignVCenter
@@ -62,13 +64,15 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: 1500
             maximumFlickVelocity: 2500
-
+            
             // ── Navegación por teclado ────────────────────────────────────────
             Keys.onLeftPressed: {
                 currentIndex === 0
                     ? currentIndex = model.count - 1
                     : decrementCurrentIndex()
             }
+            
+
             Keys.onRightPressed: {
                 currentIndex === model.count - 1
                     ? currentIndex = 0

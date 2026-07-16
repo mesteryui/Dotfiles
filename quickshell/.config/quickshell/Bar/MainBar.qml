@@ -29,7 +29,7 @@ Item {
         
         RowLayout {
             Layout.alignment: Qt.AlignCenter | Qt.AlignVCenter
-            spacing: 12
+            spacing: 8
             MprisPlayer {}
             UpdateCounter {}
             Clock {}

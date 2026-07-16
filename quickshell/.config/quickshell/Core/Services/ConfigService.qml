@@ -9,6 +9,9 @@ Singleton {
     property alias configs: jsonAdapter
 
 
+    function load () {}
+
+
     Timer {
         id: fileReloader
         interval: 100

@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Core.Services
 
 Singleton {
 	property alias md3: jsonAdapter.md3
@@ -10,7 +11,7 @@ Singleton {
 	property alias palette: jsonAdapter.palette
 
 	readonly property Shape   shape:   Shape   {}
-    readonly property Font    font:    Font    {}
+    readonly property FontConfig    font:    FontConfig    {}
 	
 	FileView {
 		path: Quickshell.env("HOME") + "/.local/state/quickshell/generated/colors.json"
@@ -39,9 +40,11 @@ Singleton {
         property int windowRounding: 18
     }
 
-    component Font: QtObject {
+    component FontConfig: QtObject {
         readonly property string sans: ConfigService.configs.appearence.fontSans
         readonly property string mono: ConfigService.configs.appearence.monospace
+		readonly property string reading: ConfigService.configs.appearence.reading
+		readonly property string expressive: ConfigService.configs.appearence.expressive
 		property string iconMaterial: "Material Symbols Rounded"
 		property QtObject variableAxes: QtObject {
             property var main: ({

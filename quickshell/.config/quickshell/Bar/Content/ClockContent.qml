@@ -22,7 +22,7 @@ Item {
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
 
         color: Appearance.md3.on_surface
-        font.pixelSize: 14
+        font.pixelSize: Appearance.font.pixelSize.small
 
 
         // Corrección: Usar el objeto clock.date correctamente en ambas partes

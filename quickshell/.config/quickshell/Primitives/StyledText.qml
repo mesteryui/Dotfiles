@@ -3,7 +3,7 @@ import qs.Core.Services
 import qs.Core
 Text {
     id: root
-    renderType: Text.QtRendering
+    renderType: Text.NativeRendering
     verticalAlignment: Text.AlignVCenter
     property bool shouldUseNumberFont: /^\d+$/.test(root.text)
     font {

@@ -1,4 +1,3 @@
-// Services/NotificationService.qml
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -7,104 +6,82 @@ import Quickshell.Services.Notifications
 Singleton {
     id: root
 
-    property alias dnd: settings.dnd
-    property alias notifications: server.trackedNotifications
-    readonly property alias history: settings.history
+    PersistentProperties {
+        id: storage
+        property var historyData: []
+        property bool dnd: false
+    }
 
-    signal notificationReceived(var notification)
+    // 1. FORMA CORRECTA: Exponemos los modelos al exterior usando 'alias'
+    property alias historyModel: _historyModel
+    property alias activeModel: _activeModel
 
-    function toggleDnd() {
-        settings.dnd = !settings.dnd
+    // 2. Declaramos los ListModel como objetos hijos internos
+    ListModel { id: _historyModel }
+    ListModel { id: _activeModel }
+
+    Component.onCompleted: {
+        // CORRECCIÓN 1: Forzamos a que siempre sea un array
+        let initialData = storage.historyData || [];
+        for (let i = 0; i < initialData.length; i++) {
+            _historyModel.append(initialData[i]);
+        }
+    }
+
+    function addNotification(notification) {
+        if (storage.dnd && notification.urgency !== NotificationUrgency.Critical)
+            return;
+
+        const timestamp = new Date().toLocaleTimeString();
+
+        // 1. Guardar en el historial
+        const entry = {
+            summary: notification.summary ?? "Sin título",
+            body: notification.body ?? "",
+            appName: notification.appName ?? "Sistema",
+            icon: notification.appIcon ?? notification.image ?? "",
+            time: timestamp,
+            urgency: notification.urgency
+        };
+        _historyModel.insert(0, entry);
+        
+        // CORRECCIÓN 2: Extraemos los datos a una variable segura con fallback a []
+        let currentData = storage.historyData || [];
+        let newData = [entry];
+        
+        // Ahora currentData.length es 100% seguro y nunca será undefined
+        let maxLimit = Math.min(currentData.length, 49); 
+        for (let i = 0; i < maxLimit; i++) {
+            newData.push(currentData[i]);
+        }
+        storage.historyData = newData;
+
+        // 2. Inyectar el objeto VIVO en el modelo activo
+        _activeModel.insert(0, { "notifObj": notification });
+    }
+
+    function disposeNotification(id) {
+        // Buscamos y eliminamos del ListModel activo de forma segura
+        for (let i = 0; i < _activeModel.count; i++) {
+            let item = _activeModel.get(i);
+            if (item && item.notifObj && item.notifObj.id === id) {
+                _activeModel.remove(i, 1);
+                break;
+            }
+        }
     }
 
     function clearHistory() {
-        settings.history = []
-    }
-
-    function removeFromHistory(notifId) {
-        const current = Array.isArray(settings.history) ? Array.from(settings.history) : []
-        settings.history = current.filter(n => n.id !== notifId)
-    }
-
-    function dismissActiveNotification(notifId) {
-        Qt.callLater(() => {
-            const notifs = server.trackedNotifications
-            for (let i = 0; i < notifs.length; i++) {
-                if (notifs[i].id === notifId) {
-                    notifs[i].dismiss()
-                    break
-                }
-            }
-        })
-    }
-
-    function clearActiveNotifications() {
-        Qt.callLater(() => {
-            const notifs = server.trackedNotifications
-            for (let i = notifs.length - 1; i >= 0; i--) {
-                notifs[i].expire()
-            }
-        })
-    }
-
-    function serializeNotification(n) {
-        return {
-            id:      Date.now().toString(36) + Math.random().toString(36).slice(2),
-            appName: n.appName  ?? "",
-            appIcon: n.appIcon  ?? "",
-            summary: n.summary  ?? "",
-            body:    n.body     ?? "",
-            urgency: n.urgency  ?? 1,
-            image:   n.image    ?? "",
-            time:    Date.now()
-        }
-    }
-
-    function sendTestNotification(summary, body, urgency) {
-        const entry = {
-            id:      "test_" + Date.now().toString(36) + Math.random().toString(36).slice(2),
-            appName: "Test System",
-            appIcon: "dialog-information",
-            summary: summary ?? "Notificación de Prueba",
-            body:    body ?? "Esto es una notificación para verificar que todo funciona correctamente.",
-            urgency: urgency ?? 1,
-            image:   "",
-            time:    Date.now()
-        }
-        const current = Array.isArray(settings.history) ? Array.from(settings.history) : []
-        settings.history = [entry, ...current].slice(0, 100)
-        root.notificationReceived(entry)
-    }
-
-    PersistentProperties {
-        id: settings
-        reloadableId: "persitentNotifications"
-        property bool dnd: false
-        property var history: []
+        _historyModel.clear();
+        storage.historyData = [];
     }
 
     NotificationServer {
         id: server
-
-        keepOnReload: true
-        actionsSupported: true
         bodySupported: true
-        bodyMarkupSupported: true
+        actionsSupported: true
         imageSupported: true
         persistenceSupported: true
-        bodyHyperlinksSupported: true
-        bodyImagesSupported: true
-        inlineReplySupported: true
-
-        onNotification: n => {
-            const entry = root.serializeNotification(n)
-            const current = Array.isArray(settings.history) ? Array.from(settings.history) : []
-            settings.history = [entry, ...current].slice(0, 100)
-            root.notificationReceived(entry)
-
-            if (root.dnd && n.urgency !== NotificationUrgency.Critical) return
-
-            n.tracked = true
-        }
+        onNotification: n => root.addNotification(n)
     }
 }

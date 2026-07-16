@@ -3,10 +3,10 @@
         "position": "top"
     },
     "notifications": {
-        "timeout": 5
+        "timeout": 6
     },
     "updates": {
-        "command": "sudo pacman -Syu",
+        "command": "shelly upgrade",
         "countTime": 10
     }
 }

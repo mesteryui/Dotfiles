@@ -6,6 +6,7 @@ import qs.Panels.MediaPlayer
 import qs.Bar.Content
 import qs.Bar
 
+
 Item {
     id: root
     implicitWidth: content.implicitWidth + 24
@@ -17,20 +18,20 @@ Item {
     }
 
     PlayerContent {
-        id: content 
+        id: content
         anchors.centerIn: parent
         isHovered: titleInteraction.containsMouse
     }
 
     MouseArea {
         id: titleInteraction
-        enabled: Services.MprisService.hasPlayer
+        enabled: Services.MprisService.activePlayer !== null
         width: content.width / 2
         height: parent.height
         anchors.left: parent.left
         anchors.leftMargin: 12
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: {
             const w = popupLoader.item
             if (w) w.visible = !w.visible
@@ -52,6 +53,4 @@ Item {
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
         }
     }
-
-
 }

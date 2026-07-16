@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Hyprland
 import qs.Core.Services as Services
 import qs.Shared.Background
+import Quickshell.Services.Mpris
 
 PopupWindow {
     id: root
@@ -16,6 +17,13 @@ PopupWindow {
     implicitWidth: 350
     implicitHeight: mprisContent.implicitHeight
 
+    readonly property var player: Services.MprisService.activePlayer
+
+    // Portada: cadena declarativa, sin onXChanged con efectos secundarios.
+    // Si no hay player o no hay arte, queda en "" (sin imagen), en vez de
+    // resolver una URL basura contra el directorio del propio .qml.
+    readonly property string artURL: player?.trackArtUrl ?? ""
+    readonly property string finalArt: artURL.length > 0 ? Qt.resolvedUrl(artURL) : ""
     // ── Estado de posición ────────────────────────────────────
     property real currentPosition: 0
 
@@ -32,14 +40,16 @@ PopupWindow {
     // Referencia mprisContent.sliderDragging en vez de progressSlider.pressed
     // para no acoplar el Wrapper a un id interno del Content.
 
+    // ── Timers de posición ────────────────────────────────────
     Timer {
         id: positionTimer
         interval: 250
         repeat: true
         running: root.visible && Services.MprisService.isPlaying
         onTriggered: {
-            if (!mprisContent.sliderDragging && Services.MprisService.currentMprisPlayer)
-                root.currentPosition = Services.MprisService.currentMprisPlayer.position
+            // ✅ CORREGIDO: Usar activePlayer
+            if (!mprisContent.sliderDragging && Services.MprisService.activePlayer)
+                root.currentPosition = Services.MprisService.activePlayer.position
         }
     }
 
@@ -48,39 +58,16 @@ PopupWindow {
         interval: 350
         repeat: false
         onTriggered: {
-            if (Services.MprisService.currentMprisPlayer && !mprisContent.sliderDragging)
-                root.currentPosition = Services.MprisService.currentMprisPlayer.position
-        }
-    }
-
-    // ── Sincronización con el player ──────────────────────────
-    Connections {
-        target: Services.MprisService.currentMprisPlayer
-        enabled: Services.MprisService.currentMprisPlayer !== null
-
-        function onPositionChanged() {
-            if (!mprisContent.sliderDragging)
-                root.currentPosition = Services.MprisService.currentMprisPlayer.position
-        }
-
-        function onPlaybackStateChanged() {
-            Qt.callLater(() => {
-                if (Services.MprisService.currentMprisPlayer && !mprisContent.sliderDragging)
-                    root.currentPosition = Services.MprisService.currentMprisPlayer.position
-            })
-        }
-    }
-
-    Connections {
-        target: Services.MprisService
-        function onCurrentMprisPlayerChanged() {
-            root.currentPosition = Services.MprisService.currentMprisPlayer?.position ?? 0
+            // ✅ CORREGIDO: Usar activePlayer
+            if (Services.MprisService.activePlayer && !mprisContent.sliderDragging)
+                root.currentPosition = Services.MprisService.activePlayer.position
         }
     }
 
     onVisibleChanged: {
         if (visible)
-            root.currentPosition = Services.MprisService.currentMprisPlayer?.position ?? 0
+            // ✅ CORREGIDO: Usar activePlayer
+            root.currentPosition = Services.MprisService.activePlayer?.position ?? 0
     }
 
     // ── Background ────────────────────────────────────────────
@@ -88,16 +75,20 @@ PopupWindow {
         anchors.fill: parent
     }
 
+   
+
     // ── Content ───────────────────────────────────────────────
     MprisContent {
         id: mprisContent
         anchors.fill: parent
         currentPosition: root.currentPosition
-
-        onSeekRequested: (pos) => {
-            root.currentPosition = pos
-            Services.MprisService.seekTo(pos)
-            seekConfirmTimer.restart()
+        onSeekRequested: (newPosition) => {
+            if (Services.MprisService.activePlayer) {
+                Services.MprisService.activePlayer.position = newPosition // Cambia la canción
+                root.currentPosition = newPosition // Actualiza la UI instantáneamente
+                seekConfirmTimer.start() // Evita que el positionTimer machaque el valor antes de que DBus responda
+            }
         }
+        artURL: root.finalArt
     }
 }

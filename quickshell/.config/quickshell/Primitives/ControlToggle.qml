@@ -15,9 +15,9 @@ Rectangle {
     implicitWidth: Math.max(80, contentColumn.implicitWidth + 32)
     implicitHeight: Math.max(64, contentColumn.implicitHeight + 20)
     
-    radius: 14
+    radius: Appearance.shape.large
     color: active
-        ? Appearance.md3.secondary_container
+        ? Appearance.md3.primary
         : Appearance.md3.surface_variant
 
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -39,16 +39,16 @@ Rectangle {
             id: toggleIcon
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.iconName
-            size: 22
-            color: root.active ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+            size: Appearance.font.pixelSize.huge
+            color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
         }
 
         Text {
             id: toggleLabel
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.label
-            font.pixelSize: 11
-            color: root.active ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
         }
     }
 

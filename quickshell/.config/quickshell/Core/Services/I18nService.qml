@@ -11,6 +11,7 @@ Singleton {
     property var locale: userDefinedLang == "" ? Qt.locale() : Qt.locale(userDefinedLang)
     property string language: userDefinedLang == "" ? Qt.locale().name : userDefinedLang
 
+
     // Diccionario con las traducciones cargadas
     property var translations: ({})
 

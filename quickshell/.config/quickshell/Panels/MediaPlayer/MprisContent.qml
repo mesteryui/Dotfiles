@@ -15,6 +15,8 @@ import Quickshell.Services.Mpris
 Item {
     id: root
 
+    property string artURL: ""
+
     // ── API con el Wrapper ────────────────────────────────────
     required property real currentPosition
     signal seekRequested(real newPosition)
@@ -56,7 +58,7 @@ Item {
 
             Image {
                 anchors.fill: parent
-                source: Services.MprisService.lastTrackArtUrl
+                source: root.artURL
                 fillMode: Image.PreserveAspectCrop
                 opacity: 0.3
                 z: 1
@@ -97,7 +99,7 @@ Item {
 
             StyledText {
                 width: parent.width
-                text: Services.MprisService.currentMprisPlayer?.trackTitle
+                text: Services.MprisService.activePlayer?.trackTitle
                       ?? Services.I18nService.getTranslation("media.no_media")
                 font.pixelSize: Appearance.font.pixelSize.title
                 font.variableAxes: Appearance.font.variableAxes.title
@@ -108,8 +110,8 @@ Item {
 
             StyledText {
                 width: parent.width
-                text: Services.MprisService.currentMprisPlayer?.trackArtist
-                      || Services.MprisService.currentMprisPlayer?.trackAlbumArtist
+                text: Services.MprisService.activePlayer?.trackArtist
+                      || Services.MprisService.activePlayer?.trackAlbumArtist
                       || ""
                 font.pixelSize: 12
                 color: Appearance.md3.on_surface_variant
@@ -147,7 +149,7 @@ Item {
             Item { Layout.fillWidth: true }
 
             Text {
-                text: root.formatTime(Services.MprisService.trackLength)
+                text: root.formatTime(Services.MprisService.activePlayer?.length ?? 0)
                 font.pixelSize: 11
                 font.family: Services.ConfigService.configs.appearence.monospace
                 color: Appearance.md3.on_surface_variant
@@ -165,11 +167,17 @@ Item {
             from: 0.0
             to: 1.0
 
-            value: Services.MprisService.trackLength > 0
-                   ? Math.min(1.0, root.currentPosition / Services.MprisService.trackLength)
-                   : 0.0
+            onMoved: root.seekRequested(value * (Services.MprisService.activePlayer?.length ?? 0))
+        }
 
-            onMoved: root.seekRequested(value * Services.MprisService.trackLength)
+        Binding {
+            target: progressSlider
+            property: "value"
+            value: (Services.MprisService.activePlayer?.length ?? 0) > 0
+                   ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length)
+                   : 0.0
+            when: !progressSlider.pressed // Detiene la sobrescritura mientras arrastras
+            restoreMode: Binding.RestoreBinding
         }
 
         // Botones prev / play / next
@@ -183,8 +191,8 @@ Item {
             ButtonIcon {
                 iconSize: 20
                 iconName: "skip_previous"
-                enabled: Services.MprisService.hasPlayer
-                onClicked: Services.MprisService.previousTrack()
+                enabled: Services.MprisService.activePlayer != null
+                onClicked: Services.MprisService.previous()
             }
 
             // Botón play/pause — Wrapper + Background + Content inline
@@ -204,7 +212,7 @@ Item {
                     anchors.centerIn: parent
                     iconSize: 22
                     iconName: Services.MprisService.isPlaying ? "pause" : "play_arrow"
-                    enabled: Services.MprisService.hasPlayer
+                    enabled: Services.MprisService.activePlayer != null
                     iconColor: Appearance.md3.on_primary_container
                     onClicked: Services.MprisService.togglePlaying()
                 }
@@ -213,8 +221,8 @@ Item {
             ButtonIcon {
                 iconSize: 20
                 iconName: "skip_next"
-                enabled: Services.MprisService.hasPlayer
-                onClicked: Services.MprisService.nextTrack()
+                enabled: Services.MprisService.activePlayer != null
+                onClicked: Services.MprisService.next()
             }
 
             Item { Layout.fillWidth: true }
@@ -259,7 +267,7 @@ Item {
                     property MprisPlayer player: modelData
 
                     readonly property bool isActive:
-                        Services.MprisService.currentMprisPlayer === player
+                        Services.MprisService.activePlayer === player
 
                     implicitWidth: chipLabel.implicitWidth + 24
                     implicitHeight: 28
@@ -316,10 +324,10 @@ Item {
                         onClicked: {
                             // Si ya es el activo, limpia la selección manual
                             // para volver a la heurística automática.
-                            if (Services.MprisService.selectedPlayer === chipWrapper.player)
-                                Services.MprisService.selectedPlayer = null
+                            if (Services.MprisService.activePlayer === chipWrapper.player)
+                                Services.MprisService.setActivePlayer(null)
                             else
-                                Services.MprisService.selectedPlayer = chipWrapper.player
+                                Services.MprisService.setActivePlayer(chipWrapper.player)
                         }
                     }
                 }

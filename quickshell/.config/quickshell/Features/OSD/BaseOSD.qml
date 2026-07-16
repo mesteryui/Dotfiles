@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 Scope {
     id: root
-    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     property int implicitHeight: 20
     property int implicitWidth: 20
     default property alias content: container.data
@@ -30,6 +30,7 @@ Scope {
         implicitHeight: root.implicitHeight
         implicitWidth: root.implicitWidth
         exclusionMode: WlrLayershell.Ignore
+        exclusiveZone: 0
         color: "transparent"
 
                 Connections {
@@ -39,12 +40,8 @@ Scope {
                     }
                 }
 
-                anchors {
-                    bottom: false
-                    top: true
-                }
-                margins.bottom: 50
-                margins.top: 50
+                anchors.top: true
+                margins.top: 55
                 Item {
                     id: container
                     anchors.fill: parent

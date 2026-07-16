@@ -1,8 +1,5 @@
 import Quickshell
-import Quickshell.Widgets
-import Quickshell.Services.UPower
 import QtQuick
-import qs.Core
 import qs.Bar.Content
 import qs.Bar
 Item {

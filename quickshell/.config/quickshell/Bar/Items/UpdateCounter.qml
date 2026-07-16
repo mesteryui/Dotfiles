@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import qs.Core.Services as Services
@@ -36,7 +37,7 @@ Item {
     LazyLoader {
         id: popupLoader
         loading: true
-        UpdateList {
+        component: UpdateList {
             id: popup
             anchor.item: root
             anchor.margins.top: 20
