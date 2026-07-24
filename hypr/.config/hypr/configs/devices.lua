@@ -10,14 +10,11 @@ hl.config({
         natural_scroll = true, -- 1 in conf
         touchpad = {
             tap_to_click = true, -- 11? maybe true
-            middle_button_emulation = true,
-            disable_while_typing = false, 
-              tap_and_drag = true
+            middle_button_emulation = false,
+            disable_while_typing = true,
+            clickfinger_behavior = true,
+            tap_and_drag = true,
         },
+        accel_profile = "flat",
       },
   })
-
-hl.device({
-    name = "epic-mouse-v1",
-    sensitivity = -0.5,
-})

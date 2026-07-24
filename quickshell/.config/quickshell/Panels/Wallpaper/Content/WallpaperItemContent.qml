@@ -2,13 +2,20 @@ import QtQuick
 import Quickshell.Widgets
 import qs.Primitives
 import qs.Core
+import QtQuick.Layouts
 
 Item {
     id: root
 
-    property int  radius:     16
+    property int radius: 16
     property bool isSelected: false
-    property bool hovered:    false     // ← bool en vez de MouseArea
+    property bool hovered: false     // ← bool en vez de MouseArea
+
+    // Nombre del archivo (sin ruta) a partir de model.filePath
+    readonly property string fileName: {
+        const parts = (model.filePath || "").split("/")
+        return parts.length > 0 ? parts[parts.length - 1] : ""
+    }
 
     // Icono placeholder mientras carga la imagen
     MaterialIcon {
@@ -45,7 +52,10 @@ Item {
                 sourceSize.height: 400
                 opacity: status === Image.Ready ? 1 : 0
                 Behavior on opacity {
-                    NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.OutQuad
+                    }
                 }
             }
 
@@ -56,7 +66,10 @@ Item {
                 color: Appearance.md3.primary
                 opacity: root.isSelected ? 0.08 : 0
                 Behavior on opacity {
-                    NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.OutQuad
+                    }
                 }
             }
 
@@ -67,11 +80,57 @@ Item {
                 color: Appearance.md3.on_surface
                 opacity: root.hovered ? 0.08 : 0   // ← usa el bool
                 Behavior on opacity {
-                    NumberAnimation { duration: 100 }
+                    NumberAnimation {
+                        duration: 100
+                    }
+                }
+            }
+
+            // ── Scrim degradado inferior para legibilidad del nombre ──
+            Rectangle {
+                id: nameScrim
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                height: parent.height * 0.32
+                visible: wallpaperPreview.status === Image.Ready
+
+                gradient: Gradient {
+                    orientation: Gradient.Vertical
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.55) }
+                }
+            }
+
+            // ── Nombre del archivo, centrado sobre el scrim ───────────
+            StyledText {
+                id: fileNameLabel
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                    margins: 8
+                }
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideMiddle
+                text: root.fileName
+                color: Appearance.md3.on_surface
+                font.pixelSize: 12
+                font.weight: Font.Medium
+                visible: wallpaperPreview.status === Image.Ready
+                opacity: wallpaperPreview.status === Image.Ready ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.OutQuad
+                    }
                 }
             }
         }
-    }   // ← cierre de imageMask — faltaba este, causaba que selectionBadge quedara dentro
+    }   // ← cierre de imageMask
 
     // ── Badge de selección ────────────────────────────────────
     Rectangle {
@@ -92,10 +151,16 @@ Item {
         scale: root.isSelected ? 1 : 0.4
 
         Behavior on opacity {
-            NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutQuart
+            }
         }
         Behavior on scale {
-            NumberAnimation { duration: 300; easing.type: Easing.OutBack }
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutBack
+            }
         }
 
         MaterialIcon {

@@ -1,9 +1,11 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import qs.Core
 import qs.Primitives
 import qs.Core.Services as Services
+
 
 Item {
     id: root

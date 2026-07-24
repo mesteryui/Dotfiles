@@ -19,9 +19,29 @@ Item {
     required property int selectedDay
     required property var currentLocale
 
-    signal prevMonthRequested()
-    signal nextMonthRequested()
+    signal prevMonthRequested
+    signal nextMonthRequested
     signal daySelected(int day)
+
+    property date todayDate: new Date()
+
+    Timer {
+        id: midnightTimer
+        repeat: false
+
+        function scheduleNext() {
+            const now = new Date();
+            const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+            interval = nextMidnight.getTime() - now.getTime();
+            start();
+        }
+
+        onTriggered: {
+            root.todayDate = new Date();
+            scheduleNext();
+        }
+        Component.onCompleted: scheduleNext()
+    }
 
     // ── UI ────────────────────────────────────────────────────
     ColumnLayout {
@@ -35,7 +55,8 @@ Item {
 
             // Botón anterior — Wrapper + Background + Content
             Item {
-                implicitWidth: 40; implicitHeight: 40
+                implicitWidth: 40
+                implicitHeight: 40
 
                 Rectangle {
                     anchors.fill: parent
@@ -43,7 +64,10 @@ Item {
                     color: Appearance.md3.on_surface_variant
                     opacity: prevTap.pressed ? 0.12 : prevHover.hovered ? 0.08 : 0
                     Behavior on opacity {
-                        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutCubic
+                        }
                     }
                 }
 
@@ -54,16 +78,21 @@ Item {
                     color: Appearance.md3.on_surface_variant
                 }
 
-                HoverHandler { id: prevHover; cursorShape: Qt.PointingHandCursor }
-                TapHandler  { id: prevTap;   onTapped: root.prevMonthRequested() }
+                HoverHandler {
+                    id: prevHover
+                    cursorShape: Qt.PointingHandCursor
+                }
+                TapHandler {
+                    id: prevTap
+                    onTapped: root.prevMonthRequested()
+                }
             }
 
             // Título mes + año
             StyledText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: root.currentLocale.standaloneMonthName(root.currentMonth)
-                      + " " + root.currentYear
+                text: root.currentLocale.standaloneMonthName(root.currentMonth) + " " + root.currentYear
                 font.variableAxes: Appearance.font.variableAxes.title
                 font.pixelSize: 16
                 color: Appearance.md3.on_surface
@@ -71,7 +100,7 @@ Item {
 
             // Botón siguiente — Wrapper + Background + Content
             Item {
-                implicitWidth: 40; 
+                implicitWidth: 40
                 implicitHeight: 40
 
                 Rectangle {
@@ -80,7 +109,10 @@ Item {
                     color: Appearance.md3.on_surface_variant
                     opacity: nextTap.pressed ? 0.12 : nextHover.hovered ? 0.08 : 0
                     Behavior on opacity {
-                        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutCubic
+                        }
                     }
                 }
 
@@ -91,44 +123,49 @@ Item {
                     color: Appearance.md3.on_surface_variant
                 }
 
-                HoverHandler { id: nextHover; cursorShape: Qt.PointingHandCursor }
-                TapHandler  { id: nextTap;   onTapped: root.nextMonthRequested() }
+                HoverHandler {
+                    id: nextHover
+                    cursorShape: Qt.PointingHandCursor
+                }
+                TapHandler {
+                    id: nextTap
+                    onTapped: root.nextMonthRequested()
+                }
             }
         }
 
         // ── Cabecera de días de la semana ─────────────────────
         // ── Cabecera de días de la semana ─────────────────────
-    Row {
-        Layout.fillWidth: true
-        spacing: 0
+        Row {
+            Layout.fillWidth: true
+            spacing: 0
 
-    Repeater {
-        model: {
-            const first = root.currentLocale.firstDayOfWeek
-            const days = []
-            for (let i = 0; i < 7; i++)
-                days.push(root.currentLocale.standaloneDayName(
-                    (first + i) % 7, Locale.ShortFormat))
-            return days
-        }
+            Repeater {
+                model: {
+                    const first = root.currentLocale.firstDayOfWeek;
+                    const days = [];
+                    for (let i = 0; i < 7; i++)
+                        days.push(root.currentLocale.standaloneDayName((first + i) % 7, Locale.ShortFormat));
+                    return days;
+                }
 
-        delegate: Item {
-            width: monthGrid.width / 7   // ← misma fórmula que el delegate de MonthGrid
-            implicitHeight: dayLabel.implicitHeight
-            required property var modelData
+                delegate: Item {
+                    width: monthGrid.width / 7   // ← misma fórmula que el delegate de MonthGrid
+                    implicitHeight: dayLabel.implicitHeight
+                    required property var modelData
 
-            StyledText {
-                id: dayLabel
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: parent.modelData
-                font.bold: true
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.md3.on_surface_variant
+                    StyledText {
+                        id: dayLabel
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: parent.modelData
+                        font.bold: true
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        color: Appearance.md3.on_surface_variant
+                    }
+                }
             }
         }
-    }
-}
 
         // Divisor
         Rectangle {
@@ -142,28 +179,24 @@ Item {
         MonthGrid {
             id: monthGrid
             month: root.currentMonth
-            year:  root.currentYear
+            year: root.currentYear
             locale: root.currentLocale
             Layout.fillWidth: true
             Layout.fillHeight: true
-            
 
             delegate: Item {
                 id: delegateItem
                 required property var model
 
-                width:  monthGrid.width / 7
+                width: monthGrid.width / 7
                 height: (monthGrid.height - 10) / 6
 
                 readonly property bool isToday: {
-                    const today = new Date()
-                    return model.day   === today.getDate()
-                        && model.month === today.getMonth()
-                        && model.year  === today.getFullYear()
+                    const today = root.todayDate
+                    return model.day === today.getDate() && model.month === today.getMonth() && model.year === today.getFullYear();
                 }
                 readonly property bool isCurrentMonth: model.month === monthGrid.month
-                readonly property bool isSelected: root.selectedDay === model.day
-                                && isCurrentMonth
+                readonly property bool isSelected: root.selectedDay === model.day && isCurrentMonth
 
                 // ── Background: círculo M3 con 3 estados ──────
                 // Hoy → primary lleno
@@ -171,19 +204,21 @@ Item {
                 // Normal → transparente
                 Rectangle {
                     id: dayCircle
-                    width: 36; height: 36
+                    width: 36
+                    height: 36
                     radius: 18
                     anchors.centerIn: parent
 
-                    color: delegateItem.isToday    ? Appearance.md3.primary
-                         : delegateItem.isSelected ? Appearance.md3.primary_container
-                         : "transparent"
+                    color: delegateItem.isToday ? Appearance.md3.primary : delegateItem.isSelected ? Appearance.md3.primary_container : "transparent"
 
                     border.width: delegateItem.isSelected && !delegateItem.isToday ? 1 : 0
                     border.color: Appearance.md3.primary
 
                     Behavior on color {
-                        ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        ColorAnimation {
+                            duration: 180
+                            easing.type: Easing.OutCubic
+                        }
                     }
 
                     // State layer — hover 8%, press 12%
@@ -191,12 +226,13 @@ Item {
                         id: dayStateLayer
                         anchors.fill: parent
                         radius: parent.radius
-                        color: delegateItem.isToday    ? Appearance.md3.on_primary
-                             : delegateItem.isSelected ? Appearance.md3.on_primary_container
-                             : Appearance.md3.on_surface
+                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                         opacity: 0
                         Behavior on opacity {
-                            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
+                            }
                         }
                     }
 
@@ -207,10 +243,7 @@ Item {
                         font.family: Services.ConfigService.configs.appearence.fontSans
                         font.pixelSize: 13
                         font.bold: delegateItem.isToday || delegateItem.isSelected
-                        color: delegateItem.isToday    ? Appearance.md3.on_primary
-                             : delegateItem.isSelected ? Appearance.md3.on_primary_container
-                             : delegateItem.isCurrentMonth ? Appearance.md3.on_surface
-                             : Appearance.md3.on_surface_variant
+                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : delegateItem.isCurrentMonth ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant
                         opacity: delegateItem.isCurrentMonth ? 1.0 : 0.38
                     }
                 }
@@ -222,9 +255,9 @@ Item {
                     enabled: delegateItem.isCurrentMonth
                     cursorShape: delegateItem.isCurrentMonth ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onContainsMouseChanged: dayStateLayer.opacity = containsMouse ? 0.08 : 0.0
-                    onPressed:  dayStateLayer.opacity = 0.12
+                    onPressed: dayStateLayer.opacity = 0.12
                     onReleased: dayStateLayer.opacity = containsMouse ? 0.08 : 0.0
-                    onClicked:  root.daySelected(delegateItem.model.day)
+                    onClicked: root.daySelected(delegateItem.model.day)
                 }
             }
         }

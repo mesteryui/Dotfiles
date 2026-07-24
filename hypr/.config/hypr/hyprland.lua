@@ -4,8 +4,8 @@
 
 -- Global variables (can be used in required files if needed, but better to pass or define as locals)
 _G.terminal = "uwsm app -- xdg-terminal-exec"
---_G.fileManager = "dolphin"
-_G.fileManager = terminal.." -e yazi"
+_G.fileManager = "dolphin"
+--_G.fileManager = terminal.." -e yazi"
 _G.browser = "firefox"
 _G.emacs = "emacsclient -c -a 'emacs'"
 _G.Colors = require("colors")

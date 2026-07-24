@@ -6,7 +6,7 @@
         "timeout": 6
     },
     "updates": {
-        "command": "shelly upgrade",
+        "command": "shelly upgrade-all",
         "countTime": 10
     }
 }

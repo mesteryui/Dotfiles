@@ -32,7 +32,6 @@ Item {
 
     
 
-
     // ── Cabecera: arte, título, artista ───────────────────────
     Item {
         id: header

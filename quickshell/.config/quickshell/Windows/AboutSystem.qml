@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.Core
 
 ApplicationWindow {
@@ -12,8 +13,9 @@ ApplicationWindow {
 
     Item {
         anchors.fill: parent
-        Row {
+        RowLayout {
             id: row
+            
         }
     }
 

@@ -16,6 +16,7 @@ PopupWindow {
     grabFocus: true
     implicitWidth: 350
     implicitHeight: mprisContent.implicitHeight
+    
 
     readonly property var player: Services.MprisService.activePlayer
 
@@ -26,6 +27,7 @@ PopupWindow {
     readonly property string finalArt: artURL.length > 0 ? Qt.resolvedUrl(artURL) : ""
     // ── Estado de posición ────────────────────────────────────
     property real currentPosition: 0
+
 
     // ── Focus ─────────────────────────────────────────────────
     HyprlandFocusGrab {

@@ -46,9 +46,10 @@ Singleton {
                 body: n.body,
                 appName: n.appName,
                 urgency: n.urgency,
-                time: Qt.formatDateTime(new Date(), "HH:mm")
+                time: Qt.formatDateTime(new Date(), "HH:mm"),
+                icon: n.image || n.appIcon || ""
             });
-            if (n.urgency !== NotificationUrgency.Critical && root.dnd) {
+            if (root.dnd) {
                 return;
             }
             n.tracked = true;

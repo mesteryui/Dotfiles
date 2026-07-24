@@ -2,8 +2,8 @@ hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("qs ipc call ui.powermenu tog
 hl.bind(mainMod .. " + F1", helper.gamemode.toggle, { description = "Alternar modo juego" })
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd(menu_layout_changer), { description = "Cambiar distribución de teclado" })
 hl.bind("ALT + L", hl.dsp.exec_cmd("hyprlock"), { description = "Bloquear pantalla" })
-hl.bind("ALT + C", hl.dsp.exec_cmd("swaync-client --toggle-dnd"), { description = "Alternar modo No Molestar" })
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client --toggle-panel"), { description = "Alternar panel de notificaciones" })
+hl.bind("ALT + C", hl.dsp.exec_cmd("qs ipc call notifications dndToggle"), { description = "Alternar modo No Molestar" })
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("qs ipc call notifications toggle"), { description = "Alternar panel de notificaciones" })
 
 hl.bind("ALT + N", hl.dsp.exec_cmd("uwsm app -- " .. bar_layout_selector), { description = "Selector de diseño de barra" })
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("launch-waybar"), { description = "Reiniciar Waybar" })

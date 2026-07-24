@@ -45,6 +45,7 @@ Item {
             }
         }
 
+
         // ── Lista de wallpapers ───────────────────────────────────────────────
         ListView {
             id: wallpaperList

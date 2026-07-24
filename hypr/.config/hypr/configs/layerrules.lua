@@ -9,7 +9,7 @@ hl.layer_rule({
 
 hl.layer_rule({
     name = "status-bar",
-    match = { namespace = "^(waybar)$" },
+    match = { namespace = "^(bar)$" },
     blur = true,
     ignore_alpha = 0.1,
     animation = "fade",

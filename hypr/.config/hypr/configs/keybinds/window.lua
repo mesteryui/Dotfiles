@@ -23,6 +23,11 @@ hl.bind(mainMod.." + O", function ()
     end
 end, {description = "Abrir/Cerrar Hyprexpo"})
 
+hl.bind(mainMod.." + U", function ()
+  if helper.check_plugin("scrolloverview","Scrolloverview") then
+    hl.plugin.scrolloverview.overview("toggle")
+  end
+end)
 -- Focus & Move
 local movement = {
     { dir = "left",  nombre = "izquierda", teclas = { "H", "LEFT" } },
@@ -30,6 +35,10 @@ local movement = {
     { dir = "up",    nombre = "arriba",    teclas = { "K", "UP" } },
     { dir = "down",  nombre = "abajo",     teclas = { "J", "DOWN" } }
 }
+--hl.bind(mainMod .. " + period", hl.dsp.layout("move +col"))
+if hl.get_config("general.layout") == "scrolling" then
+  hl.bind(mainMod .. " + comma", hl.dsp.layout("swapcol l"))
+end
 
 for _, item in ipairs(movement) do
     for _, key in ipairs(item.teclas) do

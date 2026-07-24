@@ -26,10 +26,10 @@ hl.bind("J", hl.dsp.window.resize({ x = 0, y = 10, relative = true }),
 end)
 
 hl.define_submap("Multimedia", function()
-  local playerctl_manager = "swayosd-client --playerctl"
+  local playerctl_manager = "qs ipc call mpris"
   local keys = {
-    S = { "play-pause", "Reproducir/Pausar" },
-    P = { "prev", "Pista anterior" },
+    S = { "playPause", "Reproducir/Pausar" },
+    P = { "previous", "Pista anterior" },
     N = { "next", "Siguiente pista" }
   }
   for key, action in pairs(keys) do

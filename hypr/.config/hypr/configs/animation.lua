@@ -1,2 +1,2 @@
 -- configs/animation.lua
-require("configs.animations.end-4")
+require("configs.animations.dynamic")

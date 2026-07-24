@@ -1,62 +1,18 @@
 -- configs/windowrules.lua
-require("configs.rules_windows.btop")
+-- Archivo principal de reglas de ventanas. Orquesta la carga de submódulos.
 
-hl.window_rule({ match = { class = "vesktop" }, workspace = 5 })
-hl.window_rule({ match = { class = "gimp" },    workspace = 4 })
+local modules = {
+    "configs.rules_windows.system_fixes",     -- Fixes de XWayland, eventos y compatibilidad
+    "configs.rules_windows.workspaces",       -- Asignación de aplicaciones a workspaces específicos
+    "configs.rules_windows.floating",         -- Reglas para diálogos, modales y aplicaciones flotantes
+    "configs.rules_windows.terminals",        -- Reglas específicas para terminales (opacidad, tags, etc.)
+    "configs.rules_windows.gaming",           -- Reglas para juegos, Steam, proton y optimizaciones
+    "configs.rules_windows.jetbrains",        -- Fixes y reglas de comportamiento para IDEs de JetBrains
+    "configs.rules_windows.btop",             -- Regla específica para btop flotante
+    "configs.rules_windows.PictureInPicture",     -- Regla específica para Picture-in-Picture
+    "configs.rules_windows.apps",             -- Reglas específicas para otras aplicaciones (Telegram, navegadores, etc.)
+}
 
-hl.window_rule({ match = { class = "^(mpv|io.github.diegopvlk.Cine)" }, float = true, center = true, size = "900 500" })
-
-require("configs.rules_windows.PictureInPicture")
-
-hl.window_rule({
-    name = "floating-utils",
-    match = {
-        class = "^(blueberry.py|nm-applet|kvantummanager|.*dialog.*|org.localsend.localsend_app)$",
-        title = "^(Acerca.*|Watering)$",
-    },
-    float = true,
-    center = true,
-})
-
-hl.window_rule({ match = { class = "^(.*Cartridges)$" }, float = true })
-hl.window_rule({ match = { class = "xdg-desktop-portal-gtk" }, size = "35% 50%" })
-hl.window_rule({ match = { class = "^(xdg-desktop-portal-gtk)$" }, float = true })
-
-require("configs.rules_windows.jetbrains")
-require("configs.rules_windows.terminals")
-require("configs.rules_windows.someFixes")
-require("configs.rules_windows.steam")
-
-hl.window_rule({
-    name = "tag-floating-term",
-    match = { tag = "floating-term" },
-    float = true,
-    center = true,
-    size = {800, 700},
-})
-
-hl.window_rule({
-    name = "tag-floating-window",
-    match = { tag = "floating-window" },
-    float = true,
-    center = true,
-    size = {900, 800}
-})
-
--- ASIGNACIÓN DE TAGS
-hl.window_rule({ match = { class = "^(local\\.floating)$" }, tag = "+floating-term" })
-hl.window_rule({
-    match = { class = "^(xdg-desktop-portal-gtk|imv|.*Showtime|.*Cartridges|nwg-look|qt5ct|qt6ct|com.github.rafostar.Clapper|pavucontrol|waypaper|waifudownloader|catgirldownloader|com.gabm.satty)$" },
-    tag = "+floating-window",
-})
-
-hl.window_rule({
-    name = "calculator-fix",
-    match = { class = "^(galculator)$" },
-    float = true,
-    size = {100, 200},
-})
-
---hl.window_rule({ match = { class = "^(org\\.quickshell)$" }, float = true })
-
---hl.workspace_rule({ workspace = 2, layoutopt = "direction:right" })
+for _, module in ipairs(modules) do
+    require(module)
+end

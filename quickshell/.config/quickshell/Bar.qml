@@ -32,7 +32,7 @@ PanelWindow {
     
     BarBackground {
         anchors.fill: parent
-        color: Qt.alpha(Appearance.md3.surface,0.93)
+        color: Appearance.md3.surface
         radius: 30
     }
 

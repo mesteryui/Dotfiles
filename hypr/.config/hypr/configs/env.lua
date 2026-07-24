@@ -46,9 +46,15 @@ hl.env("HYPRCURSOR_THEME", cursor_theme)
 hl.env("HYPRCURSOR_SIZE", cursor_size)
 hl.env("EDITOR","nvim")
 hl.env("XCURSOR_THEME", cursor_theme)
-hl.env("QT_STYLE_OVERRIDE","kvantum")
+
 hl.env("XCURSOR_SIZE", cursor_size)
 hl.env("QT_QUICK_CONTROLS_STYLE", "org.hyprland.style")
-hl.env("GDK_SCALE", "1.75")
+hl.env("QT_SCALE_FACTOR", "1")   -- ajustar según tu monitor scale
 hl.env("GDK_BACKEND", "wayland,x11,*")
+hl.env("QT_QPA_PLATFORM","wayland;xcb")
+hl.env("OZONE_PLATFORM","wayland")
+hl.env("XDG_SESSION_TYPE","wayland")
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
+hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+

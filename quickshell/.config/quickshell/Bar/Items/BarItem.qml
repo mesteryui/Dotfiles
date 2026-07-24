@@ -11,6 +11,7 @@ Rectangle {
 
     property bool clickable: false
     signal clicked(variant mouse)
+    property alias area: mouseArea
 
     // Necesitamos que los hijos se añadan al contenedor
     default property alias data: contentLoader.data

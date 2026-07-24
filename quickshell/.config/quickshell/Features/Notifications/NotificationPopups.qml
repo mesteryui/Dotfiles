@@ -39,13 +39,13 @@ PanelWindow {
 
                 Layout.fillWidth: true
                 implicitHeight: popupContent.implicitHeight + 20
-                radius: 8
+                radius: Appearance.shape.normal
                 color: Appearance.md3.background
 
                 Timer {
-                    running: card.modelData.urgency !== NotificationUrgency.Critical
+                    running: true
                     interval: ConfigService.configs.notifications.timeout * 1000
-                    onTriggered: card.modelData.dismiss()
+                    onTriggered: card.modelData.expire()
                 }
 
                 border {

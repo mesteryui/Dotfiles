@@ -6,6 +6,8 @@ import Quickshell.Io
 import qs.Core.Services
 
 Singleton {
+	id: root
+	
 	property alias md3: jsonAdapter.md3
 	property alias base16: jsonAdapter.base16
 	property alias palette: jsonAdapter.palette

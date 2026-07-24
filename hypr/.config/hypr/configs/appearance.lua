@@ -19,7 +19,7 @@ hl.config({
         zoom_rigid = false,
         hotspot_padding = 1,
         hide_on_key_press = true,
-        no_hardware_cursors = false,
+        no_hardware_cursors = true,
         enable_hyprcursor = true,
         no_warps = true,
         inactive_timeout = 7
@@ -29,7 +29,7 @@ hl.config({
     },
     xwayland = {
         enabled = true,
-        force_zero_scaling = 0,
+        force_zero_scaling = false,
     },
 })
 
@@ -89,8 +89,8 @@ hl.config({
         shadow = {
             enabled = true,
             --offset = "0 1",
-            range = 18,
-            render_power = 2,
+            range = 13,
+            render_power = 3,
             color = Colors.shadow,
         },
     },
@@ -104,7 +104,7 @@ hl.config({
        -- pseudotile = true,
         force_split = 2,
         preserve_split = true,
-        special_scale_factor = 0.8,
+        --special_scale_factor = 0.8,
     },
     scrolling = {
         fullscreen_on_one_column = true,

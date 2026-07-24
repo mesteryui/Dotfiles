@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Wayland
 import qs.Core.Modules
+import Quickshell.Io
 Singleton {
     id: root
 
@@ -9,6 +10,18 @@ Singleton {
 
     function toggle(): void {
         Persistent.persistence.idle.inhibit = !root.inhibited
+    }
+    IpcHandler {
+        target: "inhibit"
+        function on() {
+            Persistent.persistence.idle.inhibit = true
+        }
+        function off() {
+            Persistent.persistence.idle.inhibit = false
+        }
+        function toggle() {
+            root.toggle()
+        }
     }
     IdleInhibitor {
         id: idleInhibitor
