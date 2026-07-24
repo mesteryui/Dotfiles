@@ -9,9 +9,10 @@
 * {
   all: unset;
   font-family: "Google Sans Flex";
-  font-variation-settings: "opsz" 11, "wght" 500;
+  font-variation-settings: "opsz": 14, "wght" 500, "wdth": 100;
   font-size: 15px;
 }
+
 
 .normal-icons {
   -gtk-icon-size: 16px;
@@ -90,7 +91,6 @@ child {
   background: alpha(@accent_bg_color, 0.25);
   border-radius: 5px;
   padding: 10px;
-  font-variation-settings: "GRAD" 700;
 }
 
 child:hover .item-box,
@@ -117,6 +117,7 @@ child:selected .item-box {
 
 .item-image-text {
   font-size: 28px;
+  font-family: "JetBrains Mono NerdFont"
 }
 
 .preview {
