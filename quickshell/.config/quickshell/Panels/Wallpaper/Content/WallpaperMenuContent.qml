@@ -38,7 +38,7 @@ Item {
                 text: Services.I18nService?.getTranslation("wallpaper.title", "Wallpapers") ?? "Wallpapers"
                 font.pixelSize: Appearance.font.pixelSize.title
                 font.variableAxes: Appearance.font.variableAxes.title
-                font.family: Appearance.font.fontSans
+                font.family: Appearance.font.sans
                 color: Appearance.md3.on_surface
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignVCenter

@@ -47,6 +47,15 @@
   "battery": {
     "critical": "Critical battery (%1%)! Connect the charger immediately",
     "low": "Low battery (%1%): We recommend charging your device",
-    "charging": "Charging battery"
+    "charging": "Charging battery",
+    "powersave": "PowerSave",
+    "balanced": "Balanced",
+    "performance": "Performance"
+  },
+  "lockscreen": {
+    "password": "Password...",
+    "no_correct": "Incorrect password",
+    "caps_lock": "Bloq Mayus Activated",
+    "information": "Press Enter to unlock"
   }
 }

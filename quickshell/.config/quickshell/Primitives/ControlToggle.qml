@@ -1,59 +1,61 @@
+// ControlToggle — Pill horizontal estilo Material You / GNOME Quick Settings.
+// Activo:   primary_container + texto on_primary_container
+// Inactivo: surface_container_high + texto on_surface_variant
 import QtQuick
-import Quickshell
-import Quickshell.Widgets
 import qs.Core
 
 Rectangle {
     id: root
 
-    property string label: ""
+    property string label:    ""
     property string iconName: ""
-    property bool active: false
-    signal toggled
+    property bool   active:   false
+    signal toggled()
 
-    // Tamaño implícito dinámico
-    implicitWidth: Math.max(80, contentColumn.implicitWidth + 32)
-    implicitHeight: Math.max(64, contentColumn.implicitHeight + 20)
-    
+    implicitWidth:  120
+    implicitHeight: 48
+
     radius: Appearance.shape.large
-    color: active
-        ? Appearance.md3.primary
-        : Appearance.md3.surface_variant
+    color: root.active
+        ? Appearance.md3.primary_container
+        : (hoverArea.containsMouse
+            ? Qt.tint(Appearance.md3.surface_container_high, Qt.rgba(0,0,0,0.05))
+            : Appearance.md3.surface_container_high)
 
     Behavior on color { ColorAnimation { duration: 150 } }
 
-    border.width: 1
-    border.color: active
-        ? Qt.alpha(Appearance.md3.primary, 0.5)
-        : Appearance.md3.outline_variant
-
-    Column {
-        id: contentColumn
+    Row {
         anchors.centerIn: parent
-        spacing: 6
-        
-        readonly property real implicitWidth: Math.max(toggleIcon.width, toggleLabel.implicitWidth)
-        readonly property real implicitHeight: toggleIcon.height + spacing + toggleLabel.implicitHeight
+        spacing: 8
 
         MaterialIcon {
-            id: toggleIcon
-            anchors.horizontalCenter: parent.horizontalCenter
+            id: chip_icon
+            anchors.verticalCenter: parent.verticalCenter
             icon: root.iconName
-            size: Appearance.font.pixelSize.huge
-            color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+            size: Appearance.font.pixelSize.large
+            color: root.active
+                ? Appearance.md3.on_primary_container
+                : Appearance.md3.on_surface_variant
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         Text {
-            id: toggleLabel
-            anchors.horizontalCenter: parent.horizontalCenter
+            id: chip_label
+            anchors.verticalCenter: parent.verticalCenter
             text: root.label
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+            font.weight: root.active ? Font.Medium : Font.Normal
+            color: root.active
+                ? Appearance.md3.on_primary_container
+                : Appearance.md3.on_surface_variant
+            Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
 
     MouseArea {
+        id: hoverArea
         anchors.fill: parent
+        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: root.toggled()
     }

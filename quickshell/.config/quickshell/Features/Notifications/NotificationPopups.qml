@@ -72,7 +72,13 @@ PanelWindow {
                             Layout.alignment: Qt.AlignTop
                             fillMode: Image.PreserveAspectFit
                             visible: source.toString() !== ""
-                            source: card.modelData.image || card.modelData.appIcon || ""
+                            source: {
+                                const img = card.modelData.image
+                                if (img && img !== "") return img
+                                const appIcon = card.modelData.appIcon
+                                if (!appIcon || appIcon === "") return ""
+                                return Quickshell.iconPath(appIcon, true)
+                            }
                         }
 
                         ColumnLayout {

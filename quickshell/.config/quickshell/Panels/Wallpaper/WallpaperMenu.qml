@@ -14,7 +14,7 @@ import qs.Panels.Wallpaper.Content
 Scope {
     id: root
 
-    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+    property var focusedScreen: (Hyprland.focusedMonitor && Hyprland.focusedMonitor.name) ? (Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor.name) ?? null) : null
 
     PanelWindow {
         id: wallpaperMenu

@@ -46,7 +46,16 @@
   },
    "battery": {
     "critical": "Critical battery (%1%)! Connect the charger immediately",
-    "low": "Low battery (%1%): We recommend charging your device",
-    "charging": "Charging battery"
+    "low": "Malmulta baterŝargo (%1%): Ni rekomendas ŝargi la maŝino",
+    "charging": "Charging battery",
+    "powersave": "PowerSave",
+    "balanced": "Balanced",
+    "performance": "Performance"
+  },
+  "lockscreen": {
+    "no_correct": "Ne korekta pasvorto",
+    "caps_lock": "Bloq Mayus aktivita",
+    "information": "Prenu Enter por malŝlosi",
+    "password": "Pasvorto..."
   }
 }

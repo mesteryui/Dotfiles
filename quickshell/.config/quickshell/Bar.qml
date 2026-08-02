@@ -8,7 +8,7 @@ import qs.Core.Services as Services
 PanelWindow {
     id: root
     
-    WlrLayershell.layer: WlrLayer.Bottom
+    WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.exclusiveZone: 38
     WlrLayershell.namespace: "bar"
 
@@ -33,7 +33,7 @@ PanelWindow {
     BarBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: 30
+        radius: Appearance.shape.screenRounding
     }
 
     MainBar { 

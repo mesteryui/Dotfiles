@@ -147,7 +147,7 @@ PanelWindow {
                 id: lockBtn
                 buttonText: Services.I18nService.getTranslation("power.lock")
                 buttonIcon: "lock"
-                command: "pidof hyprlock || hyprlock"
+                command: "qs ipc call lockscreen lock"
                 KeyNavigation.left: suspendBtn
                 KeyNavigation.right: logoutBtn
                 Layout.alignment: Qt.AlignCenter

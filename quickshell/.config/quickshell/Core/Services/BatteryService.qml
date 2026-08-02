@@ -34,4 +34,8 @@ Singleton {
             if (p > 0.15) return "battery_1_bar";
             return "battery_0_bar";
         }
+        readonly property var profile: PowerProfiles.profile
+        function changeProfile(newProfile) {
+            PowerProfiles.profile = newProfile
+        }
     }

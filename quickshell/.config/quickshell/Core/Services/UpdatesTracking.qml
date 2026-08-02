@@ -62,13 +62,6 @@ Singleton {
             if (exitCode === 0 || exitCode === 2) {
                 root.updateCount = root.packagesToUpdate.count
                 root.failed      = false
-                
-                // Persistir lista de paquetes
-                let list = []
-                for (let i = 0; i < root.packagesToUpdate.count; i++) {
-                    list.push(root.packagesToUpdate.get(i))
-                }
-                persistent.packageList = list
             } else {
                 root.failed = true
             }

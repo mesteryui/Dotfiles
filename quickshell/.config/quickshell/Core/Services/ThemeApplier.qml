@@ -9,6 +9,12 @@ Singleton {
     readonly property string currentWallpaper: Persistent.persistence.currentWallpaper
     readonly property string matugenMode: ConfigService.configs.appearence.darkMode ? "dark" : "light"
 
+    Connections {
+        target: ConfigService.configs.appearence
+        function onDarkModeChanged() {
+            root.updateMatugenColors(root.currentWallpaper)
+        }
+    }
 
     function applyTheme(wallpaperPath: string) {
         Persistent.persistence.currentWallpaper = wallpaperPath

@@ -47,6 +47,15 @@
   "battery": {
     "critical": "¡Batería crítica (%1%)! Conecta el cargador de inmediato",
     "low": "Batería baja (%1%): Te recomendamos cargar el equipo",
-    "charging": "Cargando batería"
+    "charging": "Cargando batería",
+    "powersave": "Ahorro",
+    "balanced": "Equilibrado",
+    "performance": "Rendimiento"
+  },
+  "lockscreen": {
+    "no_correct": "Contraseña incorrecta",
+    "caps_lock": "Bloq Mayús activado",
+    "information": "Pulsa Enter para desbloquear",
+    "password": "Contraseña..."
   }
 }

@@ -43,36 +43,41 @@ Singleton {
     }
 
     component FontConfig: QtObject {
-        readonly property string sans: ConfigService.configs.appearence.fontSans
-        readonly property string mono: ConfigService.configs.appearence.monospace
-		readonly property string reading: ConfigService.configs.appearence.reading
-		readonly property string expressive: ConfigService.configs.appearence.expressive
-		property string iconMaterial: "Material Symbols Rounded"
-		property QtObject variableAxes: QtObject {
-            property var main: ({
-                "wght": 490,
-                "wdth": 100
-            })
-            property var numbers: ({
-                "wght": 450,
-            })
-            property var title: ({ // Slightly bold weight for title
-                "wght": 550, // Weight (Lowered to compensate for increased grade)
-            })
-        }
-		property QtObject pixelSize: QtObject {
-            property int smallest: 10
-            property int smaller: 12
-            property int smallie: 13
-            property int small: 15
-            property int normal: 16
-            property int large: 17
-            property int larger: 19
-            property int huge: 22
-            property int hugeass: 23
-            property int title: huge
-        }
-    }
+    readonly property string sans: ConfigService.configs.appearence.fontSans ?? "Google Sans Flex"
+    readonly property string mono: ConfigService.configs.appearence.monospace ?? "JetBrains Mono Nerd Font"
+    readonly property string reading: ConfigService.configs.appearence.reading ?? "Google Sans Flex"
+    readonly property string expressive: ConfigService.configs.appearence.expressive ?? "Google Sans Flex"
+    property string iconMaterial: "Material Symbols Rounded"
+
+    readonly property VariableAxes variableAxes: VariableAxes {}
+    readonly property PixelSize pixelSize: PixelSize {}
+}
+
+component VariableAxes: QtObject {
+    property var main: ({
+        "wght": 490,
+        "wdth": 100
+    })
+    property var numbers: ({
+        "wght": 450,
+    })
+    property var title: ({ // Slightly bold weight for title
+        "wght": 550, // Weight (Lowered to compensate for increased grade)
+    })
+}
+
+component PixelSize: QtObject {
+    property int smallest: 10
+    property int smaller: 12
+    property int smallie: 13
+    property int small: 15
+    property int normal: 16
+    property int large: 17
+    property int larger: 19
+    property int huge: 22
+    property int hugeass: 23
+    property int title: huge
+}
 
 	component Md3: JsonObject {
 		property string background: "transparent"

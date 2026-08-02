@@ -19,7 +19,7 @@ BarItem {
 
     ToolTip {
         id: tooltip
-        text: NetworkService.currentNetwork.name ?? "No Network"
+        text: (NetworkService.currentNetwork && NetworkService.currentNetwork.name) ? NetworkService.currentNetwork.name : "No Network"
         visible: root.area.containsMouse
         delay: 500      // ms antes de mostrarse
         timeout: 5000   // ms antes de ocultarse solo

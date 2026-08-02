@@ -6,7 +6,10 @@
         "timeout": 6
     },
     "updates": {
-        "command": "shelly upgrade-all",
+        "command": "shelly -U",
         "countTime": 10
+    },
+    "appearence": {
+        "darkMode": true
     }
 }
