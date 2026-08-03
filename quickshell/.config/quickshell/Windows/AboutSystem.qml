@@ -1,10 +1,14 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import qs.Core
 
-ApplicationWindow {
+FloatingWindow {
     id: window
     visible: false
+    color: "transparent"
+    width: 600
+    height: 400
 
     Rectangle {
         anchors.fill: parent
@@ -15,7 +19,9 @@ ApplicationWindow {
         anchors.fill: parent
         RowLayout {
             id: row
-            
+            Image {
+
+            }
         }
     }
 

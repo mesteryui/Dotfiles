@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import Quickshell
 import QtQuick.Controls.Material
 import Quickshell.Widgets
 import qs.Core.Services as Services
@@ -26,11 +27,7 @@ Item {
 
     readonly property bool multiPlayer: Services.MprisService.players.length > 1
 
-    implicitHeight: header.implicitHeight
-                  + controls.implicitHeight
-                  + (multiPlayer ? playerSelector.implicitHeight : 0)
-
-    
+    implicitHeight: header.implicitHeight + controls.implicitHeight + (multiPlayer ? playerSelector.implicitHeight : 0)
 
     // ── Cabecera: arte, título, artista ───────────────────────
     Item {
@@ -50,18 +47,24 @@ Item {
         }
 
         // Arte de la pista recortado al radio del panel
-        ClippingRectangle {
+        ClippingWrapperRectangle {
             anchors.fill: parent
             radius: 20
             color: "transparent"
-
+            
+            
             Image {
+                id: artImage
                 anchors.fill: parent
                 source: root.artURL
                 fillMode: Image.PreserveAspectCrop
                 opacity: 0.3
                 z: 1
-                Behavior on opacity { NumberAnimation { duration: 300 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 300
+                    }
+                }
             }
         }
 
@@ -76,7 +79,10 @@ Item {
             z: 2
             gradient: Gradient {
                 orientation: Gradient.Vertical
-                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop {
+                    position: 0.0
+                    color: "transparent"
+                }
                 GradientStop {
                     position: 1.0
                     color: Qt.tint(Appearance.md3.surface, Qt.alpha(Appearance.md3.primary, 0.08))
@@ -98,20 +104,16 @@ Item {
 
             StyledText {
                 width: parent.width
-                text: Services.MprisService.activePlayer?.trackTitle
-                      ?? Services.I18nService.getTranslation("media.no_media")
+                text: Services.MprisService.activePlayer?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
                 font.pixelSize: Appearance.font.pixelSize.title
                 font.variableAxes: Appearance.font.variableAxes.title
                 color: Appearance.md3.on_surface
                 elide: Text.ElideRight
-                
             }
 
             StyledText {
                 width: parent.width
-                text: Services.MprisService.activePlayer?.trackArtist
-                      || Services.MprisService.activePlayer?.trackAlbumArtist
-                      || ""
+                text: Services.MprisService.activePlayer?.trackArtist || Services.MprisService.activePlayer?.trackAlbumArtist || ""
                 font.pixelSize: 12
                 color: Appearance.md3.on_surface_variant
                 elide: Text.ElideRight
@@ -145,7 +147,9 @@ Item {
                 color: Appearance.md3.on_surface_variant
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Text {
                 text: root.formatTime(Services.MprisService.activePlayer?.length ?? 0)
@@ -161,7 +165,7 @@ Item {
             Material.accent: Appearance.md3.primary
             Material.background: Appearance.md3.background
             Material.foreground: Appearance.md3.on_background
-    
+
             width: parent.width - parent.leftPadding - parent.rightPadding
             from: 0.0
             to: 1.0
@@ -172,9 +176,7 @@ Item {
         Binding {
             target: progressSlider
             property: "value"
-            value: (Services.MprisService.activePlayer?.length ?? 0) > 0
-                   ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length)
-                   : 0.0
+            value: (Services.MprisService.activePlayer?.length ?? 0) > 0 ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length) : 0.0
             when: !progressSlider.pressed // Detiene la sobrescritura mientras arrastras
             restoreMode: Binding.RestoreBinding
         }
@@ -185,7 +187,9 @@ Item {
             spacing: 0
             implicitHeight: 44
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             ButtonIcon {
                 iconSize: 20
@@ -194,7 +198,7 @@ Item {
                 onClicked: Services.MprisService.previous()
             }
 
-            // Botón play/pause — Wrapper + Background + Content inline
+            // Botón play/pause
             Item {
                 Layout.preferredWidth: 44
                 Layout.preferredHeight: 44
@@ -224,13 +228,13 @@ Item {
                 onClicked: Services.MprisService.next()
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
         }
     }
 
     // ── Selector de reproductor ───────────────────────────────
-    // Solo visible cuando hay más de un player activo.
-    // Chips de selección: activo → primary_container, resto → outline_variant border.
     Item {
         id: playerSelector
         anchors {
@@ -257,76 +261,61 @@ Item {
             Repeater {
                 model: Services.MprisService.players
 
-                delegate: Item {
+                delegate: WrapperMouseArea {
                     id: chipWrapper
 
-                    // Captura la referencia antes del delegate para evitar
-                    // el bug de `root` undefined dentro del Repeater.
                     required property var modelData
                     property MprisPlayer player: modelData
 
-                    readonly property bool isActive:
-                        Services.MprisService.activePlayer === player
+                    readonly property bool isActive: Services.MprisService.activePlayer === player
 
-                    implicitWidth: chipLabel.implicitWidth + 24
-                    implicitHeight: 28
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        if (Services.MprisService.activePlayer === chipWrapper.player)
+                            Services.MprisService.setActivePlayer(null);
+                        else
+                            Services.MprisService.setActivePlayer(chipWrapper.player);
+                    }
 
-                    // Fondo del chip
+                    // Fondo del chip interactivo
                     Rectangle {
-                        id: chipBg
-                        anchors.fill: parent
+                        implicitWidth: chipLayout.implicitWidth + 24
+                        implicitHeight: 28
                         radius: 9999
-                        color: chipWrapper.isActive
-                               ? Appearance.md3.primary_container
-                               : "transparent"
+                        color: chipWrapper.isActive ? Appearance.md3.primary_container : "transparent"
                         border.width: chipWrapper.isActive ? 0 : 1
                         border.color: Appearance.md3.outline_variant
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                    }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
+                            }
+                        }
 
-                    // State layer hover/press
-                    Rectangle {
-                        id: stateLayer
-                        anchors.fill: parent
-                        radius: 9999
-                        color: chipWrapper.isActive
-                               ? Appearance.md3.on_primary_container
-                               : Appearance.md3.on_surface
-                        opacity: 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
-                    }
+                        // Icono + Nombre del reproductor
+                        RowLayout {
+                            id: chipLayout
+                            anchors.centerIn: parent
+                            spacing: 6
 
-                    // Nombre del reproductor
-                    StyledText {
-                        id: chipLabel
-                        anchors.centerIn: parent
-                        text: chipWrapper.player.identity ?? chipWrapper.player.dbusName
-                        font.family: Services.ConfigService.configs.appearence.fontSans
-                        font.pixelSize: 11
-                        color: chipWrapper.isActive
-                               ? Appearance.md3.on_primary_container
-                               : Appearance.md3.on_surface_variant
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                    }
+                            IconImage {
+                                implicitWidth: 16
+                                implicitHeight: 16
+                                source: Quickshell.iconPath(chipWrapper.player.desktopEntry,true)
+                            }
 
-                    // Interacción
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-
-                        onEntered: stateLayer.opacity = 0.08
-                        onExited:  stateLayer.opacity = 0
-                        onPressed: stateLayer.opacity = 0.12
-                        onReleased: stateLayer.opacity = containsMouse ? 0.08 : 0
-
-                        onClicked: {
-                            // Si ya es el activo, limpia la selección manual
-                            // para volver a la heurística automática.
-                            if (Services.MprisService.activePlayer === chipWrapper.player)
-                                Services.MprisService.setActivePlayer(null)
-                            else
-                                Services.MprisService.setActivePlayer(chipWrapper.player)
+                            StyledText {
+                                text: chipWrapper.player.identity ?? chipWrapper.player.dbusName
+                                font.family: Services.ConfigService.configs.appearence.fontSans
+                                font.pixelSize: 11
+                                color: chipWrapper.isActive ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 120
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -336,16 +325,14 @@ Item {
 
     // ── Utilidades ────────────────────────────────────────────
     function formatTime(seconds: real): string {
-        const totalSec = Math.floor(seconds)
-        const h = Math.floor(totalSec / 3600)
-        const m = Math.floor((totalSec % 3600) / 60)
-        const s = totalSec % 60
+        const totalSec = Math.floor(seconds);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
 
         if (h > 0) {
-            return String(h).padStart(2, "0") + ":"
-                 + String(m).padStart(2, "0") + ":"
-                 + String(s).padStart(2, "0")
+            return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
         }
-        return m + ":" + String(s).padStart(2, "0")
+        return m + ":" + String(s).padStart(2, "0");
     }
 }

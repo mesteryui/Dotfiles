@@ -13,11 +13,14 @@ import qs.Features.OSD
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
 import qs.Lockscreen
+import qs.Windows
 ShellRoot {
     id: root
     settings.watchFiles: true
 
     ReloadPopup {}
+
+    AboutSystem {}   
 
     Component.onCompleted: {
         ConfigService.load()

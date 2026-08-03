@@ -1,5 +1,6 @@
 // PanelWithControlsContent — Content
 // Toda la UI del panel. Sin fondos ni sombras — eso es responsabilidad de PanelWithControls.
+pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -10,7 +11,7 @@ import qs.Core
 import Quickshell.Widgets
 import qs.Panels.Controls.Tabs
 import qs.Features.Notifications
-
+import Quickshell.Io
 Item {
     id: root
 
@@ -55,7 +56,7 @@ Item {
 
             // Avatar
             Item {
-                width: 52; height: 52
+                Layout.preferredWidth: 52; Layout.preferredHeight: 52
 
                 Rectangle {
                     id: avatarRing
@@ -103,7 +104,8 @@ Item {
 
             // Botón apagar sesión (estilo GNOME)
             Rectangle {
-                width: 36; height: 36
+                Layout.preferredWidth: 36; 
+                Layout.preferredHeight: 36
                 radius: 18
                 color: powerArea.containsMouse
                     ? root.withAlpha(Appearance.md3.on_surface, 0.10)
@@ -121,10 +123,15 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Quickshell.execDetached(["qs", "ipc", "call", "ui.powermenu", "togglePowermenu"])
+                    onClicked: button.running = true
+                    Process {
+                        id: button
+                        command: ["bash", "-c", "qs ipc call ui.powermenu togglePowerMenu"]
+                    }
                 }
             }
         }
+        
 
         // ══ SLIDERS — Volumen + Brillo ══════════════════════════════
         ColumnLayout {
@@ -153,7 +160,7 @@ Item {
                 // Track del slider
                 Item {
                     Layout.fillWidth: true
-                    height: 20
+                    Layout.preferredHeight: 20
 
                     // Pista trasera
                     Rectangle {
@@ -233,7 +240,7 @@ Item {
 
                 Item {
                     Layout.fillWidth: true
-                    height: 20
+                    Layout.preferredHeight: 20
 
                     Rectangle {
                         id: briTrack
@@ -293,7 +300,7 @@ Item {
         // ══ DIVISOR ════════════════════════════════════════════════
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            Layout.preferredHeight: 1
             color: root.withAlpha(Appearance.md3.outline_variant, 0.5)
         }
 
@@ -347,7 +354,7 @@ Item {
         // ══ DIVISOR ════════════════════════════════════════════════
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            Layout.preferredHeight: 1
             color: root.withAlpha(Appearance.md3.outline_variant, 0.5)
         }
 
@@ -355,7 +362,7 @@ Item {
         Item {
             id: navBar
             Layout.fillWidth: true
-            height: 52
+            Layout.preferredHeight: 52
             property int currentIndex: 0
 
             RowLayout {
@@ -379,11 +386,11 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.top: parent.top
                             anchors.topMargin: 4
-                            width: isActive ? 56 : 0
+                            width: parent.isActive ? 56 : 0
                             height: 28
                             radius: 14
                             color: Appearance.md3.secondary_container
-                            opacity: isActive ? 1 : 0
+                            opacity: parent.isActive ? 1 : 0
                             Behavior on width   { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                             Behavior on opacity { NumberAnimation { duration: 150 } }
                         }

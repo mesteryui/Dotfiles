@@ -17,6 +17,13 @@ PopupWindow {
     implicitHeight: 400
     grabFocus: true
 
+    TransformWatcher {
+        id: watcher
+        a: root.open ? root.triggerItem : null
+        b: root.contentItem
+        onTransformChanged: if (root.open) root.anchor.updateAnchor()
+    }
+
     // ── Estado ────────────────────────────────────────────────
     property date currentDate:  new Date()
     property int  currentMonth: currentDate.getMonth()

@@ -34,11 +34,11 @@ Item {
 
     Item {
         id: _inner
-        x: padding
-        y: padding
+        x: root.padding
+        y: root.padding
         // El contenedor interno no se ancla para que childrenRect sea útil
         // pero permitimos que los hijos crezcan si el padre (root) es estirado
-        width: root.width - (padding * 2)
-        height: root.height - (padding * 2)
+        width: root.width - (root.padding * 2)
+        height: root.height - (root.padding * 2)
     }
 }

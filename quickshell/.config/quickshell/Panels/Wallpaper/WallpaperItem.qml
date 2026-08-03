@@ -31,23 +31,19 @@ Item {
             : Appearance.md3.surface_container_low
     }
 
-    layer.enabled: true
-    layer.effect: MultiEffect {
+    MultiEffect {
+        source: background
+        anchors.fill: background
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowBlur: delegateRoot.isSelected ? 0.8 : 0.4
         shadowVerticalOffset: delegateRoot.isSelected ? 4 : 2
-        shadowHorizontalOffset: 0
-        blurMax: 16
         shadowOpacity: delegateRoot.isSelected ? 0.25 : 0.08
-
-        Behavior on shadowOpacity {
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-        }
-        Behavior on shadowVerticalOffset {
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-        }
+        blurMax: 16
+        Behavior on shadowOpacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on shadowVerticalOffset { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
     }
+
 
     // ── Content ───────────────────────────────────────────────
     WallpaperItemContent {
@@ -55,6 +51,7 @@ Item {
         isSelected: delegateRoot.isSelected
         hovered: mouse.containsMouse      // ← bool, no el MouseArea entero
         radius: delegateRoot.surfaceRadius // ← mismo radio que el Background
+        filePath: delegateRoot.modelData.filePath
     }
 
     // ── Interacción ───────────────────────────────────────────

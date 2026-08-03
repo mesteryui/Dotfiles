@@ -19,7 +19,7 @@ RowLayout {
     spacing: 10
 
     IconImage {
-        source: Quickshell.iconPath(root.iconName)
+        source: Quickshell.iconPath(root.iconName, true)
         Layout.preferredWidth: 18
         Layout.preferredHeight: 18
         //color: Colors.md3.on_surface_variant

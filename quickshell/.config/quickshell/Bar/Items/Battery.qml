@@ -12,14 +12,16 @@ Item {
     LazyLoader {
         id: loader
         loading: interaction.hoveredChanged
-        BatteryPopupWindow {
+        component: BatteryPopupWindow {
             id: popupWindow
             anchor.item: root
-            anchor.margins.top: 20
+            anchor.margins {
+                top: 20
+                bottom: 20
+            }
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-            anchor.margins.bottom: 20
             anchor.edges: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
-            anchor.gravity: anchor.edges
+            anchor.gravity: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
         }
     }
     MouseArea {

@@ -16,7 +16,7 @@ PopupWindow {
     grabFocus: true
     implicitWidth: 350
     implicitHeight: mprisContent.implicitHeight
-    
+
 
     readonly property var player: Services.MprisService.activePlayer
 
@@ -28,13 +28,13 @@ PopupWindow {
     // ── Estado de posición ────────────────────────────────────
     property real currentPosition: 0
 
-
     // ── Focus ─────────────────────────────────────────────────
     HyprlandFocusGrab {
         windows: [root]
         active: root.visible
         onCleared: {
-            if (root.visible) Qt.callLater(() => root.visible = false)
+            if (root.visible)
+                Qt.callLater(() => root.visible = false);
         }
     }
 
@@ -51,7 +51,7 @@ PopupWindow {
         onTriggered: {
             // ✅ CORREGIDO: Usar activePlayer
             if (!mprisContent.sliderDragging && Services.MprisService.activePlayer)
-                root.currentPosition = Services.MprisService.activePlayer.position
+                root.currentPosition = Services.MprisService.activePlayer.position;
         }
     }
 
@@ -62,14 +62,14 @@ PopupWindow {
         onTriggered: {
             // ✅ CORREGIDO: Usar activePlayer
             if (Services.MprisService.activePlayer && !mprisContent.sliderDragging)
-                root.currentPosition = Services.MprisService.activePlayer.position
+                root.currentPosition = Services.MprisService.activePlayer.position;
         }
     }
 
     onVisibleChanged: {
         if (visible)
             // ✅ CORREGIDO: Usar activePlayer
-            root.currentPosition = Services.MprisService.activePlayer?.position ?? 0
+            root.currentPosition = Services.MprisService.activePlayer?.position ?? 0;
     }
 
     // ── Background ────────────────────────────────────────────
@@ -77,18 +77,16 @@ PopupWindow {
         anchors.fill: parent
     }
 
-   
-
     // ── Content ───────────────────────────────────────────────
     MprisContent {
         id: mprisContent
         anchors.fill: parent
         currentPosition: root.currentPosition
-        onSeekRequested: (newPosition) => {
+        onSeekRequested: newPosition => {
             if (Services.MprisService.activePlayer) {
-                Services.MprisService.activePlayer.position = newPosition // Cambia la canción
-                root.currentPosition = newPosition // Actualiza la UI instantáneamente
-                seekConfirmTimer.start() // Evita que el positionTimer machaque el valor antes de que DBus responda
+                Services.MprisService.activePlayer.position = newPosition; // Cambia la canción
+                root.currentPosition = newPosition; // Actualiza la UI instantáneamente
+                seekConfirmTimer.start(); // Evita que el positionTimer machaque el valor antes de que DBus responda
             }
         }
         artURL: root.finalArt

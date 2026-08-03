@@ -35,11 +35,13 @@ MouseArea {
         component: CalendarPopupWindow {
             id: popup
             anchor.item: wrapper
-            anchor.margins.top: 20
+            anchor.margins {
+                top: 20
+                bottom: 20
+            }
             anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-            anchor.margins.bottom: 20
             anchor.edges: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
-            anchor.gravity: anchor.edges
+            anchor.gravity: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
         }
     }
 }

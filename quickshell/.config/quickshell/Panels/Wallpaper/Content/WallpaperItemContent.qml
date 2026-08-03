@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell.Widgets
 import qs.Primitives
 import qs.Core
-import QtQuick.Layouts
 
 Item {
     id: root
@@ -12,10 +11,13 @@ Item {
     property bool hovered: false     // ← bool en vez de MouseArea
 
     // Nombre del archivo (sin ruta) a partir de model.filePath
+    property string filePath: ""
+    
     readonly property string fileName: {
-        const parts = (model.filePath || "").split("/")
-        return parts.length > 0 ? parts[parts.length - 1] : ""
+        const parts = filePath.split("/");
+        return parts.length > 0 ? parts[parts.length - 1] : "";
     }
+
 
     // Icono placeholder mientras carga la imagen
     MaterialIcon {
@@ -99,8 +101,14 @@ Item {
 
                 gradient: Gradient {
                     orientation: Gradient.Vertical
-                    GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.55) }
+                    GradientStop {
+                        position: 0.0
+                        color: "transparent"
+                    }
+                    GradientStop {
+                        position: 1.0
+                        color: Qt.rgba(0, 0, 0, 0.55)
+                    }
                 }
             }
 
