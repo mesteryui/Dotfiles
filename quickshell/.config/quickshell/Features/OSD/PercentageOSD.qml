@@ -9,6 +9,7 @@ BaseOSD {
 
     required property real percentage
     required property string icon
+    property alias iconItem: iconItem
 
     implicitWidth: 320
     implicitHeight: 60
@@ -25,6 +26,7 @@ BaseOSD {
         width: parent.width - 40
 
         MaterialIcon {
+            id: iconItem
             icon: root.icon
             size: Appearance.font.pixelSize.huge
             color: Appearance.md3.on_surface
@@ -33,7 +35,7 @@ BaseOSD {
         }
 
         StyledProgressBar {
-            id: bar
+            id: barItem
             from:  0.0
             to:    1.0
             value: root.percentage
@@ -42,6 +44,7 @@ BaseOSD {
         }
 
         StyledText {
+            id: textPercentage
             text: Math.round(root.percentage * 100) + "%"
             font.pixelSize: 16
             color: Appearance.md3.on_surface

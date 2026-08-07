@@ -1,12 +1,15 @@
 // MprisContent — Content
-// Toda la UI del popup de media. Sin fondos ni sombras.
+// Toda la UI del popup de media. Sin fondos ni sombras (las gestiona el Wrapper).
+// Estilo: 70% Material You (tokens, tonal containers, state layers) + 30% GNOME/Adwaita
+// (tarjeta plana con borde fino en vez de degradado, thumbnail cuadrado en vez de
+// fondo a sangre, slider ultra-delgado, botón de play grande como foco único).
 // Expone sliderDragging para que el Wrapper gestione los timers.
 
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
-import QtQuick.Controls.Material
 import Quickshell.Widgets
 import qs.Core.Services as Services
 import qs.Core
@@ -26,99 +29,123 @@ Item {
     readonly property bool sliderDragging: progressSlider.pressed
 
     readonly property bool multiPlayer: Services.MprisService.players.length > 1
+    readonly property bool hasArt: root.artURL !== ""
 
-    implicitHeight: header.implicitHeight + controls.implicitHeight + (multiPlayer ? playerSelector.implicitHeight : 0)
+    // 14 = margen superior de header · 12 = margen superior de divider
+    implicitHeight: 14 + header.implicitHeight + 12 + divider.implicitHeight + controls.implicitHeight + (multiPlayer ? playerSelector.implicitHeight : 0)
 
-    // ── Cabecera: arte, título, artista ───────────────────────
+    // ── Cabecera: tarjeta plana con thumbnail + título/artista ─
+    // (Adwaita "now playing" row en vez del header a sangre con degradado)
     Item {
         id: header
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
+            margins: 14
         }
-        implicitHeight: 110
+        implicitHeight: 72
 
-        // Fondo tonal
+        // Fondo tonal plano, sin degradados: borde fino en vez de sombra pesada
         Rectangle {
             anchors.fill: parent
-            radius: 20
-            color: Qt.alpha(Appearance.md3.primary_container, 0.6)
+            radius: 18
+            color: Appearance.md3.surface_container_high
+            border.width: 1
+            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
         }
 
-        // Arte de la pista recortado al radio del panel
-        ClippingWrapperRectangle {
-            anchors.fill: parent
-            radius: 20
-            color: "transparent"
-            
-            
-            Image {
-                id: artImage
-                anchors.fill: parent
-                source: root.artURL
-                fillMode: Image.PreserveAspectCrop
-                opacity: 0.3
-                z: 1
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 300
+        RowLayout {
+            anchors {
+                fill: parent
+                margins: 10
+            }
+            spacing: 12
+
+            // Thumbnail cuadrado con esquinas redondeadas (no full-bleed)
+            Item {
+                id: artThumb
+                Layout.preferredWidth: 52
+                Layout.preferredHeight: 52
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 14
+                    color: Appearance.md3.primary_container
+                    visible: !artImage.visible || artImage.status !== Image.Ready
+
+                    ButtonIcon {
+                        anchors.centerIn: parent
+                        iconSize: 22
+                        iconName: "music_note"
+                        enabled: false
+                        iconColor: Appearance.md3.on_primary_container
+                    }
+                }
+
+                ClippingWrapperRectangle {
+                    anchors.fill: parent
+                    radius: 14
+                    color: "transparent"
+
+                    Image {
+                        id: artImage
+                        anchors.fill: parent
+                        source: root.artURL
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        asynchronous: true
+                        visible: root.hasArt && status === Image.Ready
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 200
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        // Degradado inferior para legibilidad del texto
+            // Título y artista
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: Services.MprisService.activePlayer?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
+                    color: Appearance.md3.on_surface
+                    elide: Text.ElideRight
+                }
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: Services.MprisService.activePlayer?.trackArtist || Services.MprisService.activePlayer?.trackAlbumArtist || ""
+                    font.pixelSize: 12
+                    color: Appearance.md3.on_surface_variant
+                    elide: Text.ElideRight
+                    visible: text !== ""
+                }
+            }
+        }
+    }
+
+    // ── Separador fino (Adwaita usa hairlines en vez de degradados) ─
+    Item {
+        id: divider
+        anchors {
+            top: header.bottom
+            left: parent.left
+            right: parent.right
+            margins: 14
+            topMargin: 12
+        }
+        implicitHeight: 1
+
         Rectangle {
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-            }
-            height: 60
-            z: 2
-            gradient: Gradient {
-                orientation: Gradient.Vertical
-                GradientStop {
-                    position: 0.0
-                    color: "transparent"
-                }
-                GradientStop {
-                    position: 1.0
-                    color: Qt.tint(Appearance.md3.surface, Qt.alpha(Appearance.md3.primary, 0.08))
-                }
-            }
-        }
-
-        // Título y artista
-        Column {
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-                margins: 16
-                bottomMargin: 10
-            }
-            spacing: 3
-            z: 3
-
-            StyledText {
-                width: parent.width
-                text: Services.MprisService.activePlayer?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
-                font.pixelSize: Appearance.font.pixelSize.title
-                font.variableAxes: Appearance.font.variableAxes.title
-                color: Appearance.md3.on_surface
-                elide: Text.ElideRight
-            }
-
-            StyledText {
-                width: parent.width
-                text: Services.MprisService.activePlayer?.trackArtist || Services.MprisService.activePlayer?.trackAlbumArtist || ""
-                font.pixelSize: 12
-                color: Appearance.md3.on_surface_variant
-                elide: Text.ElideRight
-                visible: text !== ""
-            }
+            anchors.fill: parent
+            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
         }
     }
 
@@ -126,7 +153,7 @@ Item {
     Column {
         id: controls
         anchors {
-            top: header.bottom
+            top: divider.bottom
             left: parent.left
             right: parent.right
         }
@@ -134,7 +161,62 @@ Item {
         bottomPadding: root.multiPlayer ? 8 : 16
         leftPadding: 16
         rightPadding: 16
-        spacing: 8
+        spacing: 6
+
+        // Slider de progreso — pista ultra-delgada, sin caja Material,
+        // el "pill track" es una convención GNOME/Adwaita habitual.
+        Slider {
+            id: progressSlider
+            width: parent.width - parent.leftPadding - parent.rightPadding
+            from: 0.0
+            to: 1.0
+            implicitHeight: 20
+
+            onMoved: root.seekRequested(value * (Services.MprisService.activePlayer?.length ?? 0))
+
+            background: Item {
+                x: progressSlider.leftPadding
+                y: progressSlider.topPadding + progressSlider.availableHeight / 2 - height / 2
+                width: progressSlider.availableWidth
+                height: 4
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 2
+                    color: Qt.alpha(Appearance.md3.on_surface, 0.12)
+                }
+
+                Rectangle {
+                    width: progressSlider.visualPosition * parent.width
+                    height: parent.height
+                    radius: 2
+                    color: Appearance.md3.primary
+                }
+            }
+
+            handle: Rectangle {
+                x: progressSlider.leftPadding + progressSlider.visualPosition * (progressSlider.availableWidth - width)
+                y: progressSlider.topPadding + progressSlider.availableHeight / 2 - height / 2
+                width: progressSlider.pressed || progressSlider.hovered ? 14 : 10
+                height: width
+                radius: width / 2
+                color: Appearance.md3.primary
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 100
+                    }
+                }
+            }
+        }
+
+        Binding {
+            target: progressSlider
+            property: "value"
+            value: (Services.MprisService.activePlayer?.length ?? 0) > 0 ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length) : 0.0
+            when: !progressSlider.pressed // Detiene la sobrescritura mientras arrastras
+            restoreMode: Binding.RestoreBinding
+        }
 
         // Tiempos
         RowLayout {
@@ -159,33 +241,12 @@ Item {
             }
         }
 
-        // Slider de progreso
-        Slider {
-            id: progressSlider
-            Material.accent: Appearance.md3.primary
-            Material.background: Appearance.md3.background
-            Material.foreground: Appearance.md3.on_background
-
-            width: parent.width - parent.leftPadding - parent.rightPadding
-            from: 0.0
-            to: 1.0
-
-            onMoved: root.seekRequested(value * (Services.MprisService.activePlayer?.length ?? 0))
-        }
-
-        Binding {
-            target: progressSlider
-            property: "value"
-            value: (Services.MprisService.activePlayer?.length ?? 0) > 0 ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length) : 0.0
-            when: !progressSlider.pressed // Detiene la sobrescritura mientras arrastras
-            restoreMode: Binding.RestoreBinding
-        }
-
-        // Botones prev / play / next
+        // Botones prev / play / next — el play grande es el único foco
+        // visual fuerte (acento M3), prev/next quedan planos (Adwaita).
         RowLayout {
             width: parent.width - parent.leftPadding - parent.rightPadding
             spacing: 0
-            implicitHeight: 44
+            implicitHeight: 56
 
             Item {
                 Layout.fillWidth: true
@@ -198,25 +259,38 @@ Item {
                 onClicked: Services.MprisService.previous()
             }
 
-            // Botón play/pause
+            // Botón play/pause — foco principal, relleno sólido y sombra sutil
             Item {
-                Layout.preferredWidth: 44
-                Layout.preferredHeight: 44
-                Layout.leftMargin: 8
-                Layout.rightMargin: 8
+                id: playButtonWrap
+                Layout.preferredWidth: 56
+                Layout.preferredHeight: 56
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
+
+                MultiEffect {
+                    source: playButtonBg
+                    anchors.fill: playButtonBg
+                    shadowEnabled: true
+                    shadowColor: Appearance.md3.shadow
+                    shadowOpacity: 0.16
+                    shadowBlur: 0.6
+                    shadowVerticalOffset: 2
+                    shadowHorizontalOffset: 0
+                }
 
                 Rectangle {
+                    id: playButtonBg
                     anchors.fill: parent
-                    radius: 22
-                    color: Appearance.md3.primary_container
+                    radius: 28
+                    color: Appearance.md3.primary
                 }
 
                 ButtonIcon {
                     anchors.centerIn: parent
-                    iconSize: 22
+                    iconSize: 24
                     iconName: Services.MprisService.isPlaying ? "pause" : "play_arrow"
                     enabled: Services.MprisService.activePlayer != null
-                    iconColor: Appearance.md3.on_primary_container
+                    iconColor: Appearance.md3.on_primary
                     onClicked: Services.MprisService.togglePlaying()
                 }
             }
@@ -235,6 +309,8 @@ Item {
     }
 
     // ── Selector de reproductor ───────────────────────────────
+    // Chips planos con borde fino cuando no están activos: mezcla del
+    // pill chip M3 con el look de "segmented toggle" de Adwaita.
     Item {
         id: playerSelector
         anchors {
@@ -270,7 +346,7 @@ Item {
                     readonly property bool isActive: Services.MprisService.activePlayer === player
 
                     cursorShape: Qt.PointingHandCursor
-                    
+
                     onClicked: {
                         if (Services.MprisService.activePlayer === chipWrapper.player)
                             Services.MprisService.setActivePlayer(null);
@@ -302,7 +378,7 @@ Item {
                             IconImage {
                                 implicitWidth: 16
                                 implicitHeight: 16
-                                source: Quickshell.iconPath(chipWrapper.player.desktopEntry,true)
+                                source: Quickshell.iconPath(chipWrapper.player.desktopEntry, true)
                             }
 
                             StyledText {

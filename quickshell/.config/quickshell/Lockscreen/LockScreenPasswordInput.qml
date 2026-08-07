@@ -121,10 +121,11 @@ Item {
                 }
             }
 
-            TextField {
+            MaterialTextField {
                 id: passwordField
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                wrapMode: TextEdit.NoWrap
                 echoMode: root.isPasswordVisible === false ? TextInput.Password : TextInput.Normal
                 placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña..."))
                 placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)
@@ -135,7 +136,6 @@ Item {
                 enabled: !root.isAuthenticating
                 font.family: Appearance.font.sans
                 font.pixelSize: Appearance.font.pixelSize.small ? Appearance.font.pixelSize.small : 15
-                renderType: Text.NativeRendering
 
                 onAccepted: {
                     if (text.length > 0 && !root.isAuthenticating) {

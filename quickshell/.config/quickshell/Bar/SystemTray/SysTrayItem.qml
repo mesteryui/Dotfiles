@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import qs.Core.Services as Services
+import qs.Primitives
 
 Item {
     id: itemContainer
@@ -36,6 +37,7 @@ Item {
 
         IconImage {
             source: itemContainer.modelData?.icon ?? ""
+            
             // Centrado absoluto con márgenes limpios
             anchors.centerIn: parent
             width: parent.width - 8  // Equivalente a margins: 4 por cada lado

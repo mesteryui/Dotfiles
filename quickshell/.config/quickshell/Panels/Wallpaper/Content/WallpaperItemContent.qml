@@ -11,12 +11,7 @@ Item {
     property bool hovered: false     // ← bool en vez de MouseArea
 
     // Nombre del archivo (sin ruta) a partir de model.filePath
-    property string filePath: ""
-    
-    readonly property string fileName: {
-        const parts = filePath.split("/");
-        return parts.length > 0 ? parts[parts.length - 1] : "";
-    }
+    required property string filePath
 
 
     // Icono placeholder mientras carga la imagen
@@ -46,7 +41,7 @@ Item {
             Image {
                 id: wallpaperPreview
                 anchors.fill: parent
-                source: "file://" + model.filePath
+                source: "file://" + root.filePath
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: true
@@ -123,7 +118,10 @@ Item {
                 }
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideMiddle
-                text: root.fileName
+                text: {
+                    const parts = root.filePath.split("/");
+                    return parts.length > 0 ? parts[parts.length - 1] : "";
+                }
                 color: Appearance.md3.on_surface
                 font.pixelSize: 12
                 font.weight: Font.Medium

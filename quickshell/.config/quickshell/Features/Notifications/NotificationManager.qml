@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
+import QtQml
 import qs.Core.Modules
 import Quickshell.Io
 
@@ -12,6 +13,30 @@ Singleton {
 
     readonly property alias history: historyModel
     readonly property alias server: notificationServer
+
+    // Contador monotónico para historyId. No usamos n.id como clave porque
+    // el spec de notificaciones de escritorio permite que una app reutilice
+    // el mismo id para reemplazar una notificación anterior — dos entradas
+    // de historial distintas podrían terminar compartiendo id.
+    property int historyIdCounter: 0
+
+    // { historyId, notification } por cada entrada que sigue viva en el
+    // historial. Es lo que mantiene el objeto Notification (y por lo tanto
+    // su .image / el handle image://qsimage/...) sin destruirse mientras
+    // siga apareciendo en historyModel. Ver Instantiator más abajo.
+    property var retainedForHistory: []
+
+    // Llamar desde el (×) de NotificationHistoryCard en vez de tocar
+    // historyModel directamente — así soltamos también el RetainableLock.
+    function removeFromHistory(historyId) {
+        for (let i = 0; i < historyModel.count; i++) {
+            if (historyModel.get(i).historyId === historyId) {
+                historyModel.remove(i);
+                break;
+            }
+        }
+        root.retainedForHistory = root.retainedForHistory.filter(entry => entry.historyId !== historyId);
+    }
 
     function toggleDnd() {
         Persistent.persistence.notifications.dnd = !Persistent.persistence.notifications.dnd;
@@ -39,20 +64,52 @@ Singleton {
         actionsSupported: true
         bodySupported: true
         imageSupported: true
+        actionIconsSupported: true
 
         onNotification: n => {
+            const historyId = root.historyIdCounter++;
+
+            let resolvedIcon = n.image;
+            if ((!resolvedIcon || resolvedIcon === "") && n.appIcon && n.appIcon !== "") {
+                resolvedIcon = Quickshell.iconPath(n.appIcon, "image-missing");
+            }
+
             historyModel.insert(0, {
+                historyId: historyId,
                 summary: n.summary,
                 body: n.body,
                 appName: n.appName,
                 urgency: n.urgency,
                 time: Qt.formatDateTime(new Date(), "HH:mm"),
-                icon: n.image || n.appIcon || ""
+                icon: resolvedIcon || ""
             });
+
+            // Retenemos el objeto vivo mientras siga en el historial: sin esto,
+            // Quickshell destruye la notificación al descartarse/expirar y el
+            // handle image://qsimage/... detrás de n.image queda huérfano
+            // (el WARN "unknown handle" que veías en consola).
+            root.retainedForHistory = [...root.retainedForHistory, {
+                historyId: historyId,
+                notification: n
+            }];
+
             if (root.dnd) {
                 return;
             }
             n.tracked = true;
+        }
+    }
+
+    // Un RetainableLock vivo por cada notificación retenida para el historial.
+    // Al sacar una entrada de retainedForHistory (removeFromHistory), el
+    // Instantiator destruye su delegate y el lock se libera solo — así no
+    // hay que gestionar lock()/unlock() a mano ni arriesgarse a un leak.
+    Instantiator {
+        model: root.retainedForHistory
+        delegate: RetainableLock {
+            required property var modelData
+            object: modelData.notification
+            locked: true
         }
     }
 

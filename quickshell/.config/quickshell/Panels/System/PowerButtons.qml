@@ -17,7 +17,7 @@ PanelWindow {
 
     WlrLayershell.namespace: "logout_dialog"
     WlrLayershell.layer: WlrLayer.Overlay
-    exclusionMode: WlrLayershell.Ignore
+    exclusionMode: ExclusionMode.Ignore
 
     // Fullscreen: anclar los 4 lados
     anchors.left: true

@@ -56,12 +56,17 @@ Rectangle {
                 color: Appearance.md3.surface_variant
             }
 
-            Image {
+            AppIcon {
                 id: notificationIcon
                 anchors.fill: parent
                 anchors.margins: 4
-                fillMode: Image.PreserveAspectFit
+                //fillMode: Image.PreserveAspectFit
                 source: root.icon
+                // El handle image://qsimage/<id>/<serial> solo vive mientras la
+                // notificación original está viva. Si ya expiró (caso típico en
+                // el historial), evitamos mostrar el glifo de imagen rota y nos
+                // quedamos con el círculo tonal de fondo como fallback.
+                //visible: status === Image.Ready
             }
         }
 

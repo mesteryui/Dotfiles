@@ -32,6 +32,7 @@ Singleton {
             if (p > 0.5) return "battery_4_bar";
             if (p > 0.3) return "battery_3_bar";
             if (p > 0.15) return "battery_1_bar";
+            
             return "battery_0_bar";
         }
         readonly property var profile: PowerProfiles.profile

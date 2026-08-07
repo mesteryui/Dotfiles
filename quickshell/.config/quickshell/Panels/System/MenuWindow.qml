@@ -20,7 +20,7 @@ PanelWindow {
 
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
-    exclusionMode: WlrLayershell.Ignore
+    exclusionMode: ExclusionMode.Ignore
 
     HyprlandFocusGrab {
         windows: [root]

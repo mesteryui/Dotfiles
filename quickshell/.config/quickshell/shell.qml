@@ -12,6 +12,7 @@ import qs.Panels.System
 import qs.Features.OSD
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
+import qs.Launcher
 import qs.Lockscreen
 import qs.Windows
 ShellRoot {
@@ -20,23 +21,20 @@ ShellRoot {
 
     ReloadPopup {}
 
-    AboutSystem {}   
+    //AboutSystem {}   
 
     Component.onCompleted: {
         ConfigService.load()
     }
+
+    AppLauncher {}
 
     // OSDs: Carga inmediata (pequeños y críticos)
     BrightnessOSD {}
     VolumeOSD {}
     BatteryOSD {}
     
-    // Widgets pesados: LazyLoader para no bloquear el inicio
-    LazyLoader {
-        id: wallpaperMenuLoader
-        loading: true
-        WallpaperMenu {}
-    }
+    WallpaperMenu {}
 
     LazyLoader {
         id: powerButtonsLoader

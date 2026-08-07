@@ -7,9 +7,12 @@ import qs.Shared.Background
 
 Item {
     id: delegateRoot
+    
+    // 1. CONVENCIÓN QUICKSHELL + QT6: 'required' bloquea la inicialización
+    // hasta que el modelo inyecte los datos reales aquí.
+    required property var modelData
 
-    property var modelData
-    property int surfaceRadius: 16         // fuente única de verdad para el radio
+    property int surfaceRadius: 16
 
     readonly property bool isSelected: ListView.isCurrentItem
 
@@ -51,7 +54,7 @@ Item {
         isSelected: delegateRoot.isSelected
         hovered: mouse.containsMouse      // ← bool, no el MouseArea entero
         radius: delegateRoot.surfaceRadius // ← mismo radio que el Background
-        filePath: delegateRoot.modelData.filePath
+        filePath: delegateRoot.modelData?.filePath ?? ""
     }
 
     // ── Interacción ───────────────────────────────────────────

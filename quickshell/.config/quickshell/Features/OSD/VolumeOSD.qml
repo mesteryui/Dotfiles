@@ -28,4 +28,5 @@ PercentageOSD {
     
     percentage: AudioService.volume
     icon: AudioService.materialIcon
+    
 }

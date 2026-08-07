@@ -7,12 +7,12 @@ import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 Singleton {
     id: root
     property alias wallpaperList: folderModel
-    readonly property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers/"
-    signal changed()
+    property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers"
+    signal changed
     readonly property list<string> extensions: [ // TODO: add videos
-        "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"
-    ]
+        "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
 
+    
     FolderListModel {
         id: folderModel
         folder: "file://" + root.wallpaperDir
@@ -28,9 +28,12 @@ Singleton {
 
     function apply(file: string): void {
         let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
+        if (applyProcess.running) {
+            applyProcess.running = false
+        }
         applyProcess.command = ["awww", "img", fullPath, "--transition-type", "center"];
         applyProcess.running = true;
-        ThemeApplier.applyTheme(fullPath)
-        root.changed()
+        ThemeApplier.applyTheme(fullPath);
+        root.changed();
     }
 }
