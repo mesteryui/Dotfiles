@@ -15,7 +15,7 @@ Singleton {
     
     FolderListModel {
         id: folderModel
-        folder: "file://" + root.wallpaperDir
+        folder: Qt.resolvedUrl(root.wallpaperDir)
         nameFilters: root.extensions.map(e => `*.${e}`) // Filtra solo imágenes
         showDirs: false
         showDotAndDotDot: false

@@ -12,7 +12,6 @@ PanelWindow {
     WlrLayershell.exclusiveZone: 38
     WlrLayershell.namespace: "bar"
 
-    property bool isVertical: false
     
     anchors {
         top: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == "" ? true : false
@@ -42,7 +41,6 @@ PanelWindow {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        isVertical: false
     }
    
 }

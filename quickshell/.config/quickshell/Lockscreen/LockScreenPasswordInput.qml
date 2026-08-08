@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Effects
-import Quickshell
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
@@ -121,11 +120,10 @@ Item {
                 }
             }
 
-            MaterialTextField {
+            TextField {
                 id: passwordField
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                wrapMode: TextEdit.NoWrap
                 echoMode: root.isPasswordVisible === false ? TextInput.Password : TextInput.Normal
                 placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña..."))
                 placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)

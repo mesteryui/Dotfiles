@@ -26,7 +26,7 @@ Item {
 
     readonly property var tabModel: [
         { label: Services.I18nService.getTranslation("panel.system",  "System"),  icon: "memory"        },
-        { label: Services.I18nService.getTranslation("panel.weather", "Weather"), icon: "filter_drama"  }
+        //{ label: Services.I18nService.getTranslation("panel.weather", "Weather"), icon: "filter_drama"  }
     ]
 
     implicitHeight: mainColumn.implicitHeight + 24
@@ -438,7 +438,6 @@ Item {
             currentIndex: navBar.currentIndex
 
             SysInfoTab {}
-            WeatherTab  {}
         }
     }
 }
