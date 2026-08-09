@@ -9,17 +9,18 @@ Singleton {
     id: root
 
     // Propiedades independientes (reemplazan a Config.options.bar.weather...)
-    property int fetchInterval: 10 * 60 * 1000 // 10 minutos por defecto
-    property string city: "Vigo" // Ciudad por defecto. Admite "Ciudad,CC" (ISO2) para desambiguar
-    property bool gpsActive: true
-    property string icon: root.iconForCode(data.wCode)
+    readonly property int fetchInterval: ConfigService.configs.weather.reloadTime * 60 * 1000 // 10 minutos por defecto
+    readonly property string city: ConfigService.configs.weather.city
+    property bool gpsActive: ConfigService.configs.weather.autoLocation
+    readonly property string icon: root.iconForCode(data.wCode)
 
     onCityChanged: root.getData()
+
 
     property var location: ({
         valid: false,
         lat: 0,
-        lon: 0
+        lon: 0,
     })
 
     property var data: ({
@@ -47,9 +48,9 @@ Singleton {
     // Etiqueta legible para cada día del forecast: Hoy / Mañana / nombre del día
     function dayLabel(dateStr, index) {
         if (index === 0)
-            return qsTr("Hoy");
+            return I18nService.getTranslation("weather.today", "Hoy");
         if (index === 1)
-            return qsTr("Mañana");
+            return I18nService.getTranslation("weather.tomorrow", "Mañana");
         const d = new Date(dateStr);
         return d.toLocaleDateString(Qt.locale(), "ddd");
     }
@@ -289,7 +290,7 @@ Singleton {
                     lat: position.coordinate.latitude,
                     lon: position.coordinate.longitude,
                 };
-                root.fetchForecast(qsTr("Mi ubicación"));
+                root.fetchForecast(I18nService.getTranslation("weather.my_location", "Mi ubicación"));
             } else {
                 root.gpsActive = root.location.valid ? true : false;
                 console.error("[WeatherService] Failed to get the GPS location.");

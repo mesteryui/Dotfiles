@@ -257,7 +257,7 @@ Item {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: replyInput.text === "" && !replyInput.activeFocus
-                            text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : qsTr("Responder…")
+                            text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : I18nService.getTranslation("notifications.reply", "Responder…")
                             color: Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
                             font.pixelSize: Appearance.font.pixelSize.smaller

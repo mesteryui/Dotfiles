@@ -3,7 +3,8 @@
     "title": "Notifications",
     "mark_read": "Mark read",
     "clear_all": "Clear all",
-    "empty": "No notifications"
+    "empty": "No notifications",
+    "reply": "Reply…"
   },
   "power": {
     "shutdown": "Shutdown",
@@ -57,5 +58,17 @@
     "no_correct": "Incorrect password",
     "caps_lock": "Bloq Mayus Activated",
     "information": "Press Enter to unlock"
+  },
+  "weather": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "my_location": "My Location",
+    "feels_like": "Feels like %1",
+    "humidity_wind": "Humidity %1 · Wind %2"
+  },
+  "cheatsheet": {
+    "search": "Search keybinds…",
+    "no_match": "No keybinds match",
+    "no_binds": "No documented keybinds found"
   }
 }

@@ -54,7 +54,7 @@ Item {
                     }
 
                     StyledText {
-                        text: qsTr("Sensación %1").arg(WeatherService.data.tempFeelsLike)
+                        text: I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(WeatherService.data.tempFeelsLike)
                         color: Appearance.md3.on_surface_variant
                         font.pixelSize: 12
                         Layout.alignment: Qt.AlignBottom
@@ -71,7 +71,7 @@ Item {
                 }
 
                 StyledText {
-                    text: qsTr("Humedad %1 · Viento %2").arg(WeatherService.data.humidity).arg(WeatherService.data.wind)
+                    text: I18nService.getTranslation("weather.humidity_wind", "Humedad %1 · Viento %2").arg(WeatherService.data.humidity).arg(WeatherService.data.wind)
                     color: Appearance.md3.on_surface_variant
                     font.pixelSize: 12
                     elide: Text.ElideRight

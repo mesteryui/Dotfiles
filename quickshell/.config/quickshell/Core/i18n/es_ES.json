@@ -3,7 +3,8 @@
     "title": "Notificaciones",
     "mark_read": "Marcar leídas",
     "clear_all": "Limpiar todo",
-    "empty": "Sin notificaciones"
+    "empty": "Sin notificaciones",
+    "reply": "Responder…"
   },
   "power": {
     "shutdown": "Apagar",
@@ -57,5 +58,17 @@
     "caps_lock": "Bloq Mayús activado",
     "information": "Pulsa Enter para desbloquear",
     "password": "Contraseña..."
+  },
+  "weather": {
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "my_location": "Mi ubicación",
+    "feels_like": "Sensación %1",
+    "humidity_wind": "Humedad %1 · Viento %2"
+  },
+  "cheatsheet": {
+    "search": "Buscar atajos de teclado…",
+    "no_match": "Ningún atajo coincide con",
+    "no_binds": "No se encontraron atajos documentados"
   }
 }

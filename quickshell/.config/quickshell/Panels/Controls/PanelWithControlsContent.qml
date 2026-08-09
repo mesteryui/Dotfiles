@@ -26,7 +26,7 @@ Item {
 
     readonly property var tabModel: [
         { label: Services.I18nService.getTranslation("panel.system",  "System"),  icon: "memory"        },
-        //{ label: Services.I18nService.getTranslation("panel.weather", "Weather"), icon: "filter_drama"  }
+        //{ label: Services.I18nService.getTranslation("panel.wallpapers", "Wallpapers"), icon: "wallpaper"  }
     ]
 
     implicitHeight: mainColumn.implicitHeight + 24

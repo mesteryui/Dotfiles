@@ -3,7 +3,7 @@ import Quickshell.Services.SystemTray
 import QtQuick.Layouts
 Row {
     id: root
-    spacing: 6
+    spacing: 4
 
     property alias items: rep.model
 

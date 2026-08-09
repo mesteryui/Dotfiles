@@ -3,7 +3,8 @@
     "title": "Sciigoj",
     "mark_read": "Marki kiel legitajn",
     "clear_all": "Viŝi ĉion",
-    "empty": "Neniu sciigo"
+    "empty": "Neniu sciigo",
+    "reply": "Respondi…"
   },
   "power": {
     "shutdown": "Malŝalti",
@@ -57,5 +58,17 @@
     "caps_lock": "Bloq Mayus aktivita",
     "information": "Prenu Enter por malŝlosi",
     "password": "Pasvorto..."
+  },
+  "weather": {
+    "today": "Hodiaŭ",
+    "tomorrow": "Morgaŭ",
+    "my_location": "Mia loko",
+    "feels_like": "Sentas kiel %1",
+    "humidity_wind": "Humideco %1 · Vento %2"
+  },
+  "cheatsheet": {
+    "search": "Serĉi klavkombinojn…",
+    "no_match": "Neniu klavkombino kongruas",
+    "no_binds": "Neniuj dokumentitaj klavkombinoj trovigu"
   }
 }

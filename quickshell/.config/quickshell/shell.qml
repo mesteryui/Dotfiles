@@ -14,7 +14,7 @@ import qs.Panels.Wallpaper
 import qs.Features.Notifications
 import qs.Launcher
 import qs.Lockscreen
-import qs.Windows
+import qs.Features.CheatSheet
 ShellRoot {
     id: root
     settings.watchFiles: true
@@ -42,6 +42,7 @@ ShellRoot {
         PowerButtons {}
     }
     Notifications {}
+    Cheatsheet {}
     Variants {
         model: Quickshell.screens
         delegate: Scope {

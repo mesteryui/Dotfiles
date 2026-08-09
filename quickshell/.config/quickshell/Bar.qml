@@ -12,6 +12,8 @@ PanelWindow {
     WlrLayershell.exclusiveZone: 38
     WlrLayershell.namespace: "bar"
 
+    property bool islandMode: false
+
     
     anchors {
         top: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == "" ? true : false
@@ -32,7 +34,7 @@ PanelWindow {
     
     BarBackground {
         anchors.fill: parent
-        color: Appearance.md3.surface
+        color: root.islandMode ? "transparent" : Appearance.md3.surface
         radius: Appearance.shape.screenRounding
     }
 
@@ -41,6 +43,7 @@ PanelWindow {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
+        islandMode: root.islandMode
     }
    
 }

@@ -39,10 +39,16 @@ Singleton {
             id: jsonAdapter
             property string language: Qt.locale().name
             property Bar bar: Bar {}
+            property Weather weather: Weather {}
             property Notifications notifications: Notifications {}
             property Updates updates: Updates {}
             property Appearence appearence: Appearence {}
         }
+    }
+    component Weather: JsonObject {
+        property bool autoLocation: true
+        property string city: "Vigo"
+        property int reloadTime: 10
     }
     component Appearence: JsonObject {
         property bool darkMode: true

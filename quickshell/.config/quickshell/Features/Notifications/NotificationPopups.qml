@@ -30,7 +30,7 @@ PanelWindow {
         spacing: 12
 
         Repeater {
-            model: root.trackedNotifications
+            model: !NotificationManager.dnd ? root.trackedNotifications : []
 
             delegate: NotificationToastCard {
                 required property var modelData

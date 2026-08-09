@@ -93,9 +93,7 @@ Singleton {
                 notification: n
             }];
 
-            if (root.dnd) {
-                return;
-            }
+            
             n.tracked = true;
         }
     }

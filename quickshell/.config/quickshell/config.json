@@ -11,5 +11,10 @@
     },
     "appearence": {
         "darkMode": true
+    },
+    "weather": {
+        "autoLocation": false,
+        "city": "Vigo,ES",
+        "reloadTime": 5
     }
 }
