@@ -17,36 +17,66 @@ hl.bind(mainMod .. " + F12", function()
     end
 end, { description = "Alternar hyprbars" })
 
-hl.bind(mainMod.." + O", function ()
-    if helper.check_plugin("hyprexpo", "Hyprexpo") then
-        hl.plugin.hyprexpo.expo("toggle")
-    end
-end, {description = "Abrir/Cerrar Hyprexpo"})
+--hl.bind(mainMod.." + O", function ()
+--    if helper.check_plugin("hyprexpo", "Hyprexpo") then
+--        hl.plugin.hyprexpo.expo("toggle")
+--    end
+--end, {description = "Abrir/Cerrar Hyprexpo"})
 
-hl.bind(mainMod.." + U", function ()
-  if helper.check_plugin("scrolloverview","Scrolloverview") then
-    hl.plugin.scrolloverview.overview("toggle")
+hl.bind(mainMod .. " + O", function()
+  if helper.check_plugin("scrolloverview", "Scrolloverview") then
+    hl.plugin.scrolloverview.overview("toggle all")
   end
-end)
--- Focus & Move
-local movement = {
-    { dir = "left",  nombre = "izquierda", teclas = { "H", "LEFT" } },
-    { dir = "right", nombre = "derecha",   teclas = { "L", "RIGHT" } },
-    { dir = "up",    nombre = "arriba",    teclas = { "K", "UP" } },
-    { dir = "down",  nombre = "abajo",     teclas = { "J", "DOWN" } }
+end, { description = "Abrir/Cerrar Scrolloverview" })
+-- Definición de direcciones y teclas (HJKL y Flechas)
+local movement_dirs = {
+    { dir = "left",  short_code = "l", nombre = "izquierda", teclas = { "H", "LEFT" } },
+    { dir = "right", short_code = "r", nombre = "derecha",   teclas = { "L", "RIGHT" } },
+    { dir = "up",    short_code = "u", nombre = "arriba",    teclas = { "K", "UP" } },
+    { dir = "down",  short_code = "d", nombre = "abajo",     teclas = { "J", "DOWN" } }
 }
---hl.bind(mainMod .. " + period", hl.dsp.layout("move +col"))
-if hl.get_config("general.layout") == "scrolling" then
-  hl.bind(mainMod .. " + comma", hl.dsp.layout("swapcol l"))
-end
 
-for _, item in ipairs(movement) do
-    for _, key in ipairs(item.teclas) do
-        hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ direction = item.dir }),
-            { description = "Cambiar foco a la " .. item.nombre })
+local current_layout = hl.get_config("general.layout")
 
-        hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = item.dir }),
-            { description = "Mover ventana hacia la " .. item.nombre })
+if current_layout == "scrolling" then
+    -- Atajos de navegación y movimiento adaptados para layout 'scrolling'
+    for _, item in ipairs(movement_dirs) do
+        for _, key in ipairs(item.teclas) do
+            -- Foco usando dispatcher nativo de scrolling (focus l/r/u/d)
+            hl.bind(mainMod .. " + " .. key, hl.dsp.layout("focus " .. item.short_code),
+                { description = "Cambiar foco a la " .. item.nombre .. " (scrolling)" })
+
+            -- Mover/Intercambiar ventana en scrolling (swapcol para l/r, move para u/d)
+            if item.dir == "left" or item.dir == "right" then
+                hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.layout("swapcol " .. item.short_code),
+                    { description = "Intercambiar columna a la " .. item.nombre })
+            else
+                hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = item.dir }),
+                    { description = "Mover ventana hacia " .. item.nombre })
+            end
+        end
+    end
+
+    -- Atajos auxiliares específicos para scrolling
+    hl.bind(mainMod .. " + comma", hl.dsp.layout("move -col"), { description = "Desplazarse a la columna anterior (-col)" })
+    hl.bind(mainMod .. " + period", hl.dsp.layout("move +col"), { description = "Desplazarse a la columna siguiente (+col)" })
+    hl.bind(mainMod .. " + ALT + P", hl.dsp.layout("promote"), { description = "Promocionar ventana a nueva columna" })
+    hl.bind(mainMod .. " + ALT + F", hl.dsp.layout("fit active"), { description = "Ajustar ventana activa al ancho de columna" })
+else
+    -- Atajos de navegación y movimiento para dwindle / layouts estándar
+    for _, item in ipairs(movement_dirs) do
+        for _, key in ipairs(item.teclas) do
+            hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ direction = item.dir }),
+                { description = "Cambiar foco a la " .. item.nombre })
+
+            hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = item.dir }),
+                { description = "Mover ventana hacia la " .. item.nombre })
+        end
+    end
+
+    if current_layout == "dwindle" then
+        hl.bind(mainMod .. " + ALT + J", hl.dsp.layout("togglesplit"), { description = "Alternar división de ventana (dwindle)" })
+        hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Alternar pseudotiling (dwindle)" })
     end
 end
 

@@ -2,7 +2,7 @@ hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal), { description = "Ejec
 hl.bind(mainMod .. " + F", hl.dsp.exec_cmd(fileManager), { description = "Abrir el gestor de archivos" })
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu), { description = "Abrir menu" })
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(system_menu), { description = "Abrir menú del sistema" })
-hl.bind("ALT + K", hl.dsp.exec_cmd("menubinds.sh"),
+hl.bind("ALT + K", hl.dsp.exec_cmd("qs ipc call cheatsheet toggle"),
     { description = "Abrir descriptor de los atajos de teclas" })
 hl.bind("ALT + P", hl.dsp.exec_cmd("hyprpicker --autocopy"),
     { description = "Seleccionar un color y copiar al portapapeles" })
