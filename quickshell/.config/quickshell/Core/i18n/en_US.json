@@ -33,8 +33,13 @@
     "user": "user",
     "host": "localhost",
     "wifi": "WiFi",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "on": "On",
     "bluetooth": "Bluetooth",
     "caffeine_on": "Caffeine On",
+    "dnd_on": "Activated",
+    "dnd_off": "Deactivated",
     "caffeine_off": "Caffeine Off",
     "dnd": "Do Not Disturb",
     "system": "System",
@@ -70,5 +75,12 @@
     "search": "Search keybinds…",
     "no_match": "No keybinds match",
     "no_binds": "No documented keybinds found"
+  },
+  "polkit": {
+    "ok": "Accept",
+    "cancel": "Cancel",
+    "authenticationRequired": "Authentication Required",
+    "password": "Password",
+    "input": "Input"
   }
 }

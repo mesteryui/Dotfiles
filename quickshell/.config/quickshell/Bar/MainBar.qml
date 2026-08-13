@@ -5,7 +5,6 @@ import qs.Bar.Items
 Item {
     id: bar
 
-    property bool islandMode: false
 
     RowLayout {
         anchors.fill: parent

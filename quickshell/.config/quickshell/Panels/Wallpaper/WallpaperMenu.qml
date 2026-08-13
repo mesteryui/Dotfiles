@@ -59,7 +59,7 @@ Scope {
             screen: root.focusedScreen
 
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.namespace: "wallpaper-menu"
+            WlrLayershell.namespace: "quickshell:wallpaper-menu"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
             exclusionMode: ExclusionMode.Ignore
 

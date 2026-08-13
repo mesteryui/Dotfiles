@@ -45,12 +45,7 @@ Item {
         loading: titleInteraction.pressed || titleInteraction.hoveredChanged
         component: MprisSubwindow {
             id: popup
-            anchor.item: root
-            anchor.margins.top: 20
-            anchor.margins.bottom: 20
-            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom)
-            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom)
-            anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
+            anchorItem: root
         }
     }
 }

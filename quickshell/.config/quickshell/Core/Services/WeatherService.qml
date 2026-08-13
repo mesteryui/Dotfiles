@@ -11,10 +11,17 @@ Singleton {
     // Propiedades independientes (reemplazan a Config.options.bar.weather...)
     readonly property int fetchInterval: ConfigService.configs.weather.reloadTime * 60 * 1000 // 10 minutos por defecto
     readonly property string city: ConfigService.configs.weather.city
-    property bool gpsActive: ConfigService.configs.weather.autoLocation
+    readonly property bool gpsActive: ConfigService.configs.weather.autoLocation
     readonly property string icon: root.iconForCode(data.wCode)
 
     onCityChanged: root.getData()
+
+    Connections {
+        target: NetworkService
+        function onCurrentNetworkChanged() {
+            if (NetworkService.currentNetwork !== null) root.getData()
+        }
+    }
 
 
     property var location: ({
@@ -136,14 +143,17 @@ Singleton {
         const codes = daily.weather_code || [];
         const maxTemps = daily.temperature_2m_max || [];
         const minTemps = daily.temperature_2m_min || [];
-        temp.forecast = dates.map((date, index) => ({
-            date: date,
-            dayLabel: root.dayLabel(date, index),
-            wCode: codes[index] ?? 0,
-            maxTemp: Math.round(maxTemps[index] ?? 0),
-            minTemp: Math.round(minTemps[index] ?? 0),
-            unit: unit,
-        }));
+        temp.forecast = []
+        for (let i = 1; i < dates.length; i++) {
+            temp.forecast.push({
+                date: dates[i],
+                dayLabel: root.dayLabel(dates[i], i),
+                wCode: codes[i] ?? 0,
+                maxTemp: Math.round(maxTemps[i] ?? 0),
+                minTemp: Math.round(minTemps[i] ?? 0),
+                unit: unit,
+            });
+        }
 
         let now = new Date();
         temp.lastRefresh = now.toLocaleTimeString(Qt.locale(), "hh:mm") + " • " + now.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
@@ -151,11 +161,69 @@ Singleton {
         root.data = temp;
     }
 
+    // --- Helper genérico de petición GET cancelable ---------------------
+    //
+    // xhrPropName: nombre de la propiedad de `root` donde se guarda la
+    //   petición en curso (p.ej. "_geocodeXhr"), para poder cancelarla si
+    //   llega una petición más reciente antes de que termine.
+    // label: texto usado en los logs ("Geocoding", "Forecast", ...).
+    // onSuccess(json): callback invocado con la respuesta ya parseada.
+    //
+    // OJO con el orden aquí: si primero llamamos a abort() y DESPUÉS
+    // soltamos la referencia vieja, Qt puede invocar onreadystatechange de
+    // forma SÍNCRONA dentro de abort(). En ese instante `root[xhrPropName]`
+    // todavía apunta a la petición vieja, así que el guard de "¿me
+    // reemplazaron?" no la detecta a tiempo y se acaba logueando un
+    // "HTTP 0" que en realidad es solo una cancelación normal. Por eso aquí
+    // soltamos la referencia ANTES de abortar.
+    function _request(xhrPropName, url, label, onSuccess) {
+        const prevXhr = root[xhrPropName];
+        if (prevXhr) {
+            root[xhrPropName] = null;
+            prevXhr.abort();
+        }
+
+        const xhr = new XMLHttpRequest();
+        root[xhrPropName] = xhr;
+        xhr.timeout = 10000; // 10s
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return;
+            if (xhr !== root[xhrPropName])
+                return; // cancelada/reemplazada por otra petición, ignorar en silencio
+            root[xhrPropName] = null;
+
+            if (xhr.status !== 200) {
+                console.error(`[WeatherService] ${label} fetch failed: HTTP ${xhr.status}`);
+                return;
+            }
+            try {
+                onSuccess(JSON.parse(xhr.responseText));
+            } catch (e) {
+                console.error(`[WeatherService] ${e.message}`);
+            }
+        };
+        // onerror cubre fallos de transporte (DNS, conexión rechazada, TLS...)
+        // que en algunos backends de Qt no siempre pasan por status !== 200.
+        xhr.onerror = () => {
+            if (xhr !== root[xhrPropName])
+                return;
+            root[xhrPropName] = null;
+            console.error(`[WeatherService] ${label} fetch network error`);
+        };
+        xhr.ontimeout = () => {
+            if (xhr !== root[xhrPropName])
+                return;
+            root[xhrPropName] = null;
+            console.error(`[WeatherService] ${label} fetch timed out`);
+        };
+        xhr.open("GET", url);
+        xhr.send();
+    }
+
     // Pide el forecast a Open-Meteo para root.location.lat/lon ya resuelto
     function fetchForecast(cityLabel) {
-        if (root._forecastXhr)
-            root._forecastXhr.abort();
-
         const url = "https://api.open-meteo.com/v1/forecast"
             + `?latitude=${root.location.lat}&longitude=${root.location.lon}`
             + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure"
@@ -165,40 +233,15 @@ Singleton {
             + "&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm"
             + "&timezone=auto";
 
-        const xhr = new XMLHttpRequest();
-        root._forecastXhr = xhr;
-        xhr.timeout = 10000; // 10s
-
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (xhr !== root._forecastXhr)
-                return; // esta petición fue cancelada/reemplazada
-            root._forecastXhr = null;
-
-            if (xhr.status !== 200) {
-                console.error(`[WeatherService] Forecast fetch failed: HTTP ${xhr.status}`);
-                return;
-            }
-            try {
-                const json = JSON.parse(xhr.responseText);
-                json._cityLabel = cityLabel;
-                root.refineData(json);
-            } catch (e) {
-                console.error(`[WeatherService] ${e.message}`);
-            }
-        };
-        xhr.ontimeout = () => console.error("[WeatherService] Forecast fetch timed out");
-        xhr.open("GET", url);
-        xhr.send();
+        root._request("_forecastXhr", url, "Forecast", (json) => {
+            json._cityLabel = cityLabel;
+            root.refineData(json);
+        });
     }
 
     // Geocodifica root.city ("Nombre" o "Nombre,CC") y, si tiene éxito,
     // actualiza root.location y encadena fetchForecast()
     function geocodeCity() {
-        if (root._geocodeXhr)
-            root._geocodeXhr.abort();
-
         const parts = root.city.split(",").map(p => p.trim());
         const name = parts[0];
         const countryCode = parts.length > 1 ? parts[1].toUpperCase() : "";
@@ -206,46 +249,28 @@ Singleton {
         const url = "https://geocoding-api.open-meteo.com/v1/search"
             + `?name=${encodeURIComponent(name)}&count=10&language=es&format=json`;
 
-        const xhr = new XMLHttpRequest();
-        root._geocodeXhr = xhr;
-        xhr.timeout = 10000;
-
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (xhr !== root._geocodeXhr)
-                return;
-            root._geocodeXhr = null;
-
-            if (xhr.status !== 200) {
-                console.error(`[WeatherService] Geocoding fetch failed: HTTP ${xhr.status}`);
+        root._request("_geocodeXhr", url, "Geocoding", (json) => {
+            const results = json?.results || [];
+            if (results.length === 0) {
+                console.error(`[WeatherService] No se encontró la ciudad "${root.city}"`);
                 return;
             }
-            try {
-                const json = JSON.parse(xhr.responseText);
-                const results = json?.results || [];
-                if (results.length === 0) {
-                    console.error(`[WeatherService] No se encontró la ciudad "${root.city}"`);
-                    return;
-                }
-                // Si se especificó país, filtramos; si no hay match exacto, cae al primero
-                const match = countryCode
-                    ? (results.find(r => r.country_code === countryCode) || results[0])
-                    : results[0];
+            // Si se especificó país, filtramos; si no hay match exacto, cae al primero
+            const match = countryCode
+                ? (results.find(r => r.country_code === countryCode) || results[0])
+                : results[0];
 
-                root.location = { valid: true, lat: match.latitude, lon: match.longitude };
-                const cityLabel = match.name + (match.admin1 ? `, ${match.admin1}` : "");
-                root.fetchForecast(cityLabel);
-            } catch (e) {
-                console.error(`[WeatherService] ${e.message}`);
-            }
-        };
-        xhr.ontimeout = () => console.error("[WeatherService] Geocoding fetch timed out");
-        xhr.open("GET", url);
-        xhr.send();
+            root.location = { valid: true, lat: match.latitude, lon: match.longitude };
+            const cityLabel = match.name + (match.admin1 ? `, ${match.admin1}` : "");
+            root.fetchForecast(cityLabel);
+        });
     }
 
     function getData() {
+        if (NetworkService.currentNetwork == null) {
+            console.warn("[WeatherService]","Sin conexion")
+            return;
+        }
         if (root.gpsActive && root.location.valid) {
             root.fetchForecast(root.city);
         } else {

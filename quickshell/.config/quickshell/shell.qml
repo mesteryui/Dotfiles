@@ -9,10 +9,10 @@ import Quickshell
 import QtQuick
 import qs.Core.Services
 import qs.Panels.System
+import qs.Panels.Polkit
 import qs.Features.OSD
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
-import qs.Launcher
 import qs.Lockscreen
 import qs.Features.CheatSheet
 ShellRoot {
@@ -26,8 +26,6 @@ ShellRoot {
     Component.onCompleted: {
         ConfigService.load()
     }
-
-    AppLauncher {}
 
     // OSDs: Carga inmediata (pequeños y críticos)
     BrightnessOSD {}
@@ -43,6 +41,7 @@ ShellRoot {
     }
     Notifications {}
     Cheatsheet {}
+    PolkitWindow {}
     Variants {
         model: Quickshell.screens
         delegate: Scope {

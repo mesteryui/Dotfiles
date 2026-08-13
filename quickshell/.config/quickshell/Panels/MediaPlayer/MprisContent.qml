@@ -324,71 +324,84 @@ Item {
         implicitHeight: visible ? chipsRow.implicitHeight + 12 : 0
         visible: root.multiPlayer
 
-        // Chips en fila; si hay muchos players se desbordan con scroll horizontal.
-        Row {
-            id: chipsRow
+        // Chips en fila; si hay muchos players, se limita el ancho y se
+        // habilita scroll horizontal con Flickable en vez de desbordar.
+        Flickable {
+            id: chipsFlickable
             anchors {
                 top: parent.top
                 topMargin: 0
                 horizontalCenter: parent.horizontalCenter
             }
-            spacing: 6
+            width: Math.min(chipsRow.implicitWidth, parent.width)
+            height: chipsRow.implicitHeight
+            contentWidth: chipsRow.implicitWidth
+            contentHeight: chipsRow.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            flickableDirection: Flickable.HorizontalFlick
+            interactive: contentWidth > width
 
-            Repeater {
-                model: Services.MprisService.players
+            Row {
+                id: chipsRow
+                spacing: 6
 
-                delegate: WrapperMouseArea {
-                    id: chipWrapper
+                Repeater {
+                    model: Services.MprisService.players
 
-                    required property var modelData
-                    property MprisPlayer player: modelData
+                    delegate: WrapperMouseArea {
+                        id: chipWrapper
 
-                    readonly property bool isActive: Services.MprisService.activePlayer === player
+                        required property var modelData
+                        property MprisPlayer player: modelData
 
-                    cursorShape: Qt.PointingHandCursor
+                        readonly property bool isActive: Services.MprisService.activePlayer === player
 
-                    onClicked: {
-                        if (Services.MprisService.activePlayer === chipWrapper.player)
-                            Services.MprisService.setActivePlayer(null);
-                        else
-                            Services.MprisService.setActivePlayer(chipWrapper.player);
-                    }
+                        cursorShape: Qt.PointingHandCursor
 
-                    // Fondo del chip interactivo
-                    Rectangle {
-                        implicitWidth: chipLayout.implicitWidth + 24
-                        implicitHeight: 28
-                        radius: 9999
-                        color: chipWrapper.isActive ? Appearance.md3.primary_container : "transparent"
-                        border.width: chipWrapper.isActive ? 0 : 1
-                        border.color: Appearance.md3.outline_variant
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 120
-                            }
+                        onClicked: {
+                            if (Services.MprisService.activePlayer === chipWrapper.player)
+                                Services.MprisService.setActivePlayer(null);
+                            else
+                                Services.MprisService.setActivePlayer(chipWrapper.player);
                         }
 
-                        // Icono + Nombre del reproductor
-                        RowLayout {
-                            id: chipLayout
-                            anchors.centerIn: parent
-                            spacing: 6
+                        // Fondo del chip interactivo
+                        Rectangle {
+                            implicitWidth: chipLayout.implicitWidth + 24
+                            implicitHeight: 28
+                            radius: 9999
+                            color: chipWrapper.isActive ? Appearance.md3.primary_container : "transparent"
+                            border.width: chipWrapper.isActive ? 0 : 1
+                            border.color: Appearance.md3.outline_variant
 
-                            IconImage {
-                                implicitWidth: 16
-                                implicitHeight: 16
-                                source: Quickshell.iconPath(chipWrapper.player.desktopEntry, true)
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 120
+                                }
                             }
 
-                            StyledText {
-                                text: chipWrapper.player.identity ?? chipWrapper.player.dbusName
-                                font.family: Services.ConfigService.configs.appearence.fontSans
-                                font.pixelSize: 11
-                                color: chipWrapper.isActive ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 120
+                            // Icono + Nombre del reproductor
+                            RowLayout {
+                                id: chipLayout
+                                anchors.centerIn: parent
+                                spacing: 6
+
+                                IconImage {
+                                    implicitWidth: 16
+                                    implicitHeight: 16
+                                    source: Quickshell.iconPath(chipWrapper.player.desktopEntry, true)
+                                }
+
+                                StyledText {
+                                    text: chipWrapper.player.identity ?? chipWrapper.player.dbusName
+                                    font.family: Services.ConfigService.configs.appearence.fontSans
+                                    font.pixelSize: 11
+                                    color: chipWrapper.isActive ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 120
+                                        }
                                     }
                                 }
                             }

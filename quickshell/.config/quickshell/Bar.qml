@@ -9,10 +9,8 @@ PanelWindow {
     id: root
     
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.exclusiveZone: 38
-    WlrLayershell.namespace: "bar"
-
-    property bool islandMode: false
+    WlrLayershell.exclusiveZone: 36
+    WlrLayershell.namespace: "quickshell:bar"
 
     
     anchors {
@@ -29,12 +27,12 @@ PanelWindow {
         left: 3
     }
     implicitWidth: content.width
-    implicitHeight: 40
+    implicitHeight: 36
     color: "transparent"
     
     BarBackground {
         anchors.fill: parent
-        color: root.islandMode ? "transparent" : Appearance.md3.surface
+        color: Appearance.md3.surface
         radius: Appearance.shape.screenRounding
     }
 
@@ -43,7 +41,6 @@ PanelWindow {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        islandMode: root.islandMode
     }
    
 }

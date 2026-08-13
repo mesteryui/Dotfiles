@@ -45,4 +45,5 @@ Singleton {
             if (signal > 0.25) return "network_wifi_2_bar"
             return "network_wifi_1_bar"
         }
+        
     }

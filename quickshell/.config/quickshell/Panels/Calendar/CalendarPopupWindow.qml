@@ -8,21 +8,14 @@ import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 import qs.Shared.Background
+import qs.Primitives
 
-PopupWindow {
+BarPopupWindow {
     id: root
-    color: "transparent"
-    visible: false
+    
     implicitWidth: 320
     implicitHeight: 400
     grabFocus: true
-
-    TransformWatcher {
-        id: watcher
-        a: root.open ? root.triggerItem : null
-        b: root.contentItem
-        onTransformChanged: if (root.open) root.anchor.updateAnchor()
-    }
 
     // ── Estado ────────────────────────────────────────────────
     property date currentDate:  new Date()

@@ -20,6 +20,7 @@ PanelWindow {
     readonly property int maxListHeight: 420
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    WlrLayershell.namespace: "quickshell:notification-center"
 
     HyprlandFocusGrab {
         windows: [root]
@@ -194,12 +195,26 @@ PanelWindow {
                 visible: root.historyModel.count === 0
                 spacing: 8
 
-                MaterialIcon {
+                Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    text: "notifications_none"
-                    size: 40
-                    color: Appearance.md3.on_surface_variant
-                    opacity: 0.6
+                    implicitWidth: 72
+                    implicitHeight: 72
+                    color: Appearance.md3.primary_container
+                    opacity: 0.55
+
+                    // Esquinas asimétricas — la "blob shape" decorativa
+                    // típica de M3 Expressive en vez de un círculo neutro.
+                    topLeftRadius: 26
+                    topRightRadius: 36
+                    bottomLeftRadius: 36
+                    bottomRightRadius: 20
+
+                    MaterialIcon {
+                        anchors.centerIn: parent
+                        text: "notifications_none"
+                        size: 32
+                        color: Appearance.md3.primary
+                    }
                 }
 
                 StyledText {

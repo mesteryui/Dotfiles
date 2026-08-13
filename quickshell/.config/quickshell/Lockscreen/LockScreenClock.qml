@@ -33,6 +33,6 @@ ColumnLayout {
         font.pixelSize: Appearance.font.pixelSize.normal
         font.variableAxes: Appearance.font.variableAxes.title
 
-        text: clock.date.toLocaleDateString(I18nService.locale, "ddd dd 'de' MMM 'de' yyyy")
+        text: clock.date.toLocaleDateString(I18nService.locale, "ddd dd MMM yyyy")
     }
 }

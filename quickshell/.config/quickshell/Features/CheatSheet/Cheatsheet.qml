@@ -26,6 +26,7 @@ PanelWindow {
 
     property bool active: false
     readonly property int hideAnimDuration: 160
+    
 
     anchors {
         top: true
@@ -35,11 +36,12 @@ PanelWindow {
     }
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
+    
 
     visible: root.active || hideTimer.running
 
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "cheatsheet"
+    WlrLayershell.namespace: "quickshell:cheatsheet"
     WlrLayershell.keyboardFocus: root.active ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     Timer {
@@ -291,7 +293,7 @@ PanelWindow {
                                 model: parent.modelData
                                 delegate: CheatsheetCategoryCard {
                                     required property var modelData
-                                    width: parent.width
+                                    width: parent.width ?? 40
                                     category: modelData.category
                                     binds: modelData.binds
                                 }

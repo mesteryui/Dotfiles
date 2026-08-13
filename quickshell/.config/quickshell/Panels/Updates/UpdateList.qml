@@ -1,22 +1,13 @@
 import QtQuick
-import Quickshell
-import Quickshell.Hyprland
 import qs.Shared.Background
 import qs.Panels.Updates.Content
+import qs.Primitives
 
-PopupWindow {
+BarPopupWindow {
     id: root
-    visible: false
-    color: "transparent"
-    grabFocus: true
+    
     implicitWidth: 300
     implicitHeight: Math.min(500, listContent.implicitHeight)
-
-    HyprlandFocusGrab {
-        windows: [root]
-        active: root.visible
-        onCleared: Qt.callLater(() => root.visible = false)
-    }
 
     // ── Background ───────────────────────────────────────────
     PopupBackground {

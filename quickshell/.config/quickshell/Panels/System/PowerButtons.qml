@@ -15,7 +15,7 @@ PanelWindow {
     id: root
     visible: false
 
-    WlrLayershell.namespace: "logout_dialog"
+    WlrLayershell.namespace: "quickshell:logout_dialog"
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: ExclusionMode.Ignore
 

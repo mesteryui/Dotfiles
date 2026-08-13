@@ -29,8 +29,14 @@ FocusScope {
         running: MprisService.activePlayer !== null
         repeat: true
         onTriggered: {
-            if (MprisService.activePlayer)
-                root.mprisPosition = MprisService.activePlayer.position;
+            const p = MprisService.activePlayer;
+            if (!p) return;
+            try {
+                root.mprisPosition = p.position;
+            } catch (e) {
+                // evita que los warnings de DBus se repitan continuamente en el log
+                console.warn("[Mpris] lockscreen position read failed:", e);
+            }
         }
     }
 

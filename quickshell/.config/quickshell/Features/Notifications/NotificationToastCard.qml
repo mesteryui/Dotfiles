@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import Quickshell
-import Quickshell.Widgets
 import Quickshell.Services.Notifications
 import QtQuick
 import QtQuick.Layouts
@@ -23,7 +22,6 @@ Item {
     implicitHeight: card.implicitHeight
 
     readonly property bool isCritical: root.notification.urgency === NotificationUrgency.Critical
-    readonly property bool hasImage: !!root.notification.image && root.notification.image !== ""
     readonly property bool hasActions: root.notification.actions.length > 0
     readonly property bool hasInlineReply: root.notification.hasInlineReply
 
@@ -57,7 +55,9 @@ Item {
 
         Timer {
             running: true
-            interval: ConfigService.configs.notifications.timeout * 1000
+            // Fallback a 5s si la config aún no ha cargado el timeout
+            // (evita interval NaN, que nunca dispara y deja el toast fijo)
+            interval: (ConfigService.configs.notifications.timeout || 5) * 1000
             onTriggered: root.notification.expire()
         }
 
@@ -146,9 +146,9 @@ Item {
 
             // Botones de acción — forma de píldora, MD3 filled-tonal.
             // Fila con scroll horizontal en vez de Flow: con muchas
-            // acciones (o mezcla de chips de texto e icono) un Flow puede
-            // envolver a una segunda línea y hacer crecer la tarjeta de
-            // forma impredecible. Así el alto queda fijo y predecible.
+            // acciones un Flow puede envolver a una segunda línea y hacer
+            // crecer la tarjeta de forma impredecible. Así el alto queda
+            // fijo y predecible.
             Item {
                 Layout.fillWidth: true
                 implicitHeight: actionRow.implicitHeight
@@ -173,10 +173,8 @@ Item {
                                 id: actionChip
                                 required property var modelData
 
-                                readonly property bool iconOnly: root.notification.hasActionIcons
-
-                                width: iconOnly ? 36 : (actionLabel.implicitWidth + 20)
-                                height: iconOnly ? 36 : (actionLabel.implicitHeight + 10)
+                                width: actionLabel.implicitWidth + 20
+                                height: actionLabel.implicitHeight + 10
                                 radius: Appearance.shape.full
                                 color: actionArea.pressed ? Appearance.md3.primary : Appearance.md3.primary_container
                                 Behavior on color {
@@ -185,16 +183,8 @@ Item {
                                     }
                                 }
 
-                                IconImage {
-                                    visible: actionChip.iconOnly
-                                    anchors.centerIn: parent
-                                    implicitSize: 20
-                                    source: actionChip.iconOnly ? Quickshell.iconPath(actionChip.modelData.identifier, "image-missing") : ""
-                                }
-
                                 StyledText {
                                     id: actionLabel
-                                    visible: !actionChip.iconOnly
                                     anchors.centerIn: parent
                                     text: actionChip.modelData.text
                                     color: actionArea.pressed ? Appearance.md3.on_primary : Appearance.md3.primary

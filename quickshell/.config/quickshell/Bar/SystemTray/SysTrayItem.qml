@@ -25,8 +25,8 @@ Item {
             id: trayMenu
             menu: itemContainer.modelData?.menu ?? null
             anchor.item: itemContainer
-            anchor.margins.top: 13
-            anchor.margins.bottom: 13
+            anchor.margins.top: 38
+            anchor.margins.bottom: 38
             anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
             anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
         }

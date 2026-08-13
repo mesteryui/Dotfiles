@@ -21,7 +21,7 @@ Singleton {
         const inputPrompt = root.flow?.inputPrompt.trim() ?? "";
         const cleanedInputPrompt = inputPrompt.endsWith(":") ? inputPrompt.slice(0, -1) : inputPrompt;
         const usePasswordChars = !root.flow?.responseVisible ?? true
-        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("Password") : I18nService.getTranslation("Input"))
+        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("polkit.password") : I18nService.getTranslation("polkit.input"))
     }
 
     function cancel() {

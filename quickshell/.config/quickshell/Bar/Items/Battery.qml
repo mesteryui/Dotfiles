@@ -14,14 +14,6 @@ Item {
         loading: interaction.hoveredChanged
         component: BatteryPopupWindow {
             id: popupWindow
-            anchor.item: root
-            anchor.margins {
-                top: 20
-                bottom: 20
-            }
-            anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-            anchor.edges: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
-            anchor.gravity: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
         }
     }
     MouseArea {

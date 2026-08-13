@@ -15,7 +15,6 @@ Item {
     implicitWidth: mainColumn.implicitWidth + mainColumn.anchors.margins * 2
     // Devuelve el nombre de ligadura de Material Symbols según el
     // weatherCode de wttr.in (WorldWeatherOnline codes).
-   
 
     ColumnLayout {
         id: mainColumn
@@ -24,32 +23,44 @@ Item {
         spacing: 10
 
         // --- Clima actual ---
+        // Reemplaza el bloque dentro de RowLayout (el icono y ColumnLayout) por este:
+
         RowLayout {
             id: currentRow
             Layout.fillWidth: true
-            spacing: 14
+            spacing: 12
+            Layout.alignment: Qt.AlignVCenter
 
-            Text {
-                text: WeatherService.iconForCode(WeatherService.data.wCode)
-                font.family: "Material Symbols Rounded"
-                font.pixelSize: 42
-                color: Appearance.md3.primary
+            // Icono con tamaño fijo para que no cambie con el texto
+            Item {
+                Layout.preferredWidth: 56
+                Layout.preferredHeight: 56
+                
                 Layout.alignment: Qt.AlignVCenter
+
+                Text {
+                    anchors.centerIn: parent
+                    text: WeatherService.iconForCode(WeatherService.data.wCode)
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 46
+                    color: Appearance.md3.primary
+                }
             }
 
             ColumnLayout {
-                spacing: 2
+                spacing: 4
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
 
                 RowLayout {
-                    spacing: 6
+                    spacing: 8
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
 
                     StyledText {
                         text: WeatherService.data.temp
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 26
+                        font.pixelSize: 28
                         font.weight: Font.Medium
                     }
 
@@ -57,8 +68,7 @@ Item {
                         text: I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(WeatherService.data.tempFeelsLike)
                         color: Appearance.md3.on_surface_variant
                         font.pixelSize: 12
-                        Layout.alignment: Qt.AlignBottom
-                        Layout.bottomMargin: 4
+                        Layout.alignment: Qt.AlignVCenter
                     }
                 }
 
@@ -87,7 +97,6 @@ Item {
                 }
             }
         }
-
         // Separador sutil entre el clima actual y la previsión
         Rectangle {
             visible: forecastRow.visible
@@ -97,38 +106,42 @@ Item {
         }
 
         // --- Previsión próximos días ---
+        // --- Previsión próximos días (reemplazar el RowLayout forecastRow existente) ---
         RowLayout {
             id: forecastRow
             visible: WeatherService.data.forecast.length > 0
             Layout.fillWidth: true
-            spacing: 80
+            spacing: 10                       // disminuido para compactar sin perder separación
+            Layout.alignment: Qt.AlignHCenter
+            
 
             Repeater {
                 model: WeatherService.data.forecast
 
                 delegate: ColumnLayout {
                     required property var modelData
-                    Layout.fillWidth: true
+                    Layout.preferredWidth: 68     // celdas uniformes, mejor alineación
+                    Layout.minimumWidth: 56
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: 4
+                    spacing: 6
 
                     StyledText {
                         text: modelData.dayLabel
                         color: Appearance.md3.on_surface_variant
                         font.pixelSize: 12
                         Layout.alignment: Qt.AlignHCenter
+                        elide: Text.ElideRight
                     }
 
-                    Text {
+                    MaterialIcon {
                         text: WeatherService.iconForCode(modelData.wCode)
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 22
+                        size: Appearance.font.pixelSize.huge
                         color: Appearance.md3.primary
                         Layout.alignment: Qt.AlignHCenter
                     }
 
                     RowLayout {
-                        spacing: 4
+                        spacing: 6
                         Layout.alignment: Qt.AlignHCenter
 
                         StyledText {

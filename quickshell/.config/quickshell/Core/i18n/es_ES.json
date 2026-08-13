@@ -70,5 +70,12 @@
     "search": "Buscar atajos de teclado…",
     "no_match": "Ningún atajo coincide con",
     "no_binds": "No se encontraron atajos documentados"
+  },
+  "polkit": {
+    "ok": "Aceptar",
+    "cancel": "Cancelar",
+    "authenticationRequired": "Autenticacion Requerida",
+    "password": "Contraseña",
+    "input": "Entrada"
   }
 }

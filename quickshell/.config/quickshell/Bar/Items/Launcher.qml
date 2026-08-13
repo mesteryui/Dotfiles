@@ -16,12 +16,6 @@ Item {
         loading: interaction.pressed || interaction.hoveredChanged
         PanelWithControls {
             id: popup
-            anchor.item: root
-            anchor.margins.top: 13
-            anchor.margins.bottom: 13
-            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
-            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
-            anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
         }
     }
     MouseArea {

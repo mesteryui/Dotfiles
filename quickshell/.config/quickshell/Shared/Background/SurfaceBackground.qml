@@ -38,7 +38,7 @@ Rectangle {
         : baseColor
 
     border.width: highlighted ? 1 : 0
-    border.color: Appearance.md3.primary
+    border.color: Appearance.md3.outline
 
     // ── Animaciones ──────────────────────────────────────────────────────────
     Behavior on color {

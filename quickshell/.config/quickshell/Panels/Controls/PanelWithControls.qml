@@ -1,4 +1,4 @@
-// ControlPanel — Wrapper
+// ControlPanel — Wrapper Material 3 Expressive
 // Gestiona estado, ciclo de vida y ensambla Background + Content.
 
 import QtQuick
@@ -9,12 +9,39 @@ import qs.Core.Services
 import qs.Shared.Background
 import Quickshell.Hyprland
 import qs.Core
-PopupWindow {
+import Quickshell.Wayland
+
+PanelWindow {
     id: root
-    grabFocus: true
+
     color: "transparent"
-    implicitWidth: 340
-    implicitHeight: panelContent.implicitHeight + 24   // margen inferior para la sombra
+    implicitWidth: 410
+    implicitHeight: panelContent.implicitHeight + 120
+
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.namespace: "quickshell:dashboard"
+    exclusiveZone: 0
+    visible: false
+
+    anchors {
+        left: true
+    }
+
+    margins {
+        left: visible ? 8 : -implicitWidth - 40
+    }
+ 
+    Behavior on margins.left {
+        id: slideAnim
+        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+    }
+
+    IpcHandler {
+        target: "dashboard"
+        function toggle() {
+            root.visible = !root.visible;
+        }
+    }
 
     // ── Datos ──────────────────────────────────────────────────────
     property string username: Quickshell.env("USER")
@@ -38,16 +65,16 @@ PopupWindow {
         onCleared: Qt.callLater(() => root.visible = false)
     }
 
-    // ── Background ─────────────────────────────────────────────────
+    // ── Background & Sombra Tonal M3 Expressive ────────────────────
     MultiEffect {
         source: bg
         anchors.fill: bg
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow ?? "#000000"
-        shadowOpacity: 0.18
+        shadowOpacity: 0.20
         shadowBlur: 0.8
-        shadowVerticalOffset: 6
-        shadowHorizontalOffset: 0
+        shadowVerticalOffset: 4
+        shadowHorizontalOffset: 2
         z: -1
     }
 
@@ -59,7 +86,7 @@ PopupWindow {
             right: parent.right
         }
         implicitHeight: root.implicitHeight
-        radius: 28
+        radius: Appearance.shape.verylarge
         color: Appearance.md3.surface
     }
 
@@ -77,3 +104,4 @@ PopupWindow {
         audioSink: root.audioSink
     }
 }
+

@@ -5,7 +5,6 @@
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Wallpaper

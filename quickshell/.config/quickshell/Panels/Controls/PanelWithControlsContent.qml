@@ -1,5 +1,5 @@
-// PanelWithControlsContent — Content
-// Toda la UI del panel. Sin fondos ni sombras — eso es responsabilidad de PanelWithControls.
+// PanelWithControlsContent — Content Material 3 Expressive
+// Toda la UI del panel construida con qs.Primitives.
 pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
@@ -12,6 +12,7 @@ import Quickshell.Widgets
 import qs.Panels.Controls.Tabs
 import qs.Features.Notifications
 import Quickshell.Io
+
 Item {
     id: root
 
@@ -24,10 +25,9 @@ Item {
     readonly property bool btEnabled:   btAdapter ? btAdapter.enabled : false
     readonly property bool wifiEnabled: Networking.wifiEnabled
 
-    readonly property var tabModel: [
-        { label: Services.I18nService.getTranslation("panel.system",  "System"),  icon: "memory"        },
-        //{ label: Services.I18nService.getTranslation("panel.wallpapers", "Wallpapers"), icon: "wallpaper"  }
-    ]
+    /*readonly property var tabModel: [
+        { label: Services.I18nService.getTranslation("panel.system",  "Sistema"), icon: "memory" }
+    ]*/
 
     implicitHeight: mainColumn.implicitHeight + 24
 
@@ -37,24 +37,24 @@ Item {
         return Qt.rgba(c.r, c.g, c.b, a)
     }
 
-    // ── UI ─────────────────────────────────────────────────────────────
+    // ── UI Principal ───────────────────────────────────────────────────
     ColumnLayout {
         id: mainColumn
         anchors {
             top:    parent.top
             left:   parent.left
             right:  parent.right
-            margins: 16
-            topMargin: 20
+            margins: 20
+            topMargin: 24
         }
-        spacing: 14
+        spacing: 16
 
-        // ══ HEADER — avatar + nombre ════════════════════════════════
+        // ══ HEADER — Avatar + Usuario + Power button ═════════════════
         RowLayout {
             Layout.fillWidth: true
             spacing: 14
 
-            // Avatar
+            // Avatar con marco M3 Expressive
             Item {
                 Layout.preferredWidth: 52; Layout.preferredHeight: 52
 
@@ -63,11 +63,13 @@ Item {
                     anchors.fill: parent
                     radius: width / 2
                     color: Appearance.md3.primary_container
+                    
                     ClippingRectangle {
                         anchors.fill: parent
                         radius: parent.radius
                         border.color: Appearance.md3.primary
                         border.width: 2
+                        
                         Image {
                             anchors.fill: parent
                             source: Quickshell.env("HOME") + "/.face"
@@ -78,7 +80,7 @@ Item {
                 }
             }
 
-            // Nombre + hostname
+            // Nombre + Hostname
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 1
@@ -98,202 +100,85 @@ Item {
                 }
             }
 
-            Item {
-                Layout.fillWidth: true
-            }
+            Item { Layout.fillWidth: true }
 
-            // Botón apagar sesión (estilo GNOME)
+            // Botón apagar sesión (Power Button con micro-animación)
             Rectangle {
-                Layout.preferredWidth: 36; 
-                Layout.preferredHeight: 36
-                radius: 18
-                color: powerArea.containsMouse
-                    ? root.withAlpha(Appearance.md3.on_surface, 0.10)
-                    : "transparent"
-                Behavior on color { ColorAnimation { duration: 120 } }
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 40
+                radius: 20
+                color: powerArea.pressed
+                    ? root.withAlpha(Appearance.md3.error_container, 0.9)
+                    : (powerArea.containsMouse
+                        ? root.withAlpha(Appearance.md3.error_container, 0.4)
+                        : Appearance.md3.surface_container_high)
+
+                scale: powerArea.pressed ? 0.92 : (powerArea.containsMouse ? 1.06 : 1.0)
+
+                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
 
                 MaterialIcon {
                     anchors.centerIn: parent
                     icon: "power_settings_new"
                     size: Appearance.font.pixelSize.large
-                    color: Appearance.md3.on_surface_variant
+                    color: powerArea.containsMouse
+                        ? Appearance.md3.error
+                        : Appearance.md3.on_surface_variant
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
+
                 MouseArea {
                     id: powerArea
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: button.running = true
+                    onClicked: buttonProc.running = true
+                    
                     Process {
-                        id: button
+                        id: buttonProc
                         command: ["bash", "-c", "qs ipc call ui.powermenu togglePowerMenu"]
                     }
                 }
             }
         }
-        
 
-        // ══ SLIDERS — Volumen + Brillo ══════════════════════════════
+        // ══ SLIDERS — Volumen + Brillo (usando Primitives.ControlSlider) ══
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 10
+            spacing: 12
 
             // Volumen
-            RowLayout {
+            ControlSlider {
                 Layout.fillWidth: true
-                spacing: 10
-
-                MaterialIcon {
-                    icon: Services.AudioService.materialIcon
-                    size: Appearance.font.pixelSize.large
-                    color: Appearance.md3.on_surface_variant
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (Services.AudioService.audio)
-                                Services.AudioService.audio.muted = !Services.AudioService.audio.muted
-                        }
+                iconName: Services.AudioService.materialIcon
+                value: Services.AudioService.volume ?? 0
+                accentColor: Appearance.md3.primary
+                onMoved: val => {
+                    if (Services.AudioService.audio) {
+                        Services.AudioService.audio.volume = val
                     }
                 }
-
-                // Track del slider
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 20
-
-                    // Pista trasera
-                    Rectangle {
-                        id: volTrack
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width
-                        height: 6
-                        radius: 3
-                        color: root.withAlpha(Appearance.md3.on_surface, 0.12)
-
-                        // Relleno activo
-                        Rectangle {
-                            width: volTrack.width * (Services.AudioService.volume ?? 0)
-                            height: parent.height
-                            radius: parent.radius
-                            color: Appearance.md3.primary
-                            Behavior on width { NumberAnimation { duration: 80 } }
-                        }
+                onIconClicked: {
+                    if (Services.AudioService.audio) {
+                        Services.AudioService.audio.muted = !Services.AudioService.audio.muted
                     }
-
-                    // Thumb
-                    Rectangle {
-                        x: volTrack.width * (Services.AudioService.volume ?? 0) - width / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 18; height: 18
-                        radius: 9
-                        color: Appearance.md3.primary
-                        border.color: Appearance.md3.surface_container_high
-                        border.width: 2
-                        Behavior on x { NumberAnimation { duration: 80 } }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onPositionChanged: mouse => {
-                            if (pressed && Services.AudioService.audio) {
-                                const v = Math.max(0, Math.min(1, mouse.x / width))
-                                Services.AudioService.audio.volume = v
-                            }
-                        }
-                        onClicked: mouse => {
-                            if (Services.AudioService.audio) {
-                                const v = Math.max(0, Math.min(1, mouse.x / width))
-                                Services.AudioService.audio.volume = v
-                            }
-                        }
-                        cursorShape: Qt.PointingHandCursor
-                    }
-                }
-
-                StyledText {
-                    text: Math.round((Services.AudioService.volume ?? 0) * 100) + "%"
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    font.family: Appearance.font.sans
-                    color: Appearance.md3.on_surface_variant
-                    horizontalAlignment: Text.AlignRight
-                    Layout.preferredWidth: 32
                 }
             }
 
             // Brillo
-            RowLayout {
+            ControlSlider {
                 Layout.fillWidth: true
-                spacing: 10
                 visible: Services.BrightnessService.ready
-
-                MaterialIcon {
-                    icon: {
-                        const b = Services.BrightnessService.brightness
-                        if (b > 0.6) return "brightness_high"
-                        if (b > 0.3) return "brightness_medium"
-                        return "brightness_low"
-                    }
-                    size: Appearance.font.pixelSize.large
-                    color: Appearance.md3.on_surface_variant
+                iconName: {
+                    const b = Services.BrightnessService.brightness
+                    if (b > 0.6) return "brightness_high"
+                    if (b > 0.3) return "brightness_medium"
+                    return "brightness_low"
                 }
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 20
-
-                    Rectangle {
-                        id: briTrack
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width
-                        height: 6
-                        radius: 3
-                        color: root.withAlpha(Appearance.md3.on_surface, 0.12)
-
-                        Rectangle {
-                            width: briTrack.width * Services.BrightnessService.brightness
-                            height: parent.height
-                            radius: parent.radius
-                            color: Appearance.md3.tertiary
-                            Behavior on width { NumberAnimation { duration: 80 } }
-                        }
-                    }
-
-                    Rectangle {
-                        x: briTrack.width * Services.BrightnessService.brightness - width / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 18; height: 18
-                        radius: 9
-                        color: Appearance.md3.tertiary
-                        border.color: Appearance.md3.surface_container_high
-                        border.width: 2
-                        Behavior on x { NumberAnimation { duration: 80 } }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onPositionChanged: mouse => {
-                            if (pressed) {
-                                const v = Math.max(0.05, Math.min(1.0, mouse.x / width))
-                                Services.BrightnessService.setBrightness(v)
-                            }
-                        }
-                        onClicked: mouse => {
-                            const v = Math.max(0.05, Math.min(1.0, mouse.x / width))
-                            Services.BrightnessService.setBrightness(v)
-                        }
-                        cursorShape: Qt.PointingHandCursor
-                    }
-                }
-
-                StyledText {
-                    text: Math.round(Services.BrightnessService.brightness * 100) + "%"
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    font.family: Appearance.font.sans
-                    color: Appearance.md3.on_surface_variant
-                    horizontalAlignment: Text.AlignRight
-                    Layout.preferredWidth: 32
-                }
+                value: Services.BrightnessService.brightness
+                accentColor: Appearance.md3.tertiary
+                onMoved: val => Services.BrightnessService.setBrightness(val)
             }
         }
 
@@ -301,52 +186,67 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: root.withAlpha(Appearance.md3.outline_variant, 0.5)
+            color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
         }
 
-        // ══ TOGGLES — chips estilo M3/GNOME ════════════════════════
+        // ══ TOGGLES — Quick Settings (usando Primitives.ControlToggle) ══
         GridLayout {
             Layout.fillWidth: true
             columns: 2
-            rowSpacing: 8
-            columnSpacing: 8
+            rowSpacing: 10
+            columnSpacing: 10
+            uniformCellWidths: true
 
+            // WiFi
             ControlToggle {
                 Layout.fillWidth: true
-                label:    Services.I18nService.getTranslation("panel.wifi", "WiFi")
                 iconName: root.wifiEnabled ? "wifi" : "wifi_off"
-                active:   root.wifiEnabled
-                enabled:  Networking.wifiHardwareEnabled
+                label:    Services.I18nService.getTranslation("panel.wifi", "WiFi")
+                stateText: root.wifiEnabled
+                    ? Services.I18nService.getTranslation("panel.connected", "Conectado")
+                    : Services.I18nService.getTranslation("panel.disconnected", "Desconectado")
+                active:  root.wifiEnabled
+                enable: Networking.wifiHardwareEnabled
                 onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
             }
 
+            // Bluetooth
             ControlToggle {
                 Layout.fillWidth: true
-                label:    Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
                 iconName: root.btEnabled ? "bluetooth" : "bluetooth_disabled"
-                active:   root.btEnabled
-                enabled:  root.btAdapter !== null
+                label:    Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
+                stateText: root.btEnabled
+                    ? Services.I18nService.getTranslation("panel.on", "Activado")
+                    : Services.I18nService.getTranslation("panel.off", "Desactivado")
+                active:  root.btEnabled
+                enable: root.btAdapter !== null
                 onToggled: {
                     if (root.btAdapter)
                         root.btAdapter.enabled = !root.btAdapter.enabled
                 }
             }
 
+            // Cafeína
             ControlToggle {
                 Layout.fillWidth: true
-                label: Services.IdleInhibitedService.inhibited
-                    ? Services.I18nService.getTranslation("panel.caffeine_on",  "Caffeine On")
-                    : Services.I18nService.getTranslation("panel.caffeine_off", "Caffeine Off")
                 iconName: "local_cafe"
-                active:   Services.IdleInhibitedService.inhibited
+                label: Services.I18nService.getTranslation("panel.caffeine", "Cafeína")
+                stateText: Services.IdleInhibitedService.inhibited
+                    ? Services.I18nService.getTranslation("panel.caffeine_on",  "Activada")
+                    : Services.I18nService.getTranslation("panel.caffeine_off", "Desactivada")
+                active: Services.IdleInhibitedService.inhibited
                 onToggled: Services.IdleInhibitedService.toggle()
             }
 
+            // No Molestar
             ControlToggle {
                 Layout.fillWidth: true
-                label:    Services.I18nService.getTranslation("panel.dnd", "No molestar")
-                iconName: "bedtime"
-                active:   NotificationManager.dnd
+                iconName: NotificationManager.dnd ? "bedtime" : "notifications"
+                label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
+                stateText: NotificationManager.dnd
+                    ? Services.I18nService.getTranslation("panel.dnd_on",  "Activado")
+                    : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
+                active: NotificationManager.dnd
                 onToggled: NotificationManager.toggleDnd()
             }
         }
@@ -355,89 +255,15 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: root.withAlpha(Appearance.md3.outline_variant, 0.5)
+            color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
         }
-
-        // ══ NAV BAR — tabs estilo M3 Navigation Bar ════════════════
-        Item {
-            id: navBar
-            Layout.fillWidth: true
-            Layout.preferredHeight: 52
-            property int currentIndex: 0
-
-            RowLayout {
-                anchors.fill: parent
-                spacing: 0
-
-                Repeater {
-                    model: root.tabModel
-
-                    delegate: Item {
-                        id: tabItem
-                        required property var modelData
-                        required property int index
-                        Layout.fillWidth: true
-                        height: navBar.height
-
-                        readonly property bool isActive: navBar.currentIndex === index
-
-                        // Indicador pill debajo del icono (como MD3 Nav Bar)
-                        Rectangle {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.top: parent.top
-                            anchors.topMargin: 4
-                            width: parent.isActive ? 56 : 0
-                            height: 28
-                            radius: 14
-                            color: Appearance.md3.secondary_container
-                            opacity: parent.isActive ? 1 : 0
-                            Behavior on width   { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                            Behavior on opacity { NumberAnimation { duration: 150 } }
-                        }
-
-                        ColumnLayout {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.top: parent.top
-                            anchors.topMargin: 6
-                            spacing: 2
-
-                            MaterialIcon {
-                                Layout.alignment: Qt.AlignHCenter
-                                icon: tabItem.modelData.icon
-                                size: 20
-                                color: tabItem.isActive
-                                    ? Appearance.md3.on_secondary_container
-                                    : Appearance.md3.on_surface_variant
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                            }
-                            StyledText {
-                                Layout.alignment: Qt.AlignHCenter
-                                text: tabItem.modelData.label
-                                font.pixelSize: Appearance.font.pixelSize.smallest
-                                font.weight: tabItem.isActive ? Font.Medium : Font.Normal
-                                color: tabItem.isActive
-                                    ? Appearance.md3.on_surface
-                                    : Appearance.md3.on_surface_variant
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: navBar.currentIndex = tabItem.index
-                        }
-                    }
-                }
-            }
-        }
-
-        // ══ CONTENIDO del tab activo ════════════════════════════════
+        
+        // ══ CONTENIDO del Tab activo ════════════════════════════════
         StackLayout {
             Layout.fillWidth: true
-            currentIndex: navBar.currentIndex
 
             SysInfoTab {}
         }
     }
 }
+

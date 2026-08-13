@@ -1,3 +1,4 @@
+// M3Card — Material 3 Expressive Container Card.
 import QtQuick
 import QtQuick.Effects
 import qs.Core
@@ -6,18 +7,25 @@ Item {
     id: root
     default property alias content: _inner.data
     
-    readonly property int _radius: 16
+    property int radius: Appearance.shape.large
+    property color color: Appearance.md3.surface_container_high
     property int padding: 0
+    property bool clickable: false
+    property bool shadowEnabled: true
+    signal clicked()
 
     // Dimensiones naturales basadas en el contenido
-    implicitWidth: _inner.childrenRect.x + _inner.childrenRect.width + padding
-    implicitHeight: _inner.childrenRect.y + _inner.childrenRect.height + padding
+    implicitWidth: _inner.childrenRect.x + _inner.childrenRect.width + (padding * 2)
+    implicitHeight: _inner.childrenRect.y + _inner.childrenRect.height + (padding * 2)
 
-    // Sombra tonal (elevation 1)
+    scale: root.clickable ? (cardArea.pressed ? 0.98 : (cardArea.containsMouse ? 1.015 : 1.0)) : 1.0
+    Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+
+    // Sombra tonal M3
     MultiEffect {
         anchors.fill: _bg
         source:       _bg
-        shadowEnabled:    true
+        shadowEnabled:    root.shadowEnabled
         shadowColor:      Appearance.md3.shadow
         shadowOpacity:    0.08
         shadowBlur:       0.4
@@ -28,17 +36,36 @@ Item {
     Rectangle {
         id: _bg
         anchors.fill: parent
-        radius: root._radius
-        color:  Appearance.md3.surface_container_high
+        radius: root.radius
+        color:  root.color
+        Behavior on color { ColorAnimation { duration: 150 } }
+    }
+
+    // Capa de estado para cards clicables
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        visible: root.clickable
+        color: Appearance.md3.on_surface
+        opacity: cardArea.pressed ? 0.12 : (cardArea.containsMouse ? 0.08 : 0.0)
+        Behavior on opacity { NumberAnimation { duration: 100 } }
     }
 
     Item {
         id: _inner
         x: root.padding
         y: root.padding
-        // El contenedor interno no se ancla para que childrenRect sea útil
-        // pero permitimos que los hijos crezcan si el padre (root) es estirado
         width: root.width - (root.padding * 2)
         height: root.height - (root.padding * 2)
     }
+
+    MouseArea {
+        id: cardArea
+        anchors.fill: parent
+        enabled: root.clickable
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.clicked()
+    }
 }
+

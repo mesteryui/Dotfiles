@@ -48,11 +48,6 @@ Item {
 
         component: UpdateList {
             id: popup
-            anchor.item: root
-            anchor.margins.top: 20
-            anchor.margins.bottom: 20
-            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
-            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
         }
     }
 

@@ -14,14 +14,7 @@ Item {
         loading: interaction.hoveredChanged
         WeatherPopup {
             id: popupWindow
-            anchor.item: root
-            anchor.margins {
-                top: 20
-                bottom: 20
-            }
-            anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-            anchor.edges: ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
-            anchor.gravity: ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
+            anchorItem: root
         }
     }
    

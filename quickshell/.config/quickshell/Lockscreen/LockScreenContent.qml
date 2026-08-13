@@ -126,6 +126,7 @@ Item {
             onAccepted: password => root.validatePassword(password)
             onTogglePasswordVisibility: root.togglePasswordVisibility()
         }
+        
 
         // 6. Tarjeta Multimedia MPRIS
         LockScreenMprisCard {

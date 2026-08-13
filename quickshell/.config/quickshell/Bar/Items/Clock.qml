@@ -34,14 +34,7 @@ MouseArea {
         loading: wrapper.hoveredChanged || wrapper.pressed
         component: CalendarPopupWindow {
             id: popup
-            anchor.item: wrapper
-            anchor.margins {
-                top: 20
-                bottom: 20
-            }
-            anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-            anchor.edges: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
-            anchor.gravity: Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom
+            anchorItem: wrapper
         }
     }
 }

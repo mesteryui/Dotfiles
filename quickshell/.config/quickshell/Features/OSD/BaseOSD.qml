@@ -37,7 +37,7 @@ Scope {
 
         screen: root.focusedScreen   // binding declarativo puro, no necesita Connections
 
-        WlrLayershell.namespace: "osd_window"
+        WlrLayershell.namespace: "quickshell:osd"
         WlrLayershell.layer: WlrLayer.Overlay
         implicitHeight: root.implicitHeight
         implicitWidth: root.implicitWidth
