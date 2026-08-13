@@ -6,7 +6,7 @@
 _G.terminal = "uwsm app -- xdg-terminal-exec"
 _G.fileManager = "dolphin"
 --_G.fileManager = terminal.." -e yazi"
-_G.browser = "firefox"
+_G.browser = "zen-browser"
 _G.emacs = "emacsclient -c -a 'emacs'"
 _G.Colors = require("colors")
 _G.DefaultMonitor = "eDP-1"

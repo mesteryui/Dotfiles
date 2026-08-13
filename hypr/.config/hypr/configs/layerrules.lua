@@ -9,27 +9,35 @@ hl.layer_rule({
 
 hl.layer_rule({
     name = "status-bar",
-    match = { namespace = "^(bar)$" },
+    match = { namespace = "^(quickshell:bar)$" },
     blur = true,
-    ignore_alpha = 0.1,
+    ignore_alpha = 0.5,
     animation = "fade",
 })
 
 hl.layer_rule({
     name = "logout-menu",
-    match = { namespace = "logout_dialog" },
+    match = { namespace = "quickshell:logout_dialog" },
     blur = true,
     animation = "fade",
     ignore_alpha = 0.5,
 })
+
+hl.layer_rule({
+    name = "polkit",
+    match = { namespace = "quickshell:polkitDialog" },
+    blur = true,
+    ignore_alpha = 0.5,
+})
+
 hl.layer_rule({
   name = "wallpaper-menu",
-  match = {namespace = "wallpaper-menu"},
+  match = {namespace = "quickshell:wallpaper-menu"},
   animation = "fade"
 })
 hl.layer_rule({
     name = "osd-visuals",
-    match = { namespace = "^(swayosd)$" },
+    match = { namespace = "^(swayosd|quickshell:osd)$" },
     no_anim = true,
     blur = true,
     ignore_alpha = 0.5,
