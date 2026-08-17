@@ -15,8 +15,18 @@ PanelWindow {
     id: root
 
     color: "transparent"
+
+    // ── Límites de altura ────────────────────────────────────────────
+    // Ajusta barHeight al alto real de tu barra superior (o el gap que
+    // quieras respetar si tu barra está en otro borde).
+    readonly property int barHeight: 48
+    readonly property int topGap: 8
+    readonly property int bottomGap: 8
+    readonly property real screenHeight: (root.screen?.height ?? Screen.height)
+    readonly property int maxPanelHeight: screenHeight - barHeight - topGap - bottomGap
+
     implicitWidth: 410
-    implicitHeight: panelContent.implicitHeight + 120
+    implicitHeight: Math.min(panelContent.naturalHeight, maxPanelHeight)
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:dashboard"
@@ -25,10 +35,16 @@ PanelWindow {
 
     anchors {
         left: true
+        top: true
     }
 
     margins {
         left: visible ? 8 : -implicitWidth - 40
+        top: barHeight + topGap
+    }
+
+    Behavior on implicitHeight {
+        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
     }
  
     Behavior on margins.left {
@@ -97,6 +113,7 @@ PanelWindow {
             top: bg.top
             left: bg.left
             right: bg.right
+            bottom: bg.bottom
         }
         username: root.username
         hostname: root.hostname

@@ -52,13 +52,13 @@ Item {
             scale = 1;
         }
         Behavior on opacity {
-            NumberAnimation {
+            OpacityAnimator {
                 duration: 150
                 easing.type: Easing.OutCubic
             }
         }
         Behavior on scale {
-            NumberAnimation {
+            ScaleAnimator {
                 duration: 150
                 easing.type: Easing.OutCubic
             }

@@ -25,7 +25,7 @@ BarPopupWindow {
 
     Timer {
         id: positionTimer
-        interval: 250
+        interval: 100
         repeat: true
         running: root.visible && Services.MprisService.isPlaying
         onTriggered: {
@@ -47,7 +47,7 @@ BarPopupWindow {
 
     Timer {
         id: seekConfirmTimer
-        interval: 350
+        interval: 200
         repeat: false
         onTriggered: {
             if (!mprisContent.sliderDragging) {
@@ -79,7 +79,6 @@ BarPopupWindow {
         }
     }
 
-    // Dentro de MprisContent delegate: manejar el seek de forma segura
 
 
     // ── Background ────────────────────────────────────────────

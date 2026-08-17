@@ -54,7 +54,7 @@ Scope {
             opacity: root.shown ? 1.0 : 0.0
 
             Behavior on opacity {
-                NumberAnimation {
+                OpacityAnimator {
                     id: fadeAnim
                     duration: 150
                     easing.type: Easing.OutQuad

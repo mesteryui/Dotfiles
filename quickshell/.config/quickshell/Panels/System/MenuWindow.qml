@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
-
+import qs.Primitives
 PanelWindow {
     id: root
     
@@ -81,7 +81,7 @@ PanelWindow {
             width: parent.width - 24
             spacing: 8
 
-            Text {
+            StyledText {
                 id: titleText
                 text: root.menuTitle
                 visible: text !== ""

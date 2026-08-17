@@ -10,6 +10,7 @@ PanelWindow {
     
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.exclusiveZone: 36
+    exclusionMode: ExclusionMode.Normal
     WlrLayershell.namespace: "quickshell:bar"
 
     

@@ -41,7 +41,7 @@ Item {
         }
         spacing: 8
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
             text: root.packageName
             font.pixelSize: 13
@@ -50,12 +50,13 @@ Item {
             elide: Text.ElideRight
         }
 
-        Text {
+        StyledText {
             text: root.oldVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
             color: Appearance.md3.on_surface_variant
             opacity: 0.7
+            elide: Text.ElideRight
         }
 
         MaterialIcon {
@@ -64,11 +65,12 @@ Item {
             color: Appearance.md3.primary
         }
 
-        Text {
+        StyledText {
             text: root.newVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
             color: Appearance.md3.primary
+            elide: Text.ElideRight
         }
     }
 

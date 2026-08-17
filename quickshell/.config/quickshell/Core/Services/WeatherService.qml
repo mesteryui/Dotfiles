@@ -11,42 +11,72 @@ Singleton {
     // Propiedades independientes (reemplazan a Config.options.bar.weather...)
     readonly property int fetchInterval: ConfigService.configs.weather.reloadTime * 60 * 1000 // 10 minutos por defecto
     readonly property string city: ConfigService.configs.weather.city
-    readonly property bool gpsActive: ConfigService.configs.weather.autoLocation
     readonly property string icon: root.iconForCode(data.wCode)
+
+    // Fuente de verdad real (viene del config). Nunca se le escribe directo,
+    // así el binding con ConfigService no se rompe jamás.
+    readonly property bool configGpsEnabled: ConfigService.configs.weather.autoLocation
+
+    // Override de sesión: se activa solo cuando el GPS falla en runtime.
+    // No toca el config.json -> si el usuario vuelve a tocar autoLocation,
+    // esto se resetea solo (ver onConfigGpsEnabledChanged).
+    property bool _gpsSessionFallback: false
+
+    readonly property bool gpsActive: root.configGpsEnabled && !root._gpsSessionFallback
+
+    onConfigGpsEnabledChanged: {
+        // Si el usuario reactiva autoLocation en el config, le damos otra
+        // chance al GPS en vez de dejarlo apagado para siempre.
+        if (root.configGpsEnabled)
+            root._gpsSessionFallback = false;
+    }
+
+    // Único lugar que decide arrancar/parar el GPS, reactivo a cualquier
+    // cambio de gpsActive (config, fallo de runtime, o recuperación).
+    function _syncPositionSource() {
+        if (root.gpsActive) {
+            console.info("[WeatherService] Starting the GPS service.");
+            positionSource.start();
+        } else {
+            positionSource.stop();
+        }
+    }
+
+    onGpsActiveChanged: root._syncPositionSource()
 
     onCityChanged: root.getData()
 
     Connections {
         target: NetworkService
         function onCurrentNetworkChanged() {
-            if (NetworkService.currentNetwork !== null) root.getData()
+            if (NetworkService.currentNetwork !== null)
+                root.getData();
         }
     }
 
-
     property var location: ({
-        valid: false,
-        lat: 0,
-        lon: 0,
-    })
+            valid: false,
+            lat: 0,
+            lon: 0
+        })
 
     property var data: ({
-        uv: 0,
-        humidity: 0,
-        sunrise: 0,
-        sunset: 0,
-        windDir: 0,
-        wCode: 0,
-        city: 0,
-        wind: 0,
-        precip: 0,
-        visib: 0,
-        press: 0,
-        temp: 0,
-        tempFeelsLike: 0,
-        lastRefresh: 0,
-        forecast: [], // [{ date, dayLabel, wCode, maxTemp, minTemp }, ...]
-    })
+            uv: 0,
+            humidity: 0,
+            sunrise: 0,
+            sunset: 0,
+            windDir: 0,
+            wCode: 0,
+            city: 0,
+            wind: 0,
+            precip: 0,
+            visib: 0,
+            press: 0,
+            temp: 0,
+            tempFeelsLike: 0,
+            lastRefresh: 0,
+            forecast: [] // [{ date, dayLabel, wCode, maxTemp, minTemp }, ...]
+        })
 
     // --- Peticiones en curso, para poder cancelarlas ---
     property var _geocodeXhr: null
@@ -64,8 +94,7 @@ Singleton {
 
     // Convierte grados (0-360) a punto de la rosa de los vientos de 16 puntos
     function degreesToCompass(deg) {
-        const points = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                         "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        const points = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
         const idx = Math.round(((deg % 360) / 22.5)) % 16;
         return points[idx < 0 ? idx + 16 : idx];
     }
@@ -76,17 +105,22 @@ Singleton {
     function iconForCode(code) {
         const c = parseInt(code);
         switch (c) {
-        case 0: return "wb_sunny";                                     // Despejado
+        case 0:
+            return "wb_sunny";                                     // Despejado
         case 1:
-        case 2: return "partly_cloudy_day";                            // Poco/parcialmente nuboso
-        case 3: return "cloud";                                        // Cubierto
+        case 2:
+            return "partly_cloudy_day";                            // Poco/parcialmente nuboso
+        case 3:
+            return "cloud";                                        // Cubierto
         case 45:
-        case 48: return "foggy";                                       // Niebla / escarcha
+        case 48:
+            return "foggy";                                       // Niebla / escarcha
         case 51:
         case 53:
         case 55:
         case 56:
-        case 57: return "rainy";                                       // Llovizna (incl. helada)
+        case 57:
+            return "rainy";                                       // Llovizna (incl. helada)
         case 61:
         case 63:
         case 65:
@@ -94,17 +128,21 @@ Singleton {
         case 67:
         case 80:
         case 81:
-        case 82: return "rainy";                                       // Lluvia / chubascos
+        case 82:
+            return "rainy";                                       // Lluvia / chubascos
         case 71:
         case 73:
         case 75:
         case 77:
         case 85:
-        case 86: return "ac_unit";                                     // Nieve
+        case 86:
+            return "ac_unit";                                     // Nieve
         case 95:
         case 96:
-        case 99: return "thunderstorm";                                // Tormenta
-        default: return "device_thermostat";
+        case 99:
+            return "thunderstorm";                                // Tormenta
+        default:
+            return "device_thermostat";
         }
     }
 
@@ -143,7 +181,7 @@ Singleton {
         const codes = daily.weather_code || [];
         const maxTemps = daily.temperature_2m_max || [];
         const minTemps = daily.temperature_2m_min || [];
-        temp.forecast = []
+        temp.forecast = [];
         for (let i = 1; i < dates.length; i++) {
             temp.forecast.push({
                 date: dates[i],
@@ -151,7 +189,7 @@ Singleton {
                 wCode: codes[i] ?? 0,
                 maxTemp: Math.round(maxTemps[i] ?? 0),
                 minTemp: Math.round(minTemps[i] ?? 0),
-                unit: unit,
+                unit: unit
             });
         }
 
@@ -224,16 +262,9 @@ Singleton {
 
     // Pide el forecast a Open-Meteo para root.location.lat/lon ya resuelto
     function fetchForecast(cityLabel) {
-        const url = "https://api.open-meteo.com/v1/forecast"
-            + `?latitude=${root.location.lat}&longitude=${root.location.lon}`
-            + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure"
-            + "&hourly=visibility"
-            + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max"
-            + "&forecast_days=4"
-            + "&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm"
-            + "&timezone=auto";
+        const url = "https://api.open-meteo.com/v1/forecast" + `?latitude=${root.location.lat}&longitude=${root.location.lon}` + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure" + "&hourly=visibility" + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max" + "&forecast_days=4" + "&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm" + "&timezone=auto";
 
-        root._request("_forecastXhr", url, "Forecast", (json) => {
+        root._request("_forecastXhr", url, "Forecast", json => {
             json._cityLabel = cityLabel;
             root.refineData(json);
         });
@@ -246,21 +277,22 @@ Singleton {
         const name = parts[0];
         const countryCode = parts.length > 1 ? parts[1].toUpperCase() : "";
 
-        const url = "https://geocoding-api.open-meteo.com/v1/search"
-            + `?name=${encodeURIComponent(name)}&count=10&language=es&format=json`;
+        const url = "https://geocoding-api.open-meteo.com/v1/search" + `?name=${encodeURIComponent(name)}&count=10&language=es&format=json`;
 
-        root._request("_geocodeXhr", url, "Geocoding", (json) => {
+        root._request("_geocodeXhr", url, "Geocoding", json => {
             const results = json?.results || [];
             if (results.length === 0) {
                 console.error(`[WeatherService] No se encontró la ciudad "${root.city}"`);
                 return;
             }
             // Si se especificó país, filtramos; si no hay match exacto, cae al primero
-            const match = countryCode
-                ? (results.find(r => r.country_code === countryCode) || results[0])
-                : results[0];
+            const match = countryCode ? (results.find(r => r.country_code === countryCode) || results[0]) : results[0];
 
-            root.location = { valid: true, lat: match.latitude, lon: match.longitude };
+            root.location = {
+                valid: true,
+                lat: match.latitude,
+                lon: match.longitude
+            };
             const cityLabel = match.name + (match.admin1 ? `, ${match.admin1}` : "");
             root.fetchForecast(cityLabel);
         });
@@ -268,7 +300,7 @@ Singleton {
 
     function getData() {
         if (NetworkService.currentNetwork == null) {
-            console.warn("[WeatherService]","Sin conexion")
+            console.warn("[WeatherService]", "Sin conexion");
             return;
         }
         if (root.gpsActive && root.location.valid) {
@@ -278,11 +310,7 @@ Singleton {
         }
     }
 
-    Component.onCompleted: {
-        if (!root.gpsActive) return;
-        console.info("[WeatherService] Starting the GPS service.");
-        positionSource.start();
-    }
+    Component.onCompleted: root._syncPositionSource()
 
     PositionSource {
         id: positionSource
@@ -313,28 +341,30 @@ Singleton {
                 root.location = {
                     valid: true,
                     lat: position.coordinate.latitude,
-                    lon: position.coordinate.longitude,
+                    lon: position.coordinate.longitude
                 };
                 root.fetchForecast(I18nService.getTranslation("weather.my_location", "Mi ubicación"));
             } else {
-                root.gpsActive = root.location.valid ? true : false;
+                // Solo caemos al fallback si nunca tuvimos un fix válido; un
+                // fix puntual malo tras ya tener ubicación no debe apagar el GPS.
+                if (!root.location.valid)
+                    root._gpsSessionFallback = true;
                 console.error("[WeatherService] Failed to get the GPS location.");
             }
         }
 
         onValidityChanged: {
             if (!positionSource.valid) {
-                positionSource.stop();
-                root.location = { valid: false, lat: 0, lon: 0 };
-                root.gpsActive = false;
+                root.location = {
+                    valid: false,
+                    lat: 0,
+                    lon: 0
+                };
+                // Esto dispara onGpsActiveChanged -> _syncPositionSource(),
+                // que ya se encarga de parar positionSource.
+                root._gpsSessionFallback = true;
 
-                Quickshell.execDetached([
-                    "notify-send",
-                    "Weather Service",
-                    "Cannot find a GPS service. Using the fallback method instead.",
-                    "-a",
-                    "Shell"
-                ]);
+                Quickshell.execDetached(["notify-send", "Weather Service", "Cannot find a GPS service. Using the fallback method instead.", "-a", "Shell"]);
                 console.error("[WeatherService] Could not aquire a valid backend plugin.");
             }
         }

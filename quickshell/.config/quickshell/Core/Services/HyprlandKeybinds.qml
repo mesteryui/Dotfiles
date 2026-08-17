@@ -165,7 +165,7 @@ Singleton {
 
     Connections {
         target: Hyprland
-        function onRawEvent(event) {
+        function onRawEvent(event: HyprlandEvent) {
             if (event.name === "configreloaded")
                 root.refresh();
         }

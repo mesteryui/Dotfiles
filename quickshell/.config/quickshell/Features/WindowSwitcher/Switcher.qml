@@ -20,6 +20,7 @@ PanelWindow {
 
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: ExclusionMode.Ignore
+
     // Imprescindible en layer-shell: sin esto el teclado no llega nunca a la
     // surface (mismo pitfall que ya nos mordió con el app launcher).
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
@@ -93,15 +94,12 @@ PanelWindow {
         // --- Teclado ---
         Keys.onLeftPressed: windowList.decrementCurrentIndex()
         Keys.onRightPressed: windowList.incrementCurrentIndex()
-        // Tab/Shift+Tab son señales propias del attached property Keys,
-        // separadas de Left/Right — así el switcher se navega igual que un
-        // Alt-Tab real, sin pisar el focus-chain normal de Qt.
-        Keys.onTabPressed: {
-            if (currentIndex == model.values.length - 1) {
-                currentIndex = 0    
-            }
-            windowList.incrementCurrentIndex();
-        }
+        // Tab es señal propia del attached property Keys, separada de
+        // Left/Right — así el switcher se navega igual que un Alt-Tab real,
+        // sin pisar el focus-chain normal de Qt. Solo avanza; al llegar al
+        // final, vuelve al principio (no hay reversa con Shift+Tab).
+        Keys.onTabPressed: currentIndex === model.count - 1 ? currentIndex = 0 : incrementCurrentIndex()
+        Keys.onBacktabPressed: currentIndex === 0 ? currentIndex = model.count - 1 : decrementCurrentIndex()
         Keys.onReturnPressed: windowList.activateCurrent()
         Keys.onEnterPressed: windowList.activateCurrent()
 
@@ -139,7 +137,7 @@ PanelWindow {
 
                 IconImage {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    implicitSize: 32
+                    implicitSize: 42
                     source: {
                         const wl = windowDelegate.modelData.wayland;
                         if (!wl)
@@ -153,6 +151,7 @@ PanelWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: windowDelegate.modelData.title
                     elide: Text.ElideRight
+                    wrapMode: Text.WrapMode
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                 }

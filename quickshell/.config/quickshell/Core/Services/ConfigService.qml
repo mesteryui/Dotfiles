@@ -8,16 +8,17 @@ Singleton {
     id: root
     property alias configs: jsonAdapter
 
+    function load() {
+    }
 
-    function load () {}
-
+    
 
     Timer {
         id: fileReloader
         interval: 100
         repeat: false
         onTriggered: {
-            fileManagment.reload()
+            fileManagment.reload();
         }
     }
     Timer {
@@ -25,10 +26,10 @@ Singleton {
         interval: 100
         repeat: false
         onTriggered: {
-            fileManagment.writeAdapter()
+            fileManagment.writeAdapter();
         }
     }
-    
+
     FileView {
         id: fileManagment
         path: Quickshell.shellPath("config.json")

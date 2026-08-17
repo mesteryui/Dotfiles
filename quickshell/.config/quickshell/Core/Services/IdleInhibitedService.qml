@@ -1,30 +1,36 @@
 pragma Singleton
 import Quickshell
 import Quickshell.Wayland
-import qs.Core.Modules
 import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property bool inhibited: Persistent.persistence.idle.inhibit
+    property alias inhibited: props.inhibited
 
     function toggle(): void {
-        Persistent.persistence.idle.inhibit = !root.inhibited
+        props.inhibited = !props.inhibited
     }
+
+    PersistentProperties {
+        id: props 
+        property bool inhibited
+        reloadableId: "idleInhibitor"
+    }
+
     IpcHandler {
         target: "inhibit"
         function on() {
-            Persistent.persistence.idle.inhibit = true
+            props.inhibited = true
         }
         function off() {
-            Persistent.persistence.idle.inhibit = false
+            props.inhibited = false
         }
         function toggle() {
             root.toggle()
         }
     }
     IdleInhibitor {
-        id: idleInhibitor
+        id: inhibitor
         window: PanelWindow {
             implicitHeight: 0
             implicitWidth: 0
@@ -38,6 +44,6 @@ Singleton {
             }
         }
         
-        enabled: root.inhibited
+        enabled: props.inhibited
     }
 }

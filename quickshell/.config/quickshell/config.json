@@ -9,12 +9,14 @@
         "command": "shelly -U",
         "countTime": 10
     },
-    "appearence": {
-        "darkMode": true
-    },
     "weather": {
-        "autoLocation": false,
+        "autoLocation": true,
         "city": "Vigo,ES",
         "reloadTime": 5
+    },
+    "appearence": {
+      "matugen": {
+        "type": "scheme-tonal-spot"
+      }
     }
 }

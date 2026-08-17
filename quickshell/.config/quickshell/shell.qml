@@ -8,9 +8,11 @@
 import Quickshell
 import QtQuick
 import qs.Core.Services
+import qs.Features.WindowSwitcher
 import qs.Panels.System
 import qs.Panels.Polkit
 import qs.Features.OSD
+import qs.Panels.Controls
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
 import qs.Lockscreen
@@ -27,6 +29,10 @@ ShellRoot {
         ConfigService.load()
     }
 
+    Switcher {}
+
+    PanelWithControls {}
+
     // OSDs: Carga inmediata (pequeños y críticos)
     BrightnessOSD {}
     VolumeOSD {}
@@ -34,11 +40,7 @@ ShellRoot {
     
     WallpaperMenu {}
 
-    LazyLoader {
-        id: powerButtonsLoader
-        loading: true
-        PowerButtons {}
-    }
+    PowerButtons {}
     Notifications {}
     Cheatsheet {}
     PolkitWindow {}

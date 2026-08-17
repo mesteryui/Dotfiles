@@ -26,8 +26,8 @@ Rectangle {
     scale: hoverArea.pressed ? 0.96 : (hoverArea.containsMouse ? 1.02 : 1.0)
 
     Behavior on color { ColorAnimation { duration: 150 } }
-    Behavior on opacity { NumberAnimation { duration: 150 } }
-    Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+    Behavior on opacity { OpacityAnimator { duration: 150 } }
+    Behavior on scale { ScaleAnimator { duration: 140; easing.type: Easing.OutCubic } }
 
     // Capa de estado M3 Expressive (Hover & Press overlay)
     Rectangle {

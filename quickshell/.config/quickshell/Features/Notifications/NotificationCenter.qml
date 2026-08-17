@@ -194,28 +194,13 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 visible: root.historyModel.count === 0
                 spacing: 8
-
-                Rectangle {
-                    Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: 72
-                    implicitHeight: 72
-                    color: Appearance.md3.primary_container
-                    opacity: 0.55
-
-                    // Esquinas asimétricas — la "blob shape" decorativa
-                    // típica de M3 Expressive en vez de un círculo neutro.
-                    topLeftRadius: 26
-                    topRightRadius: 36
-                    bottomLeftRadius: 36
-                    bottomRightRadius: 20
-
                     MaterialIcon {
-                        anchors.centerIn: parent
+                        Layout.alignment: Qt.AlignCenter
                         text: "notifications_none"
                         size: 32
                         color: Appearance.md3.primary
                     }
-                }
+                
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter

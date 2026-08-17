@@ -10,6 +10,9 @@ Item {
     property bool isSelected: false
     property bool hovered: false     // ← bool en vez de MouseArea
 
+    property int imageWidth: 560
+    property int imageHeight: 400
+
     // Nombre del archivo (sin ruta) a partir de model.filePath
     required property string filePath
 
@@ -45,8 +48,8 @@ Item {
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: true
-                sourceSize.width: 560
-                sourceSize.height: 400
+                sourceSize.width: root.imageWidth
+                sourceSize.height: root.imageHeight
                 opacity: status === Image.Ready ? 1 : 0
                 Behavior on opacity {
                     NumberAnimation {

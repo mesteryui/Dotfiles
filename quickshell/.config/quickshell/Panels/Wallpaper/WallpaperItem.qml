@@ -16,7 +16,7 @@ Item {
 
     readonly property bool isSelected: ListView.isCurrentItem
 
-    implicitWidth: 280
+    implicitWidth: 300
     implicitHeight: 200
 
     scale: isSelected ? 1.05 : 1.0
@@ -55,6 +55,7 @@ Item {
         hovered: mouse.containsMouse      // ← bool, no el MouseArea entero
         radius: delegateRoot.surfaceRadius // ← mismo radio que el Background
         filePath: delegateRoot.modelData?.filePath ?? ""
+        
     }
 
     // ── Interacción ───────────────────────────────────────────

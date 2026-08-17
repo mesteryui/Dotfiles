@@ -3,13 +3,19 @@ import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
 import QtQml
-import qs.Core.Modules
 import Quickshell.Io
 
 Singleton {
     id: root
     property bool centerOpen: false
-    readonly property bool dnd: Persistent.persistence.notifications.dnd
+    property alias dnd: props.dnd
+
+
+    PersistentProperties {
+        id: props
+        property bool dnd
+        reloadableId: "notifications"
+    }
 
     readonly property alias history: historyModel
     readonly property alias server: notificationServer
@@ -39,7 +45,7 @@ Singleton {
     }
 
     function toggleDnd() {
-        Persistent.persistence.notifications.dnd = !Persistent.persistence.notifications.dnd;
+        props.dnd = !props.dnd;
     }
 
     onDndChanged: {

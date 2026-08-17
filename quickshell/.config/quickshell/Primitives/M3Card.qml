@@ -64,7 +64,7 @@ Item {
         anchors.fill: parent
         enabled: root.clickable
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: root.clickable ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: root.clicked()
     }
 }

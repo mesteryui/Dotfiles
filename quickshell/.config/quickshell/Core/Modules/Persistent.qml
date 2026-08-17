@@ -42,12 +42,7 @@ Singleton {
         JsonAdapter {
             id: persitenceStates
             property string currentWallpaper: ""
-            property JsonObject idle: JsonObject {
-                property bool inhibit: false
-            }
-            property JsonObject notifications: JsonObject {
-                property bool dnd: false
-            }
+            
         }
     }
 }

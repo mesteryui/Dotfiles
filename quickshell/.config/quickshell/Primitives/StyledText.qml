@@ -5,6 +5,7 @@ Text {
     id: root
     renderType: Text.NativeRendering
     verticalAlignment: Text.AlignVCenter
+    
     property bool shouldUseNumberFont: /^\d+$/.test(root.text)
     font {
         hintingPreference: Font.PreferDefaultHinting

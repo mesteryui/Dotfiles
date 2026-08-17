@@ -16,6 +16,13 @@ Singleton {
         }
     }
 
+    Connections {
+        target: ConfigService.configs.appearence.matugen
+        function onTypeChanged() {
+            root.updateMatugenColors(root.currentWallpaper)
+        }
+    }
+
     function applyTheme(wallpaperPath: string) {
         Persistent.persistence.currentWallpaper = wallpaperPath
         updateMatugenColors(root.currentWallpaper);

@@ -3,6 +3,7 @@
 pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell.Networking
 import qs.Core.Services as Services
@@ -29,7 +30,10 @@ Item {
         { label: Services.I18nService.getTranslation("panel.system",  "Sistema"), icon: "memory" }
     ]*/
 
-    implicitHeight: mainColumn.implicitHeight + 24
+    // Alto "natural" (sin recortar) que el Wrapper usa para decidir si
+    // hace falta activar el scroll. El Item en sí se estira al alto que
+    // le dé el Wrapper (posiblemente menor que este valor).
+    readonly property int naturalHeight: mainColumn.implicitHeight + 44
 
     // ── Helper ─────────────────────────────────────────────────────
     function withAlpha(hex, a) {
@@ -37,7 +41,21 @@ Item {
         return Qt.rgba(c.r, c.g, c.b, a)
     }
 
-    // ── UI Principal ───────────────────────────────────────────────────
+    // ── UI Principal (scrolleable) ───────────────────────────────────
+    Flickable {
+        id: flick
+        anchors.fill: parent
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: mainColumn.implicitHeight + 44
+
+        ScrollBar.vertical: ScrollBar {
+            policy: flick.contentHeight > flick.height
+                ? ScrollBar.AsNeeded
+                : ScrollBar.AlwaysOff
+        }
+
     ColumnLayout {
         id: mainColumn
         anchors {
@@ -261,9 +279,10 @@ Item {
         // ══ CONTENIDO del Tab activo ════════════════════════════════
         StackLayout {
             Layout.fillWidth: true
-
+            
             SysInfoTab {}
         }
+    }
     }
 }
 

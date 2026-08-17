@@ -20,14 +20,17 @@ import Quickshell.Wayland
  *  - visible stays true for `hideAnimDuration` ms after `active` goes false
  *    so the fade-out actually gets to play.
  *  - Cards are distributed into balanced columns (poor man's masonry).
+ *  - Filtering usa Services.FuzzySearch (fuzzy match reusable en cualquier
+ *    menú) en vez de un indexOf() literal, así "sq" encuentra "Super+Q",
+ *    "clsw" encuentra "Close Window", etc.
  */
 PanelWindow {
     id: root
 
     property bool active: false
     readonly property int hideAnimDuration: 160
-    
 
+    
     anchors {
         top: true
         bottom: true
@@ -36,7 +39,6 @@ PanelWindow {
     }
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    
 
     visible: root.active || hideTimer.running
 
@@ -61,9 +63,15 @@ PanelWindow {
 
     IpcHandler {
         target: "cheatsheet"
-        function toggle(): void { root.active = !root.active; }
-        function show(): void { root.active = true; }
-        function hide(): void { root.active = false; }
+        function toggle(): void {
+            root.active = !root.active;
+        }
+        function show(): void {
+            root.active = true;
+        }
+        function hide(): void {
+            root.active = false;
+        }
     }
 
     // --- Scrim ---
@@ -72,7 +80,12 @@ PanelWindow {
         anchors.fill: parent
         color: Appearance.md3.shadow
         opacity: root.active ? 0.55 : 0
-        Behavior on opacity { NumberAnimation { duration: root.hideAnimDuration; easing.type: Easing.OutCubic } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.hideAnimDuration
+                easing.type: Easing.OutCubic
+            }
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -86,11 +99,21 @@ PanelWindow {
         anchors.fill: parent
         opacity: root.active ? 1 : 0
         scale: root.active ? 1 : 0.98
-        Behavior on opacity { NumberAnimation { duration: root.hideAnimDuration; easing.type: Easing.OutCubic } }
-        Behavior on scale   { NumberAnimation { duration: root.hideAnimDuration; easing.type: Easing.OutCubic } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.hideAnimDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on scale {
+            NumberAnimation {
+                duration: root.hideAnimDuration
+                easing.type: Easing.OutCubic
+            }
+        }
 
         focus: root.active
-        Keys.onPressed: (event) => {
+        Keys.onPressed: event => {
             switch (event.key) {
             case Qt.Key_Escape:
                 root.active = false;
@@ -129,7 +152,10 @@ PanelWindow {
         }
 
         // Swallow clicks so they don't fall through to the scrim's dismiss handler
-        MouseArea { anchors.fill: parent; onClicked: sheet.forceActiveFocus() }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: sheet.forceActiveFocus()
+        }
 
         // --- Keyboard scrolling ---
         readonly property real scrollStep: 140
@@ -177,10 +203,12 @@ PanelWindow {
                     radius: Appearance.shape.full
                     color: Appearance.md3.surface_container_high
                     border.width: searchField.activeFocus ? 2 : 1
-                    border.color: searchField.activeFocus
-                        ? Appearance.md3.primary
-                        : Appearance.md3.outline_variant
-                    Behavior on border.color { ColorAnimation { duration: 120 } }
+                    border.color: searchField.activeFocus ? Appearance.md3.primary : Appearance.md3.outline_variant
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
                 }
 
                 // Ícono lupa
@@ -193,10 +221,12 @@ PanelWindow {
                     }
                     iconName: "search"
                     size: Appearance.font.pixelSize.large
-                    color: searchField.activeFocus
-                        ? Appearance.md3.primary
-                        : Appearance.md3.on_surface_variant
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    color: searchField.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
                 }
 
                 TextField {
@@ -220,7 +250,7 @@ PanelWindow {
                     font.variableAxes: Appearance.font.variableAxes.main
                     verticalAlignment: TextInput.AlignVCenter
 
-                    Keys.onPressed: (event) => {
+                    Keys.onPressed: event => {
                         switch (event.key) {
                         case Qt.Key_Escape:
                             root.active = false;
@@ -288,7 +318,7 @@ PanelWindow {
                             required property var modelData
                             width: sheet.columnWidth
                             spacing: 20
-                            
+
                             Repeater {
                                 model: parent.modelData
                                 delegate: CheatsheetCategoryCard {
@@ -331,9 +361,7 @@ PanelWindow {
 
                         StyledText {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: searchField.text.length > 0
-                                ? Services.I18nService.getTranslation("cheatsheet.no_match", "No keybinds match") + " \u201c" + searchField.text + "\u201d"
-                                : Services.I18nService.getTranslation("cheatsheet.no_binds", "No documented keybinds found")
+                            text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatsheet.no_match", "No keybinds match") + " \u201c" + searchField.text + "\u201d" : Services.I18nService.getTranslation("cheatsheet.no_binds", "No documented keybinds found")
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: Appearance.font.pixelSize.normal
                         }
@@ -343,20 +371,45 @@ PanelWindow {
         }
 
         // --- Filtering ---
+        // Antes: indexOf() literal sobre b.searchText — exigía substring exacto
+        // y no toleraba ni orden aproximado ni typos ("clw" no encontraba
+        // "Close Window"). Ahora usa Services.FuzzySearch (el mismo motor
+        // reusable en cualquier menú del shell): matchea por subsecuencia
+        // con scoring, y ordena los binds de cada categoría por relevancia.
+        // Cuando hay query, además las categorías se reordenan por su mejor
+        // match, para que la categoría más relevante aparezca primero.
         property var filteredCategories: {
-            const query = searchField.text.trim().toLowerCase();
+            const query = searchField.text.trim();
             const grouped = Services.HyprlandKeybinds.groupedKeybinds;
             const order = Services.HyprlandKeybinds.keybindCategories;
             const result = [];
+
             for (let i = 0; i < order.length; i++) {
                 const cat = order[i];
                 const binds = grouped[cat] || [];
-                const matches = query.length === 0
-                    ? binds
-                    : binds.filter(b => b.searchText.indexOf(query) !== -1);
+
+                if (query.length === 0) {
+                    if (binds.length > 0)
+                        result.push({
+                            category: cat,
+                            binds: binds,
+                            score: 0
+                        });
+                    continue;
+                }
+
+                const matches = Services.FuzzySearch.filter(query, binds, b => b.searchText);
                 if (matches.length > 0)
-                    result.push({ category: cat, binds: matches });
+                    result.push({
+                        category: cat,
+                        binds: matches.map(m => m.item), // ya vienen ordenados por score desc
+                        score: matches[0].score           // mejor score de la categoría
+                    });
             }
+
+            if (query.length > 0)
+                result.sort((a, b) => b.score - a.score);
+
             return result;
         }
 
@@ -371,7 +424,10 @@ PanelWindow {
             const count = sheet.columnCount;
             const cols = [];
             const heights = [];
-            for (let c = 0; c < count; c++) { cols.push([]); heights.push(0); }
+            for (let c = 0; c < count; c++) {
+                cols.push([]);
+                heights.push(0);
+            }
 
             const sorted = cats.slice().sort((a, b) => b.binds.length - a.binds.length);
 
