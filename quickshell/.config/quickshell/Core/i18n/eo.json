@@ -13,6 +13,13 @@
     "logout": "Elsaluti",
     "lock": "ŝalti"
   },
+  "osd": {
+    "capsLock": {
+      "text": "Majuskloj %1",
+      "activate": "Aktivigita",
+      "deactivate": "Malaktivigita"
+    }
+  },
   "media": {
     "no_media": "Neniu aŭdvidaĵo ludas"
   },
@@ -45,7 +52,7 @@
     "of": "el",
     "uptime": "Funkcia tempo"
   },
-   "battery": {
+  "battery": {
     "critical": "Critical battery (%1%)! Connect the charger immediately",
     "low": "Malmulta baterŝargo (%1%): Ni rekomendas ŝargi la maŝino",
     "charging": "Charging battery",

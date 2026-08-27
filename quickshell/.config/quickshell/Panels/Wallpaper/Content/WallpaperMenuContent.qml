@@ -42,7 +42,10 @@ Item {
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignVCenter
             }
+            
         }
+
+        
 
 
         // ── Lista de wallpapers ───────────────────────────────────────────────

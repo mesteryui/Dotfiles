@@ -17,7 +17,7 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.full
+        radius: Appearance.shape.normal
     }
 
     RowLayout {
@@ -36,10 +36,10 @@ BaseOSD {
 
         StyledProgressBar {
             id: barItem
-            from:  0.0
-            to:    1.0
+            from: 0.0
+            to: 1.0
             value: root.percentage
-            Layout.fillWidth: true 
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
         }
 
@@ -48,7 +48,7 @@ BaseOSD {
             text: Math.round(root.percentage * 100) + "%"
             font.pixelSize: 16
             color: Appearance.md3.on_surface
-            Layout.preferredWidth: 40 
+            Layout.preferredWidth: 40
             horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignVCenter
         }

@@ -6,7 +6,6 @@ import qs.Panels.MediaPlayer
 import qs.Bar.Content
 import qs.Bar
 
-
 Item {
     id: root
     implicitWidth: content.implicitWidth + 24
@@ -16,6 +15,8 @@ Item {
         anchors.fill: parent
         active: titleInteraction.pressed
     }
+
+    visible: Services.MprisService.players.length > 0
 
     PlayerContent {
         id: content
@@ -33,11 +34,11 @@ Item {
         hoverEnabled: true
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: {
-            const w = popupLoader.item
-            if (w) w.visible = !w.visible
+            const w = popupLoader.item;
+            if (w)
+                w.visible = !w.visible;
         }
     }
-
 
     // Helpers para no repetir la guardia null en cada binding
     LazyLoader {

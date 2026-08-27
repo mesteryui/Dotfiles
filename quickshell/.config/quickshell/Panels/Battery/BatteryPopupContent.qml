@@ -13,72 +13,86 @@ Item {
     readonly property bool hasBattery: battery && battery.isLaptopBattery
     readonly property bool charging: hasBattery && battery.state === UPowerDeviceState.Charging
 
-    readonly property var profiles: [
-        PowerProfile.PowerSaver,
-        PowerProfile.Balanced,
-        PowerProfile.Performance
-    ]
+    readonly property var profiles: [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
 
     function profileIcon(profile) {
         switch (profile) {
-        case PowerProfile.PowerSaver: return "battery_saver"
-        case PowerProfile.Performance: return "bolt"
-        default: return "balance"
+        case PowerProfile.PowerSaver:
+            return "battery_saver";
+        case PowerProfile.Performance:
+            return "bolt";
+        default:
+            return "balance";
         }
     }
 
     function profileLabel(profile) {
         switch (profile) {
-        case PowerProfile.PowerSaver: return Services.I18nService.getTranslation("battery.powersave")
-        case PowerProfile.Performance: return Services.I18nService.getTranslation("battery.performance")
-        default: return Services.I18nService.getTranslation("battery.balanced")
+        case PowerProfile.PowerSaver:
+            return Services.I18nService.getTranslation("battery.powersave");
+        case PowerProfile.Performance:
+            return Services.I18nService.getTranslation("battery.performance");
+        default:
+            return Services.I18nService.getTranslation("battery.balanced");
         }
     }
 
     function batteryIcon() {
-        if (!hasBattery) return "battery_unknown"
-        if (charging) return "battery_charging_full"
-        const p = battery ? battery.percentage * 100 : 0
-        if (p >= 95) return "battery_full"
-        if (p >= 80) return "battery_6_bar"
-        if (p >= 60) return "battery_5_bar"
-        if (p >= 45) return "battery_4_bar"
-        if (p >= 30) return "battery_3_bar"
-        if (p >= 15) return "battery_2_bar"
-        if (p >= 5)  return "battery_1_bar"
-        return "battery_alert"
+        if (!hasBattery)
+            return "battery_unknown";
+        if (charging)
+            return "battery_charging_full";
+        const p = battery ? battery.percentage * 100 : 0;
+        if (p >= 95)
+            return "battery_full";
+        if (p >= 80)
+            return "battery_6_bar";
+        if (p >= 60)
+            return "battery_5_bar";
+        if (p >= 45)
+            return "battery_4_bar";
+        if (p >= 30)
+            return "battery_3_bar";
+        if (p >= 15)
+            return "battery_2_bar";
+        if (p >= 5)
+            return "battery_1_bar";
+        return "battery_alert";
     }
 
     function formatTime(seconds) {
-        if (!seconds || seconds <= 0 || isNaN(seconds)) return ""
-        const totalMinutes = Math.floor(seconds / 60)
-        const hours = Math.floor(totalMinutes / 60)
-        const minutes = totalMinutes % 60
+        if (!seconds || seconds <= 0 || isNaN(seconds))
+            return "";
+        const totalMinutes = Math.floor(seconds / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
         if (hours > 0) {
-            return hours + " h " + minutes + " min"
+            return hours + " h " + minutes + " min";
         }
-        return minutes + " min"
+        return minutes + " min";
     }
 
     function batteryStatusText() {
-        if (!hasBattery) return "Batería no detectada"
-        if (!battery) return "Estado desconocido"
+        if (!hasBattery)
+            return "Batería no detectada";
+        if (!battery)
+            return "Estado desconocido";
 
         switch (battery.state) {
         case UPowerDeviceState.Charging:
-            const tFull = formatTime(battery.timeToFull)
-            return tFull !== "" ? "Cargando (" + tFull + " para completar)" : "Cargando..."
+            const tFull = formatTime(battery.timeToFull);
+            return tFull !== "" ? "Cargando (" + tFull + " para completar)" : "Cargando...";
         case UPowerDeviceState.Discharging:
-            const tEmpty = formatTime(battery.timeToEmpty)
-            return tEmpty !== "" ? "Restante: " + tEmpty : "En uso de batería"
+            const tEmpty = formatTime(battery.timeToEmpty);
+            return tEmpty !== "" ? "Restante: " + tEmpty : "En uso de batería";
         case UPowerDeviceState.FullyCharged:
-            return "Carga completa"
+            return "Carga completa";
         case UPowerDeviceState.PendingCharge:
-            return "Pendiente de carga"
+            return "Pendiente de carga";
         case UPowerDeviceState.PendingDischarge:
-            return "Pendiente de descarga"
+            return "Pendiente de descarga";
         default:
-            return "Desconectado"
+            return "Desconectado";
         }
     }
 
@@ -113,17 +127,13 @@ Item {
                     implicitWidth: 46
                     implicitHeight: 46
                     radius: Appearance.shape.small
-                    color: root.charging
-                        ? Appearance.md3.primary_container
-                        : Appearance.md3.surface_container_highest
+                    color: root.charging ? Appearance.md3.primary_container : Appearance.md3.surface_container_highest
 
                     MaterialIcon {
                         anchors.centerIn: parent
                         icon: root.batteryIcon()
                         size: 26
-                        color: root.charging
-                            ? Appearance.md3.on_primary_container
-                            : Appearance.md3.on_surface
+                        color: root.charging ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                     }
                 }
 
@@ -138,7 +148,10 @@ Item {
                             text: root.hasBattery ? Math.round(root.battery.percentage * 100) + "%" : "N/A"
                             font.pixelSize: Appearance.font.pixelSize.huge
                             font.bold: true
-                            font.features: ({ "tnum": 1, "lnum": 1 })
+                            font.features: ({
+                                    "tnum": 1,
+                                    "lnum": 1
+                                })
                             color: Appearance.md3.on_surface
                         }
 
@@ -185,8 +198,7 @@ Item {
                     required property var modelData
 
                     readonly property bool selected: PowerProfiles.profile === modelData
-                    readonly property bool profileDisabled:
-                        modelData === PowerProfile.Performance && !PowerProfiles.hasPerformanceProfile
+                    readonly property bool profileDisabled: modelData === PowerProfile.Performance && !PowerProfiles.hasPerformanceProfile
 
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -201,7 +213,11 @@ Item {
                         radius: parent.radius
                         color: Appearance.md3.on_surface
                         opacity: 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
                     }
 
                     ColumnLayout {
@@ -214,9 +230,7 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             icon: root.profileIcon(profileButton.modelData)
                             size: 22
-                            color: profileButton.selected
-                                ? Appearance.md3.on_primary_container
-                                : Appearance.md3.on_surface_variant
+                            color: profileButton.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                         }
 
                         StyledText {
@@ -227,9 +241,7 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             maximumLineCount: 1
-                            color: profileButton.selected
-                                ? Appearance.md3.on_primary_container
-                                : Appearance.md3.on_surface_variant
+                            color: profileButton.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                         }
                     }
 

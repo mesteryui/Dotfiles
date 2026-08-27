@@ -1,46 +1,55 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import qs.Core
+import Quickshell.Wayland
+import Quickshell
 import qs.Core.Modules
+import qs.Core.Services
+
 Item {
     id: root
     anchors.fill: parent
 
-    // ── Contexto & Apariencia ─────────────────────────────────────────
-    property string wallpaperPath: "file://" + Persistent.persistence.currentWallpaper
+    required property ShellScreen targetScreen
     property real scrimAlpha: 0.30
-    property real blurAmount: 1.0
-
-    // ── Helper de color ───────────────────────────────────────────────
     function withAlpha(hexColor, alphaValue) {
         var c = Qt.color(hexColor);
         return Qt.rgba(c.r, c.g, c.b, alphaValue);
     }
 
+    Item {
+        id: background
+        anchors.fill: parent
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            autoPaddingEnabled: false
+            blurEnabled: true
+            blur: ConfigService.configs.lockscreen.blurLevel
+            blurMax: 64
+            blurMultiplier: 1
+        }
+        Loader {
+            anchors.fill: parent
+            sourceComponent: ConfigService.configs.lockscreen.useWallpaper ? wallpaperBackground : screenCopyBackground
+        }
+    }
+
     // ── Fondo de Wallpaper ────────────────────────────────────────────
-    Image {
-        id: wallpaperBg
-        anchors.fill: parent
-        source: root.wallpaperPath
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        cache: true
+    Component {
+        id: wallpaperBackground
+        Image {
+            source: Qt.resolvedUrl(Persistent.persistence.currentWallpaper)
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            cache: true
+        }
     }
 
-    // ── Efecto de Desenfoque ──────────────────────────────────────────
-    MultiEffect {
-        anchors.fill: wallpaperBg
-        source: wallpaperBg
-        blurEnabled: true
-        blur: root.blurAmount
-        blurMax: 48
-        blurMultiplier: 1.0
-        autoPaddingEnabled: false
-    }
-
-    // ── Capa de Tinte (Scrim) ──────────────────────────────────────────
-    Rectangle {
-        anchors.fill: parent
-        color: root.withAlpha(Appearance.md3.scrim, root.scrimAlpha)
+    Component {
+        id: screenCopyBackground
+        ScreencopyView {
+            captureSource: root.targetScreen
+        }
     }
 }

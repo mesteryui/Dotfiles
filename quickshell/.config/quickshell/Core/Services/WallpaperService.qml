@@ -12,7 +12,6 @@ Singleton {
     readonly property list<string> extensions: [ // TODO: add videos
         "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
 
-    
     FolderListModel {
         id: folderModel
         folder: Qt.resolvedUrl(root.wallpaperDir)
@@ -28,12 +27,15 @@ Singleton {
 
     function apply(file: string): void {
         let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
+        root._apply(fullPath);
+    }
+    function _apply(file: string) {
         if (applyProcess.running) {
-            applyProcess.running = false
+            applyProcess.running = false;
         }
-        applyProcess.command = ["awww", "img", fullPath, "--transition-type", "center"];
+        applyProcess.command = ["awww", "img", file, "--transition-type", "center"];
         applyProcess.running = true;
-        ThemeApplier.applyTheme(fullPath);
+        ThemeApplier.applyTheme(file);
         root.changed();
     }
 }

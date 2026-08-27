@@ -1,22 +1,29 @@
-{ 
+{
     "bar": {
-        "position": "top"
+        "position": "top",
+        "height": 40,
+        "workspaceButtonType": "kanji"
+    },
+    "lockscreen": {
+        "blurLevel": 1.5,
+        "useWallpaper": false
     },
     "notifications": {
         "timeout": 6
     },
     "updates": {
         "command": "shelly -U",
-        "countTime": 10
+        "countTime": 5
     },
     "weather": {
         "autoLocation": true,
         "city": "Vigo,ES",
-        "reloadTime": 5
+        "reloadTime": 10
     },
     "appearence": {
-      "matugen": {
-        "type": "scheme-tonal-spot"
-      }
+        "darkMode": true,
+        "matugen": {
+            "type": "scheme-tonal-spot"
+        }
     }
 }

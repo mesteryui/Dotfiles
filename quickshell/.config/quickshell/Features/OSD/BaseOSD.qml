@@ -5,8 +5,8 @@ import Quickshell.Hyprland
 
 Scope {
     id: root
-
-    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+    property string type: ""
+    readonly property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     property int implicitHeight: 20
     property int implicitWidth: 20
     default property alias content: container.data
@@ -19,14 +19,14 @@ Scope {
     Timer {
         id: osdTimer
         repeat: false
-        interval: 3000
+        interval: 2000
         running: root.shown
         onTriggered: root.shown = false
     }
 
     function show(): void {
-        root.shown = true
-        osdTimer.restart()   // reinicia el conteo aunque el OSD ya estuviera visible
+        root.shown = true;
+        osdTimer.restart();   // reinicia el conteo aunque el OSD ya estuviera visible
     }
 
     PanelWindow {
@@ -37,7 +37,7 @@ Scope {
 
         screen: root.focusedScreen   // binding declarativo puro, no necesita Connections
 
-        WlrLayershell.namespace: "quickshell:osd"
+        WlrLayershell.namespace: root.type ? "quickshell:osd-" + root.type : "quickshell:osd"
         WlrLayershell.layer: WlrLayer.Overlay
         implicitHeight: root.implicitHeight
         implicitWidth: root.implicitWidth
@@ -46,7 +46,9 @@ Scope {
         color: "transparent"
 
         anchors.top: true
-        margins.top: 55
+        margins {
+            top: 55
+        }
 
         Item {
             id: container

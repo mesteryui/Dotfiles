@@ -6,6 +6,13 @@
     "empty": "Sin notificaciones",
     "reply": "Responder…"
   },
+  "osd": {
+    "capsLock": {
+      "text": "Bloq Mayús %1",
+      "activate": "Activado",
+      "deactivate": "Desactivado"
+    }
+  },
   "power": {
     "shutdown": "Apagar",
     "reboot": "Reiniciar",

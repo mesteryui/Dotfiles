@@ -5,46 +5,59 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import qs.Core
-import qs.Core.Services
+import qs.Core.Services as Services
 import qs.Primitives
 
 // --- NotificationToastCard ---
-// Tarjeta individual de un toast de notificación. Antes vivía como delegate
-// inline dentro del Repeater de NotificationPopup; se separa aquí para poder
-// reutilizarla (p.ej. en el centro de notificaciones) y mantener el archivo
-// del PanelWindow más limpio.
+// Tarjeta de toast de notificación en estilo Material You (Material 3 Expressive).
+// Presenta la imagen destacada a la izquierda del bloque de nombre de app y contenido,
+// ocupando todo el ancho disponible y manteniendo una altura compacta y proporcionada.
 Item {
     id: root
 
     required property var notification
 
     Layout.fillWidth: true
+    implicitWidth: 380
     implicitHeight: card.implicitHeight
 
     readonly property bool isCritical: root.notification.urgency === NotificationUrgency.Critical
-    readonly property bool hasActions: root.notification.actions.length > 0
-    readonly property bool hasInlineReply: root.notification.hasInlineReply
+    readonly property bool hasActions: root.notification.actions && root.notification.actions.length > 0
+    readonly property bool hasInlineReply: root.notification.hasInlineReply ?? false
 
-    // Sombra difusa de elevación en vez de un borde duro — toast
-    // plano y suave al estilo GNOME sobre una superficie tonal MD3
+    // ── Temporizador de Expiración (se pausa al hacer hover) ──
+    Timer {
+        id: expireTimer
+        running: !cardHover.hovered
+        interval: (Services.ConfigService.configs.notifications.timeout || 5) * 1000
+        onTriggered: root.notification.expire()
+    }
+
+    // ── Sombra de Elevación Material 3 ─────────────────────────
     MultiEffect {
         source: card
         anchors.fill: card
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.22
-        shadowBlur: 0.8
+        shadowOpacity: root.isCritical ? 0.25 : 0.16
+        shadowBlur: 0.6
         shadowVerticalOffset: 2
         shadowHorizontalOffset: 0
     }
 
+    // ── Tarjeta M3 Expressive Container ───────────────────────
     Rectangle {
         id: card
 
-        width: root.width
-        implicitHeight: popupContent.implicitHeight + 20
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        implicitHeight: cardLayout.implicitHeight + 24
         radius: Appearance.shape.normal
-        color: Appearance.md3.surface
+        color: root.isCritical ? Appearance.md3.error_container : Appearance.md3.surface
+
+        border.width: 1
+        border.color: root.isCritical ? Appearance.md3.error : Qt.alpha(Appearance.md3.outline_variant, 0.45)
 
         Behavior on implicitHeight {
             NumberAnimation {
@@ -52,58 +65,56 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
-
-        Timer {
-            running: true
-            // Fallback a 5s si la config aún no ha cargado el timeout
-            // (evita interval NaN, que nunca dispara y deja el toast fijo)
-            interval: (ConfigService.configs.notifications.timeout || 5) * 1000
-            onTriggered: root.notification.expire()
+        Behavior on color {
+            ColorAnimation {
+                duration: 150
+            }
         }
 
-        // Acento fino de urgencia en lugar de un borde completo —
-        // indicador tipo "container" MD3, discreto como GNOME
-        Rectangle {
-            visible: root.isCritical
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.margins: 6
-            width: 3
-            radius: Appearance.shape.full
-            color: Appearance.md3.error
+        HoverHandler {
+            id: cardHover
         }
 
         ColumnLayout {
-            id: popupContent
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 12
-            anchors.leftMargin: root.isCritical ? 18 : 12
-            anchors.rightMargin: 28
+            id: cardLayout
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                margins: 12
+            }
             spacing: 8
 
+            // ════════════════════════════════════════════════════
+            // SECCIÓN PRINCIPAL: IMAGEN A LA IZQUIERDA + CONTENIDO
+            // ════════════════════════════════════════════════════
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 12
+                Layout.alignment: Qt.AlignTop
 
-                // Icono de la app — SIEMPRE via AppIcon (usa Notification.appIcon,
-                // que ya resuelve el icono de la app o el de su desktop entry)
+                // ── Imagen / Icono Destacado (Grande a la izquierda) ──
                 Item {
-                    Layout.preferredHeight: 36
-                    Layout.preferredWidth: 36
+                    Layout.preferredWidth: 46
+                    Layout.preferredHeight: 46
                     Layout.alignment: Qt.AlignTop
-                    visible: popupIcon.source.toString() !== ""
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: Appearance.shape.full
-                        color: Appearance.md3.surface_variant
+                        radius: Appearance.shape.small
+                        color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            icon: "notifications"
+                            size: 24
+                            color: root.isCritical ? Appearance.md3.on_error : Appearance.md3.on_primary_container
+                            visible: notifIcon.source.toString() === ""
+                        }
                     }
 
                     AppIcon {
-                        id: popupIcon
+                        id: notifIcon
                         anchors.fill: parent
                         anchors.margins: 4
                         source: {
@@ -118,40 +129,126 @@ Item {
                     }
                 }
 
+                // ── Bloque Derecho: Nombre de App + Título + Mensaje ──
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2
+                    Layout.alignment: Qt.AlignTop
 
-                    Text {
+                    // Fila superior: Nombre de App + Badge Urgente + Botón Cerrar
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+
+                        StyledText {
+                            text: root.notification.appName || "Sistema"
+                            color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
+                            font.family: Appearance.font.sans
+                            font.pixelSize: Appearance.font.pixelSize.smallest
+                            font.weight: Font.Medium
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 180
+                        }
+
+                        // Insignia de Urgencia Crítica
+                        Rectangle {
+                            visible: root.isCritical
+                            implicitHeight: 16
+                            implicitWidth: critText.implicitWidth + 8
+                            radius: Appearance.shape.full
+                            color: Appearance.md3.error
+
+                            StyledText {
+                                id: critText
+                                anchors.centerIn: parent
+                                text: "Urgente"
+                                font.pixelSize: 9
+                                font.weight: Font.Bold
+                                font.family: Appearance.font.sans
+                                color: Appearance.md3.on_error
+                            }
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        // Botón (×) Cerrar / Descartar
+                        Item {
+                            Layout.preferredWidth: 20
+                            Layout.preferredHeight: 20
+                            Layout.alignment: Qt.AlignVCenter
+                            scale: closeArea.pressed ? 0.90 : (closeArea.containsMouse ? 1.08 : 1.0)
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: 120
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Rectangle {
+                                id: closeBg
+                                anchors.fill: parent
+                                radius: Appearance.shape.full
+                                color: closeArea.containsMouse ? (root.isCritical ? Qt.alpha(Appearance.md3.error, 0.2) : Appearance.md3.surface_container_highest) : "transparent"
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 120
+                                    }
+                                }
+                            }
+
+                            MaterialIcon {
+                                anchors.centerIn: parent
+                                icon: "close"
+                                size: 14
+                                color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
+                            }
+
+                            MouseArea {
+                                id: closeArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.notification.dismiss()
+                            }
+                        }
+                    }
+
+                    // Título (Summary)
+                    StyledText {
                         Layout.fillWidth: true
                         text: root.notification.summary
                         visible: text !== ""
-                        color: Appearance.md3.on_surface
+                        color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface
                         font.family: Appearance.font.sans
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        font.bold: true
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
                         elide: Text.ElideRight
+                        maximumLineCount: 1
                     }
-                    Text {
+
+                    // Mensaje (Body)
+                    StyledText {
                         Layout.fillWidth: true
                         text: root.notification.body
                         visible: text !== ""
-                        color: Appearance.md3.on_surface_variant
+                        color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.90) : Appearance.md3.on_surface_variant
                         font.family: Appearance.font.sans
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: 12
                         wrapMode: Text.WordWrap
+                        maximumLineCount: 3
+                        elide: Text.ElideRight
                     }
                 }
             }
 
-            // Botones de acción — forma de píldora, MD3 filled-tonal.
-            // Fila con scroll horizontal en vez de Flow: con muchas
-            // acciones un Flow puede envolver a una segunda línea y hacer
-            // crecer la tarjeta de forma impredecible. Así el alto queda
-            // fijo y predecible.
+            // ════════════════════════════════════════════════════
+            // BOTONES DE ACCIÓN (MATERIAL 3 CHIPS)
+            // ════════════════════════════════════════════════════
             Item {
                 Layout.fillWidth: true
-                implicitHeight: actionRow.implicitHeight
+                implicitHeight: 28
                 visible: root.hasActions
                 clip: true
 
@@ -169,34 +266,66 @@ Item {
                         Repeater {
                             model: root.notification.actions
 
-                            delegate: Rectangle {
-                                id: actionChip
+                            delegate: Item {
+                                id: actionChipItem
                                 required property var modelData
 
-                                width: actionLabel.implicitWidth + 20
-                                height: actionLabel.implicitHeight + 10
-                                radius: Appearance.shape.full
-                                color: actionArea.pressed ? Appearance.md3.primary : Appearance.md3.primary_container
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 100
+                                implicitWidth: actionChipBg.implicitWidth
+                                implicitHeight: 28
+                                scale: actionArea.pressed ? 0.94 : (actionArea.containsMouse ? 1.04 : 1.0)
+                                Behavior on scale {
+                                    NumberAnimation {
+                                        duration: 120
+                                        easing.type: Easing.OutCubic
                                     }
                                 }
 
-                                StyledText {
-                                    id: actionLabel
-                                    anchors.centerIn: parent
-                                    text: actionChip.modelData.text
-                                    color: actionArea.pressed ? Appearance.md3.on_primary : Appearance.md3.primary
-                                    font.family: Appearance.font.sans
-                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                Rectangle {
+                                    id: actionChipBg
+                                    anchors.fill: parent
+                                    implicitWidth: actionLabel.implicitWidth + 20
+                                    implicitHeight: 28
+                                    radius: Appearance.shape.full
+                                    color: root.isCritical ? (actionArea.pressed ? Appearance.md3.error : Qt.alpha(Appearance.md3.error, 0.20)) : (actionArea.pressed ? Appearance.md3.primary : Appearance.md3.primary_container)
+
+                                    border.width: root.isCritical ? 1 : 0
+                                    border.color: Appearance.md3.error
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 120
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        radius: parent.radius
+                                        color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
+                                        opacity: actionArea.pressed ? 0.16 : (actionArea.containsMouse ? 0.08 : 0)
+                                        Behavior on opacity {
+                                            NumberAnimation {
+                                                duration: 100
+                                            }
+                                        }
+                                    }
+
+                                    StyledText {
+                                        id: actionLabel
+                                        anchors.centerIn: parent
+                                        text: actionChipItem.modelData.text
+                                        font.family: Appearance.font.sans
+                                        font.pixelSize: 11
+                                        font.weight: Font.Medium
+                                        color: root.isCritical ? (actionArea.pressed ? Appearance.md3.on_error : Appearance.md3.on_error_container) : (actionArea.pressed ? Appearance.md3.on_primary : Appearance.md3.on_primary_container)
+                                    }
                                 }
 
                                 MouseArea {
                                     id: actionArea
                                     anchors.fill: parent
+                                    hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: actionChip.modelData.invoke()
+                                    onClicked: actionChipItem.modelData.invoke()
                                 }
                             }
                         }
@@ -204,9 +333,9 @@ Item {
                 }
             }
 
-            // Respuesta en línea — sólo si el servidor y la notificación la
-            // soportan (Notification.hasInlineReply). Envía con Enter o con
-            // el botón de "send".
+            // ════════════════════════════════════════════════════
+            // RESPUESTA EN LÍNEA (MATERIAL YOU INLINE REPLY)
+            // ════════════════════════════════════════════════════
             RowLayout {
                 Layout.fillWidth: true
                 visible: root.hasInlineReply
@@ -214,27 +343,34 @@ Item {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 36
+                    Layout.preferredHeight: 32
                     radius: Appearance.shape.full
-                    color: Appearance.md3.surface_variant
-                    border.width: replyInput.activeFocus ? 2 : 0
-                    border.color: Appearance.md3.primary
+                    color: root.isCritical ? Qt.alpha(Appearance.md3.surface, 0.5) : Appearance.md3.surface_container_highest
+
+                    border.width: replyInput.activeFocus ? 2 : 1
+                    border.color: replyInput.activeFocus ? (root.isCritical ? Appearance.md3.error : Appearance.md3.primary) : (root.isCritical ? Qt.alpha(Appearance.md3.error, 0.4) : Qt.alpha(Appearance.md3.outline_variant, 0.5))
+
                     Behavior on border.width {
                         NumberAnimation {
                             duration: 100
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
                         }
                     }
 
                     TextInput {
                         id: replyInput
                         anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 14
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
                         verticalAlignment: TextInput.AlignVCenter
                         clip: true
-                        color: Appearance.md3.on_surface
+                        color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface
                         font.family: Appearance.font.sans
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: 12
 
                         function submit() {
                             if (text.trim() === "")
@@ -244,80 +380,61 @@ Item {
                         }
                         onAccepted: submit()
 
-                        Text {
+                        StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: replyInput.text === "" && !replyInput.activeFocus
-                            text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : I18nService.getTranslation("notifications.reply", "Responder…")
-                            color: Appearance.md3.on_surface_variant
+                            text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : Services.I18nService.getTranslation("notifications.reply", "Responder…")
+                            color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.6) : Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
-                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.pixelSize: 12
                         }
                     }
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 36
-                    Layout.preferredHeight: 36
-                    radius: Appearance.shape.full
-                    color: sendArea.pressed ? Appearance.md3.primary : Appearance.md3.primary_container
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 100
+                Item {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    scale: sendArea.pressed ? 0.92 : (sendArea.containsMouse ? 1.06 : 1.0)
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
                         }
                     }
 
-                    MaterialIcon {
-                        icon: "send"
-                        anchors.centerIn: parent
-                        color: sendArea.pressed ? Appearance.md3.on_primary : Appearance.md3.primary
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Appearance.shape.full
+                        color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: parent.radius
+                            color: Appearance.md3.on_primary
+                            opacity: sendArea.pressed ? 0.20 : (sendArea.containsMouse ? 0.10 : 0)
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 100
+                                }
+                            }
+                        }
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            icon: "send"
+                            size: 15
+                            color: root.isCritical ? Appearance.md3.on_error : Appearance.md3.on_primary
+                        }
                     }
 
                     MouseArea {
                         id: sendArea
                         anchors.fill: parent
+                        hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: replyInput.submit()
                     }
                 }
-            }
-        }
-
-        // Botón (×) para cerrar la notificación — botón circular tonal
-        Item {
-            width: 24
-            height: 24
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: 8
-
-            Rectangle {
-                id: closeStateLayer
-                anchors.fill: parent
-                radius: Appearance.shape.full
-                color: Appearance.md3.on_surface
-                opacity: 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
-                    }
-                }
-            }
-
-            MaterialIcon {
-                icon: "close"
-                anchors.centerIn: parent
-                color: Appearance.md3.on_surface_variant
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onEntered: closeStateLayer.opacity = 0.10
-                onExited: closeStateLayer.opacity = 0
-                onPressed: closeStateLayer.opacity = 0.16
-                onReleased: closeStateLayer.opacity = containsMouse ? 0.10 : 0
-                onClicked: root.notification.dismiss()
             }
         }
     }

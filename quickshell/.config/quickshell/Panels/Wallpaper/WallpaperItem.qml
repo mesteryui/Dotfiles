@@ -19,7 +19,8 @@ Item {
     implicitWidth: 300
     implicitHeight: 200
 
-    scale: isSelected ? 1.05 : 1.0
+    scale: isSelected ? 1.02 : 1.0
+    //scale: 1.0
     Behavior on scale {
         NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
     }

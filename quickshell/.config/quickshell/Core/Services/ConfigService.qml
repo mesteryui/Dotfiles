@@ -11,31 +11,15 @@ Singleton {
     function load() {
     }
 
-    
-
-    Timer {
-        id: fileReloader
-        interval: 100
-        repeat: false
-        onTriggered: {
-            fileManagment.reload();
-        }
-    }
-    Timer {
-        id: fileWriter
-        interval: 100
-        repeat: false
-        onTriggered: {
-            fileManagment.writeAdapter();
-        }
-    }
-
     FileView {
         id: fileManagment
         path: Quickshell.shellPath("config.json")
+        blockLoading: true
         watchChanges: true
-        onFileChanged: fileReloader.restart()
-        onAdapterUpdated: fileWriter.restart()
+        printErrors: false
+        atomicWrites: true
+        onFileChanged: reload()
+        onAdapterUpdated: writeAdapter()
         JsonAdapter {
             id: jsonAdapter
             property string language: Qt.locale().name
@@ -43,13 +27,23 @@ Singleton {
             property Weather weather: Weather {}
             property Notifications notifications: Notifications {}
             property Updates updates: Updates {}
+            property LockScreen lockscreen: LockScreen {}
+            property NightLight nightLight: NightLight {}
             property Appearence appearence: Appearence {}
         }
+    }
+    component LockScreen: JsonObject {
+        property real blurLevel: 1.3
+        property bool useWallpaper: true
     }
     component Weather: JsonObject {
         property bool autoLocation: true
         property string city: "Vigo"
         property int reloadTime: 10
+    }
+    component NightLight: JsonObject {
+        property int temperature: 3000
+        property int gamma: 100
     }
     component Appearence: JsonObject {
         property bool darkMode: true
@@ -61,6 +55,10 @@ Singleton {
     }
     component Bar: JsonObject {
         property string position: "top"
+        property int height: 36
+        property int margin: 4
+        property int radius: 12
+        property string workspaceButtonType: "numbers"
     }
     component Notifications: JsonObject {
         property int timeout: 5

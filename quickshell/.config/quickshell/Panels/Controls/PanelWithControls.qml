@@ -19,14 +19,9 @@ PanelWindow {
     // ── Límites de altura ────────────────────────────────────────────
     // Ajusta barHeight al alto real de tu barra superior (o el gap que
     // quieras respetar si tu barra está en otro borde).
-    readonly property int barHeight: 48
-    readonly property int topGap: 8
-    readonly property int bottomGap: 8
-    readonly property real screenHeight: (root.screen?.height ?? Screen.height)
-    readonly property int maxPanelHeight: screenHeight - barHeight - topGap - bottomGap
 
     implicitWidth: 410
-    implicitHeight: Math.min(panelContent.naturalHeight, maxPanelHeight)
+    implicitHeight: 800
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:dashboard"
@@ -40,16 +35,22 @@ PanelWindow {
 
     margins {
         left: visible ? 8 : -implicitWidth - 40
-        top: barHeight + topGap
+        top: 30
     }
 
     Behavior on implicitHeight {
-        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
     }
- 
+
     Behavior on margins.left {
         id: slideAnim
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 250
+            easing.type: Easing.OutCubic
+        }
     }
 
     IpcHandler {
@@ -121,4 +122,3 @@ PanelWindow {
         audioSink: root.audioSink
     }
 }
-

@@ -16,7 +16,6 @@ Item {
     // Nombre del archivo (sin ruta) a partir de model.filePath
     required property string filePath
 
-
     // Icono placeholder mientras carga la imagen
     MaterialIcon {
         anchors.centerIn: parent
@@ -34,17 +33,16 @@ Item {
         radius: root.radius
         color: "transparent"
 
-        ClippingRectangle {
+        StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            color: "transparent"
             border.color: Appearance.md3.primary
             border.width: root.isSelected ? 2 : 0
 
             Image {
                 id: wallpaperPreview
                 anchors.fill: parent
-                source: "file://" + root.filePath
+                source: Qt.resolvedUrl(root.filePath)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: true

@@ -9,7 +9,7 @@ import qs.Primitives
 BarPopupWindow {
     id: root
 
-    implicitWidth: 350
+    implicitWidth: 360
     implicitHeight: mprisContent.implicitHeight
 
     readonly property var player: Services.MprisService.activePlayer

@@ -17,9 +17,29 @@ Item {
     id: root
 
     required property var bind
+    /// Set to true by the parent when this row is the keyboard-focused item.
+    property bool highlighted: false
+
+    /// Emitted when the mouse starts hovering this row (not on exit, so
+    /// moving the mouse off the cheatsheet doesn't clear the selection).
+    signal hoverEntered
 
     implicitWidth: 320
     implicitHeight: content.implicitHeight + 16
+
+    // Keyboard-focus highlight layer — primary tint, always below the hover layer.
+    Rectangle {
+        id: focusLayer
+        anchors.fill: parent
+        radius: Appearance.shape.small
+        color: Appearance.md3.primary
+        opacity: root.highlighted ? 0.15 : 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 120
+            }
+        }
+    }
 
     // State layer — hover only, this row has no click action of its own
     // but visually confirms which shortcut the user is scanning.
@@ -29,11 +49,19 @@ Item {
         radius: Appearance.shape.small   // usa token en lugar de número hardcodeado
         color: Appearance.md3.on_surface
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 100 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 100
+            }
+        }
     }
 
     HoverHandler {
-        onHoveredChanged: stateLayer.opacity = hovered ? 0.08 : 0
+        onHoveredChanged: {
+            stateLayer.opacity = hovered ? 0.08 : 0;
+            if (hovered)
+                root.hoverEntered();
+        }
     }
 
     RowLayout {
@@ -51,14 +79,15 @@ Item {
             id: keyRow
             spacing: 4
             Layout.alignment: Qt.AlignVCenter
-            
 
             Repeater {
                 model: root.bind.mods
                 delegate: Row {
                     required property string modelData
                     spacing: 4
-                    CheatsheetKeyChip { label: modelData }
+                    CheatsheetKeyChip {
+                        label: modelData
+                    }
                     // "+" separador usando StyledText de Primitives
                     StyledText {
                         text: "+"
@@ -69,7 +98,9 @@ Item {
                 }
             }
 
-            CheatsheetKeyChip { label: root.bind.keyLabel }
+            CheatsheetKeyChip {
+                label: root.bind.keyLabel
+            }
         }
 
         // Descripción de la acción usando StyledText de Primitives

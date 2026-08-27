@@ -5,7 +5,7 @@ import QtQuick
  */
 Item {
     id: root
-    
+
     property bool reveal
     property bool vertical: false
     property int animationDuration: 200 // Duración por defecto para la animación
@@ -23,7 +23,7 @@ Item {
             easing.type: Easing.OutCubic
         }
     }
-    
+
     Behavior on implicitHeight {
         enabled: root.vertical
         NumberAnimation {

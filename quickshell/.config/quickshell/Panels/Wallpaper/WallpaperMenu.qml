@@ -35,10 +35,19 @@ Scope {
             root.showing = !root.showing;
         }
     }
+    // qmllint disable unresolved-type
+    GlobalShortcut {
+        name: "wallpaperSelectorToggle"
+        description: "Toggle Wallpaper Selector"
+        onPressed: {
+            root.showing = !root.showing;
+        }
+    }
 
     Loader {
         id: wallpaperSelectorLoader
         // El Loader se mantiene vivo si se está mostrando O si está corriendo el tiempo de salida
+        asynchronous: true
         active: root.showing || root._isAnimatingOut
 
         sourceComponent: PanelWindow {
@@ -163,7 +172,6 @@ Scope {
                     anchors.fill: parent
                     anchors.margins: 16
                     onHideRequested: root.showing = false
-                    
                 }
             }
         }

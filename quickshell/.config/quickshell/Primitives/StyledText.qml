@@ -1,11 +1,13 @@
 import QtQuick
 import qs.Core.Services
 import qs.Core
+
 Text {
     id: root
     renderType: Text.NativeRendering
+    //textFormat: Text.PlainText
     verticalAlignment: Text.AlignVCenter
-    
+
     property bool shouldUseNumberFont: /^\d+$/.test(root.text)
     font {
         hintingPreference: Font.PreferDefaultHinting

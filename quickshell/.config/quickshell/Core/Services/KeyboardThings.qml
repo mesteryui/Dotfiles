@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 
 Singleton {
     id: root
@@ -11,8 +12,21 @@ Singleton {
     // NUNCA asignar esta propiedad desde fuera — usar
     // refreshCapsLock() para forzar una relectura real.
     property bool capsLockOn: false
+    property bool numsLock: false
+
+    function load() {
+    }
 
     Component.onCompleted: refreshCapsLock()
+
+    // qmllint disable unresolved-type
+    GlobalShortcut {
+        name: "capsLock"
+        description: "caps_lock"
+        onPressed: {
+            root.refreshCapsLock();
+        }
+    }
 
     // Al pulsar Bloq Mayús, el estado del kernel tarda un
     // instante en reflejarse antes de que hyprctl lo reporte.
@@ -25,6 +39,8 @@ Singleton {
         onTriggered: {
             if (!capsLockProc.running)
                 capsLockProc.running = true;
+            if (!numsLock.running)
+                numsLock.running = true;
         }
     }
 
@@ -34,6 +50,8 @@ Singleton {
         onTriggered: {
             if (!capsLockProc.running)
                 capsLockProc.running = true;
+            if (!numsLock.running)
+                numsLock.running = true;
         }
     }
 
@@ -51,6 +69,21 @@ Singleton {
                     const data = JSON.parse(text);
                     const kb = data.keyboards.find(k => k.main) ?? data.keyboards[0];
                     root.capsLockOn = kb?.capsLock ?? false;
+                } catch (e) {
+                    console.warn("No se pudo parsear hyprctl devices:", e);
+                }
+            }
+        }
+    }
+    Process {
+        id: numsLock
+        command: ["hyprctl", "-j", "devices"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const data = JSON.parse(text);
+                    const kb = data.keyboards.find(k => k.name === "asus_numpad") ?? data.keyboards[0];
+                    root.numsLock = kb?.numLock ?? false;
                 } catch (e) {
                     console.warn("No se pudo parsear hyprctl devices:", e);
                 }

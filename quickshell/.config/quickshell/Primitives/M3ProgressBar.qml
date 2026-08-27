@@ -3,9 +3,9 @@ import qs.Core
 
 Item {
     id: root
-    property real  value:       0.0   // 0–1
+    property real value: 0.0   // 0–1
     property color accentColor: Appearance.md3.primary
-    
+
     implicitWidth: 200
     implicitHeight: 6
 

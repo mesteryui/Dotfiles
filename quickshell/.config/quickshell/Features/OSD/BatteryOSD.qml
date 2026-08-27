@@ -12,6 +12,8 @@ BaseOSD {
     implicitWidth: contentRow.implicitWidth + 40
     implicitHeight: contentRow.implicitHeight + 20
 
+    type: "battery"
+
     property string osdIcon: "battery_full"
     property string osdText: ""
 
@@ -20,19 +22,11 @@ BaseOSD {
 
         function onPercentageChanged(): void {
             if (Services.BatteryService.displayDevice.state === UPowerDeviceState.Discharging) {
-                const pct = Services.BatteryService.percentage
+                const pct = Services.BatteryService.percentage;
                 if (pct === 20 || pct === 10) {
-                    batteryOSD.osdIcon = pct === 10 ? "battery_alert" : "battery_low"
-                    batteryOSD.osdText = pct === 10
-                        ? Services.I18nService.getTranslation(
-                            "battery.critical",
-                            "¡Batería crítica (%1%)! Conecta el cargador de inmediato"
-                          ).arg(pct)
-                        : Services.I18nService.getTranslation(
-                            "battery.low",
-                            "Batería baja (%1%): Te recomendamos cargar el equipo"
-                          ).arg(pct)
-                    batteryOSD.show()
+                    batteryOSD.osdIcon = pct === 10 ? "battery_alert" : "battery_low";
+                    batteryOSD.osdText = pct === 10 ? Services.I18nService.getTranslation("battery.critical", "¡Batería crítica (%1%)! Conecta el cargador de inmediato").arg(pct) : Services.I18nService.getTranslation("battery.low", "Batería baja (%1%): Te recomendamos cargar el equipo").arg(pct);
+                    batteryOSD.show();
                 }
             }
         }
@@ -43,12 +37,9 @@ BaseOSD {
         // stateChanged del displayDevice.
         function onStateChanged(): void {
             if (Services.BatteryService.displayDevice.state === UPowerDeviceState.Charging) {
-                batteryOSD.osdIcon = "battery_charging_full"
-                batteryOSD.osdText = Services.I18nService.getTranslation(
-                    "battery.charging",
-                    "Cargando batería"
-                )
-                batteryOSD.show()
+                batteryOSD.osdIcon = "battery_charging_full";
+                batteryOSD.osdText = Services.I18nService.getTranslation("battery.charging", "Cargando batería");
+                batteryOSD.show();
             }
         }
     }
@@ -58,7 +49,7 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.full
+        radius: Appearance.shape.normal
     }
 
     RowLayout {

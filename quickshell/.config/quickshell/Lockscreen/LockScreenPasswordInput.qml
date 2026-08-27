@@ -17,18 +17,27 @@ Item {
     property bool isAuthenticating: false
     property string promptText: ""
     property bool isPasswordVisible: false
+    property bool isFingerprintActive: false
 
-    property alias passwordField: passwordField
+    property alias passwordField: password
 
     signal accepted(string text)
-    signal togglePasswordVisibility()
+    signal togglePasswordVisibility
 
     function triggerShake() {
-        shakeAnim.restart()
+        shakeAnim.restart();
     }
 
     function clearInput() {
-        passwordField.text = ""
+        password.text = "";
+    }
+
+    onIsFingerprintActiveChanged: {
+        // El SequentialAnimation deja el icono a medio pulso al desactivarse
+        // (fprintd tuvo éxito, falló, o entró en modo password) — restaurar
+        // opacidad plena para el icono de lock/lock_open normal.
+        if (!isFingerprintActive)
+            statusIcon.opacity = 1;
     }
 
     function withAlpha(hexColor, alphaValue) {
@@ -92,14 +101,18 @@ Item {
         anchors.fill: parent
         radius: Appearance.shape.normal
         color: root.authFailed ? root.withAlpha(Appearance.md3.error_container, 0.35) : root.withAlpha(Appearance.md3.surface_container_high, 0.55)
-        border.color: root.authFailed ? Appearance.md3.error : (passwordField.activeFocus ? Appearance.md3.primary : root.withAlpha(Appearance.md3.outline_variant, 0.6))
+        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : root.withAlpha(Appearance.md3.outline_variant, 0.6))
         border.width: 1.5
 
         Behavior on color {
-            ColorAnimation { duration: 200 }
+            ColorAnimation {
+                duration: 200
+            }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 200 }
+            ColorAnimation {
+                duration: 200
+            }
         }
 
         RowLayout {
@@ -111,21 +124,47 @@ Item {
             spacing: 8
 
             MaterialIcon {
-                icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : "lock_open")
+                id: statusIcon
+                icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
                 size: Appearance.font.pixelSize.normal
-                color: root.authFailed ? Appearance.md3.error : Appearance.md3.on_surface_variant
+                color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation {
+                        duration: 200
+                    }
+                }
+
+                // Pulso suave mientras espera la huella — distingue el estado
+                // "escaneando" del icono estático de lock/lock_open.
+                SequentialAnimation {
+                    running: root.isFingerprintActive
+                    loops: Animation.Infinite
+                    NumberAnimation {
+                        target: statusIcon
+                        property: "opacity"
+                        from: 1
+                        to: 0.4
+                        duration: 700
+                        easing.type: Easing.InOutQuad
+                    }
+                    NumberAnimation {
+                        target: statusIcon
+                        property: "opacity"
+                        from: 0.4
+                        to: 1
+                        duration: 700
+                        easing.type: Easing.InOutQuad
+                    }
                 }
             }
 
             TextField {
-                id: passwordField
+                id: password
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 echoMode: root.isPasswordVisible === false ? TextInput.Password : TextInput.Normal
-                placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña..."))
+                placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : (root.isFingerprintActive ? I18nService.getTranslation("lockscreen.fingerprint", "Coloca tu dedo en el lector") : I18nService.getTranslation("lockscreen.password", "Contraseña...")))
                 placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)
                 color: Appearance.md3.on_surface
                 background: null
@@ -137,18 +176,13 @@ Item {
 
                 onAccepted: {
                     if (text.length > 0 && !root.isAuthenticating) {
-                        root.accepted(text)
+                        root.accepted(text);
                     }
                 }
 
                 Keys.onEscapePressed: {
-                    text = ""
-                    root.authFailed = false
-                }
-                Keys.onPressed: event => {
-                    if (event.key === Qt.Key_CapsLock) {
-                        KeyboardThings.refreshCapsLock();
-                    }
+                    text = "";
+                    root.authFailed = false;
                 }
             }
 

@@ -10,8 +10,7 @@ Singleton {
 
     // Conveniencias — simplifican los consumidores
     readonly property bool available: currentAdapter !== null
-    readonly property bool enabled: available
-        && currentAdapter?.state === BluetoothAdapterState.Enabled
+    readonly property bool enabled: available && currentAdapter?.state === BluetoothAdapterState.Enabled
 
     // Propiedad intermedia para que el binding a .state de cada device funcione
     readonly property list<BluetoothDevice> devices: currentAdapter?.devices.values ?? []

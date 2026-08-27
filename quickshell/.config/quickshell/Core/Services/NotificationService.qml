@@ -10,6 +10,7 @@ Singleton {
         id: storage
         property var historyData: []
         property bool dnd: false
+        reloadableId: "notifications"
     }
 
     // 1. FORMA CORRECTA: Exponemos los modelos al exterior usando 'alias'
@@ -17,8 +18,12 @@ Singleton {
     property alias activeModel: _activeModel
 
     // 2. Declaramos los ListModel como objetos hijos internos
-    ListModel { id: _historyModel }
-    ListModel { id: _activeModel }
+    ListModel {
+        id: _historyModel
+    }
+    ListModel {
+        id: _activeModel
+    }
 
     Component.onCompleted: {
         // CORRECCIÓN 1: Forzamos a que siempre sea un array
@@ -44,20 +49,21 @@ Singleton {
             urgency: notification.urgency
         };
         _historyModel.insert(0, entry);
-        
+
         // CORRECCIÓN 2: Extraemos los datos a una variable segura con fallback a []
         let currentData = storage.historyData || [];
         let newData = [entry];
-        
         // Ahora currentData.length es 100% seguro y nunca será undefined
-        let maxLimit = Math.min(currentData.length, 49); 
+        let maxLimit = Math.min(currentData.length, 49);
         for (let i = 0; i < maxLimit; i++) {
             newData.push(currentData[i]);
         }
         storage.historyData = newData;
 
         // 2. Inyectar el objeto VIVO en el modelo activo
-        _activeModel.insert(0, { "notifObj": notification });
+        _activeModel.insert(0, {
+            "notifObj": notification
+        });
     }
 
     function disposeNotification(id) {
@@ -78,6 +84,7 @@ Singleton {
 
     NotificationServer {
         id: server
+        keepOnReload: true
         bodySupported: true
         actionsSupported: true
         imageSupported: true

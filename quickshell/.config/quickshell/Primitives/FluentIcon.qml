@@ -8,7 +8,7 @@ Kirigami.Icon {
     required property string icon
     property bool filled: false
     property alias monochrome: root.isMask
-    
+
     property int implicitSize: 20
     implicitWidth: implicitSize
     implicitHeight: implicitSize

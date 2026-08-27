@@ -18,8 +18,8 @@ ColumnLayout {
         id: clockText
         Layout.alignment: Qt.AlignHCenter
         color: Appearance.md3.on_surface
-        opacity: 0.92
-        font.pixelSize: Appearance.font.pixelSize.hugeass + 60
+        opacity: 0.9
+        font.pixelSize: Appearance.font.pixelSize.hugeass + 70
         font.variableAxes: Appearance.font.variableAxes.title
 
         text: clock.date.toLocaleTimeString(I18nService.locale, "hh:mm")

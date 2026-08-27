@@ -7,41 +7,55 @@ import qs.Core.Services as Services
 
 PanelWindow {
     id: root
-    
+
+    readonly property bool isTop: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == ""
+
+    property int barHeight: Services.ConfigService.configs.bar.height
+
+    // Configuramos cuánto queremos que mida la lágrima
+    property real teardropLength: 30
+    property real teardropWidth: 35
+
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.exclusiveZone: 36
+    // La zona exclusiva sigue siendo SOLO el alto de la barra (no molesta a otras apps)
+    WlrLayershell.exclusiveZone: barHeight
     exclusionMode: ExclusionMode.Normal
     WlrLayershell.namespace: "quickshell:bar"
 
-    
     anchors {
-        top: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == "" ? true : false
+        top: root.isTop
+        bottom: !root.isTop
         right: true
         left: true
-        bottom: Services.ConfigService.configs.bar.position == "bottom" ? true : false
-    }
-    
-    margins {
-        top: Services.ConfigService.configs.bar.position == "bottom" ? 0 : 3
-        bottom: Services.ConfigService.configs.bar.position == "bottom" ? 3 : 0
-        right: 3
-        left: 3
-    }
-    implicitWidth: content.width
-    implicitHeight: 36
-    color: "transparent"
-    
-    BarBackground {
-        anchors.fill: parent
-        color: Appearance.md3.surface
-        radius: Appearance.shape.screenRounding
     }
 
-    MainBar { 
-        id: content
-        anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
+    implicitWidth: content.width
+
+    // ¡CLAVE! Damos espacio físico extra en la ventana para dibujar la lágrima sin que se recorte.
+    implicitHeight: barHeight + teardropLength
+
+    color: "transparent"
+
+    // 1. Fondo de la Barra
+    BarBackground {
+        id: bg
+        anchors.left: parent.left
+        anchors.right: parent.right
+        // Lo anclamos según si está arriba o abajo
+        y: root.isTop ? 0 : root.teardropLength
+        height: root.barHeight
+        color: Appearance.md3.surface
+        radius: 0
     }
-   
+
+    // 3. Contenido de la barra
+    MainBar {
+        id: content
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 6
+        anchors.rightMargin: 6
+        y: root.isTop ? 0 : root.teardropLength
+        height: root.barHeight
+    }
 }

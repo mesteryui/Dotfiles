@@ -6,6 +6,13 @@
     "empty": "No notifications",
     "reply": "Reply…"
   },
+  "osd": {
+    "capsLock": {
+      "text": "Caps Lock %1",
+      "activate": "Activated",
+      "deactivate": "Deactivated"
+    }
+  },
   "power": {
     "shutdown": "Shutdown",
     "reboot": "Reboot",

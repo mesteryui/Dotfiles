@@ -4,7 +4,7 @@ import Quickshell.Io
 import QtQuick
 
 Singleton {
-    id: root 
+    id: root
     property alias persistence: persitenceStates
     property bool ready: false
     Timer {
@@ -12,7 +12,7 @@ Singleton {
         interval: 100
         repeat: false
         onTriggered: {
-            fileManagment.reload()
+            fileManagment.reload();
         }
     }
 
@@ -21,13 +21,15 @@ Singleton {
         interval: 100
         repeat: false
         onTriggered: {
-            fileManagment.writeAdapter()
+            fileManagment.writeAdapter();
         }
     }
 
     FileView {
         id: fileManagment
         watchChanges: true
+        atomicWrites: true
+        blockLoading: true
         path: Quickshell.env("XDG_STATE_HOME") + "/quickshell/persistence.json"
         onFileChanged: fileReloadTimer.restart()
         onAdapterUpdated: fileWriteTimer.restart()
@@ -38,11 +40,10 @@ Singleton {
                 fileWriteTimer.restart();
             }
         }
-        
+
         JsonAdapter {
             id: persitenceStates
             property string currentWallpaper: ""
-            
         }
     }
 }

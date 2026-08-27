@@ -13,5 +13,4 @@ ScrollBar {
         radius: width / 2
         opacity: root.policy === ScrollBar.AlwaysOn || (root.active && root.size < 1.0) ? 0.5 : 0
     }
-    
 }

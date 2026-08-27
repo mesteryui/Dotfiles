@@ -18,8 +18,10 @@ Rectangle {
     implicitHeight: mainLayout.implicitHeight + 20
     color: Appearance.md3.surface_container_high
     radius: Appearance.shape.large
+    border.width: 1
+    border.color: Qt.alpha(Appearance.md3.outline_variant, 0.45)
 
-    // State layer de fila completa — trato de hover tipo lista GNOME
+    // State layer de fila completa
     Rectangle {
         id: rowStateLayer
         anchors.fill: parent
@@ -39,11 +41,11 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 10
+        anchors.margins: 12
         anchors.rightMargin: 32
         spacing: 10
 
-        // Fondo circular suave detrás del icono de la app, estilo GNOME
+        // Fondo tonal para el icono de la app
         Item {
             Layout.preferredHeight: 36
             Layout.preferredWidth: 36
@@ -52,21 +54,15 @@ Rectangle {
 
             Rectangle {
                 anchors.fill: parent
-                radius: Appearance.shape.full
-                color: Appearance.md3.surface_variant
+                radius: Appearance.shape.small
+                color: Appearance.md3.primary_container
             }
 
             AppIcon {
                 id: notificationIcon
                 anchors.fill: parent
                 anchors.margins: 4
-                //fillMode: Image.PreserveAspectFit
                 source: root.icon
-                // El handle image://qsimage/<id>/<serial> solo vive mientras la
-                // notificación original está viva. Si ya expiró (caso típico en
-                // el historial), evitamos mostrar el glifo de imagen rota y nos
-                // quedamos con el círculo tonal de fondo como fallback.
-                //visible: status === Image.Ready
             }
         }
 
@@ -77,50 +73,50 @@ Rectangle {
 
             RowLayout {
                 Layout.fillWidth: true
-                Text {
+                StyledText {
                     text: root.summary
                     color: Appearance.md3.on_surface
                     font.bold: true
                     font.family: Appearance.font.sans
+                    font.pixelSize: Appearance.font.pixelSize.normal
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
-                Text {
+                StyledText {
                     text: root.time
                     color: Appearance.md3.on_surface_variant
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smallest
                     font.family: Appearance.font.sans
                 }
             }
-            Text {
+            StyledText {
                 text: root.body
                 visible: text !== ""
                 color: Appearance.md3.on_surface_variant
                 font.family: Appearance.font.sans
-                font.pixelSize: 12
+                font.pixelSize: Appearance.font.pixelSize.smallie
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
-            Text {
+            StyledText {
                 visible: root.appName !== ""
                 text: root.appName
                 color: Appearance.md3.on_surface_variant
-                font.pixelSize: 10
+                font.pixelSize: Appearance.font.pixelSize.smallest
                 font.family: Appearance.font.sans
                 opacity: 0.8
             }
         }
     }
 
-    // Botón (×) para borrar esta notificación individual — aparece en hover
-    // de la fila, igual que las filas de lista de GNOME
+    // Botón (×) para borrar esta notificación individual
     Item {
         id: closeButton
         width: 24
         height: 24
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: 6
+        anchors.margins: 8
         opacity: rowHover.hovered ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 100 } }
 
@@ -137,6 +133,7 @@ Rectangle {
             icon: "close"
             anchors.centerIn: parent
             color: Appearance.md3.on_surface_variant
+            size: 16
         }
 
         MouseArea {

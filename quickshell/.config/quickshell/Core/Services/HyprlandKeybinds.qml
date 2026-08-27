@@ -33,61 +33,88 @@ Singleton {
     // Hyprland's internal MODS bitmask (independent of X11's numbering).
     // Ordered so the decoded label list reads naturally: Super Ctrl Alt Shift.
     readonly property var modBits: [
-        { bit: 64,  label: "Super" },
-        { bit: 4,   label: "Ctrl" },
-        { bit: 8,   label: "Alt" },
-        { bit: 1,   label: "Shift" },
-        { bit: 2,   label: "Caps" },
-        { bit: 16,  label: "Mod2" },
-        { bit: 32,  label: "Mod3" },
-        { bit: 128, label: "Mod5" }
+        {
+            bit: 64,
+            label: "Super"
+        },
+        {
+            bit: 4,
+            label: "Ctrl"
+        },
+        {
+            bit: 8,
+            label: "Alt"
+        },
+        {
+            bit: 1,
+            label: "Shift"
+        },
+        {
+            bit: 2,
+            label: "Caps"
+        },
+        {
+            bit: 16,
+            label: "Mod2"
+        },
+        {
+            bit: 32,
+            label: "Mod3"
+        },
+        {
+            bit: 128,
+            label: "Mod5"
+        }
     ]
 
     readonly property var specialKeyNames: ({
-        "RETURN": "Enter",
-        "KP_ENTER": "Enter",
-        "ESCAPE": "Esc",
-        "GRAVE": "`",
-        "MINUS": "-",
-        "EQUAL": "=",
-        "BACKSPACE": "⌫",
-        "TAB": "Tab",
-        "SPACE": "Space",
-        "LEFT": "←",
-        "RIGHT": "→",
-        "UP": "↑",
-        "DOWN": "↓",
-        "PRINT": "PrtSc",
-        "DELETE": "Del",
-        "PAGE_UP": "PgUp",
-        "PAGE_DOWN": "PgDn",
-        "HOME": "Home",
-        "END": "End",
-        "SUPER_L": "Super",
-        "SUPER_R": "Super",
-        "XF86AudioRaiseVolume": "Vol +",
-        "XF86AudioLowerVolume": "Vol -",
-        "XF86AudioMute": "Mute",
-        "XF86AudioMicMute": "Mic Mute",
-        "XF86AudioPlay": "Play",
-        "XF86AudioNext": "Next",
-        "XF86AudioPrev": "Prev",
-        "XF86MonBrightnessUp": "Bright +",
-        "XF86MonBrightnessDown": "Bright -"
-    })
+            "RETURN": "Enter",
+            "KP_ENTER": "Enter",
+            "ESCAPE": "Esc",
+            "GRAVE": "`",
+            "MINUS": "-",
+            "EQUAL": "=",
+            "BACKSPACE": "⌫",
+            "TAB": "Tab",
+            "SPACE": "Space",
+            "LEFT": "←",
+            "RIGHT": "→",
+            "UP": "↑",
+            "DOWN": "↓",
+            "PRINT": "PrtSc",
+            "DELETE": "Del",
+            "PAGE_UP": "PgUp",
+            "PAGE_DOWN": "PgDn",
+            "HOME": "Home",
+            "END": "End",
+            "SUPER_L": "Super",
+            "SUPER_R": "Super",
+            "XF86AudioRaiseVolume": "Vol +",
+            "XF86AudioLowerVolume": "Vol -",
+            "XF86AudioMute": "Mute",
+            "XF86AudioMicMute": "Mic Mute",
+            "XF86AudioPlay": "Play",
+            "XF86AudioNext": "Next",
+            "XF86AudioPrev": "Prev",
+            "XF86MonBrightnessUp": "Bright +",
+            "XF86MonBrightnessDown": "Bright -"
+        })
 
     function prettyModName(raw) {
         switch (raw) {
-        case "SUPER": return "Super";
-        case "SHIFT": return "Shift";
+        case "SUPER":
+            return "Super";
+        case "SHIFT":
+            return "Shift";
         case "CTRL":
-        case "CONTROL": return "Ctrl";
-        case "ALT": return "Alt";
-        case "CAPS": return "Caps";
+        case "CONTROL":
+            return "Ctrl";
+        case "ALT":
+            return "Alt";
+        case "CAPS":
+            return "Caps";
         default:
-            return raw.length > 0
-                ? raw.charAt(0) + raw.slice(1).toLowerCase()
-                : raw;
+            return raw.length > 0 ? raw.charAt(0) + raw.slice(1).toLowerCase() : raw;
         }
     }
 

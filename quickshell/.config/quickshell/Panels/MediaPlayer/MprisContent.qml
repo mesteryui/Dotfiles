@@ -1,10 +1,10 @@
-// MprisContent — Content
-// Toda la UI del popup de media. Sin fondos ni sombras (las gestiona el Wrapper).
-// Estilo: 70% Material You (tokens, tonal containers, state layers) + 30% GNOME/Adwaita
-// (tarjeta plana con borde fino en vez de degradado, thumbnail cuadrado en vez de
-// fondo a sangre, slider ultra-delgado, botón de play grande como foco único).
-// Expone sliderDragging para que el Wrapper gestione los timers.
+// MprisContent — Content Material 3 Expressive (Material You)
+// UI completa del reproductor multimedia con tokens de diseño Material Design 3 (M3).
+// Integra carátula destacada con elevación, insignias M3, seekbar de cápsula interactiva,
+// controles de 5 acciones (Shuffle, Prev, Play/Pause FAB heroico, Next, Loop),
+// control de volumen y selector de múltiples reproductores con chips M3.
 
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -26,394 +26,20 @@ Item {
     signal seekRequested(real newPosition)
 
     // El Wrapper lo consulta en sus Timers y Connections
-    readonly property bool sliderDragging: progressSlider.pressed
+    readonly property bool sliderDragging: progressArea.pressed
 
+    readonly property var player: Services.MprisService.activePlayer
+    readonly property bool hasPlayer: root.player !== null
     readonly property bool multiPlayer: Services.MprisService.players.length > 1
     readonly property bool hasArt: root.artURL !== ""
 
-    // 14 = margen superior de header · 12 = margen superior de divider
-    implicitHeight: 14 + header.implicitHeight + 12 + divider.implicitHeight + controls.implicitHeight + (multiPlayer ? playerSelector.implicitHeight : 0)
+    implicitWidth: 360
+    implicitHeight: mainColumn.implicitHeight + 32
 
-    // ── Cabecera: tarjeta plana con thumbnail + título/artista ─
-    // (Adwaita "now playing" row en vez del header a sangre con degradado)
-    Item {
-        id: header
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            margins: 14
-        }
-        implicitHeight: 72
-
-        // Fondo tonal plano, sin degradados: borde fino en vez de sombra pesada
-        Rectangle {
-            anchors.fill: parent
-            radius: 18
-            color: Appearance.md3.surface_container_high
-            border.width: 1
-            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
-        }
-
-        RowLayout {
-            anchors {
-                fill: parent
-                margins: 10
-            }
-            spacing: 12
-
-            // Thumbnail cuadrado con esquinas redondeadas (no full-bleed)
-            Item {
-                id: artThumb
-                Layout.preferredWidth: 52
-                Layout.preferredHeight: 52
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 14
-                    color: Appearance.md3.primary_container
-                    visible: !artImage.visible || artImage.status !== Image.Ready
-
-                    ButtonIcon {
-                        anchors.centerIn: parent
-                        iconSize: 22
-                        iconName: "music_note"
-                        enabled: false
-                        iconColor: Appearance.md3.on_primary_container
-                    }
-                }
-
-                ClippingWrapperRectangle {
-                    anchors.fill: parent
-                    radius: 14
-                    color: "transparent"
-
-                    Image {
-                        id: artImage
-                        anchors.fill: parent
-                        source: root.artURL
-                        fillMode: Image.PreserveAspectCrop
-                        cache: false
-                        asynchronous: true
-                        visible: root.hasArt && status === Image.Ready
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 200
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Título y artista
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-
-                StyledText {
-                    Layout.fillWidth: true
-                    text: Services.MprisService.activePlayer?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
-                    font.pixelSize: 14
-                    font.weight: Font.DemiBold
-                    color: Appearance.md3.on_surface
-                    elide: Text.ElideRight
-                }
-
-                StyledText {
-                    Layout.fillWidth: true
-                    text: Services.MprisService.activePlayer?.trackArtist || Services.MprisService.activePlayer?.trackAlbumArtist || ""
-                    font.pixelSize: 12
-                    color: Appearance.md3.on_surface_variant
-                    elide: Text.ElideRight
-                    visible: text !== ""
-                }
-            }
-        }
-    }
-
-    // ── Separador fino (Adwaita usa hairlines en vez de degradados) ─
-    Item {
-        id: divider
-        anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-            margins: 14
-            topMargin: 12
-        }
-        implicitHeight: 1
-
-        Rectangle {
-            anchors.fill: parent
-            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
-        }
-    }
-
-    // ── Controles: slider y botones ───────────────────────────
-    Column {
-        id: controls
-        anchors {
-            top: divider.bottom
-            left: parent.left
-            right: parent.right
-        }
-        topPadding: 12
-        bottomPadding: root.multiPlayer ? 8 : 16
-        leftPadding: 16
-        rightPadding: 16
-        spacing: 6
-
-        // Slider de progreso — pista ultra-delgada, sin caja Material,
-        // el "pill track" es una convención GNOME/Adwaita habitual.
-        Slider {
-            id: progressSlider
-            width: parent.width - parent.leftPadding - parent.rightPadding
-            from: 0.0
-            to: 1.0
-            implicitHeight: 20
-
-            onMoved: root.seekRequested(value * (Services.MprisService.activePlayer?.length ?? 0))
-
-            background: Item {
-                x: progressSlider.leftPadding
-                y: progressSlider.topPadding + progressSlider.availableHeight / 2 - height / 2
-                width: progressSlider.availableWidth
-                height: 4
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 2
-                    color: Qt.alpha(Appearance.md3.on_surface, 0.12)
-                }
-
-                Rectangle {
-                    width: progressSlider.visualPosition * parent.width
-                    height: parent.height
-                    radius: 2
-                    color: Appearance.md3.primary
-                }
-            }
-
-            handle: Rectangle {
-                x: progressSlider.leftPadding + progressSlider.visualPosition * (progressSlider.availableWidth - width)
-                y: progressSlider.topPadding + progressSlider.availableHeight / 2 - height / 2
-                width: progressSlider.pressed || progressSlider.hovered ? 14 : 10
-                height: width
-                radius: width / 2
-                color: Appearance.md3.primary
-
-                Behavior on width {
-                    NumberAnimation {
-                        duration: 100
-                    }
-                }
-            }
-        }
-
-        Binding {
-            target: progressSlider
-            property: "value"
-            value: (Services.MprisService.activePlayer?.length ?? 0) > 0 ? Math.min(1.0, root.currentPosition / Services.MprisService.activePlayer.length) : 0.0
-            when: !progressSlider.pressed // Detiene la sobrescritura mientras arrastras
-            restoreMode: Binding.RestoreBinding
-        }
-
-        // Tiempos
-        RowLayout {
-            width: parent.width - parent.leftPadding - parent.rightPadding
-
-            Text {
-                text: root.formatTime(root.currentPosition)
-                font.pixelSize: 11
-                font.family: Services.ConfigService.configs.appearence.monospace
-                color: Appearance.md3.on_surface_variant
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: root.formatTime(Services.MprisService.activePlayer?.length ?? 0)
-                font.pixelSize: 11
-                font.family: Services.ConfigService.configs.appearence.monospace
-                color: Appearance.md3.on_surface_variant
-            }
-        }
-
-        // Botones prev / play / next — el play grande es el único foco
-        // visual fuerte (acento M3), prev/next quedan planos (Adwaita).
-        RowLayout {
-            width: parent.width - parent.leftPadding - parent.rightPadding
-            spacing: 0
-            implicitHeight: 56
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            ButtonIcon {
-                iconSize: 20
-                iconName: "skip_previous"
-                enabled: Services.MprisService.activePlayer != null
-                onClicked: Services.MprisService.previous()
-            }
-
-            // Botón play/pause — foco principal, relleno sólido y sombra sutil
-            Item {
-                id: playButtonWrap
-                Layout.preferredWidth: 56
-                Layout.preferredHeight: 56
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-
-                MultiEffect {
-                    source: playButtonBg
-                    anchors.fill: playButtonBg
-                    shadowEnabled: true
-                    shadowColor: Appearance.md3.shadow
-                    shadowOpacity: 0.16
-                    shadowBlur: 0.6
-                    shadowVerticalOffset: 2
-                    shadowHorizontalOffset: 0
-                }
-
-                Rectangle {
-                    id: playButtonBg
-                    anchors.fill: parent
-                    radius: 28
-                    color: Appearance.md3.primary
-                }
-
-                ButtonIcon {
-                    anchors.centerIn: parent
-                    iconSize: 24
-                    iconName: Services.MprisService.isPlaying ? "pause" : "play_arrow"
-                    enabled: Services.MprisService.activePlayer != null
-                    iconColor: Appearance.md3.on_primary
-                    onClicked: Services.MprisService.togglePlaying()
-                }
-            }
-
-            ButtonIcon {
-                iconSize: 20
-                iconName: "skip_next"
-                enabled: Services.MprisService.activePlayer != null
-                onClicked: Services.MprisService.next()
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-        }
-    }
-
-    // ── Selector de reproductor ───────────────────────────────
-    // Chips planos con borde fino cuando no están activos: mezcla del
-    // pill chip M3 con el look de "segmented toggle" de Adwaita.
-    Item {
-        id: playerSelector
-        anchors {
-            top: controls.bottom
-            left: parent.left
-            right: parent.right
-            leftMargin: 16
-            rightMargin: 16
-            bottomMargin: 12
-        }
-        implicitHeight: visible ? chipsRow.implicitHeight + 12 : 0
-        visible: root.multiPlayer
-
-        // Chips en fila; si hay muchos players, se limita el ancho y se
-        // habilita scroll horizontal con Flickable en vez de desbordar.
-        Flickable {
-            id: chipsFlickable
-            anchors {
-                top: parent.top
-                topMargin: 0
-                horizontalCenter: parent.horizontalCenter
-            }
-            width: Math.min(chipsRow.implicitWidth, parent.width)
-            height: chipsRow.implicitHeight
-            contentWidth: chipsRow.implicitWidth
-            contentHeight: chipsRow.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.HorizontalFlick
-            interactive: contentWidth > width
-
-            Row {
-                id: chipsRow
-                spacing: 6
-
-                Repeater {
-                    model: Services.MprisService.players
-
-                    delegate: WrapperMouseArea {
-                        id: chipWrapper
-
-                        required property var modelData
-                        property MprisPlayer player: modelData
-
-                        readonly property bool isActive: Services.MprisService.activePlayer === player
-
-                        cursorShape: Qt.PointingHandCursor
-
-                        onClicked: {
-                            if (Services.MprisService.activePlayer === chipWrapper.player)
-                                Services.MprisService.setActivePlayer(null);
-                            else
-                                Services.MprisService.setActivePlayer(chipWrapper.player);
-                        }
-
-                        // Fondo del chip interactivo
-                        Rectangle {
-                            implicitWidth: chipLayout.implicitWidth + 24
-                            implicitHeight: 28
-                            radius: 9999
-                            color: chipWrapper.isActive ? Appearance.md3.primary_container : "transparent"
-                            border.width: chipWrapper.isActive ? 0 : 1
-                            border.color: Appearance.md3.outline_variant
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 120
-                                }
-                            }
-
-                            // Icono + Nombre del reproductor
-                            RowLayout {
-                                id: chipLayout
-                                anchors.centerIn: parent
-                                spacing: 6
-
-                                IconImage {
-                                    implicitWidth: 16
-                                    implicitHeight: 16
-                                    source: Quickshell.iconPath(chipWrapper.player.desktopEntry, true)
-                                }
-
-                                StyledText {
-                                    text: chipWrapper.player.identity ?? chipWrapper.player.dbusName
-                                    font.family: Services.ConfigService.configs.appearence.fontSans
-                                    font.pixelSize: 11
-                                    color: chipWrapper.isActive ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 120
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // ── Utilidades ────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────
     function formatTime(seconds: real): string {
+        if (!seconds || seconds <= 0 || isNaN(seconds))
+            return "0:00";
         const totalSec = Math.floor(seconds);
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
@@ -423,5 +49,816 @@ Item {
             return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
         }
         return m + ":" + String(s).padStart(2, "0");
+    }
+
+    function toggleShuffle() {
+        if (!Services.MprisService.shuffleSupported)
+            return;
+        Services.MprisService.setShuffle(!Services.MprisService.hasShuffle);
+    }
+
+    function cycleLoopState() {
+        if (!Services.MprisService.loopSupported)
+            return;
+        const current = Services.MprisService.loopState;
+        if (current === MprisLoopState.None) {
+            Services.MprisService.setLoopState(MprisLoopState.Playlist);
+        } else if (current === MprisLoopState.Playlist) {
+            Services.MprisService.setLoopState(MprisLoopState.Track);
+        } else {
+            Services.MprisService.setLoopState(MprisLoopState.None);
+        }
+    }
+
+    function volumeIcon(vol: real): string {
+        if (vol <= 0.001)
+            return "volume_off";
+        if (vol < 0.33)
+            return "volume_mute";
+        if (vol < 0.66)
+            return "volume_down";
+        return "volume_up";
+    }
+
+    // ── Contenedor Principal ──────────────────────────────────
+    ColumnLayout {
+        id: mainColumn
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            margins: 16
+        }
+        spacing: 14
+
+        // ════════════════════════════════════════════════════════
+        // ESTADO VACÍO (Sin reproductor)
+        // ════════════════════════════════════════════════════════
+        ColumnLayout {
+            id: emptyState
+            Layout.fillWidth: true
+            Layout.preferredHeight: 160
+            visible: !root.hasPlayer
+            spacing: 12
+            Layout.alignment: Qt.AlignCenter
+
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 64
+                Layout.preferredHeight: 64
+                radius: 32
+                color: Appearance.md3.surface_container_highest
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: "music_off"
+                    size: 32
+                    color: Appearance.md3.on_surface_variant
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Layout.alignment: Qt.AlignHCenter
+
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Services.I18nService.getTranslation("media.no_media", "Nada reproduciendo")
+                    font.pixelSize: Appearance.font.pixelSize.normal
+                    font.weight: Font.DemiBold
+                    font.family: Appearance.font.sans
+                    color: Appearance.md3.on_surface
+                }
+
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "Inicia la reproducción en cualquier aplicación"
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.family: Appearance.font.sans
+                    color: Appearance.md3.on_surface_variant
+                }
+            }
+        }
+
+        // ════════════════════════════════════════════════════════
+        // ESTADO ACTIVO: Info de Pista + Carátula
+        // ════════════════════════════════════════════════════════
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 14
+            visible: root.hasPlayer
+
+            // ── Carátula M3 Expressive ──
+            Item {
+                id: artContainer
+                Layout.preferredWidth: 76
+                Layout.preferredHeight: 76
+
+                // Sombra tonal para dar profundidad Material You
+                MultiEffect {
+                    anchors.fill: artBg
+                    source: artBg
+                    shadowEnabled: true
+                    shadowColor: Appearance.md3.shadow
+                    shadowOpacity: 0.18
+                    shadowBlur: 0.5
+                    shadowVerticalOffset: 2
+                }
+
+                // Placeholder / Fondo
+                Rectangle {
+                    id: artBg
+                    anchors.fill: parent
+                    radius: Appearance.shape.normal
+                    color: Appearance.md3.primary_container
+
+                    MaterialIcon {
+                        anchors.centerIn: parent
+                        icon: "music_note"
+                        size: 36
+                        fill: 1
+                        color: Appearance.md3.on_primary_container
+                        visible: !artImage.visible || artImage.status !== Image.Ready
+                    }
+                }
+
+                // Imagen recortada
+                StyledClippingRectangle {
+                    anchors.fill: parent
+                    radius: Appearance.shape.normal
+
+                    Image {
+                        id: artImage
+                        anchors.fill: parent
+                        source: root.artURL
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        asynchronous: true
+                        visible: root.hasArt && status === Image.Ready
+                        opacity: visible ? 1.0 : 0.0
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Metadatos de la Pista ──
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 3
+
+                // Badge con la fuente / aplicación
+                Rectangle {
+                    implicitHeight: 20
+                    implicitWidth: Math.min(appBadgeContent.implicitWidth + 14, 200)
+                    radius: Appearance.shape.full
+                    color: Appearance.md3.surface_container_highest
+                    visible: root.player != null
+
+                    RowLayout {
+                        id: appBadgeContent
+                        anchors.centerIn: parent
+                        spacing: 5
+
+                        IconImage {
+                            implicitWidth: 12
+                            implicitHeight: 12
+                            source: Quickshell.iconPath(root.player?.desktopEntry, true)
+                        }
+
+                        StyledText {
+                            text: root.player?.identity ?? root.player?.dbusName ?? "Media"
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            font.family: Appearance.font.sans
+                            color: Appearance.md3.on_surface_variant
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                        }
+                    }
+                }
+
+                // Título de la pista
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media", "Nada reproduciendo")
+                    font.pixelSize: Appearance.font.pixelSize.large
+                    font.weight: Font.DemiBold
+                    font.family: Appearance.font.sans
+                    color: Appearance.md3.on_surface
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                }
+
+                // Artista
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.player?.trackArtist || root.player?.trackAlbumArtist || ""
+                    font.pixelSize: Appearance.font.pixelSize.smallie
+                    font.family: Appearance.font.sans
+                    color: Appearance.md3.on_surface_variant
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                    visible: text !== ""
+                }
+
+                // Álbum (opcional si es distinto al título)
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.player?.trackAlbum || ""
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.family: Appearance.font.sans
+                    color: Qt.alpha(Appearance.md3.on_surface_variant, 0.75)
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                    visible: text !== "" && text !== (root.player?.trackTitle ?? "") && text !== (root.player?.trackArtist ?? "")
+                }
+            }
+        }
+
+        // ════════════════════════════════════════════════════════
+        // SLIDER DE PROGRESO M3 EXPRESSIVE
+        // ════════════════════════════════════════════════════════
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 4
+            visible: root.hasPlayer
+
+            // Pista interactiva de cápsula
+            Item {
+                id: progressContainer
+                Layout.fillWidth: true
+                implicitHeight: 20
+
+                readonly property real totalLength: root.player?.length ?? 0
+                readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.currentPosition / totalLength)) : 0.0
+
+                // Pista base (Capsule track)
+                Rectangle {
+                    id: progressTrackBg
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: progressArea.pressed ? 10 : (progressArea.containsMouse ? 8 : 6)
+                    radius: height / 2
+                    color: Appearance.md3.surface_container_highest
+
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    // Pista activa (Fill)
+                    Rectangle {
+                        width: Math.max(parent.height, progressTrackBg.width * progressContainer.progressRatio)
+                        height: parent.height
+                        radius: parent.radius
+                        color: Appearance.md3.primary
+
+                        Behavior on width {
+                            enabled: !progressArea.pressed
+                            NumberAnimation {
+                                duration: 80
+                            }
+                        }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                    }
+                }
+
+                // Handle / Thumb M3 Expressive
+                Rectangle {
+                    id: progressThumb
+                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.progressRatio - width / 2))
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: progressArea.pressed ? 8 : (progressArea.containsMouse ? 7 : 5)
+                    height: progressArea.pressed ? 20 : (progressArea.containsMouse ? 16 : 12)
+                    radius: width / 2
+                    color: Appearance.md3.primary
+                    border.color: Appearance.md3.surface_container_lowest
+                    border.width: 1.5
+
+                    Behavior on x {
+                        enabled: !progressArea.pressed
+                        NumberAnimation {
+                            duration: 80
+                        }
+                    }
+                    Behavior on width {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: progressArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: (root.player?.canSeek || root.player?.canControl) ? Qt.PointingHandCursor : Qt.ArrowCursor
+
+                    function updateSeek(mouseX: real) {
+                        if (!(root.player?.canSeek || root.player?.canControl))
+                            return;
+                        const ratio = Math.max(0.0, Math.min(1.0, mouseX / width));
+                        const targetPos = ratio * (root.player?.length ?? 0);
+                        root.seekRequested(targetPos);
+                    }
+
+                    onPositionChanged: mouse => {
+                        if (pressed)
+                            updateSeek(mouse.x);
+                    }
+                    onClicked: mouse => updateSeek(mouse.x)
+                }
+            }
+
+            // Tiempos
+            RowLayout {
+                Layout.fillWidth: true
+
+                StyledText {
+                    text: root.formatTime(root.currentPosition)
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.family: Appearance.font.mono
+                    font.features: ({
+                            "tnum": 1
+                        })
+                    color: Appearance.md3.on_surface_variant
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                StyledText {
+                    text: root.formatTime(root.player?.length ?? 0)
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.family: Appearance.font.mono
+                    font.features: ({
+                            "tnum": 1
+                        })
+                    color: Appearance.md3.on_surface_variant
+                }
+            }
+        }
+
+        // ════════════════════════════════════════════════════════
+        // CONTROLES DE REPRODUCCIÓN (5 ACCIONES MATERIAL YOU)
+        // ════════════════════════════════════════════════════════
+        RowLayout {
+            Layout.fillWidth: true
+            implicitHeight: 60
+            spacing: 0
+            visible: root.hasPlayer
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            // 1. Shuffle
+            Item {
+                implicitWidth: 40
+                implicitHeight: 40
+                scale: shuffleArea.pressed ? 0.90 : (shuffleArea.containsMouse ? 1.08 : 1.0)
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 20
+                    color: Services.MprisService.hasShuffle ? Appearance.md3.tertiary_container : "transparent"
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_surface
+                        opacity: shuffleArea.pressed ? 0.12 : (shuffleArea.containsMouse ? 0.08 : 0)
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: "shuffle"
+                    size: 20
+                    color: !Services.MprisService.shuffleSupported ? Qt.alpha(Appearance.md3.on_surface, 0.38) : (Services.MprisService.hasShuffle ? Appearance.md3.on_tertiary_container : (shuffleArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant))
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: shuffleArea
+                    anchors.fill: parent
+                    enabled: Services.MprisService.shuffleSupported
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: root.toggleShuffle()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            // 2. Previous
+            Item {
+                implicitWidth: 44
+                implicitHeight: 44
+                scale: prevArea.pressed ? 0.92 : (prevArea.containsMouse ? 1.06 : 1.0)
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 22
+                    color: prevArea.pressed ? Appearance.md3.surface_container_highest : (prevArea.containsMouse ? Appearance.md3.surface_container_high : "transparent")
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_surface
+                        opacity: prevArea.pressed ? 0.12 : (prevArea.containsMouse ? 0.06 : 0)
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: "skip_previous"
+                    size: 24
+                    color: (root.player?.canGoPrevious ?? false) ? (prevArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant) : Qt.alpha(Appearance.md3.on_surface, 0.38)
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: prevArea
+                    anchors.fill: parent
+                    enabled: root.player?.canGoPrevious ?? false
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: Services.MprisService.previous()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            // 3. Play / Pause Hero FAB
+            Item {
+                implicitWidth: 58
+                implicitHeight: 58
+                scale: playArea.pressed ? 0.92 : (playArea.containsMouse ? 1.06 : 1.0)
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 140
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                MultiEffect {
+                    anchors.fill: playFabBg
+                    source: playFabBg
+                    shadowEnabled: true
+                    shadowColor: Appearance.md3.shadow
+                    shadowOpacity: 0.22
+                    shadowBlur: 0.5
+                    shadowVerticalOffset: 3
+                }
+
+                Rectangle {
+                    id: playFabBg
+                    anchors.fill: parent
+                    radius: 29
+                    color: Appearance.md3.primary
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_primary
+                        opacity: playArea.pressed ? 0.20 : (playArea.containsMouse ? 0.10 : 0)
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: Services.MprisService.isPlaying ? "pause" : "play_arrow"
+                    size: 32
+                    fill: 1
+                    color: Appearance.md3.on_primary
+                }
+
+                MouseArea {
+                    id: playArea
+                    anchors.fill: parent
+                    enabled: root.player != null
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: Services.MprisService.togglePlaying()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            // 4. Next
+            Item {
+                implicitWidth: 44
+                implicitHeight: 44
+                scale: nextArea.pressed ? 0.92 : (nextArea.containsMouse ? 1.06 : 1.0)
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 22
+                    color: nextArea.pressed ? Appearance.md3.surface_container_highest : (nextArea.containsMouse ? Appearance.md3.surface_container_high : "transparent")
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_surface
+                        opacity: nextArea.pressed ? 0.12 : (nextArea.containsMouse ? 0.06 : 0)
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: "skip_next"
+                    size: 24
+                    color: (root.player?.canGoNext ?? false) ? (nextArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant) : Qt.alpha(Appearance.md3.on_surface, 0.38)
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: nextArea
+                    anchors.fill: parent
+                    enabled: root.player?.canGoNext ?? false
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: Services.MprisService.next()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            // 5. Loop / Repeat
+            Item {
+                readonly property bool isLooping: Services.MprisService.loopState !== MprisLoopState.None
+                implicitWidth: 40
+                implicitHeight: 40
+                scale: loopArea.pressed ? 0.90 : (loopArea.containsMouse ? 1.08 : 1.0)
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 20
+                    color: parent.isLooping ? Appearance.md3.tertiary_container : "transparent"
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_surface
+                        opacity: loopArea.pressed ? 0.12 : (loopArea.containsMouse ? 0.08 : 0)
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
+                    size: 20
+                    color: !Services.MprisService.loopSupported ? Qt.alpha(Appearance.md3.on_surface, 0.38) : (parent.isLooping ? Appearance.md3.on_tertiary_container : (loopArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant))
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: loopArea
+                    anchors.fill: parent
+                    enabled: Services.MprisService.loopSupported
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: root.cycleLoopState()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+
+        // ════════════════════════════════════════════════════════
+        // CONTROL DE VOLUMEN M3 (Si el reproductor lo soporta)
+        // ════════════════════════════════════════════════════════
+
+        // ════════════════════════════════════════════════════════
+        // SELECTOR DE REPRODUCTOR (MATERIAL 3 FILTER CHIPS)
+        // ════════════════════════════════════════════════════════
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 10
+            visible: root.multiPlayer
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 1
+                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+            }
+
+            Flickable {
+                id: chipsFlickable
+                Layout.fillWidth: true
+                implicitHeight: 32
+                contentWidth: chipsRow.implicitWidth
+                contentHeight: 32
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                flickableDirection: Flickable.HorizontalFlick
+
+                Row {
+                    id: chipsRow
+                    spacing: 8
+
+                    Repeater {
+                        model: Services.MprisService.players
+
+                        delegate: Item {
+                            id: chipItem
+                            required property var modelData
+                            property MprisPlayer playerObj: modelData
+
+                            readonly property bool isActive: Services.MprisService.activePlayer === playerObj
+
+                            implicitWidth: chipBg.implicitWidth
+                            implicitHeight: 30
+
+                            Rectangle {
+                                id: chipBg
+                                implicitWidth: chipContent.implicitWidth + 20
+                                implicitHeight: 30
+                                radius: Appearance.shape.full
+                                color: chipItem.isActive ? Appearance.md3.secondary_container : Appearance.md3.surface_container_low
+                                border.width: chipItem.isActive ? 0 : 1
+                                border.color: Appearance.md3.outline_variant
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 150
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: parent.radius
+                                    color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                                    opacity: chipMouse.pressed ? 0.12 : (chipMouse.containsMouse ? 0.08 : 0)
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: 100
+                                        }
+                                    }
+                                }
+
+                                RowLayout {
+                                    id: chipContent
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    IconImage {
+                                        implicitWidth: 16
+                                        implicitHeight: 16
+                                        source: Quickshell.iconPath(chipItem.playerObj.desktopEntry, true)
+                                    }
+
+                                    StyledText {
+                                        text: chipItem.playerObj.identity ?? chipItem.playerObj.dbusName
+                                        font.family: Appearance.font.sans
+                                        font.pixelSize: Appearance.font.pixelSize.smaller
+                                        font.weight: chipItem.isActive ? Font.Medium : Font.Normal
+                                        color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: 150
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                id: chipMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (Services.MprisService.activePlayer === chipItem.playerObj)
+                                        Services.MprisService.setActivePlayer(null);
+                                    else
+                                        Services.MprisService.setActivePlayer(chipItem.playerObj);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -26,7 +26,7 @@ PanelWindow {
         windows: [root]
         active: root.visible
         onCleared: Qt.callLater(() => {
-            NotificationManager.centerOpen = false
+            NotificationManager.centerOpen = false;
         })
     }
 
@@ -50,6 +50,26 @@ PanelWindow {
         shadowBlur: 0.9
         shadowVerticalOffset: 3
         shadowHorizontalOffset: 0
+    }
+
+    Shortcut {
+        sequence: "d"
+        enabled: root.visible && root.historyModel.count > 0
+        onActivated: root.historyModel.clear()
+    }
+
+    // Alternar el modo No Molestar (DND) con la tecla 'N'
+    Shortcut {
+        sequence: "n"
+        enabled: root.visible
+        onActivated: NotificationManager.toggleDnd()
+    }
+
+    // Borrar la notificación actualmente seleccionada con 'Delete' o 'Supr'
+    Shortcut {
+        sequence: "Delete"
+        enabled: root.visible && root.historyModel.count > 0 && historyList.currentIndex >= 0
+        onActivated: root.historyModel.remove(historyList.currentIndex)
     }
 
     Rectangle {
@@ -87,7 +107,11 @@ PanelWindow {
                         anchors.fill: parent
                         radius: Appearance.shape.full
                         color: NotificationManager.dnd ? Appearance.md3.primary_container : "transparent"
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
+                            }
+                        }
                     }
 
                     Rectangle {
@@ -96,7 +120,11 @@ PanelWindow {
                         radius: Appearance.shape.full
                         color: Appearance.md3.on_background
                         opacity: 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
                     }
 
                     MaterialIcon {
@@ -131,13 +159,17 @@ PanelWindow {
                         radius: Appearance.shape.full
                         color: Appearance.md3.on_background
                         opacity: 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
                     }
 
                     StyledText {
                         id: clearAllText
                         anchors.centerIn: parent
-                        text: I18nService.getTranslation("notifications.clear_all", "")
+                        text: I18nService.getTranslation("notifications.clear_all", "Clear all")
                         font.family: Appearance.font.sans
                         color: Appearance.md3.primary
                     }
@@ -171,17 +203,21 @@ PanelWindow {
                 Layout.preferredHeight: Math.min(contentHeight, root.maxListHeight)
                 visible: root.historyModel.count > 0
                 clip: true
+                focus: true
                 spacing: 8
+                keyNavigationWraps: true
+                highlightMoveDuration: 100
                 boundsBehavior: Flickable.StopAtBounds
                 model: root.historyModel
 
                 ScrollBar.vertical: StyledScrollBar {
                     id: historyScrollBar
-                
                 }
-
+                Keys.onDownPressed: incrementCurrentIndex()
+                Keys.onUpPressed: decrementCurrentIndex()
                 delegate: NotificationHistoryCard {
                     width: historyList.width
+                    opacity: ListView.isCurrentItem ? 1.0 : 0.85
                     onRemoveRequested: root.historyModel.remove(index)
                 }
             }
@@ -194,13 +230,12 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 visible: root.historyModel.count === 0
                 spacing: 8
-                    MaterialIcon {
-                        Layout.alignment: Qt.AlignCenter
-                        text: "notifications_none"
-                        size: 32
-                        color: Appearance.md3.primary
-                    }
-                
+                MaterialIcon {
+                    Layout.alignment: Qt.AlignCenter
+                    text: "notifications_none"
+                    size: 32
+                    color: Appearance.md3.primary
+                }
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter

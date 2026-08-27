@@ -28,7 +28,11 @@ Item {
             radius: parent.radius
             color: Appearance.md3.primary
             opacity: delegateHover.hovered ? 0.08 : 0
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 150
+                }
+            }
         }
     }
 
@@ -51,12 +55,14 @@ Item {
         }
 
         StyledText {
+            Layout.maximumWidth: 60
+            Layout.minimumWidth: 0
             text: root.oldVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
             color: Appearance.md3.on_surface_variant
             opacity: 0.7
-            elide: Text.ElideRight
+            elide: Text.ElideMiddle
         }
 
         MaterialIcon {
@@ -66,13 +72,17 @@ Item {
         }
 
         StyledText {
+            Layout.maximumWidth: 60
+            Layout.minimumWidth: 0
             text: root.newVersion
             font.pixelSize: 11
             font.family: Services.ConfigService.configs.appearence.monospace
             color: Appearance.md3.primary
-            elide: Text.ElideRight
+            elide: Text.ElideMiddle
         }
     }
 
-    HoverHandler { id: delegateHover }
+    HoverHandler {
+        id: delegateHover
+    }
 }

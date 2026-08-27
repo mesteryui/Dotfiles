@@ -8,13 +8,13 @@ RowLayout {
 
     property string label: ""
     property string iconName: ""
-    property real   value: 0.0          // 0.0 – 1.0
-    property color  accentColor: Appearance.md3.primary
-    property bool   showValue: true
+    property real value: 0.0          // 0.0 – 1.0
+    property color accentColor: Appearance.md3.primary
+    property bool showValue: true
     property string valueText: Math.round(root.value * 100) + "%"
-    
+
     signal moved(real val)
-    signal iconClicked()
+    signal iconClicked
 
     spacing: 12
 
@@ -25,7 +25,11 @@ RowLayout {
         icon: root.iconName
         size: Appearance.font.pixelSize.large
         color: iconArea.containsMouse ? Appearance.md3.primary : Appearance.md3.on_surface_variant
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: 150
+            }
+        }
 
         MouseArea {
             id: iconArea
@@ -50,7 +54,12 @@ RowLayout {
             height: trackArea.pressed ? 14 : 12
             radius: height / 2
             color: Appearance.md3.surface_container_highest
-            Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+            Behavior on height {
+                NumberAnimation {
+                    duration: 120
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             // Pista activa (Fill)
             Rectangle {
@@ -58,8 +67,16 @@ RowLayout {
                 height: parent.height
                 radius: parent.radius
                 color: root.accentColor
-                Behavior on width { NumberAnimation { duration: 80 } }
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 80
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
             }
         }
 
@@ -75,10 +92,28 @@ RowLayout {
             border.color: Appearance.md3.surface_container_low
             border.width: 2
 
-            Behavior on x { NumberAnimation { duration: 80 } }
-            Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-            Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on x {
+                NumberAnimation {
+                    duration: 80
+                }
+            }
+            Behavior on width {
+                NumberAnimation {
+                    duration: 120
+                    easing.type: Easing.OutCubic
+                }
+            }
+            Behavior on height {
+                NumberAnimation {
+                    duration: 120
+                    easing.type: Easing.OutCubic
+                }
+            }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 150
+                }
+            }
         }
 
         MouseArea {
@@ -88,12 +123,13 @@ RowLayout {
             cursorShape: Qt.PointingHandCursor
 
             function updateValue(mouseX) {
-                const newVal = Math.max(0.0, Math.min(1.0, mouseX / width))
-                root.moved(newVal)
+                const newVal = Math.max(0.0, Math.min(1.0, mouseX / width));
+                root.moved(newVal);
             }
 
             onPositionChanged: mouse => {
-                if (pressed) updateValue(mouse.x)
+                if (pressed)
+                    updateValue(mouse.x);
             }
             onClicked: mouse => updateValue(mouse.x)
         }
