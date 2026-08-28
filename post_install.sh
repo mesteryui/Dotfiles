@@ -14,12 +14,12 @@ PKGLIST_AUR="pklist-aur.txt"
 
 # Listas de módulos para stow y servicios para systemd
 STOW_MODULES=(
-    hypr rofi systemd kitty fastfetch emacs waybar yazi matugen 
-    zathura lsd cava swayosd swaync fish starship bash btop uwsm bat
+    hypr rofi systemd kitty fastfetch emacs yazi matugen 
+    zathura lsd cava quickshell fish starship bash btop uwsm bat
 )
 
 SERVICES=(
-    hypridle swaync waybar swayosd hyprpolkitagent awww
+    hypridle awww
 )
 
 # --- Funciones de Utilidad (UI) ---
