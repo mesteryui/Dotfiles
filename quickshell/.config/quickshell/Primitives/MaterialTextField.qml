@@ -24,11 +24,4 @@ TextField {
         hintingPreference: Font.PreferFullHinting
         variableAxes: Appearance.font.variableAxes.main
     }
-    
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.NoButton
-        hoverEnabled: true
-        cursorShape: Qt.IBeamCursor
-    }
 }

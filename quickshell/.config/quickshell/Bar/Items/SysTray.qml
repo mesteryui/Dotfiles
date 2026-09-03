@@ -14,6 +14,7 @@ RowLayout {
     MaterialIcon {
         id: chevron
         Layout.alignment: Qt.AlignVCenter
+        size: 20
         icon: "chevron_backward"
         rotation: revealer.reveal ? 180 : 0
 

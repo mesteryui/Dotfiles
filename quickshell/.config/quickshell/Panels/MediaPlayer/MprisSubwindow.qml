@@ -33,8 +33,7 @@ BarPopupWindow {
                 const p = Services.MprisService.activePlayer;
                 if (!p)
                     return;
-                // Solo leer si parece controlable; atrapar excepciones por si el servicio cae entre medias
-                if (p.canSeek || p.canControl || p.position !== undefined) {
+                if (p.canSeek || p.canControl) {
                     try {
                         root.currentPosition = p.position;
                     } catch (e) {

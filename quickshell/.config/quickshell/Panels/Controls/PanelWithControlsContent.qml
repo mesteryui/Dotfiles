@@ -281,6 +281,14 @@ Item {
                     active: Services.Hyprsunset.nightLightActive
                     onToggled: Services.Hyprsunset.toggleNightLight()
                 }
+                ControlToggle {
+                    Layout.fillWidth: true
+                    iconName: "gamepad"
+                    label: Services.I18nService.getTranslation("panel.gameMode", "Modo de Juego")
+                    stateText: Services.GameMode.enabled ? Services.I18nService.getTranslation("panel.night_light_onf", "Activado") : Services.I18nService.getTranslation("panel.nightlight_off", "Desactivado")
+                    active: Services.GameMode.enabled
+                    onToggled: Services.GameMode.toggle()
+                }
             }
 
             // ══ DIVISOR ════════════════════════════════════════════════
@@ -290,7 +298,9 @@ Item {
                 color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
             }
 
-            TabBar {}
+            TabBar {
+                id: tabBar
+            }
 
             // ══ CONTENIDO del Tab activo ════════════════════════════════
             StackLayout {

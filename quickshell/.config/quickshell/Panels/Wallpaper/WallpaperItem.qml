@@ -7,62 +7,59 @@ import qs.Shared.Background
 
 Item {
     id: delegateRoot
-    
-    // 1. CONVENCIÓN QUICKSHELL + QT6: 'required' bloquea la inicialización
-    // hasta que el modelo inyecte los datos reales aquí.
+
     required property var modelData
+    required property int index
 
-    property int surfaceRadius: 16
+    signal clicked
 
+    property int surfaceRadius: 18
     readonly property bool isSelected: ListView.isCurrentItem
 
     implicitWidth: 300
-    implicitHeight: 200
+    implicitHeight: 220
 
-    scale: isSelected ? 1.02 : 1.0
-    //scale: 1.0
+    // Transformación Coverflow: Escala, transparencia e índice Z según selección
+    scale: isSelected ? 1.08 : 0.86
+    opacity: isSelected ? 1.0 : 0.60
+    z: isSelected ? 10 : (100 - Math.abs(ListView.view.currentIndex - index))
+
     Behavior on scale {
-        NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
+        NumberAnimation {
+            duration: 250
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: 250
+            easing.type: Easing.OutCubic
+        }
     }
 
-    // ── Background ────────────────────────────────────────────
+    // ── Fondo y Sombra Elevada ──────────────────────────────────────────────
     SurfaceBackground {
         id: background
-        anchors.fill: parent               // ← faltaba esto
+        anchors.fill: parent
         radius: delegateRoot.surfaceRadius
-        color: delegateRoot.isSelected
-            ? Appearance.md3.surface_container_highest
-            : Appearance.md3.surface_container_low
+        color: delegateRoot.isSelected ? Appearance.md3.surface_container_highest : Appearance.md3.surface_container_low
     }
 
-    MultiEffect {
-        source: background
-        anchors.fill: background
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowBlur: delegateRoot.isSelected ? 0.8 : 0.4
-        shadowVerticalOffset: delegateRoot.isSelected ? 4 : 2
-        shadowOpacity: delegateRoot.isSelected ? 0.25 : 0.08
-        blurMax: 16
-        Behavior on shadowOpacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-        Behavior on shadowVerticalOffset { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-    }
-
-
-    // ── Content ───────────────────────────────────────────────
+    // ── Contenido de la Tarjeta ─────────────────────────────────────────────
     WallpaperItemContent {
         anchors.fill: parent
         isSelected: delegateRoot.isSelected
-        hovered: mouse.containsMouse      // ← bool, no el MouseArea entero
-        radius: delegateRoot.surfaceRadius // ← mismo radio que el Background
+        hovered: mouse.containsMouse
+        radius: delegateRoot.surfaceRadius
         filePath: delegateRoot.modelData?.filePath ?? ""
-        
     }
 
-    // ── Interacción ───────────────────────────────────────────
+    // ── Captura de Interacción ──────────────────────────────────────────────
     MouseArea {
         id: mouse
         anchors.fill: parent
         hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: delegateRoot.clicked()
     }
 }

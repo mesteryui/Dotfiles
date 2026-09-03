@@ -28,8 +28,6 @@ Singleton {
     FileView {
         id: fileManagment
         watchChanges: true
-        atomicWrites: true
-        blockLoading: true
         path: Quickshell.env("XDG_STATE_HOME") + "/quickshell/persistence.json"
         onFileChanged: fileReloadTimer.restart()
         onAdapterUpdated: fileWriteTimer.restart()

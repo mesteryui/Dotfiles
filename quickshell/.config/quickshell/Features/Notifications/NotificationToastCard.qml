@@ -25,6 +25,8 @@ Item {
     readonly property bool hasActions: root.notification.actions && root.notification.actions.length > 0
     readonly property bool hasInlineReply: root.notification.hasInlineReply ?? false
 
+    visible: !NotificationManager.dnd || isCritical
+
     // ── Temporizador de Expiración (se pausa al hacer hover) ──
     Timer {
         id: expireTimer
@@ -174,44 +176,17 @@ Item {
                         }
 
                         // Botón (×) Cerrar / Descartar
-                        Item {
-                            Layout.preferredWidth: 20
-                            Layout.preferredHeight: 20
+                        AnimatedIconButton {
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
                             Layout.alignment: Qt.AlignVCenter
-                            scale: closeArea.pressed ? 0.90 : (closeArea.containsMouse ? 1.08 : 1.0)
-                            Behavior on scale {
-                                NumberAnimation {
-                                    duration: 120
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            Rectangle {
-                                id: closeBg
-                                anchors.fill: parent
-                                radius: Appearance.shape.full
-                                color: closeArea.containsMouse ? (root.isCritical ? Qt.alpha(Appearance.md3.error, 0.2) : Appearance.md3.surface_container_highest) : "transparent"
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 120
-                                    }
-                                }
-                            }
-
-                            MaterialIcon {
-                                anchors.centerIn: parent
-                                icon: "close"
-                                size: 14
-                                color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
-                            }
-
-                            MouseArea {
-                                id: closeArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.notification.dismiss()
-                            }
+                            iconName: "close"
+                            iconSize: 14
+                            implicitWidth: 24
+                            implicitHeight: 24
+                            iconColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
+                            baseColor: "transparent"
+                            onClicked: root.notification.dismiss()
                         }
                     }
 
@@ -266,67 +241,24 @@ Item {
                         Repeater {
                             model: root.notification.actions
 
-                            delegate: Item {
-                                id: actionChipItem
+                            delegate: AnimatedTextButton {
                                 required property var modelData
+                                text: modelData.text
+                                isFilled: false
 
-                                implicitWidth: actionChipBg.implicitWidth
-                                implicitHeight: 28
-                                scale: actionArea.pressed ? 0.94 : (actionArea.containsMouse ? 1.04 : 1.0)
-                                Behavior on scale {
-                                    NumberAnimation {
-                                        duration: 120
-                                        easing.type: Easing.OutCubic
-                                    }
-                                }
+                                buttonHeight: 28
+                                fontSize: 11
+                                fontWeight: Font.Medium
+                                paddingHorizontal: 20
 
-                                Rectangle {
-                                    id: actionChipBg
-                                    anchors.fill: parent
-                                    implicitWidth: actionLabel.implicitWidth + 20
-                                    implicitHeight: 28
-                                    radius: Appearance.shape.full
-                                    color: root.isCritical ? (actionArea.pressed ? Appearance.md3.error : Qt.alpha(Appearance.md3.error, 0.20)) : (actionArea.pressed ? Appearance.md3.primary : Appearance.md3.primary_container)
+                                baseColor: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
+                                textColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
+                                overlayColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
 
-                                    border.width: root.isCritical ? 1 : 0
-                                    border.color: Appearance.md3.error
+                                border.width: root.isCritical ? 1 : 0
+                                border.color: Appearance.md3.error
 
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 120
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: parent.radius
-                                        color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
-                                        opacity: actionArea.pressed ? 0.16 : (actionArea.containsMouse ? 0.08 : 0)
-                                        Behavior on opacity {
-                                            NumberAnimation {
-                                                duration: 100
-                                            }
-                                        }
-                                    }
-
-                                    StyledText {
-                                        id: actionLabel
-                                        anchors.centerIn: parent
-                                        text: actionChipItem.modelData.text
-                                        font.family: Appearance.font.sans
-                                        font.pixelSize: 11
-                                        font.weight: Font.Medium
-                                        color: root.isCritical ? (actionArea.pressed ? Appearance.md3.on_error : Appearance.md3.on_error_container) : (actionArea.pressed ? Appearance.md3.on_primary : Appearance.md3.on_primary_container)
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: actionArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: actionChipItem.modelData.invoke()
-                                }
+                                onClicked: modelData.invoke()
                             }
                         }
                     }
@@ -391,49 +323,20 @@ Item {
                     }
                 }
 
-                Item {
+                AnimatedIconButton {
                     Layout.preferredWidth: 32
                     Layout.preferredHeight: 32
-                    scale: sendArea.pressed ? 0.92 : (sendArea.containsMouse ? 1.06 : 1.0)
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: Appearance.shape.full
-                        color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: parent.radius
-                            color: Appearance.md3.on_primary
-                            opacity: sendArea.pressed ? 0.20 : (sendArea.containsMouse ? 0.10 : 0)
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: 100
-                                }
-                            }
-                        }
-
-                        MaterialIcon {
-                            anchors.centerIn: parent
-                            icon: "send"
-                            size: 15
-                            color: root.isCritical ? Appearance.md3.on_error : Appearance.md3.on_primary
-                        }
-                    }
-
-                    MouseArea {
-                        id: sendArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: replyInput.submit()
-                    }
+                    iconName: "send"
+                    iconSize: 15
+                    implicitWidth: 32
+                    implicitHeight: 32
+                    enabled: replyInput.text.trim().length > 0
+                    iconColor: Appearance.md3.on_surface_variant
+                    activeIconColor: root.isCritical ? Appearance.md3.on_error : Appearance.md3.on_primary
+                    baseColor: "transparent"
+                    accentColor: root.isCritical ? Appearance.md3.error : Appearance.md3.primary
+                    isActive: enabled
+                    onClicked: replyInput.submit()
                 }
             }
         }

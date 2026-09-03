@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Script para monitorear cambios de submap en Hyprland y enviar notificaciones
+
+# Directorio del socket de Hyprland
+HYPRLAND_INSTANCE_SIGNATURE="${HYPRLAND_INSTANCE_SIGNATURE:=$(echo $DISPLAY | grep -o ':[0-9]*' | cut -c2-)}"
+SOCKET_DIR="/run/user/$(id -u)/hypr"
+
+if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+    echo "Error: No se pudo detectar HYPRLAND_INSTANCE_SIGNATURE"
+    exit 1
+fi
+
+# Obtener el submap actual
+get_current_submap() {
+    hyprctl getkeyboardlayout | grep -oP 'keymap: \K[^ ]+'
+}
+
+# Enviar notificación
+notify() {
+    local submap=$1
+    if command -v notify-send &> /dev/null; then
+        if [ -z "$submap" ] || [ "$submap" = "null" ]; then
+            notify-send "Submap cambiado" "Submap: ninguno (normal)" -u low
+        else
+            notify-send "Submap cambiado" "Submap: $submap" -u low
+        fi
+    else
+        echo "Submap cambiado: $submap"
+    fi
+}
+
+echo "Iniciando monitoreo de cambios de submap en Hyprland..."
+echo "Presiona Ctrl+C para detener"
+
+# Monitorear eventos del socket
+socat - UNIX-CONNECT:"$SOCKET_DIR/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while IFS= read -r event; do
+    if [[ "$event" == *"submap"* ]]; then
+        # Extraer el nombre del submap
+        submap=$(echo "$event" | grep -oP 'submap>>\K[^,]*' || echo "")
+        
+        # Evitar notificaciones duplicadas
+        if [ -n "$submap" ]; then
+            notify "$submap"
+        fi
+    fi
+done

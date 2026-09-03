@@ -16,6 +16,7 @@ Shape {
     // Usamos el renderizador predeterminado (triangulación GeometryRenderer)
     // que es 100% estable ante recargas dinámicas y reinicios de GPU.
     layer.enabled: true
+    //preferredRendererType: Shape.CurveRenderer
 
     // 2. TRANSFORMACIÓN CON ORIGEN DINÁMICO PROTEGIDO
     transform: Scale {

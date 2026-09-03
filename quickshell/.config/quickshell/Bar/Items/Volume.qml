@@ -4,22 +4,12 @@ import qs.Bar.Content
 import qs.Core.Services as Services
 import qs.Shared.Background
 
-Item {
+BarItem {
     id: root
-    implicitWidth: content.implicitWidth + 20
-    implicitHeight: 30
-    MouseArea {
-        id: interaction
-        anchors.fill: parent
-        hoverEnabled: true
-        enabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "wiremix"])
-    }
-    SurfaceBackground {
-        anchors.fill: parent
-        active: interaction.containsMouse
-    }
+    clickable: true
+    horizontalPadding: 10
+    
+    onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "wiremix"])
 
     VolumeContent {
         id: content
@@ -27,5 +17,4 @@ Item {
         iconName: Services.AudioService.materialIcon
         text: Math.round(Services.AudioService.volume * 100) + "%"
     }
-    
 }

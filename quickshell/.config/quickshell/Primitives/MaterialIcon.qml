@@ -15,11 +15,10 @@ StyledText {
         hintingPreference: Font.PreferNoHinting
         family: Appearance.font.iconMaterial
         pixelSize: size
-        weight: Font.Normal + (Font.DemiBold - Font.Normal) * truncatedFill
         variableAxes: {
             "FILL": truncatedFill,
-            // "wght": font.weight,
-            // "GRAD": 0,
+            "wght": 550,
+            "GRAD": 0,
             "opsz": size
         }
     }

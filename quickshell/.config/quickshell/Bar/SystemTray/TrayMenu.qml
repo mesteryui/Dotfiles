@@ -16,7 +16,6 @@ PopupWindow {
     grabFocus: true
     implicitWidth: 220
     implicitHeight: menuColumn.implicitHeight + 20
-    
 
     HyprlandFocusGrab {
         windows: [root]
@@ -30,7 +29,7 @@ PopupWindow {
         color: Appearance.md3.surface
         border.color: Appearance.md3.outline
         border.width: 1
-        
+
         // QsMenuOpener lee los hijos del handle
         QsMenuOpener {
             id: opener
@@ -50,109 +49,107 @@ PopupWindow {
             Repeater {
                 model: opener.children
 
-                delegate: Loader {
-                    id: menuLoader
+                delegate: Item {
+                    id: itemDelegate
                     required property QsMenuEntry modelData
+
                     width: menuColumn.width
+                    implicitHeight: (itemDelegate.modelData?.isSeparator ?? false) ? 5 : 36
 
-                    // Carga separador o item normal según el tipo
-                    sourceComponent: modelData.isSeparator
-                        ? separatorComponent
-                        : menuItemComponent
-
-                    Component {
-                        id: separatorComponent
-                        Rectangle {
-                            width: parent?.width ?? 0
-                            height: 1
-                            color: Appearance.md3.outline_variant
-                            opacity: 0.5
-                        }
+                    // Separador
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        height: 1
+                        visible: itemDelegate.modelData?.isSeparator ?? false
+                        color: Appearance.md3.outline_variant
+                        opacity: 0.5
                     }
 
-                    Component {
-                        id: menuItemComponent
-                        Rectangle {
-                            id: itemRoot
-                            width: parent?.width ?? 0
-                            implicitHeight: 36
-                            radius: 8
-                            color: itemMouse.containsMouse
-                                ? Appearance.md3.primary
-                                : "transparent"
+                    // Item normal
+                    Rectangle {
+                        id: itemRoot
+                        anchors.fill: parent
+                        visible: !(itemDelegate.modelData?.isSeparator ?? false)
+                        radius: 8
+                        color: itemMouse.containsMouse ? Appearance.md3.primary : "transparent"
 
-                            Behavior on color {
-                                ColorAnimation { duration: 100 }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 100
+                            }
+                        }
+
+                        opacity: (itemDelegate.modelData?.enabled ?? true) ? 1.0 : 0.4
+
+                        RowLayout {
+                            anchors {
+                                fill: parent
+                                leftMargin: 12
+                                rightMargin: 12
+                            }
+                            spacing: 8
+
+                            // Icono (si tiene)
+                            Image {
+                                visible: (itemDelegate.modelData?.icon ?? "") !== ""
+                                source: itemDelegate.modelData?.icon ?? ""
+                                Layout.preferredWidth: 16
+                                Layout.preferredHeight: 16
+                                sourceSize.width: 16
+                                sourceSize.height: 16
+                                fillMode: Image.PreserveAspectFit
                             }
 
-                            opacity: menuLoader.modelData.enabled ? 1.0 : 0.4
-
-                            RowLayout {
-                                anchors {
-                                    fill: parent
-                                    leftMargin: 12
-                                    rightMargin: 12
-                                }
-                                spacing: 8
-
-                                // Icono (si tiene)
-                                Image {
-                                    visible: menuLoader.modelData.icon !== ""
-                                    source: menuLoader.modelData.icon
-                                    Layout.preferredWidth: 16
-                                    Layout.preferredHeight: 16
-                                    sourceSize.width: 16
-                                    sourceSize.height: 16
-                                    fillMode: Image.PreserveAspectFit
-                                }
-                                
-                                // Texto
-                                StyledText {
-                                    Layout.fillWidth: true
-                                    text: menuLoader.modelData.text
-                                    color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
-                                    font.pixelSize: 13
-                                    elide: Text.ElideRight
-                                    Behavior on color {
-                                ColorAnimation { duration: 100 }
-                            }
-                                }
-
-                                // Indicador de submenú
-                                MaterialIcon {
-                                    visible: menuLoader.modelData.hasChildren
-                                    text: "chevron_right"
-                                    color: Appearance.md3.on_surface_variant
-                                    font.pixelSize: Appearance.font.pixelSize.normal
-                                }
-
-                                // Checkbox / radio
-                                Rectangle {
-                                    visible: menuLoader.modelData.buttonType !== QsMenuButtonType.None
-                                    Layout.preferredWidth: 16; Layout.preferredHeight: 16
-                                    radius: menuLoader.modelData.buttonType === QsMenuButtonType.Radio ? 8 : 4
-                                    color: menuLoader.modelData.checkState === Qt.Checked
-                                        ? Appearance.md3.primary
-                                        : "transparent"
-                                    border.color: Appearance.md3.outline
-                                    border.width: 1
-                                }
-                            }
-
-                            MouseArea {
-                                id: itemMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                enabled: menuLoader.modelData.enabled
-                                onClicked: {
-                                    if (menuLoader.modelData.hasChildren) {
-                                        // submenú — por ahora usa display nativo
-                                        const pos = itemRoot.mapToGlobal(itemRoot.width, 0)
-                                        menuLoader.modelData.display(root.QsWindow.window, pos.x, pos.y)
-                                    } else {
-                                        menuLoader.modelData.triggered()
-                                        root.visible = false
+                            // Texto
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: itemDelegate.modelData?.text ?? ""
+                                color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
+                                font.pixelSize: 13
+                                elide: Text.ElideRight
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 100
                                     }
+                                }
+                            }
+
+                            // Indicador de submenú
+                            MaterialIcon {
+                                visible: itemDelegate.modelData?.hasChildren ?? false
+                                text: "chevron_right"
+                                color: Appearance.md3.on_surface_variant
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                            }
+
+                            // Checkbox / radio
+                            Rectangle {
+                                visible: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
+                                Layout.preferredWidth: 16
+                                Layout.preferredHeight: 16
+                                radius: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None) === QsMenuButtonType.Radio ? 8 : 4
+                                color: (itemDelegate.modelData?.checkState ?? Qt.Unchecked) === Qt.Checked ? Appearance.md3.primary : "transparent"
+                                border.color: Appearance.md3.outline
+                                border.width: 1
+                            }
+                        }
+
+                        MouseArea {
+                            id: itemMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            enabled: (itemDelegate.modelData?.enabled ?? false) && !(itemDelegate.modelData?.isSeparator ?? false)
+                            onClicked: {
+                                const entry = itemDelegate.modelData;
+                                if (!entry)
+                                    return;
+                                if (entry.hasChildren) {
+                                    const pos = itemRoot.mapToGlobal(itemRoot.width, 0);
+                                    entry.display(root.QsWindow.window, pos.x, pos.y);
+                                } else {
+                                    entry.triggered();
+                                    root.visible = false;
                                 }
                             }
                         }

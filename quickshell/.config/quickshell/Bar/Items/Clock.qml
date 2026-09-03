@@ -5,20 +5,17 @@ import qs.Core.Services as Services
 import QtQuick
 import Quickshell
 import qs.Panels.Calendar
-MouseArea {
+BarItem {
     id: wrapper
-    implicitWidth: content.implicitWidth + 24
-    implicitHeight: 30
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-    BarBackground {
-        anchors.fill: parent
-        active: wrapper.containsMouse
-        scale: wrapper.pressed ? 0.92: (wrapper.containsMouse ? 1.05 : 1.0)
-        Behavior on scale { 
-            NumberAnimation { duration: 100; easing.type: Easing.OutQuad } 
-        }
+    clickable: true
+    horizontalPadding: 12
+    
+    // Scale effect applied to the whole item instead of inner background
+    scale: area.pressed ? 0.92 : (area.containsMouse ? 1.05 : 1.0)
+    Behavior on scale { 
+        NumberAnimation { duration: 100; easing.type: Easing.OutQuad } 
     }
+
     ClockContent {
         id: content
         anchors.centerIn: parent
@@ -31,7 +28,7 @@ MouseArea {
     
     LazyLoader {
         id: popupLoader
-        loading: wrapper.hoveredChanged || wrapper.pressed
+        loading: wrapper.area.hoveredChanged || wrapper.area.pressed
         component: CalendarPopupWindow {
             id: popup
             anchorItem: wrapper

@@ -6,35 +6,21 @@ import qs.Bar.Content
 import qs.Panels.Updates
 import qs.Bar
 
-Item {
+BarItem {
     id: root
-
-    implicitWidth: content.implicitWidth + 24 // Padding horizontal
-    implicitHeight: 30
-    scale: interaction.containsMouse ? 1.08 : 1
+    clickable: !root.service.updating && !root.service.checking
+    horizontalPadding: 12
+    scale: area.containsMouse ? 1.08 : 1
 
     readonly property var service: Services.UpdatesTracking
-
     visible: service.updateCount > 0 || service.checking
 
-    MouseArea {
-        id: interaction
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            // Si popupLoader todavía está en 'loading' (async) cuando
-            // se hace click, acceder a .item fuerza el completado
-            // síncrono automáticamente — no hace falta gestionarlo aquí.
-            const w = popupLoader.item
-            if (w) w.visible = !w.visible
-        }
-        enabled: !root.service.updating && !root.service.checking
-    }
-
-    BarBackground {
-        anchors.fill: parent
-        active: interaction.containsMouse
+    onClicked: {
+        // Si popupLoader todavía está en 'loading' (async) cuando
+        // se hace click, acceder a .item fuerza el completado
+        // síncrono automáticamente — no hace falta gestionarlo aquí.
+        const w = popupLoader.item
+        if (w) w.visible = !w.visible
     }
 
     LazyLoader {

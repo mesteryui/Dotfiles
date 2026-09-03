@@ -8,6 +8,7 @@ import qs.Primitives
 import qs.Shared.Background
 import qs.Core
 import Quickshell.Io
+import qs.Core.Modules
 
 Scope {
     id: scope
@@ -24,7 +25,7 @@ Scope {
         name: "windowSwitcher"
         description: "Window switcher Toggle"
         onPressed: {
-            scope.visible = !scope.shown;
+            scope.shown = !scope.shown;
         }
     }
 
@@ -33,7 +34,7 @@ Scope {
         sourceComponent: PanelWindow {
             id: root
 
-            implicitWidth: 720
+            implicitWidth: 620
             implicitHeight: 180
             color: "transparent"
 
@@ -114,13 +115,7 @@ Scope {
                         return;
 
                     // Validación segura por si wayland es null
-                    if (toplevel.wayland) {
-                        toplevel.wayland.activate();
-                    } else {
-                        // Fallback por si la ventana no expone protocolo Wayland pero sí está en Hyprland
-                        const address = `address:0x${toplevel.address}`;
-                        Hyprland.dispatch(`dispatch focuswindow ${address}`);
-                    }
+                    toplevel.wayland?.activate();
 
                     root.visible = false;
                 }
@@ -175,12 +170,7 @@ Scope {
                                         return ""; // Protección contra null
 
                                     const appId = (tl.wayland ? tl.wayland.appId : "") || tl.windowClass || tl.initialClass;
-                                    if (!appId)
-                                        return "";
-
-                                    const entry = DesktopEntries.byId(appId);
-                                    // Validamos que entry exista antes de pedir el icono
-                                    return entry && entry.icon ? Quickshell.iconPath(entry.icon, true) : "";
+                                    return Icons.getAppIcon(appId, "application-x-executable");
                                 }
                             }
 

@@ -87,7 +87,7 @@ Item {
                         source: Quickshell.env("HOME") + "/.face"
                         sourceSize.width: 48
                         sourceSize.height: 48
-                        fillMode: Image.PreserveAspectFit
+                        fillMode: Image.PreserveAspectCrop
                     }
                 }
             }

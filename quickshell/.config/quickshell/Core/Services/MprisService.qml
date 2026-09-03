@@ -18,7 +18,7 @@ Singleton {
 	id: root;
 	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
 	property MprisPlayer trackedPlayer: null;
-	property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null;
+	property MprisPlayer activePlayer: (trackedPlayer && isRealPlayer(trackedPlayer) && Mpris.players.values.includes(trackedPlayer)) ? trackedPlayer : (players[0] ?? null);
 	signal trackChanged(reverse: bool);
 
 	property bool __reverse: false;
@@ -26,10 +26,11 @@ Singleton {
 	property var activeTrack;
 
 	readonly property bool hasActivePlasmaIntegration: Mpris.players.values.some(
-		p => p.dbusName?.startsWith('org.mpris.MediaPlayer2.plasma-browser-integration')
+		p => p?.dbusName?.startsWith('org.mpris.MediaPlayer2.plasma-browser-integration')
 	)
 	
 	function isRealPlayer(player) {
+		if (!player || !player.dbusName) return false;
         return (
             // Remove native browser buses only if plasma-browser-integration is actually active on D-Bus
             !(hasActivePlasmaIntegration && player.dbusName.startsWith('org.mpris.MediaPlayer2.firefox')) && !(hasActivePlasmaIntegration && player.dbusName.startsWith('org.mpris.MediaPlayer2.chromium')) &&
@@ -49,28 +50,34 @@ Singleton {
 			target: modelData;
 
 			Component.onCompleted: {
-				if (root.trackedPlayer == null || modelData.isPlaying) {
-					root.trackedPlayer = modelData;
+				if (root.isRealPlayer(modelData)) {
+					if (root.trackedPlayer == null || modelData.isPlaying) {
+						root.trackedPlayer = modelData;
+					}
 				}
 			}
 
 			Component.onDestruction: {
-				if (root.trackedPlayer == null || !root.trackedPlayer.isPlaying) {
-					for (const player of Mpris.players.values) {
-						if (player.playbackState.isPlaying) {
+				if (root.trackedPlayer === modelData || root.trackedPlayer == null || !root.trackedPlayer.isPlaying) {
+					root.trackedPlayer = null;
+					for (const player of root.players) {
+						if (player !== modelData && player.isPlaying) {
 							root.trackedPlayer = player;
 							break;
 						}
 					}
 
-					if (root.trackedPlayer == null && Mpris.players.values.length != 0) {
-						root.trackedPlayer = Mpris.players.values[0];
+					if (root.trackedPlayer == null && root.players.length !== 0) {
+						const candidate = root.players.find(p => p !== modelData);
+						root.trackedPlayer = candidate ?? null;
 					}
 				}
 			}
 
 			function onPlaybackStateChanged() {
-				if (root.trackedPlayer !== modelData) root.trackedPlayer = modelData;
+				if (root.isRealPlayer(modelData) && modelData.isPlaying) {
+					if (root.trackedPlayer !== modelData) root.trackedPlayer = modelData;
+				}
 			}
 		}
 	}
@@ -83,15 +90,12 @@ Singleton {
 		}
 
 		function onTrackArtUrlChanged() {
-			// console.log("arturl:", activePlayer.trackArtUrl)
-			// root.updateTrack();
-			if (root.activePlayer.uniqueId == root.activeTrack.uniqueId && root.activePlayer.trackArtUrl != root.activeTrack.artUrl) {
+			if (root.activePlayer && root.activeTrack && root.activePlayer.uniqueId == root.activeTrack.uniqueId && root.activePlayer.trackArtUrl != root.activeTrack.artUrl) {
 				// cantata likes to send cover updates *BEFORE* updating the track info.
 				// as such, art url changes shouldn't be able to break the reverse animation
 				const r = root.__reverse;
 				root.updateTrack();
 				root.__reverse = r;
-
 			}
 		}
 	}
@@ -153,7 +157,7 @@ Singleton {
 	}
 
 	function setActivePlayer(player: MprisPlayer) {
-		const targetPlayer = player ?? Mpris.players.values[0];
+		const targetPlayer = (player && isRealPlayer(player)) ? player : (players[0] ?? null);
 		console.log(`[Mpris] Active player ${targetPlayer} << ${activePlayer}`)
 
 		if (targetPlayer && this.activePlayer) {
@@ -171,7 +175,7 @@ Singleton {
 
 		function pauseAll(): void {
 			for (const player of Mpris.players.values) {
-				if (player.canPause) player.pause();
+				if (player?.canPause) player.pause();
 			}
 		}
 

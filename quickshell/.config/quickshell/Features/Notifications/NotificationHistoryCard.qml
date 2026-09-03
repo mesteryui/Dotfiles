@@ -13,7 +13,7 @@ Rectangle {
     required property string icon
     required property int index
 
-    signal removeRequested()
+    signal removeRequested
 
     implicitHeight: mainLayout.implicitHeight + 20
     color: Appearance.md3.surface_container_high
@@ -28,7 +28,11 @@ Rectangle {
         radius: parent.radius
         color: Appearance.md3.on_surface
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 100 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 100
+            }
+        }
     }
 
     HoverHandler {
@@ -110,41 +114,24 @@ Rectangle {
     }
 
     // Botón (×) para borrar esta notificación individual
-    Item {
+    AnimatedIconButton {
         id: closeButton
-        width: 24
-        height: 24
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 8
         opacity: rowHover.hovered ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 100 } }
-
-        Rectangle {
-            id: closeStateLayer
-            anchors.fill: parent
-            radius: Appearance.shape.full
-            color: Appearance.md3.on_surface
-            opacity: 0
-            Behavior on opacity { NumberAnimation { duration: 100 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 100
+            }
         }
 
-        MaterialIcon {
-            icon: "close"
-            anchors.centerIn: parent
-            color: Appearance.md3.on_surface_variant
-            size: 16
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: closeStateLayer.opacity = 0.10
-            onExited: closeStateLayer.opacity = 0
-            onPressed: closeStateLayer.opacity = 0.16
-            onReleased: closeStateLayer.opacity = containsMouse ? 0.10 : 0
-            onClicked: root.removeRequested()
-        }
+        iconName: "close"
+        iconSize: 16
+        implicitWidth: 24
+        implicitHeight: 24
+        iconColor: Appearance.md3.on_surface_variant
+        baseColor: "transparent"
+        onClicked: root.removeRequested()
     }
 }

@@ -6,17 +6,16 @@ import qs.Core
 Item {
     id: root
 
-    property int radius: 16
+    property int radius: 18
     property bool isSelected: false
-    property bool hovered: false     // ← bool en vez de MouseArea
+    property bool hovered: false
 
     property int imageWidth: 560
     property int imageHeight: 400
 
-    // Nombre del archivo (sin ruta) a partir de model.filePath
     required property string filePath
 
-    // Icono placeholder mientras carga la imagen
+    // Icono placeholder mientras se carga
     MaterialIcon {
         anchors.centerIn: parent
         icon: "image"
@@ -26,7 +25,7 @@ Item {
         visible: wallpaperPreview.status !== Image.Ready
     }
 
-    // ── Imagen con máscara y state layers ─────────────────────
+    // ── Imagen y Borde de Cristal ──────────────────────────────
     Rectangle {
         id: imageMask
         anchors.fill: parent
@@ -36,8 +35,14 @@ Item {
         StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            border.color: Appearance.md3.primary
-            border.width: root.isSelected ? 2 : 0
+            border.color: root.isSelected ? Appearance.md3.primary : Qt.rgba(1, 1, 1, 0.12)
+            border.width: root.isSelected ? 2 : 1
+
+            Behavior on border.color {
+                ColorAnimation {
+                    duration: 200
+                }
+            }
 
             Image {
                 id: wallpaperPreview
@@ -49,6 +54,16 @@ Item {
                 sourceSize.width: root.imageWidth
                 sourceSize.height: root.imageHeight
                 opacity: status === Image.Ready ? 1 : 0
+
+                scale: root.hovered ? 1.04 : 1.0
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 200
@@ -57,34 +72,20 @@ Item {
                 }
             }
 
-            // State layer — selección
-            Rectangle {
-                anchors.fill: parent
-                radius: root.radius
-                color: Appearance.md3.primary
-                opacity: root.isSelected ? 0.08 : 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
-                        easing.type: Easing.OutQuad
-                    }
-                }
-            }
-
-            // State layer — hover
+            // Capa de resaltado (State layer hover)
             Rectangle {
                 anchors.fill: parent
                 radius: root.radius
                 color: Appearance.md3.on_surface
-                opacity: root.hovered ? 0.08 : 0   // ← usa el bool
+                opacity: root.hovered ? 0.06 : 0
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 100
+                        duration: 120
                     }
                 }
             }
 
-            // ── Scrim degradado inferior para legibilidad del nombre ──
+            // Scrim degradado inferior
             Rectangle {
                 id: nameScrim
                 anchors {
@@ -92,7 +93,7 @@ Item {
                     right: parent.right
                     bottom: parent.bottom
                 }
-                height: parent.height * 0.32
+                height: parent.height * 0.38
                 visible: wallpaperPreview.status === Image.Ready
 
                 gradient: Gradient {
@@ -103,78 +104,41 @@ Item {
                     }
                     GradientStop {
                         position: 1.0
-                        color: Qt.rgba(0, 0, 0, 0.55)
+                        color: Qt.rgba(0, 0, 0, 0.70)
                     }
                 }
             }
 
-            // ── Nombre del archivo, centrado sobre el scrim ───────────
-            StyledText {
-                id: fileNameLabel
+            // Píldora con el nombre de archivo
+            Rectangle {
                 anchors {
-                    left: parent.left
-                    right: parent.right
+                    horizontalCenter: parent.horizontalCenter
                     bottom: parent.bottom
-                    margins: 8
+                    bottomMargin: 10
                 }
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideMiddle
-                text: {
-                    const parts = root.filePath.split("/");
-                    return parts.length > 0 ? parts[parts.length - 1] : "";
-                }
-                color: Appearance.md3.on_surface
-                font.pixelSize: 12
-                font.weight: Font.Medium
+                width: Math.min(parent.width - 20, fileNameLabel.implicitWidth + 16)
+                height: 24
+                radius: 12
+                color: Qt.rgba(0, 0, 0, 0.45)
+                border.color: Qt.rgba(1, 1, 1, 0.15)
+                border.width: 1
                 visible: wallpaperPreview.status === Image.Ready
-                opacity: wallpaperPreview.status === Image.Ready ? 1 : 0
 
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
-                        easing.type: Easing.OutQuad
+                StyledText {
+                    id: fileNameLabel
+                    anchors.centerIn: parent
+                    width: parent.width - 12
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideMiddle
+                    text: {
+                        const parts = root.filePath.split("/");
+                        return parts.length > 0 ? parts[parts.length - 1] : "";
                     }
+                    color: Qt.rgba(1, 1, 1, 0.95)
+                    font.pixelSize: 11
+                    font.weight: Font.Medium
                 }
             }
-        }
-    }   // ← cierre de imageMask
-
-    // ── Badge de selección ────────────────────────────────────
-    Rectangle {
-        id: selectionBadge
-        anchors {
-            top: parent.top
-            right: parent.right
-            margins: 10
-        }
-        width: 28
-        height: 28
-        radius: 14
-        color: Appearance.md3.primary_container
-        border.width: 2
-        border.color: Appearance.md3.primary
-
-        opacity: root.isSelected ? 1 : 0
-        scale: root.isSelected ? 1 : 0.4
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutQuart
-            }
-        }
-        Behavior on scale {
-            NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutBack
-            }
-        }
-
-        MaterialIcon {
-            anchors.centerIn: parent
-            icon: "check"
-            size: 16
-            color: Appearance.md3.on_primary_container
         }
     }
 }

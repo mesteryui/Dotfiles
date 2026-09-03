@@ -8,6 +8,7 @@ import QtQuick.Layouts
 import qs.Primitives
 import qs.Core
 import qs.Core.Services
+import qs.Core.Modules
 
 Item {
     id: root
@@ -35,13 +36,12 @@ Item {
             Item {
                 Layout.preferredWidth: 56
                 Layout.preferredHeight: 56
-                
+
                 Layout.alignment: Qt.AlignVCenter
 
-                Text {
+                MaterialIcon {
                     anchors.centerIn: parent
-                    text: WeatherService.iconForCode(WeatherService.data.wCode)
-                    font.family: "Material Symbols Rounded"
+                    icon: Icons.getWeatherIcon(WeatherService.data.wCode)
                     font.pixelSize: 46
                     color: Appearance.md3.primary
                 }
@@ -113,7 +113,6 @@ Item {
             Layout.fillWidth: true
             spacing: 10                       // disminuido para compactar sin perder separación
             Layout.alignment: Qt.AlignHCenter
-            
 
             Repeater {
                 model: WeatherService.data.forecast
@@ -134,7 +133,7 @@ Item {
                     }
 
                     MaterialIcon {
-                        text: WeatherService.iconForCode(modelData.wCode)
+                        text: Icons.getWeatherIcon(modelData.wCode)
                         size: Appearance.font.pixelSize.huge
                         color: Appearance.md3.primary
                         Layout.alignment: Qt.AlignHCenter

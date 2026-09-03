@@ -56,9 +56,9 @@ Singleton {
     component Bar: JsonObject {
         property string position: "top"
         property int height: 36
-        property int margin: 4
-        property int radius: 12
         property string workspaceButtonType: "numbers"
+        property bool floating: true
+        property string barType: "floating" // Floating, full_hug, partial_hug, no_floating
     }
     component Notifications: JsonObject {
         property int timeout: 5

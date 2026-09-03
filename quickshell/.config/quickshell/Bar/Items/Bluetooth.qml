@@ -3,6 +3,7 @@ import Quickshell
 import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
+import qs.Core.Modules
 
 BarItem {
     clickable: true

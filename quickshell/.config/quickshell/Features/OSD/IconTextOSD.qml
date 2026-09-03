@@ -18,7 +18,7 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.full
+        radius: Appearance.shape.normal
     }
 
     RowLayout {

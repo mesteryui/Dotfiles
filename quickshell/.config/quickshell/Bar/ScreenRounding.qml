@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -5,8 +6,9 @@ import qs.Core
 import qs.Core.Services
 
 Variants {
+    id: root
     model: Quickshell.screens
-
+    readonly property var isFloating: ConfigService.configs.bar.barType === "full_hug"
     delegate: Scope {
         id: screenScope
         required property ShellScreen modelData
@@ -43,7 +45,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners // Se oculta si no quieres esquinas arriba
+            visible: screenScope.drawTopCorners && root.isFloating // Se oculta si no quieres esquinas arriba
 
             ScreenCorner {
                 anchors.fill: parent
@@ -63,7 +65,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners
+            visible: screenScope.drawTopCorners && root.isFloating
 
             ScreenCorner {
                 anchors.fill: parent
@@ -84,7 +86,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawBottomCorners
+            visible: screenScope.drawBottomCorners && root.isFloating
 
             ScreenCorner {
                 anchors.fill: parent
@@ -106,7 +108,7 @@ Variants {
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
 
-            visible: screenScope.drawBottomCorners
+            visible: screenScope.drawBottomCorners && root.isFloating
 
             ScreenCorner {
                 anchors.fill: parent
@@ -132,7 +134,7 @@ Variants {
             }
             implicitWidth: screenScope.borderThickness
             color: "transparent"
-
+            visible: root.isFloating
             Rectangle {
                 anchors.fill: parent
                 color: Appearance.md3.surface
@@ -143,6 +145,7 @@ Variants {
         PanelWindow {
             screen: screenScope.modelData
             WlrLayershell.namespace: "quickshell:connect-right"
+            visible: root.isFloating
             anchors {
                 right: true
                 top: true
@@ -170,7 +173,7 @@ Variants {
             color: "transparent"
 
             // Aquí usamos la variable para mostrar u ocultar la línea
-            visible: screenScope.drawTopLine
+            visible: screenScope.drawTopLine && root.isFloating
 
             Rectangle {
                 anchors.fill: parent
@@ -191,7 +194,7 @@ Variants {
             color: "transparent"
 
             // Aquí usamos la variable para mostrar u ocultar la línea
-            visible: screenScope.drawBottomLine
+            visible: screenScope.drawBottomLine && root.isFloating
 
             Rectangle {
                 anchors.fill: parent

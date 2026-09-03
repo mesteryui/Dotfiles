@@ -1,38 +1,27 @@
 import Quickshell
 import QtQuick
 import qs.Bar.Content
-import qs.Bar
 import qs.Panels.Battery
-import qs.Core.Services as Services
 
-Item {
+BarItem {
     id: root
-    implicitWidth: content.implicitWidth + 18
-    implicitHeight: 30
+    clickable: true
+    horizontalPadding: 9
+
     LazyLoader {
         id: loader
-        loading: interaction.hoveredChanged
+        loading: root.area.hoveredChanged
         component: BatteryPopupWindow {
             id: popupWindow
         }
     }
-    MouseArea {
-        id: interaction
-        anchors.fill: parent
-        enabled: true
-        hoverEnabled: true
-        onClicked: {
-            const w = loader.item;
-            if (w)
-                w.visible = !w.visible;
-        } //Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
-        cursorShape: Qt.PointingHandCursor
-    }
-    BarBackground {
-        id: background
-        anchors.fill: parent
-        active: interaction.containsMouse
-    }
+
+    onClicked: {
+        const w = loader.item;
+        if (w)
+            w.visible = !w.visible;
+    } //Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
+
     BatteryContent {
         id: content
         anchors.centerIn: parent

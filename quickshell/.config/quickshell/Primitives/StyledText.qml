@@ -12,7 +12,7 @@ Text {
     font {
         hintingPreference: Font.PreferDefaultHinting
         family: ConfigService.configs.appearence.fontSans
-        pixelSize: 15
+        pixelSize: Appearance.font.pixelSize.small
         variableAxes: shouldUseNumberFont ? ({}) : Appearance.font.variableAxes.main
     }
     color: Appearance.md3.on_background

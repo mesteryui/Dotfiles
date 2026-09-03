@@ -3,6 +3,11 @@
 // Integra carátula destacada con elevación, insignias M3, seekbar de cápsula interactiva,
 // controles de 5 acciones (Shuffle, Prev, Play/Pause FAB heroico, Next, Loop),
 // control de volumen y selector de múltiples reproductores con chips M3.
+//
+// Formas expresivas (m3shapes, https://github.com/soramanew/m3shapes): la carátula,
+// el FAB de Play/Pause, el thumb del seekbar y los chips de reproductor usan
+// MaterialShape con morph automático entre siluetas al cambiar de estado
+// (reproduciendo/pausado, presionado/activo).
 
 pragma ComponentBehavior: Bound
 import QtQuick
@@ -15,6 +20,7 @@ import qs.Core.Services as Services
 import qs.Core
 import qs.Primitives
 import Quickshell.Services.Mpris
+import M3Shapes
 
 Item {
     id: root
@@ -149,16 +155,20 @@ Item {
             spacing: 14
             visible: root.hasPlayer
 
-            // ── Carátula M3 Expressive ──
+            // ── Carátula M3 Expressive (m3shapes) ──
+            // La silueta hace morph: cuadrado suave en pausa → "cookie" orgánico
+            // reproduciendo, siguiendo el patrón Material You de "now playing".
             Item {
                 id: artContainer
                 Layout.preferredWidth: 76
                 Layout.preferredHeight: 76
 
-                // Sombra tonal para dar profundidad Material You
+                readonly property int artShape: MaterialShape.Cookie12Sided
+
+                // Sombra tonal para dar profundidad Material You (sigue la silueta)
                 MultiEffect {
-                    anchors.fill: artBg
-                    source: artBg
+                    anchors.fill: artShapeBg
+                    source: artShapeBg
                     shadowEnabled: true
                     shadowColor: Appearance.md3.shadow
                     shadowOpacity: 0.18
@@ -166,12 +176,13 @@ Item {
                     shadowVerticalOffset: 2
                 }
 
-                // Placeholder / Fondo
-                Rectangle {
-                    id: artBg
+                // Placeholder / Fondo — MaterialShape con morph automático
+                MaterialShape {
+                    id: artShapeBg
                     anchors.fill: parent
-                    radius: Appearance.shape.normal
+                    shape: artContainer.artShape
                     color: Appearance.md3.primary_container
+                    animationDuration: 500
 
                     MaterialIcon {
                         anchors.centerIn: parent
@@ -183,26 +194,41 @@ Item {
                     }
                 }
 
-                // Imagen recortada
-                StyledClippingRectangle {
+                // Imagen recortada a la silueta expresiva vía máscara
+                Image {
+                    id: artImage
                     anchors.fill: parent
-                    radius: Appearance.shape.normal
-
-                    Image {
-                        id: artImage
-                        anchors.fill: parent
-                        source: root.artURL
-                        fillMode: Image.PreserveAspectCrop
-                        cache: false
-                        asynchronous: true
-                        visible: root.hasArt && status === Image.Ready
-                        opacity: visible ? 1.0 : 0.0
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 200
-                            }
+                    source: root.artURL
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    asynchronous: true
+                    visible: root.hasArt && status === Image.Ready
+                    opacity: visible ? 1.0 : 0.0
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 200
                         }
                     }
+
+                    // No necesita MouseArea/hover → layer.enabled aquí es seguro
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: artMaskShape
+                    }
+                }
+
+                // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
+                // layer.enabled es obligatorio aquí: sin él, un item con visible:false
+                // no genera textura y la máscara queda en blanco (imagen invisible).
+                MaterialShape {
+                    id: artMaskShape
+                    anchors.fill: artImage
+                    shape: artContainer.artShape
+                    color: "white"
+                    animationDuration: 500
+                    visible: false
+                    layer.enabled: true
                 }
             }
 
@@ -334,17 +360,18 @@ Item {
                     }
                 }
 
-                // Handle / Thumb M3 Expressive
-                Rectangle {
+                // Handle / Thumb M3 Expressive — morph a "cookie" al presionar
+                MaterialShape {
                     id: progressThumb
                     x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.progressRatio - width / 2))
                     anchors.verticalCenter: parent.verticalCenter
                     width: progressArea.pressed ? 8 : (progressArea.containsMouse ? 7 : 5)
                     height: progressArea.pressed ? 20 : (progressArea.containsMouse ? 16 : 12)
-                    radius: width / 2
+                    shape: progressArea.pressed ? MaterialShape.Cookie4Sided : MaterialShape.Circle
                     color: Appearance.md3.primary
-                    border.color: Appearance.md3.surface_container_lowest
-                    border.width: 1.5
+                    strokeColor: Appearance.md3.surface_container_lowest
+                    strokeWidth: 1.5
+                    animationDuration: 250
 
                     Behavior on x {
                         enabled: !progressArea.pressed
@@ -432,60 +459,16 @@ Item {
             }
 
             // 1. Shuffle
-            Item {
+            AnimatedIconButton {
                 implicitWidth: 40
                 implicitHeight: 40
-                scale: shuffleArea.pressed ? 0.90 : (shuffleArea.containsMouse ? 1.08 : 1.0)
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                        easing.type: Easing.OutCubic
-                    }
-                }
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 20
-                    color: Services.MprisService.hasShuffle ? Appearance.md3.tertiary_container : "transparent"
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: shuffleArea.pressed ? 0.12 : (shuffleArea.containsMouse ? 0.08 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                MaterialIcon {
-                    anchors.centerIn: parent
-                    icon: "shuffle"
-                    size: 20
-                    color: !Services.MprisService.shuffleSupported ? Qt.alpha(Appearance.md3.on_surface, 0.38) : (Services.MprisService.hasShuffle ? Appearance.md3.on_tertiary_container : (shuffleArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant))
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: shuffleArea
-                    anchors.fill: parent
-                    enabled: Services.MprisService.shuffleSupported
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: root.toggleShuffle()
-                }
+                iconName: "shuffle"
+                iconSize: 20
+                enabled: Services.MprisService.shuffleSupported
+                isActive: Services.MprisService.hasShuffle
+                accentColor: Appearance.md3.tertiary_container
+                activeIconColor: Appearance.md3.on_tertiary_container
+                onClicked: root.toggleShuffle()
             }
 
             Item {
@@ -493,126 +476,74 @@ Item {
             }
 
             // 2. Previous
-            Item {
-                implicitWidth: 44
-                implicitHeight: 44
-                scale: prevArea.pressed ? 0.92 : (prevArea.containsMouse ? 1.06 : 1.0)
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                        easing.type: Easing.OutCubic
-                    }
-                }
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 22
-                    color: prevArea.pressed ? Appearance.md3.surface_container_highest : (prevArea.containsMouse ? Appearance.md3.surface_container_high : "transparent")
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: prevArea.pressed ? 0.12 : (prevArea.containsMouse ? 0.06 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                MaterialIcon {
-                    anchors.centerIn: parent
-                    icon: "skip_previous"
-                    size: 24
-                    color: (root.player?.canGoPrevious ?? false) ? (prevArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant) : Qt.alpha(Appearance.md3.on_surface, 0.38)
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: prevArea
-                    anchors.fill: parent
-                    enabled: root.player?.canGoPrevious ?? false
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: Services.MprisService.previous()
-                }
+            AnimatedIconButton {
+                iconName: "skip_previous"
+                enabled: root.player?.canGoPrevious ?? false
+                onClicked: Services.MprisService.previous()
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            // 3. Play / Pause Hero FAB
+            // 3. Play / Pause Hero FAB — silueta m3shapes con morph al reproducir
+            // Nota: se reconstruye con MaterialShape en vez de AnimatedIconButton
+            // porque ese componente no expone una API de forma personalizada.
             Item {
+                id: playPauseHero
                 implicitWidth: 58
                 implicitHeight: 58
-                scale: playArea.pressed ? 0.92 : (playArea.containsMouse ? 1.06 : 1.0)
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 140
-                        easing.type: Easing.OutCubic
-                    }
-                }
+
+                readonly property bool playing: Services.MprisService.isPlaying
+                readonly property int heroShape: playing ? MaterialShape.Cookie7Sided : MaterialShape.Circle
 
                 MultiEffect {
-                    anchors.fill: playFabBg
-                    source: playFabBg
+                    anchors.fill: heroBg
+                    source: heroBg
                     shadowEnabled: true
                     shadowColor: Appearance.md3.shadow
-                    shadowOpacity: 0.22
+                    shadowOpacity: 0.18
                     shadowBlur: 0.5
-                    shadowVerticalOffset: 3
+                    shadowVerticalOffset: 2
                 }
 
-                Rectangle {
-                    id: playFabBg
+                MaterialShape {
+                    id: heroBg
                     anchors.fill: parent
-                    radius: 29
-                    color: Appearance.md3.primary
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
+                    shape: playPauseHero.heroShape
+                    color: heroMouse.enabled ? Appearance.md3.primary : Appearance.md3.surface_container_highest
+                    animationDuration: 450
+                }
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_primary
-                        opacity: playArea.pressed ? 0.20 : (playArea.containsMouse ? 0.10 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
+                // Capa de estado (hover/press) — misma silueta que el fondo
+                MaterialShape {
+                    id: heroStateLayer
+                    anchors.fill: parent
+                    shape: playPauseHero.heroShape
+                    color: Appearance.md3.on_primary
+                    animationDuration: 450
+                    opacity: heroMouse.pressed ? 0.12 : (heroMouse.containsMouse ? 0.08 : 0)
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 100
                         }
                     }
                 }
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    icon: Services.MprisService.isPlaying ? "pause" : "play_arrow"
+                    icon: playPauseHero.playing ? "pause" : "play_arrow"
                     size: 32
                     fill: 1
                     color: Appearance.md3.on_primary
                 }
 
                 MouseArea {
-                    id: playArea
+                    id: heroMouse
                     anchors.fill: parent
-                    enabled: root.player != null
                     hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    cursorShape: Qt.PointingHandCursor
+                    enabled: root.player != null
                     onClicked: Services.MprisService.togglePlaying()
                 }
             }
@@ -622,60 +553,10 @@ Item {
             }
 
             // 4. Next
-            Item {
-                implicitWidth: 44
-                implicitHeight: 44
-                scale: nextArea.pressed ? 0.92 : (nextArea.containsMouse ? 1.06 : 1.0)
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                        easing.type: Easing.OutCubic
-                    }
-                }
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 22
-                    color: nextArea.pressed ? Appearance.md3.surface_container_highest : (nextArea.containsMouse ? Appearance.md3.surface_container_high : "transparent")
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: nextArea.pressed ? 0.12 : (nextArea.containsMouse ? 0.06 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                MaterialIcon {
-                    anchors.centerIn: parent
-                    icon: "skip_next"
-                    size: 24
-                    color: (root.player?.canGoNext ?? false) ? (nextArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant) : Qt.alpha(Appearance.md3.on_surface, 0.38)
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: nextArea
-                    anchors.fill: parent
-                    enabled: root.player?.canGoNext ?? false
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: Services.MprisService.next()
-                }
+            AnimatedIconButton {
+                iconName: "skip_next"
+                enabled: root.player?.canGoNext ?? false
+                onClicked: Services.MprisService.next()
             }
 
             Item {
@@ -683,61 +564,17 @@ Item {
             }
 
             // 5. Loop / Repeat
-            Item {
+            AnimatedIconButton {
                 readonly property bool isLooping: Services.MprisService.loopState !== MprisLoopState.None
                 implicitWidth: 40
                 implicitHeight: 40
-                scale: loopArea.pressed ? 0.90 : (loopArea.containsMouse ? 1.08 : 1.0)
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                        easing.type: Easing.OutCubic
-                    }
-                }
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 20
-                    color: parent.isLooping ? Appearance.md3.tertiary_container : "transparent"
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: loopArea.pressed ? 0.12 : (loopArea.containsMouse ? 0.08 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                MaterialIcon {
-                    anchors.centerIn: parent
-                    icon: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
-                    size: 20
-                    color: !Services.MprisService.loopSupported ? Qt.alpha(Appearance.md3.on_surface, 0.38) : (parent.isLooping ? Appearance.md3.on_tertiary_container : (loopArea.containsMouse ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant))
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: loopArea
-                    anchors.fill: parent
-                    enabled: Services.MprisService.loopSupported
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: root.cycleLoopState()
-                }
+                iconName: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
+                iconSize: 20
+                enabled: Services.MprisService.loopSupported
+                isActive: isLooping
+                accentColor: Appearance.md3.tertiary_container
+                activeIconColor: Appearance.md3.on_tertiary_container
+                onClicked: root.cycleLoopState()
             }
 
             Item {
@@ -766,9 +603,9 @@ Item {
             Flickable {
                 id: chipsFlickable
                 Layout.fillWidth: true
-                implicitHeight: 32
+                implicitHeight: 34
                 contentWidth: chipsRow.implicitWidth
-                contentHeight: 32
+                contentHeight: 34
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 flickableDirection: Flickable.HorizontalFlick
@@ -788,12 +625,18 @@ Item {
                             readonly property bool isActive: Services.MprisService.activePlayer === playerObj
 
                             implicitWidth: chipBg.implicitWidth
-                            implicitHeight: 30
+                            implicitHeight: 34
 
+                            // Fondo del chip: Rectangle normal (píldora M3).
+                            // MaterialShape normaliza su silueta a un cuadrado de lado
+                            // min(width, height) — en un chip ancho eso deja la forma
+                            // encogida en el centro y el texto sobresaliendo. Por eso
+                            // el "cookie" vive en el indicador cuadrado de abajo, la
+                            // única zona del chip donde la silueta se ve completa.
                             Rectangle {
                                 id: chipBg
-                                implicitWidth: chipContent.implicitWidth + 20
-                                implicitHeight: 30
+                                implicitWidth: chipContent.implicitWidth + 24
+                                implicitHeight: 34
                                 radius: Appearance.shape.full
                                 color: chipItem.isActive ? Appearance.md3.secondary_container : Appearance.md3.surface_container_low
                                 border.width: chipItem.isActive ? 0 : 1

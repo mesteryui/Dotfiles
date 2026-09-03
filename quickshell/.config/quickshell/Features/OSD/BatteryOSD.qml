@@ -6,16 +6,13 @@ import QtQuick.Layouts
 import qs.Core.Services as Services
 import qs.Shared.Background
 
-BaseOSD {
+IconTextOSD {
     id: batteryOSD
-
-    implicitWidth: contentRow.implicitWidth + 40
-    implicitHeight: contentRow.implicitHeight + 20
 
     type: "battery"
 
-    property string osdIcon: "battery_full"
-    property string osdText: ""
+    osdIcon: "battery_full"
+    osdText: ""
 
     Connections {
         target: Services.BatteryService.displayDevice
@@ -41,35 +38,6 @@ BaseOSD {
                 batteryOSD.osdText = Services.I18nService.getTranslation("battery.charging", "Cargando batería");
                 batteryOSD.show();
             }
-        }
-    }
-
-    // BUG #6 FIX: eliminar anchors.centerIn (conflicto con anchors.fill).
-    // anchors.fill ya posiciona y dimensiona el componente correctamente.
-    PopupBackground {
-        anchors.fill: parent
-        color: Appearance.md3.surface
-        radius: Appearance.shape.normal
-    }
-
-    RowLayout {
-        id: contentRow
-        anchors.centerIn: parent
-        spacing: 10
-
-        MaterialIcon {
-            icon: batteryOSD.osdIcon
-            size: 30
-            color: Appearance.md3.on_surface
-            Layout.alignment: Qt.AlignVCenter
-        }
-
-        StyledText {
-            Layout.alignment: Qt.AlignVCenter
-            font.pixelSize: 26
-            color: Appearance.md3.on_surface
-            text: batteryOSD.osdText
-            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

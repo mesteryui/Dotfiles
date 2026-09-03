@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == "--help" ]]; then
+    echo "git-identity: Cambia la identidad de git en local para un repositorio"
+    echo "Ejemplo:"
+    echo '	git-identity "Juan P." "juanp@gmail.com" y ahora seria mi identidad en github'
+else
+git config user.name "$1"
+if [ $? -eq 0 ]; then
+    echo "El usuario $1 ha sido configurado correctamente en el proyecto"
+else
+    echo "Ha habido un fallo en las configuraciones para este proyecto"
+fi
+git config user.email "$2"
+if [ $? -eq 0 ]; then
+    echo "El email $2 ha sido configurado correctamente en el proyecto"
+else
+    echo "Ha habido un fallo en las configuraciones para este proyecto"
+fi
+fi

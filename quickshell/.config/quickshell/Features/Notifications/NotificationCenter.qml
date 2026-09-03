@@ -9,10 +9,18 @@ import QtQuick.Effects
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import M3Shapes
 
+// Formas expresivas (m3shapes): el toggle de DND (32×32) y el icono del
+// estado vacío (100×100) usan MaterialShape porque son regiones cuadradas.
+// El fondo del panel y el link "Clear all" siguen siendo Rectangle: MaterialShape
+// normaliza su silueta a un cuadrado de lado min(width, height), así que en un
+// contenedor ancho y no cuadrado la forma quedaría encogida en el centro con
+// contenido sobresaliendo — mismo problema ya resuelto en los chips del MPRIS.
+// qmllint disable uncreatable-type
 PanelWindow {
     id: root
-
+    // qmllint enable uncreatable-type
     required property ListModel historyModel
 
     // Cap the notification list height; beyond this it scrolls instead of
@@ -97,16 +105,21 @@ PanelWindow {
                     font.bold: true
                 }
 
-                // --- DND toggle: botón circular tonal, acción de cabecera GNOME ---
+                // --- DND toggle: MaterialShape (Circle → Cookie4Sided al activar).
+                // 32×32 es cuadrado, así que la silueta se ve completa sin recortes.
                 Item {
+                    id: dndToggle
                     implicitWidth: 32
                     implicitHeight: 32
 
-                    Rectangle {
+                    readonly property int dndShape: NotificationManager.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+
+                    MaterialShape {
                         id: dndContainer
                         anchors.fill: parent
-                        radius: Appearance.shape.full
+                        shape: dndToggle.dndShape
                         color: NotificationManager.dnd ? Appearance.md3.primary_container : "transparent"
+                        animationDuration: 300
                         Behavior on color {
                             ColorAnimation {
                                 duration: 120
@@ -114,11 +127,12 @@ PanelWindow {
                         }
                     }
 
-                    Rectangle {
+                    MaterialShape {
                         id: dndStateLayer
                         anchors.fill: parent
-                        radius: Appearance.shape.full
+                        shape: dndToggle.dndShape
                         color: Appearance.md3.on_background
+                        animationDuration: 300
                         opacity: 0
                         Behavior on opacity {
                             NumberAnimation {
@@ -230,11 +244,50 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 visible: root.historyModel.count === 0
                 spacing: 8
-                MaterialIcon {
-                    Layout.alignment: Qt.AlignCenter
-                    text: "notifications_none"
-                    size: 32
-                    color: Appearance.md3.primary
+
+                // Icono del estado vacío: MaterialShape con sombra + respiración
+                // lenta entre Sunny/VerySunny — región cuadrada (100×100), ideal
+                // para m3shapes.
+                Item {
+                    id: emptyStateIconContainer
+                    Layout.alignment: Qt.AlignHCenter
+                    implicitWidth: 100
+                    implicitHeight: 100
+
+                    MultiEffect {
+                        anchors.fill: emptyStateShape
+                        source: emptyStateShape
+                        shadowEnabled: true
+                        shadowColor: Appearance.md3.shadow
+                        shadowOpacity: 0.15
+                        shadowBlur: 0.5
+                        shadowVerticalOffset: 2
+                    }
+
+                    MaterialShape {
+                        id: emptyStateShape
+                        anchors.fill: parent
+                        shape: MaterialShape.Sunny
+                        color: Appearance.md3.primary_container
+                        animationDuration: 1400
+                        animationEasing.type: Easing.InOutSine
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            text: "notifications_none"
+                            size: 32
+                            color: Appearance.md3.on_primary_container
+                        }
+                    }
+
+                    // Ciclo de respiración — solo corre mientras el estado vacío
+                    // está visible
+                    Timer {
+                        interval: 1600
+                        running: root.historyModel.count === 0
+                        repeat: true
+                        onTriggered: emptyStateShape.shape = emptyStateShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
+                    }
                 }
 
                 StyledText {

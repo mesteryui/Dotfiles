@@ -129,82 +129,18 @@ Item {
                 }
 
                 // Cancel button
-                Rectangle {
-                    id: cancelButton
-                    implicitWidth: cancelLabel.implicitWidth + 32
-                    implicitHeight: 36
-                    radius: 9999 // full shape token
-                    color: "transparent"
-
-                    Rectangle {
-                        id: cancelStateLayer
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: cancelMouseArea.pressed ? 0.12 : (cancelMouseArea.containsMouse ? 0.08 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-
-                    StyledText {
-                        id: cancelLabel
-                        anchors.centerIn: parent
-                        text: I18nService.getTranslation("polkit.cancel", "Cancel")
-                        color: Appearance.md3.primary
-                        font.pixelSize: 14
-                    }
-
-                    MouseArea {
-                        id: cancelMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: overlay.closed()
-                    }
+                AnimatedTextButton {
+                    text: I18nService.getTranslation("polkit.cancel", "Cancel")
+                    isFilled: false
+                    onClicked: overlay.closed()
                 }
 
                 // OK button
-                Rectangle {
-                    id: okButton
-                    implicitWidth: okLabel.implicitWidth + 32
-                    implicitHeight: 36
-                    radius: 9999 // full shape token
+                AnimatedTextButton {
+                    text: I18nService.getTranslation("polkit.ok", "OK")
+                    isFilled: true
                     enabled: overlay.interactionAvailable
-                    opacity: enabled ? 1 : 0.5
-                    color: Appearance.md3.primary
-
-                    Rectangle {
-                        id: okStateLayer
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_primary
-                        opacity: okMouseArea.pressed ? 0.12 : (okMouseArea.containsMouse ? 0.08 : 0)
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-
-                    StyledText {
-                        id: okLabel
-                        anchors.centerIn: parent
-                        text: I18nService.getTranslation("polkit.ok", "OK")
-                        color: Appearance.md3.on_primary
-                        font.pixelSize: 14
-                    }
-
-                    MouseArea {
-                        id: okMouseArea
-                        anchors.fill: parent
-                        enabled: parent.enabled
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: overlay.submit(inputField.text)
-                    }
+                    onClicked: overlay.submit(inputField.text)
                 }
             }
         }

@@ -1,29 +1,40 @@
 {
+    "appearence": {
+        "darkMode": true,
+        "expressive": "Google Sans Flex",
+        "fontSans": "Google Sans Flex",
+        "matugen": {
+            "type": "scheme-tonal-spot"
+        },
+        "monospace": "JetBrains Mono NerdFont",
+        "reading": "Google Sans Flex"
+    },
     "bar": {
-        "position": "top",
+        "barType": "floating",
+        "floating": true,
         "height": 40,
+        "position": "top",
         "workspaceButtonType": "kanji"
     },
+    "language": "es_ES",
     "lockscreen": {
-        "blurLevel": 1.5,
-        "useWallpaper": false
+        "blurLevel": 0.7,
+        "useWallpaper": true
+    },
+    "nightLight": {
+        "gamma": 83,
+        "temperature": 3576
     },
     "notifications": {
-        "timeout": 6
+        "timeout": 10
     },
     "updates": {
         "command": "shelly -U",
-        "countTime": 5
+        "countTime": 8
     },
     "weather": {
         "autoLocation": true,
-        "city": "Vigo,ES",
-        "reloadTime": 10
-    },
-    "appearence": {
-        "darkMode": true,
-        "matugen": {
-            "type": "scheme-tonal-spot"
-        }
+        "city": "Vigo",
+        "reloadTime": 7
     }
 }

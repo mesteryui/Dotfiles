@@ -17,6 +17,7 @@ import qs.Features.Notifications
 import qs.Lockscreen
 import qs.Bar
 import qs.Features.CheatSheet
+import qs.Windows
 
 ShellRoot {
     id: root
@@ -32,7 +33,7 @@ ShellRoot {
         ConfigService.load();
         KeyboardThings.load();
     }
-
+    SettingsPanel {}
     PanelWithControls {}
 
     // OSDs: Carga inmediata (pequeños y críticos)
@@ -40,6 +41,7 @@ ShellRoot {
     VolumeOSD {}
     SpecialKeysOSD {}
     BatteryOSD {}
+    GameModeOSD {}
 
     WallpaperMenu {}
 
@@ -49,15 +51,6 @@ ShellRoot {
     Notifications {}
     Cheatsheet {}
     PolkitWindow {}
-    Variants {
-        model: Quickshell.screens
-        delegate: Scope {
-            id: delegateScope
-            required property ShellScreen modelData
-            Bar {
-                screen: delegateScope.modelData
-            }
-        }
-    }
+    Bar {}
     LockScreen {}
 }

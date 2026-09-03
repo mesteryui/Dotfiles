@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtPositioning
+import qs.Core.Modules
 
 Singleton {
     id: root
@@ -24,7 +25,7 @@ Singleton {
     readonly property bool gpsActive: root.configGpsEnabled && !root._gpsSessionFallback
 
     // Icono dinámico reactivo (Día / Noche)
-    readonly property string icon: root.iconForCode(data.wCode, data.isDay)
+    readonly property string icon: Icons.getWeatherIcon(data.wCode, data.isDay)
 
     // --- Ubicación y Caché ---
     property var location: ({
@@ -88,51 +89,6 @@ Singleton {
             positionSource.start();
         } else {
             positionSource.stop();
-        }
-    }
-
-    function iconForCode(code, isDay) {
-        const c = parseInt(code);
-        const day = isDay !== undefined ? Boolean(isDay) : true;
-
-        switch (c) {
-        case 0:
-            return day ? "wb_sunny" : "bedtime";
-        case 1:
-        case 2:
-            return day ? "partly_cloudy_day" : "nights_stay";
-        case 3:
-            return "cloud";
-        case 45:
-        case 48:
-            return "foggy";
-        case 51:
-        case 53:
-        case 55:
-        case 56:
-        case 57:
-        case 61:
-        case 63:
-        case 65:
-        case 66:
-        case 67:
-        case 80:
-        case 81:
-        case 82:
-            return "rainy";
-        case 71:
-        case 73:
-        case 75:
-        case 77:
-        case 85:
-        case 86:
-            return "ac_unit";
-        case 95:
-        case 96:
-        case 99:
-            return "thunderstorm";
-        default:
-            return "device_thermostat";
         }
     }
 
