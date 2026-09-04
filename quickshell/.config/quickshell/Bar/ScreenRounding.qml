@@ -9,6 +9,7 @@ Variants {
     id: root
     model: Quickshell.screens
     readonly property var isFloating: ConfigService.configs.bar.barType === "full_hug"
+    readonly property var isPartial: ConfigService.configs.bar.barType === "partial_hug"
     delegate: Scope {
         id: screenScope
         required property ShellScreen modelData
@@ -45,7 +46,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners && root.isFloating // Se oculta si no quieres esquinas arriba
+            visible: screenScope.drawTopCorners && root.isFloating || root.isPartial // Se oculta si no quieres esquinas arriba
 
             ScreenCorner {
                 anchors.fill: parent
@@ -65,7 +66,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners && root.isFloating
+            visible: screenScope.drawTopCorners && root.isFloating || root.isPartial
 
             ScreenCorner {
                 anchors.fill: parent

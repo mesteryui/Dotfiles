@@ -10,20 +10,20 @@
         "reading": "Google Sans Flex"
     },
     "bar": {
-        "barType": "floating",
+        "barType": "partial_hug",
         "floating": true,
-        "height": 40,
+        "height": 38,
         "position": "top",
         "workspaceButtonType": "kanji"
     },
     "language": "es_ES",
     "lockscreen": {
-        "blurLevel": 0.7,
+        "blurLevel": 0.63,
         "useWallpaper": true
     },
     "nightLight": {
         "gamma": 83,
-        "temperature": 3576
+        "temperature": 3793
     },
     "notifications": {
         "timeout": 10
@@ -35,6 +35,6 @@
     "weather": {
         "autoLocation": true,
         "city": "Vigo",
-        "reloadTime": 7
+        "reloadTime": 5
     }
 }
