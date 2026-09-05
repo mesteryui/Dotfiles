@@ -1,5 +1,6 @@
-import QtQuick
 import qs.Panels.Updates
+import QtQuick
+
 // Orquestador del popup de actualizaciones.
 // No tiene lógica visual propia — solo ensambla los tres Wrappers.
 Item {
@@ -40,6 +41,7 @@ Item {
             left: parent.left
             right: parent.right
         }
+
         onUpdateRequested: root.updateRequested()
     }
 }

@@ -1,15 +1,17 @@
-import QtQuick
 import org.kde.kirigami as Kirigami
-import Quickshell
 import qs.Core
+import QtQuick
+import Quickshell
 
 Kirigami.Icon {
     id: root
+
     required property string icon
     property bool filled: false
     property alias monochrome: root.isMask
 
     property int implicitSize: 20
+
     implicitWidth: implicitSize
     implicitHeight: implicitSize
 

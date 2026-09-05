@@ -1,10 +1,10 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import Quickshell
+import qs.Core.Modules
 import QtQuick
 import QtPositioning
-import qs.Core.Modules
+import Quickshell
 
 Singleton {
     id: root
@@ -74,6 +74,7 @@ Singleton {
 
     Connections {
         target: NetworkService
+
         function onCurrentNetworkChanged() {
             if (NetworkService?.currentNetwork !== null) {
                 if (root.isError || root.data.lastRefresh === "--:--") {
@@ -291,6 +292,7 @@ Singleton {
 
     PositionSource {
         id: positionSource
+
         updateInterval: root.fetchInterval
         name: "geoclue2"
 

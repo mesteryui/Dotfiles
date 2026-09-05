@@ -1,4 +1,5 @@
 pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -17,6 +18,7 @@ Singleton {
 
     FileView {
         id: fileManagment
+
         path: Quickshell.shellPath("Core/i18n/" + root.language + ".json")
         watchChanges: true
         onFileChanged: reload()
@@ -28,6 +30,7 @@ Singleton {
             }
         }
     }
+
     function getTranslation(key: string, default_key = ""): var {
         const parts = key.split(".");
         let current = root.translations;

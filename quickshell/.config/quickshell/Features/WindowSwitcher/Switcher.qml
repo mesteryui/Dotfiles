@@ -1,21 +1,24 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import Quickshell
-import Quickshell.Widgets
-import Quickshell.Wayland
-import Quickshell.Hyprland
+
 import qs.Primitives
 import qs.Shared.Background
 import qs.Core
-import Quickshell.Io
 import qs.Core.Modules
+import QtQuick
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Widgets
 
 Scope {
     id: scope
+
     property bool shown: false
 
     IpcHandler {
         target: "switcher"
+
         function toggle() {
             scope.shown = !scope.shown;
         }
@@ -75,6 +78,7 @@ Scope {
 
             ListView {
                 id: windowList
+
                 anchors.fill: parent
                 anchors.margins: 12
                 focus: true
@@ -103,10 +107,13 @@ Scope {
                 }
 
                 Keys.onLeftPressed: windowList.decrementCurrentIndex()
+
                 Keys.onRightPressed: windowList.incrementCurrentIndex()
+
                 Keys.onTabPressed: currentIndex === model.count - 1 ? currentIndex = 0 : incrementCurrentIndex()
 
                 Keys.onReturnPressed: windowList.activateCurrent()
+
                 Keys.onEnterPressed: windowList.activateCurrent()
 
                 function activateCurrent() {
@@ -124,6 +131,7 @@ Scope {
                 delegate: Item {
                     id: windowDelegate
                     // Usamos 'var' en lugar del tipo estricto para evitar errores internos de QML si se le pasa null temporalmente
+
                     required property var modelData
                     required property int index
 

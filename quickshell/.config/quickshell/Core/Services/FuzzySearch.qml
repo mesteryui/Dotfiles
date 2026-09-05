@@ -13,9 +13,9 @@
 // acordate de agregar la línea correspondiente ahí también.
 
 pragma Singleton
+import "FuzzyMatch.js" as FuzzyMatch
 import QtQuick
 import Quickshell
-import "FuzzyMatch.js" as FuzzyMatch
 
 Singleton {
     id: root

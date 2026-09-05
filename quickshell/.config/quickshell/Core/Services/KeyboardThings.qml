@@ -1,8 +1,9 @@
 pragma Singleton
+
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Io
 
 Singleton {
     id: root
@@ -35,6 +36,7 @@ Singleton {
     // haya terminado de actualizar el estado real.
     Timer {
         id: debounce
+
         interval: 60
         onTriggered: {
             if (!capsLockProc.running)
@@ -46,6 +48,7 @@ Singleton {
 
     Timer {
         id: confirmDebounce
+
         interval: 220
         onTriggered: {
             if (!capsLockProc.running)
@@ -62,6 +65,7 @@ Singleton {
 
     Process {
         id: capsLockProc
+
         command: ["hyprctl", "-j", "devices"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -77,6 +81,7 @@ Singleton {
     }
     Process {
         id: numsLock
+
         command: ["hyprctl", "-j", "devices"]
         stdout: StdioCollector {
             onStreamFinished: {

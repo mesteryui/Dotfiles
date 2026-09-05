@@ -1,22 +1,26 @@
 pragma Singleton
+
+import QtQuick
 import Quickshell
 import Quickshell.Io
-import QtQuick
 
 Singleton {
     id: root
 
     property string splashPhrase: ""
 
+    property list<string> splashPrases: ["Advance with clarity. The path is built by motion.", "Direction over speed. Let precision guide the core.", "Carbon foundations, golden execution.", "Stripped of clutter. Focused on the horizon.", "Every trace leaves a path. Make yours deliberate.", "Quiet the interface. Amplify the intent."]
+
     enum Modes {
         HYPR,
         CUSTOM
     }
 
-    property int mode: RandomPhraseses.Modes.HYPR
+    property int mode: RandomPhraseses.Modes.CUSTOM
 
     Process {
         id: splashProc
+
         command: ["hyprctl", "splash"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -35,7 +39,7 @@ Singleton {
             }
         } else {
             if (mode === RandomPhraseses.Modes.CUSTOM) {
-                root.splashPhrase = ""
+                root.splashPhrase = root.splashPrases[Math.floor(Math.random() * root.splashPrases.length)];
             }
         }
     }

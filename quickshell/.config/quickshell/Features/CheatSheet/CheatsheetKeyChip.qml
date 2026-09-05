@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Primitives
 import QtQuick
@@ -22,6 +23,7 @@ Item {
 
     Rectangle {
         id: background
+
         anchors.fill: parent
         radius: Appearance.shape.small  // shape token "small" = 12
         color: Appearance.md3.surface_container_highest
@@ -31,6 +33,7 @@ Item {
 
     StyledText {
         id: label_text
+
         anchors.centerIn: parent
         text: root.label
         color: Appearance.md3.on_surface

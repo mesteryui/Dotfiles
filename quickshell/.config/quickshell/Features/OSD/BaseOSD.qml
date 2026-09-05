@@ -1,10 +1,11 @@
-import Quickshell
 import QtQuick
-import Quickshell.Wayland
+import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 
 Scope {
     id: root
+
     property string type: ""
     readonly property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     property int implicitHeight: 20
@@ -18,6 +19,7 @@ Scope {
 
     Timer {
         id: osdTimer
+
         repeat: false
         interval: 2000
         running: root.shown
@@ -52,12 +54,14 @@ Scope {
 
         Item {
             id: container
+
             anchors.fill: parent
             opacity: root.shown ? 1.0 : 0.0
 
             Behavior on opacity {
                 OpacityAnimator {
                     id: fadeAnim
+
                     duration: 150
                     easing.type: Easing.OutQuad
                 }

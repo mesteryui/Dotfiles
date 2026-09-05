@@ -1,6 +1,6 @@
+import qs.Bar.Items
 import QtQuick
 import QtQuick.Layouts
-import qs.Bar.Items
 
 Item {
     id: bar

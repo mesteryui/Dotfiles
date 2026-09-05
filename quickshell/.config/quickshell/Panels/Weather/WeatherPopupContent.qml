@@ -3,15 +3,16 @@
 // humedad) y una fila con la previsión de los próximos días, leyendo
 // directamente de WeatherService. Pensado para encajar en un
 // Wrapper/Background exterior que le dé el fondo y el radio MD3.
-import QtQuick
-import QtQuick.Layouts
 import qs.Primitives
 import qs.Core
 import qs.Core.Services
 import qs.Core.Modules
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: root
+
     implicitHeight: mainColumn.implicitHeight + mainColumn.anchors.margins * 2
     implicitWidth: mainColumn.implicitWidth + mainColumn.anchors.margins * 2
     // Devuelve el nombre de ligadura de Material Symbols según el
@@ -19,6 +20,7 @@ Item {
 
     ColumnLayout {
         id: mainColumn
+
         anchors.fill: parent
         anchors.margins: 12
         spacing: 10
@@ -29,6 +31,7 @@ Item {
         RowLayout {
             id: currentRow
             Layout.fillWidth: true
+
             spacing: 12
             Layout.alignment: Qt.AlignVCenter
 
@@ -109,6 +112,7 @@ Item {
         // --- Previsión próximos días (reemplazar el RowLayout forecastRow existente) ---
         RowLayout {
             id: forecastRow
+
             visible: WeatherService.data.forecast.length > 0
             Layout.fillWidth: true
             spacing: 10                       // disminuido para compactar sin perder separación
@@ -122,6 +126,7 @@ Item {
                     Layout.preferredWidth: 68     // celdas uniformes, mejor alineación
                     Layout.minimumWidth: 56
                     Layout.alignment: Qt.AlignHCenter
+
                     spacing: 6
 
                     StyledText {

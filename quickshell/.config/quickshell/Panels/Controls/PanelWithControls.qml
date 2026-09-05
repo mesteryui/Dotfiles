@@ -1,14 +1,14 @@
 // ControlPanel — Wrapper Material 3 Expressive
 // Gestiona estado, ciclo de vida y ensambla Background + Content.
 
+import qs.Core.Services
+import qs.Shared.Background
+import qs.Core
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Io
-import qs.Core.Services
-import qs.Shared.Background
 import Quickshell.Hyprland
-import qs.Core
+import Quickshell.Io
 import Quickshell.Wayland
 
 PanelWindow {
@@ -47,6 +47,7 @@ PanelWindow {
 
     Behavior on margins.left {
         id: slideAnim
+
         NumberAnimation {
             duration: 250
             easing.type: Easing.OutCubic
@@ -55,6 +56,7 @@ PanelWindow {
 
     IpcHandler {
         target: "dashboard"
+
         function toggle() {
             root.visible = !root.visible;
         }
@@ -62,9 +64,11 @@ PanelWindow {
 
     // ── Datos ──────────────────────────────────────────────────────
     property string username: Quickshell.env("USER")
+
     property string hostname: ""
 
     readonly property var btAdapter: BluetoothService.currentAdapter
+
     readonly property var audioSink: AudioService.audio
 
     Process {
@@ -102,6 +106,7 @@ PanelWindow {
             left: parent.left
             right: parent.right
         }
+
         implicitHeight: root.implicitHeight
         radius: Appearance.shape.verylarge
         color: Appearance.md3.surface
@@ -116,6 +121,7 @@ PanelWindow {
             right: bg.right
             bottom: bg.bottom
         }
+
         username: root.username
         hostname: root.hostname
         btAdapter: root.btAdapter

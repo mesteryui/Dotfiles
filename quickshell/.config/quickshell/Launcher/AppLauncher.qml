@@ -1,21 +1,22 @@
 // --- AppLauncher ---
 pragma ComponentBehavior: Bound
-import Quickshell
-import QtQuick
-import QtQuick.Controls
-import Quickshell.Io
-import Quickshell.Hyprland
-import Quickshell.Wayland
-import Quickshell.Widgets
-import QtQuick.Layouts
 import qs.Core
 import qs.Primitives
 import qs.Shared.Background
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Widgets
 
 PanelWindow {
     id: launcher
 
     property bool launcherVisible: false
+
     visible: launcherVisible
 
     anchors.top: true
@@ -56,6 +57,7 @@ PanelWindow {
 
     IpcHandler {
         target: "launcher"
+
         function toggle() {
             launcher.launcherVisible = !launcher.launcherVisible;
         }
@@ -63,6 +65,7 @@ PanelWindow {
 
     SurfaceBackground {
         id: background
+
         width: 480
         height: 560
         anchors.centerIn: parent
@@ -81,6 +84,7 @@ PanelWindow {
 
             MaterialTextField {
                 id: searchField
+
                 placeholderText: "Buscar aplicaciones..."
                 Layout.fillWidth: true
                 selectedTextColor: Appearance.md3.on_primary
@@ -118,6 +122,7 @@ PanelWindow {
 
                 ListView {
                     id: appList
+
                     anchors.fill: parent
                     clip: true
                     spacing: 4
@@ -146,6 +151,7 @@ PanelWindow {
 
                     delegate: Rectangle {
                         id: entryDelegate
+
                         required property var modelData
                         required property int index
 
@@ -191,10 +197,12 @@ PanelWindow {
 
                         Rectangle {
                             id: stateLayer
+
                             anchors.fill: parent
                             radius: parent.radius
 
                             property bool hovered: false
+
                             property bool pressed: false
 
                             color: Appearance.md3.on_surface

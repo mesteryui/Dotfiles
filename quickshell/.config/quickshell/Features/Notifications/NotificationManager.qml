@@ -1,23 +1,28 @@
 pragma Singleton
-import Quickshell
-import Quickshell.Services.Notifications
+
 import QtQuick
 import QtQml
+import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Notifications
 
 Singleton {
     id: root
+
     property bool centerOpen: false
     property alias dnd: props.dnd
 
 
     PersistentProperties {
         id: props
+
         property bool dnd
+
         reloadableId: "notifications"
     }
 
     readonly property alias history: historyModel
+
     readonly property alias server: notificationServer
 
     // Contador monotónico para historyId. No usamos n.id como clave porque
@@ -67,6 +72,7 @@ Singleton {
 
     NotificationServer {
         id: notificationServer
+
         actionsSupported: true
         bodySupported: true
         imageSupported: true
@@ -112,6 +118,7 @@ Singleton {
         model: root.retainedForHistory
         delegate: RetainableLock {
             required property var modelData
+
             object: modelData.notification
             locked: true
         }
@@ -119,15 +126,19 @@ Singleton {
 
     IpcHandler {
         target: "notifications"
+
         function toggle(): void {
             root.centerOpen = !root.centerOpen;
         }
+
         function show(): void {
             root.centerOpen = true;
         }
+
         function hide(): void {
             root.centerOpen = false;
         }
+
         function dndToggle() {
             root.toggleDnd();
         }

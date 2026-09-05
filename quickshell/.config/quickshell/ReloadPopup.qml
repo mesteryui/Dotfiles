@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
@@ -7,6 +8,7 @@ import Quickshell.Wayland
 
 Scope {
 	id: root
+
 	property bool failed;
 	property string errorString;
 
@@ -50,6 +52,7 @@ Scope {
 
 			Rectangle {
 				id: rect
+
 				anchors.centerIn: parent
 				color: root.failed ?  "#ffe99195" : "#ffD1E8D5"
 
@@ -61,6 +64,7 @@ Scope {
 				// which dismiss the popup.
 				MouseArea {
 					id: mouseArea
+
 					anchors.fill: parent
 					onPressed: {
 						popupLoader.active = false
@@ -73,6 +77,7 @@ Scope {
 
 				ColumnLayout {
 					id: layout
+
 					spacing: 10
 					anchors {
 						top: parent.top
@@ -103,6 +108,7 @@ Scope {
 				// popup is removed.
 				Rectangle {
 					z: 2
+
 					id: bar
 					color: root.failed ? "#ff93000A" : "#ff0C1F13"
 					anchors.bottom: parent.bottom
@@ -113,6 +119,7 @@ Scope {
 
 					PropertyAnimation {
 						id: anim
+
 						target: bar
 						property: "width"
 						from: rect.width - bar.anchors.margins * 2
@@ -129,6 +136,7 @@ Scope {
 				// Its bg
 				Rectangle {
 					z: 1
+
 					id: bar_bg
 					color: root.failed ? "#30af1b25" : "#4027643e"
 					anchors.bottom: parent.bottom

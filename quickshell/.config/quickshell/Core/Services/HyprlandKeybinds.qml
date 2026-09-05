@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Io
 
 /**
  * HyprlandKeybinds
@@ -192,6 +192,7 @@ Singleton {
 
     Connections {
         target: Hyprland
+
         function onRawEvent(event: HyprlandEvent) {
             if (event.name === "configreloaded")
                 root.refresh();
@@ -200,6 +201,7 @@ Singleton {
 
     Process {
         id: getKeybinds
+
         running: true
         command: ["hyprctl", "binds", "-j"]
 

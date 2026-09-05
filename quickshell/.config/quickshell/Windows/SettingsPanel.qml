@@ -1,12 +1,12 @@
-import QtQuick
-import QtQuick.Effects
-import Quickshell
-import Quickshell.Io
-import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs.Core
 import qs.Shared.Background
+import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
+import Quickshell.Wayland
 
 ApplicationWindow {
     id: root
@@ -33,12 +33,15 @@ ApplicationWindow {
     // qs ipc call ui.settings toggle
     IpcHandler {
         target: "ui.settings"
+
         function toggle() {
             root.visible = !root.visible;
         }
+
         function open() {
             root.visible = true;
         }
+
         function close() {
             root.visible = false;
         }
@@ -66,6 +69,7 @@ ApplicationWindow {
 
     PopupBackground {
         id: bg
+
         anchors.fill: parent
         surfaceRadius: 0
         baseColor: Appearance.md3.surface
@@ -75,6 +79,7 @@ ApplicationWindow {
     // ── Content ──────────────────────────────────────────────────────
     SettingsPanelContent {
         id: settingsContent
+
         anchors.fill: bg
     }
 }

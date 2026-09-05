@@ -1,18 +1,22 @@
 pragma ComponentBehavior: Bound
+
+import qs.Core.Services
 import QtQuick
 import Quickshell
-import qs.Core.Services
 import Quickshell.Hyprland
 
 PopupWindow {
     id: root
-    color: "transparent"
-    grabFocus: true
-    visible: false
+
     property Item anchorItem: parent
 
     readonly property string _pos: ConfigService.configs.bar.position
+
     readonly property bool barAtBottom: _pos === "bottom"
+
+    color: "transparent"
+    grabFocus: true
+    visible: false
 
     // ── Focus ─────────────────────────────────────────────────
     HyprlandFocusGrab {

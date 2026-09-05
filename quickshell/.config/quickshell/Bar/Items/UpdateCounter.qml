@@ -1,13 +1,14 @@
 pragma ComponentBehavior: Bound
-import Quickshell
-import QtQuick
+
 import qs.Core.Services as Services
 import qs.Bar.Content
 import qs.Panels.Updates
-import qs.Bar
+import QtQuick
+import Quickshell
 
 BarItem {
     id: root
+
     clickable: !root.service.updating && !root.service.checking
     horizontalPadding: 12
     scale: area.containsMouse ? 1.08 : 1
@@ -19,8 +20,9 @@ BarItem {
         // Si popupLoader todavía está en 'loading' (async) cuando
         // se hace click, acceder a .item fuerza el completado
         // síncrono automáticamente — no hace falta gestionarlo aquí.
-        const w = popupLoader.item
-        if (w) w.visible = !w.visible
+        const w = popupLoader.item;
+        if (w)
+            w.visible = !w.visible;
     }
 
     LazyLoader {
@@ -39,6 +41,7 @@ BarItem {
 
     UpdateCounterContent {
         id: content
+
         anchors.centerIn: parent
         service: root.service
     }

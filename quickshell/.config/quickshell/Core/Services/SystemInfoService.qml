@@ -1,7 +1,8 @@
 pragma Singleton
+
+import QtQuick
 import Quickshell
 import Quickshell.Io
-import QtQuick
 
 Singleton {
     id: root
@@ -45,6 +46,7 @@ Singleton {
         id: sysProcess
         // Bucle infinito en bash que extrae toda la info en una sola pasada.
         // Mantiene 1 solo proceso vivo, reduciendo la carga del hilo principal.
+
         command: [
             "bash",
             "-c",
@@ -85,6 +87,7 @@ Singleton {
 
     QtObject {
         id: _disk
+
         property string total:    "0G"
         property string used:     "0G"
         property string usagePct: "0%"
@@ -105,7 +108,9 @@ Singleton {
 
     QtObject {
         id: _temp
+
         property int value: 0
+
         function parse(raw) {
             const t = parseInt(raw.trim())
             if (!isNaN(t)) value = Math.round(t / 1000)
@@ -114,6 +119,7 @@ Singleton {
 
     QtObject {
         id: _cpu
+
         property real usage:     0.0
         property int  coreCount: 0
         property real _prevTotal: 0
@@ -150,6 +156,7 @@ Singleton {
 
     QtObject {
         id: _mem
+
         property int  totalMiB:     0
         property int  usedMiB:      0
         property int  availableMiB: 0
@@ -182,6 +189,7 @@ Singleton {
 
     QtObject {
         id: _uptime
+
         property real   seconds:   0
         property string formatted: ""
 

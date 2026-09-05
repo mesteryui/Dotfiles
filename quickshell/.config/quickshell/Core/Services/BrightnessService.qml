@@ -1,4 +1,5 @@
 pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -16,6 +17,7 @@ Singleton {
 
     Process {
         id: detectProc
+
         command: ["sh", "-c", "ls /sys/class/backlight/ | head -1"]
         running: true
         stdout: StdioCollector {
@@ -34,6 +36,7 @@ Singleton {
 
     FileView {
         id: brightnessView
+
         path: ""
         watchChanges: true
         onLoaded: {
@@ -44,6 +47,7 @@ Singleton {
 
     FileView {
         id: maxView
+
         path: ""
         onLoaded: {
             root.maxValue = parseInt(this.text().trim()) || 1
@@ -53,6 +57,7 @@ Singleton {
 
     Process {
         id: setProc
+
         stdout: StdioCollector {
             onStreamFinished: brightnessView.reload()
         }
@@ -72,7 +77,9 @@ Singleton {
 
     IpcHandler {
         target: "brightness"
+
         function increment(value: int) { root.adjustBrightness((value / 100)) }
+
         function decrement(value: int) { root.adjustBrightness(-(value/100)) }
     }
 }

@@ -1,9 +1,10 @@
+import qs.Core
 import QtQuick
 import QtQuick.Controls
-import qs.Core
 
 ScrollBar {
     id: root
+
     policy: ScrollBar.AsNeeded
     active: hovered || pressed
     contentItem: Rectangle {

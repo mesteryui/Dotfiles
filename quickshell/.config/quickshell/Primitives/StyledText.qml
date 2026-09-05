@@ -1,14 +1,16 @@
-import QtQuick
 import qs.Core.Services
 import qs.Core
+import QtQuick
 
 Text {
     id: root
+
+    property bool shouldUseNumberFont: /^\d+$/.test(root.text)
+
     renderType: Text.NativeRendering
     //textFormat: Text.PlainText
     verticalAlignment: Text.AlignVCenter
 
-    property bool shouldUseNumberFont: /^\d+$/.test(root.text)
     font {
         hintingPreference: Font.PreferDefaultHinting
         family: ConfigService.configs.appearence.fontSans

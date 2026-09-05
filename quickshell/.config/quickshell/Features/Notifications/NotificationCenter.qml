@@ -1,14 +1,15 @@
 pragma ComponentBehavior: Bound
-import Quickshell
-import Quickshell.Wayland
-import Quickshell.Hyprland
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Effects
+
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
 import M3Shapes
 
 // Formas expresivas (m3shapes): el toggle de DND (32×32) y el icono del
@@ -21,6 +22,7 @@ import M3Shapes
 PanelWindow {
     id: root
     // qmllint enable uncreatable-type
+
     required property ListModel historyModel
 
     // Cap the notification list height; beyond this it scrolls instead of
@@ -43,8 +45,11 @@ PanelWindow {
         right: 12
     }
     implicitWidth: 380
+
     implicitHeight: centerCol.implicitHeight + 32
+
     color: "transparent"
+
     exclusionMode: ExclusionMode.Ignore
 
     // Sombra difusa detrás del panel en vez de un borde duro — elevación
@@ -82,12 +87,14 @@ PanelWindow {
 
     Rectangle {
         id: panelBg
+
         anchors.fill: parent
         radius: Appearance.shape.normal
         color: Appearance.md3.surface
 
         ColumnLayout {
             id: centerCol
+
             anchors.fill: parent
             anchors.margins: 16
             spacing: 12
@@ -109,6 +116,7 @@ PanelWindow {
                 // 32×32 es cuadrado, así que la silueta se ve completa sin recortes.
                 Item {
                     id: dndToggle
+
                     implicitWidth: 32
                     implicitHeight: 32
 
@@ -116,10 +124,12 @@ PanelWindow {
 
                     MaterialShape {
                         id: dndContainer
+
                         anchors.fill: parent
                         shape: dndToggle.dndShape
                         color: NotificationManager.dnd ? Appearance.md3.primary_container : "transparent"
                         animationDuration: 300
+
                         Behavior on color {
                             ColorAnimation {
                                 duration: 120
@@ -129,11 +139,13 @@ PanelWindow {
 
                     MaterialShape {
                         id: dndStateLayer
+
                         anchors.fill: parent
                         shape: dndToggle.dndShape
                         color: Appearance.md3.on_background
                         animationDuration: 300
                         opacity: 0
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 100
@@ -143,6 +155,7 @@ PanelWindow {
 
                     MaterialIcon {
                         id: dndIcon
+
                         anchors.centerIn: parent
                         text: NotificationManager.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
                         size: Appearance.font.pixelSize.large
@@ -169,10 +182,12 @@ PanelWindow {
 
                     Rectangle {
                         id: clearAllStateLayer
+
                         anchors.fill: parent
                         radius: Appearance.shape.full
                         color: Appearance.md3.on_background
                         opacity: 0
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 100
@@ -182,6 +197,7 @@ PanelWindow {
 
                     StyledText {
                         id: clearAllText
+
                         anchors.centerIn: parent
                         text: I18nService.getTranslation("notifications.clear_all", "Clear all")
                         font.family: Appearance.font.sans
@@ -215,6 +231,7 @@ PanelWindow {
                 id: historyList
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(contentHeight, root.maxListHeight)
+
                 visible: root.historyModel.count > 0
                 clip: true
                 focus: true
@@ -251,6 +268,7 @@ PanelWindow {
                 Item {
                     id: emptyStateIconContainer
                     Layout.alignment: Qt.AlignHCenter
+
                     implicitWidth: 100
                     implicitHeight: 100
 
@@ -266,6 +284,7 @@ PanelWindow {
 
                     MaterialShape {
                         id: emptyStateShape
+
                         anchors.fill: parent
                         shape: MaterialShape.Sunny
                         color: Appearance.md3.primary_container

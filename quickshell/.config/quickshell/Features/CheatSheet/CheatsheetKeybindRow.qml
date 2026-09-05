@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Primitives
 import QtQuick
@@ -30,10 +31,12 @@ Item {
     // Keyboard-focus highlight layer — primary tint, always below the hover layer.
     Rectangle {
         id: focusLayer
+
         anchors.fill: parent
         radius: Appearance.shape.small
         color: Appearance.md3.primary
         opacity: root.highlighted ? 0.15 : 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 120
@@ -45,10 +48,12 @@ Item {
     // but visually confirms which shortcut the user is scanning.
     Rectangle {
         id: stateLayer
+
         anchors.fill: parent
         radius: Appearance.shape.small   // usa token en lugar de número hardcodeado
         color: Appearance.md3.on_surface
         opacity: 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 100
@@ -73,10 +78,12 @@ Item {
             leftMargin: 8
             rightMargin: 8
         }
+
         spacing: 6
 
         Row {
             id: keyRow
+
             spacing: 4
             Layout.alignment: Qt.AlignVCenter
 
@@ -84,7 +91,9 @@ Item {
                 model: root.bind.mods
                 delegate: Row {
                     required property string modelData
+
                     spacing: 4
+
                     CheatsheetKeyChip {
                         label: modelData
                     }

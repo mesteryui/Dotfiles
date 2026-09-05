@@ -1,10 +1,12 @@
-import QtQuick
 import qs.Core
 import qs.Bar.Content
 import qs.Bar
 import qs.Core.Services
+import QtQuick
+
 Item {
     id: root
+
     visible: currentSubmap !== ""
     implicitWidth: content.implicitWidth + 16
     implicitHeight: 30
@@ -18,6 +20,7 @@ Item {
     
     HyprlandSubmapContent {
         id: content
+
         anchors.centerIn: parent
         text: root.currentSubmap
     }

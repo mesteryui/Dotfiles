@@ -1,11 +1,12 @@
-import QtQuick
-import Quickshell.Io
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import Quickshell.Io
 
 Rectangle {
     id: root
+
     required property string buttonIcon
     required property string buttonText
     required property string command
@@ -13,6 +14,7 @@ Rectangle {
     property color accentColor: Appearance.md3.primary
     
     readonly property bool highlighted: activeFocus || btnMouse.containsMouse
+
     focus: true
 
     // Tamaño dinámico: mínimo 100x100 o lo que pida el contenido + margen
@@ -27,6 +29,7 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: 150 } }
 
     border.width: highlighted ? 2 : 1
+
     border.color: highlighted
         ? Qt.alpha(accentColor, 0.7)
         : Appearance.md3.outline_variant
@@ -37,20 +40,24 @@ Rectangle {
 
     Process {
         id: runCommand
+
         command: ["bash", "-c", root.command]
     }
 
     Column {
         id: contentColumn
+
         anchors.centerIn: parent
         spacing: 10
         
         // Exponemos el tamaño para el cálculo de implicitWidth/Height del root
         readonly property real implicitWidth: Math.max(iconItem.width, buttonTextItem.implicitWidth)
+
         readonly property real implicitHeight: iconItem.height + spacing + buttonTextItem.implicitHeight
 
         MaterialIcon {
             id: iconItem
+
             anchors.horizontalCenter: parent.horizontalCenter
             icon: root.buttonIcon
             size: 32
@@ -60,18 +67,21 @@ Rectangle {
 
         StyledText {
             id: buttonTextItem
+
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.buttonText
             font.family: Services.ConfigService.configs.appearence.fontSans
             color: root.highlighted ? Appearance.md3.on_primary : Appearance.md3.on_surface
             font.pixelSize: 12
             font.weight: root.highlighted ? Font.Bold : Font.Normal
+
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
 
     MouseArea {
         id: btnMouse
+
         anchors.fill: parent
         hoverEnabled: true
         onEntered: root.forceActiveFocus()
@@ -80,6 +90,8 @@ Rectangle {
     }
 
     Keys.onReturnPressed: runCommand.running = true
+
     Keys.onEnterPressed: runCommand.running = true
+
     Keys.onSpacePressed: runCommand.running = true
 }

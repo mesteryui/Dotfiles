@@ -1,8 +1,8 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Core
 import qs.Primitives
 import qs.Shared.Background
+import QtQuick
+import QtQuick.Layouts
 
 // Base para OSDs de icono + texto centrado (batería, teclas especiales, etc.).
 // Mismo rol que PercentageOSD, pero para OSDs sin barra de progreso.
@@ -23,6 +23,7 @@ BaseOSD {
 
     RowLayout {
         id: contentRow
+
         anchors.centerIn: parent
         spacing: 10
 

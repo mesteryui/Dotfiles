@@ -1,10 +1,11 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Layouts
+
 import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Wallpaper
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: root
@@ -21,6 +22,7 @@ Item {
     // nombres de rol usados aquí (fileName, filePath) son los mismos que
     // ya usaba applyCurrentWallpaper() y WallpaperItem.modelData.filePath.
     property string searchQuery: ""
+
     property var filteredWallpapers: []
 
     function rebuildFilteredList() {
@@ -47,6 +49,7 @@ Item {
     // Si el contenido de la carpeta cambia (fondo agregado/borrado), re-filtrar
     Connections {
         target: Services.WallpaperService.wallpaperList
+
         function onCountChanged() {
             root.rebuildFilteredList();
         }
@@ -80,6 +83,7 @@ Item {
 
                 StyledText {
                     id: countText
+
                     anchors.centerIn: parent
                     text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / " + wallpaperList.count
                     font.pixelSize: 11
@@ -95,6 +99,7 @@ Item {
             // Píldoras de ayuda rápida de teclado
             Row {
                 spacing: 6
+
                 Rectangle {
                     color: Qt.rgba(1, 1, 1, 0.06)
                     radius: 6
@@ -105,6 +110,7 @@ Item {
 
                     StyledText {
                         id: hint1
+
                         anchors.centerIn: parent
                         text: "← → Navegar"
                         font.pixelSize: 10
@@ -122,6 +128,7 @@ Item {
 
                     StyledText {
                         id: hint2
+
                         anchors.centerIn: parent
                         text: "↵ Aplicar"
                         font.pixelSize: 10
@@ -141,6 +148,7 @@ Item {
 
             ListView {
                 id: wallpaperList
+
                 anchors.fill: parent
                 model: root.filteredWallpapers
                 orientation: ListView.Horizontal
@@ -178,6 +186,7 @@ Item {
                 // Desplazamiento por rueda de ratón / touchpad
                 WheelHandler {
                     id: wheelHandler
+
                     orientation: Qt.Horizontal | Qt.Vertical
                     onWheel: event => {
                         if (event.angleDelta.y < 0 || event.angleDelta.x > 0) {

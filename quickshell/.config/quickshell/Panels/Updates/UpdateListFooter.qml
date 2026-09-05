@@ -1,12 +1,13 @@
-import QtQuick
 import qs.Core
 import qs.Panels.Updates.Content
+import QtQuick
 
 Item {
     id: root
-    implicitHeight: 64
 
     signal updateRequested()
+
+    implicitHeight: 64
 
     // ── Background ───────────────────────────────────────────
     Rectangle {

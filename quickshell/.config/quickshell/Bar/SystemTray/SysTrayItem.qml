@@ -1,9 +1,10 @@
 pragma ComponentBehavior: Bound
+
+import qs.Core.Services as Services
+import qs.Primitives
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import qs.Core.Services as Services
-import qs.Primitives
 
 Item {
     id: itemContainer
@@ -18,11 +19,14 @@ Item {
         const w = loader.item
         if (w) w.visible = !w.visible
     }
+
     LazyLoader {
         id: loader
+
         loading: mouseManagement.pressed
         component: TrayMenu {
             id: trayMenu
+
             menu: itemContainer.modelData?.menu ?? null
             anchor.item: itemContainer
             anchor.margins.top: 38
@@ -33,6 +37,7 @@ Item {
     }
     Item {
         id: visualContent
+
         anchors.fill: parent
 
         IconImage {
@@ -59,6 +64,7 @@ Item {
 
 MouseArea {
     id: mouseManagement
+
     anchors.fill: parent
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     hoverEnabled: false

@@ -1,10 +1,10 @@
-import QtQuick
-import Quickshell.Services.UPower
 import qs.Core
 import qs.Primitives
-import QtQuick.Layouts
 import qs.Core.Services as Services
 import qs.Shared.Background
+import QtQuick
+import QtQuick.Layouts
+import Quickshell.Services.UPower
 
 IconTextOSD {
     id: batteryOSD

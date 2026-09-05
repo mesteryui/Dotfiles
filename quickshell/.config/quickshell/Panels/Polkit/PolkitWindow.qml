@@ -1,16 +1,17 @@
-import QtQuick
-import Quickshell
-import Quickshell.Wayland
 import qs.Shared.Background
 import qs.Core.Services
 import qs.Core
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
 
 Scope {
-
     Loader {
         active: PolkitService.active
         sourceComponent: PanelWindow {
             id: root
+
+            readonly property bool usePasswordChars: !PolkitService.flow?.responseVisible ?? true
 
             // Full-screen overlay, above everything, grabs keyboard while active
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
@@ -27,11 +28,9 @@ Scope {
                 right: true
             }
 
-            readonly property bool usePasswordChars: !PolkitService.flow?.responseVisible ?? true
-
-
             Connections {
                 target: PolkitService
+
                 function onInteractionAvailableChanged() {
                     if (!PolkitService.interactionAvailable)
                         return;

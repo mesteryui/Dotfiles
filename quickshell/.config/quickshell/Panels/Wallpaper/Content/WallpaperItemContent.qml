@@ -1,7 +1,7 @@
-import QtQuick
-import Quickshell.Widgets
 import qs.Primitives
 import qs.Core
+import QtQuick
+import Quickshell.Widgets
 
 Item {
     id: root
@@ -28,6 +28,7 @@ Item {
     // ── Imagen y Borde de Cristal ──────────────────────────────
     Rectangle {
         id: imageMask
+
         anchors.fill: parent
         radius: root.radius
         color: "transparent"
@@ -46,6 +47,7 @@ Item {
 
             Image {
                 id: wallpaperPreview
+
                 anchors.fill: parent
                 source: Qt.resolvedUrl(root.filePath)
                 fillMode: Image.PreserveAspectCrop
@@ -78,6 +80,7 @@ Item {
                 radius: root.radius
                 color: Appearance.md3.on_surface
                 opacity: root.hovered ? 0.06 : 0
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 120
@@ -93,11 +96,13 @@ Item {
                     right: parent.right
                     bottom: parent.bottom
                 }
+
                 height: parent.height * 0.38
                 visible: wallpaperPreview.status === Image.Ready
 
                 gradient: Gradient {
                     orientation: Gradient.Vertical
+
                     GradientStop {
                         position: 0.0
                         color: "transparent"
@@ -126,6 +131,7 @@ Item {
 
                 StyledText {
                     id: fileNameLabel
+
                     anchors.centerIn: parent
                     width: parent.width - 12
                     horizontalAlignment: Text.AlignHCenter

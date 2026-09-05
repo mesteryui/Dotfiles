@@ -1,9 +1,9 @@
 pragma Singleton
 
+import qs.Core.Services
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Core.Services
 
 Singleton {
 	id: root
@@ -43,13 +43,19 @@ Singleton {
     }
 
     component FontConfig: QtObject {
+
     readonly property string sans: ConfigService.configs.appearence.fontSans ?? "Google Sans Flex"
+
     readonly property string mono: ConfigService.configs.appearence.monospace ?? "JetBrains Mono Nerd Font"
+
     readonly property string reading: ConfigService.configs.appearence.reading ?? "Google Sans Flex"
+
     readonly property string expressive: ConfigService.configs.appearence.expressive ?? "Google Sans Flex"
+
     property string iconMaterial: "Material Symbols Rounded"
 
     readonly property VariableAxes variableAxes: VariableAxes {}
+
     readonly property PixelSize pixelSize: PixelSize {}
 }
 

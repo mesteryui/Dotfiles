@@ -1,21 +1,26 @@
 import qs.Core
 import qs.Core.Services as Services
-import QtQuick
 import qs.Primitives
+import QtQuick
 
 Item {
     id: root
+
     implicitHeight: 30
     implicitWidth: layout.childrenRect.width
+
     required property var service
+
     Row {
         id: layout
+
         spacing: 6
 
         anchors.centerIn: parent
 
         MaterialIcon {
             id: icon
+
             anchors.verticalCenter: parent.verticalCenter
             size: 20
             renderType: Text.QtRendering

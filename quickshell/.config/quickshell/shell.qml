@@ -4,8 +4,6 @@
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
 //@ pragma DefaultEnv QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
 
-import Quickshell
-import QtQuick
 import qs.Core.Services
 import qs.Features.WindowSwitcher
 import qs.Panels.System
@@ -18,21 +16,23 @@ import qs.Lockscreen
 import qs.Bar
 import qs.Features.CheatSheet
 import qs.Windows
+import QtQuick
+import Quickshell
 
 ShellRoot {
     id: root
+
     settings.watchFiles: true
 
     //ReloadPopup {}
-
-    Switcher {}
-
-    //AboutSystem {}
 
     Component.onCompleted: {
         ConfigService.load();
         KeyboardThings.load();
     }
+
+    Switcher {}
+
     SettingsPanel {}
     PanelWithControls {}
 

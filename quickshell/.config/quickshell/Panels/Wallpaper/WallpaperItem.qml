@@ -1,9 +1,10 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Effects
+
 import qs.Panels.Wallpaper.Content
 import qs.Core
 import qs.Shared.Background
+import QtQuick
+import QtQuick.Effects
 
 Item {
     id: delegateRoot
@@ -14,6 +15,7 @@ Item {
     signal clicked
 
     property int surfaceRadius: 18
+
     readonly property bool isSelected: ListView.isCurrentItem
 
     implicitWidth: 300
@@ -40,6 +42,7 @@ Item {
     // ── Fondo y Sombra Elevada ──────────────────────────────────────────────
     SurfaceBackground {
         id: background
+
         anchors.fill: parent
         radius: delegateRoot.surfaceRadius
         color: delegateRoot.isSelected ? Appearance.md3.surface_container_highest : Appearance.md3.surface_container_low
@@ -57,6 +60,7 @@ Item {
     // ── Captura de Interacción ──────────────────────────────────────────────
     MouseArea {
         id: mouse
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor

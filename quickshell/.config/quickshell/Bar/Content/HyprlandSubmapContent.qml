@@ -1,9 +1,11 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Primitives
 import qs.Core
+import QtQuick
+import QtQuick.Layouts
+
 Item {
     id: root
+
     property string text: ""
     
     // El root simplemente hereda el tamaño que el layout determine como ideal
@@ -13,6 +15,7 @@ Item {
     RowLayout {
         id: layout
         // Llenamos el contenedor padre para que las alineaciones funcionen
+
         anchors.fill: parent 
         spacing: 2 // Espaciado estándar de M3 [2]
 

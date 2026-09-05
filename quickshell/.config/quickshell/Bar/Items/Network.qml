@@ -1,10 +1,10 @@
-import Quickshell
-import QtQuick
 import qs.Bar.Content
-import QtQuick.Controls
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Controls
+import Quickshell
 
 BarItem {
     id: root
@@ -14,11 +14,13 @@ BarItem {
 
     NetworkContent {
         id: content
+
         anchors.centerIn: parent
     }
 
     ToolTip {
         id: tooltip
+
         text: (NetworkService.currentNetwork && NetworkService.currentNetwork.name) ? NetworkService.currentNetwork.name : "No Network"
         visible: root.area.containsMouse
         delay: 500      // ms antes de mostrarse

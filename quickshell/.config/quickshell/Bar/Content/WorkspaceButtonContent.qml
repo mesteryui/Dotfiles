@@ -5,6 +5,7 @@ import QtQuick
 StyledText {
     property string workspaceButton
     property bool isFocused  // pásalo desde el delegate del workspace (active/focused)
+
     textFormat: Text.RichText
 
     text: obtainWorkspaceSymbol(workspaceButton, ConfigService.configs.bar.workspaceButtonType, isFocused)

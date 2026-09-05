@@ -1,5 +1,6 @@
 import qs.Shared.Background
 import qs.Primitives
+import QtQuick
 
 BarPopupWindow {
     id: root
@@ -13,6 +14,7 @@ BarPopupWindow {
 
     BatteryPopupContent {
         id: popupContent
+
         anchors.centerIn: parent
     }
 }

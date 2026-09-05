@@ -1,11 +1,11 @@
 // --- SettingsPanelContent.qml ---
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
 import qs.Core.Services as Services
 import qs.Primitives
 import qs.Core
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Item {
     id: root
@@ -15,6 +15,7 @@ Item {
     // ── Componentes locales base corregidos ─────────────────────────
     component SectionCard: M3Card {
         id: card
+
         property string title: ""
         default property alias rows: inner.data
 
@@ -25,6 +26,7 @@ Item {
 
         content: ColumnLayout {
             id: inner
+
             width: parent.width
             spacing: 14
 
@@ -49,8 +51,10 @@ Item {
 
     component TextRow: ColumnLayout {
         id: textRow
+
         property string label: ""
         property string value: ""
+
         signal edited(string text)
 
         Layout.fillWidth: true
@@ -68,9 +72,11 @@ Item {
 
     component ChoiceRow: ColumnLayout {
         id: choiceRow
+
         property string label: ""
         property string value: ""
         property var choicesModel: []
+
         signal chosen(string value)
 
         Layout.fillWidth: true
@@ -83,12 +89,14 @@ Item {
         Flow {
             id: flowWrap
             Layout.fillWidth: true
+
             spacing: 8
 
             Repeater {
                 model: choiceRow.choicesModel
                 delegate: Rectangle {
                     id: chip
+
                     required property var modelData
                     readonly property bool selected: modelData.value === choiceRow.value
 
@@ -108,6 +116,7 @@ Item {
                         radius: parent.radius
                         color: Appearance.md3.on_surface
                         opacity: chipArea.pressed ? 0.12 : (chipArea.containsMouse ? 0.08 : 0.0)
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 100
@@ -117,6 +126,7 @@ Item {
 
                     StyledText {
                         id: chipLabel
+
                         anchors.centerIn: parent
                         text: chip.modelData.text
                         font.pixelSize: Appearance.font.pixelSize.smaller
@@ -125,6 +135,7 @@ Item {
 
                     MouseArea {
                         id: chipArea
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -137,10 +148,12 @@ Item {
 
     component SidebarTab: Rectangle {
         id: tabBtn
+
         property string iconName: ""
         property string title: ""
         property string description: ""
         property bool selected: false
+
         signal clicked
 
         Layout.fillWidth: true
@@ -159,6 +172,7 @@ Item {
             radius: parent.radius
             color: Appearance.md3.on_surface
             opacity: tabArea.pressed ? 0.12 : (tabArea.containsMouse && !tabBtn.selected ? 0.08 : 0.0)
+
             Behavior on opacity {
                 NumberAnimation {
                     duration: 100
@@ -202,6 +216,7 @@ Item {
 
         MouseArea {
             id: tabArea
+
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
@@ -212,6 +227,7 @@ Item {
     function toSlider(val, min, max) {
         return Math.max(0, Math.min(1, (val - min) / (max - min)));
     }
+
     function fromSlider(pos, min, max, decimals) {
         const real = min + pos * (max - min);
         const f = Math.pow(10, decimals ?? 0);
@@ -229,6 +245,7 @@ Item {
             Layout.preferredWidth: 150
             Layout.maximumWidth: 150
             Layout.fillHeight: true
+
             spacing: 6
 
             StyledText {
@@ -281,6 +298,7 @@ Item {
             id: contentStack
             Layout.fillWidth: true
             Layout.fillHeight: true
+
             currentIndex: root.currentTab
 
             // ── PESTAÑA 0: INTERFAZ ──
@@ -575,9 +593,11 @@ Item {
     // Componente auxiliar interno para evitar repetir código en cada Flickable de pestaña
     component TabFlickable: Flickable {
         id: tabFlick
+
         default property alias colData: tabCol.data
         Layout.fillWidth: true
         Layout.fillHeight: true
+
         contentWidth: width
         contentHeight: tabCol.implicitHeight
         clip: true
@@ -586,6 +606,7 @@ Item {
 
         ColumnLayout {
             id: tabCol
+
             width: parent.width
             spacing: 14
         }

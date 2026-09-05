@@ -1,7 +1,9 @@
 pragma Singleton
+
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Io
+import Quickshell.Wayland
+
 Singleton {
     id: root
 
@@ -13,24 +15,30 @@ Singleton {
 
     PersistentProperties {
         id: props 
+
         property bool inhibited
+
         reloadableId: "idleInhibitor"
     }
 
     IpcHandler {
         target: "inhibit"
+
         function on() {
             props.inhibited = true
         }
+
         function off() {
             props.inhibited = false
         }
+
         function toggle() {
             root.toggle()
         }
     }
     IdleInhibitor {
         id: inhibitor
+
         window: PanelWindow {
             implicitHeight: 0
             implicitWidth: 0

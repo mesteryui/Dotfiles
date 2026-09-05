@@ -1,16 +1,20 @@
 import qs.Core.Services as Services
-import QtQuick.Layouts
 import qs.Core
-import QtQuick
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
+
 Item {
     id: root
+
     property bool isHovered: false
         property var player: Services.MprisService.activePlayer
             implicitWidth: layout.width
             implicitHeight: 30
+
             RowLayout {
                 id: layout
+
                 x: 12
                 spacing: 3
                 anchors.centerIn: parent
@@ -18,6 +22,7 @@ Item {
 
                 StyledText {
                     id: titleText
+
                     text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
                     color: Appearance.md3.on_surface
                     Layout.alignment: Qt.AlignVCenter

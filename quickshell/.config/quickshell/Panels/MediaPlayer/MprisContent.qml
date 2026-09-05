@@ -10,15 +10,15 @@
 // (reproduciendo/pausado, presionado/activo).
 
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Effects
-import Quickshell
-import Quickshell.Widgets
 import qs.Core.Services as Services
 import qs.Core
 import qs.Primitives
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import M3Shapes
 
@@ -29,14 +29,18 @@ Item {
 
     // ── API con el Wrapper ────────────────────────────────────
     required property real currentPosition
+
     signal seekRequested(real newPosition)
 
     // El Wrapper lo consulta en sus Timers y Connections
     readonly property bool sliderDragging: progressArea.pressed
 
     readonly property var player: Services.MprisService.activePlayer
+
     readonly property bool hasPlayer: root.player !== null
+
     readonly property bool multiPlayer: Services.MprisService.players.length > 1
+
     readonly property bool hasArt: root.artURL !== ""
 
     implicitWidth: 360
@@ -95,6 +99,7 @@ Item {
             right: parent.right
             margins: 16
         }
+
         spacing: 14
 
         // ════════════════════════════════════════════════════════
@@ -104,6 +109,7 @@ Item {
             id: emptyState
             Layout.fillWidth: true
             Layout.preferredHeight: 160
+
             visible: !root.hasPlayer
             spacing: 12
             Layout.alignment: Qt.AlignCenter
@@ -179,6 +185,7 @@ Item {
                 // Placeholder / Fondo — MaterialShape con morph automático
                 MaterialShape {
                     id: artShapeBg
+
                     anchors.fill: parent
                     shape: artContainer.artShape
                     color: Appearance.md3.primary_container
@@ -197,6 +204,7 @@ Item {
                 // Imagen recortada a la silueta expresiva vía máscara
                 Image {
                     id: artImage
+
                     anchors.fill: parent
                     source: root.artURL
                     fillMode: Image.PreserveAspectCrop
@@ -204,6 +212,7 @@ Item {
                     asynchronous: true
                     visible: root.hasArt && status === Image.Ready
                     opacity: visible ? 1.0 : 0.0
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 200
@@ -212,6 +221,7 @@ Item {
 
                     // No necesita MouseArea/hover → layer.enabled aquí es seguro
                     layer.enabled: true
+
                     layer.effect: MultiEffect {
                         maskEnabled: true
                         maskSource: artMaskShape
@@ -223,6 +233,7 @@ Item {
                 // no genera textura y la máscara queda en blanco (imagen invisible).
                 MaterialShape {
                     id: artMaskShape
+
                     anchors.fill: artImage
                     shape: artContainer.artShape
                     color: "white"
@@ -247,6 +258,7 @@ Item {
 
                     RowLayout {
                         id: appBadgeContent
+
                         anchors.centerIn: parent
                         spacing: 5
 
@@ -318,14 +330,17 @@ Item {
             Item {
                 id: progressContainer
                 Layout.fillWidth: true
+
                 implicitHeight: 20
 
                 readonly property real totalLength: root.player?.length ?? 0
+
                 readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.currentPosition / totalLength)) : 0.0
 
                 // Pista base (Capsule track)
                 Rectangle {
                     id: progressTrackBg
+
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width
                     height: progressArea.pressed ? 10 : (progressArea.containsMouse ? 8 : 6)
@@ -348,6 +363,7 @@ Item {
 
                         Behavior on width {
                             enabled: !progressArea.pressed
+
                             NumberAnimation {
                                 duration: 80
                             }
@@ -363,6 +379,7 @@ Item {
                 // Handle / Thumb M3 Expressive — morph a "cookie" al presionar
                 MaterialShape {
                     id: progressThumb
+
                     x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.progressRatio - width / 2))
                     anchors.verticalCenter: parent.verticalCenter
                     width: progressArea.pressed ? 8 : (progressArea.containsMouse ? 7 : 5)
@@ -375,6 +392,7 @@ Item {
 
                     Behavior on x {
                         enabled: !progressArea.pressed
+
                         NumberAnimation {
                             duration: 80
                         }
@@ -395,6 +413,7 @@ Item {
 
                 MouseArea {
                     id: progressArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: (root.player?.canSeek || root.player?.canControl) ? Qt.PointingHandCursor : Qt.ArrowCursor
@@ -491,10 +510,12 @@ Item {
             // porque ese componente no expone una API de forma personalizada.
             Item {
                 id: playPauseHero
+
                 implicitWidth: 58
                 implicitHeight: 58
 
                 readonly property bool playing: Services.MprisService.isPlaying
+
                 readonly property int heroShape: playing ? MaterialShape.Cookie7Sided : MaterialShape.Circle
 
                 MultiEffect {
@@ -509,6 +530,7 @@ Item {
 
                 MaterialShape {
                     id: heroBg
+
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
                     color: heroMouse.enabled ? Appearance.md3.primary : Appearance.md3.surface_container_highest
@@ -518,11 +540,13 @@ Item {
                 // Capa de estado (hover/press) — misma silueta que el fondo
                 MaterialShape {
                     id: heroStateLayer
+
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
                     color: Appearance.md3.on_primary
                     animationDuration: 450
                     opacity: heroMouse.pressed ? 0.12 : (heroMouse.containsMouse ? 0.08 : 0)
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 100
@@ -540,6 +564,7 @@ Item {
 
                 MouseArea {
                     id: heroMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -566,6 +591,7 @@ Item {
             // 5. Loop / Repeat
             AnimatedIconButton {
                 readonly property bool isLooping: Services.MprisService.loopState !== MprisLoopState.None
+
                 implicitWidth: 40
                 implicitHeight: 40
                 iconName: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
@@ -603,6 +629,7 @@ Item {
             Flickable {
                 id: chipsFlickable
                 Layout.fillWidth: true
+
                 implicitHeight: 34
                 contentWidth: chipsRow.implicitWidth
                 contentHeight: 34
@@ -612,6 +639,7 @@ Item {
 
                 Row {
                     id: chipsRow
+
                     spacing: 8
 
                     Repeater {
@@ -619,6 +647,7 @@ Item {
 
                         delegate: Item {
                             id: chipItem
+
                             required property var modelData
                             property MprisPlayer playerObj: modelData
 
@@ -635,6 +664,7 @@ Item {
                             // única zona del chip donde la silueta se ve completa.
                             Rectangle {
                                 id: chipBg
+
                                 implicitWidth: chipContent.implicitWidth + 24
                                 implicitHeight: 34
                                 radius: Appearance.shape.full
@@ -653,6 +683,7 @@ Item {
                                     radius: parent.radius
                                     color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                                     opacity: chipMouse.pressed ? 0.12 : (chipMouse.containsMouse ? 0.08 : 0)
+
                                     Behavior on opacity {
                                         NumberAnimation {
                                             duration: 100
@@ -662,6 +693,7 @@ Item {
 
                                 RowLayout {
                                     id: chipContent
+
                                     anchors.centerIn: parent
                                     spacing: 6
 
@@ -677,6 +709,7 @@ Item {
                                         font.pixelSize: Appearance.font.pixelSize.smaller
                                         font.weight: chipItem.isActive ? Font.Medium : Font.Normal
                                         color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+
                                         Behavior on color {
                                             ColorAnimation {
                                                 duration: 150
@@ -688,6 +721,7 @@ Item {
 
                             MouseArea {
                                 id: chipMouse
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor

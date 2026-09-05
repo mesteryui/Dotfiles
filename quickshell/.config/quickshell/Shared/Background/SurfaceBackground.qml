@@ -11,8 +11,8 @@
 //       active:      mouseArea.containsMouse
 //       highlighted: mouseArea.pressed
 //   }
-import QtQuick
 import qs.Core
+import QtQuick
 
 Rectangle {
     id: root

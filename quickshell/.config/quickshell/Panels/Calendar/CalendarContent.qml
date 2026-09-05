@@ -2,13 +2,13 @@
 // UI del calendario: navegación, cabecera de días y grid.
 // No tiene fondo propio — eso es responsabilidad de CalendarPopupWindow.
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 Item {
     id: root
@@ -27,6 +27,7 @@ Item {
 
     Timer {
         id: midnightTimer
+
         repeat: false
 
         function scheduleNext() {
@@ -63,6 +64,7 @@ Item {
                     radius: 20
                     color: Appearance.md3.on_surface_variant
                     opacity: prevTap.pressed ? 0.12 : prevHover.hovered ? 0.08 : 0
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 150
@@ -80,10 +82,12 @@ Item {
 
                 HoverHandler {
                     id: prevHover
+
                     cursorShape: Qt.PointingHandCursor
                 }
                 TapHandler {
                     id: prevTap
+
                     onTapped: root.prevMonthRequested()
                 }
             }
@@ -108,6 +112,7 @@ Item {
                     radius: 20
                     color: Appearance.md3.on_surface_variant
                     opacity: nextTap.pressed ? 0.12 : nextHover.hovered ? 0.08 : 0
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 150
@@ -125,10 +130,12 @@ Item {
 
                 HoverHandler {
                     id: nextHover
+
                     cursorShape: Qt.PointingHandCursor
                 }
                 TapHandler {
                     id: nextTap
+
                     onTapped: root.nextMonthRequested()
                 }
             }
@@ -152,10 +159,12 @@ Item {
                 delegate: Item {
                     width: monthGrid.width / 7   // ← misma fórmula que el delegate de MonthGrid
                     implicitHeight: dayLabel.implicitHeight
+
                     required property var modelData
 
                     StyledText {
                         id: dayLabel
+
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: parent.modelData
@@ -178,6 +187,7 @@ Item {
         // ── Grid del calendario ───────────────────────────────
         MonthGrid {
             id: monthGrid
+
             month: root.currentMonth
             year: root.currentYear
             locale: root.currentLocale
@@ -186,6 +196,7 @@ Item {
 
             delegate: Item {
                 id: delegateItem
+
                 required property var model
 
                 width: monthGrid.width / 7
@@ -195,7 +206,9 @@ Item {
                     const today = root.todayDate
                     return model.day === today.getDate() && model.month === today.getMonth() && model.year === today.getFullYear();
                 }
+
                 readonly property bool isCurrentMonth: model.month === monthGrid.month
+
                 readonly property bool isSelected: root.selectedDay === model.day && isCurrentMonth
 
                 // ── Background: círculo M3 con 3 estados ──────
@@ -204,6 +217,7 @@ Item {
                 // Normal → transparente
                 Rectangle {
                     id: dayCircle
+
                     width: 36
                     height: 36
                     radius: 18
@@ -224,10 +238,12 @@ Item {
                     // State layer — hover 8%, press 12%
                     Rectangle {
                         id: dayStateLayer
+
                         anchors.fill: parent
                         radius: parent.radius
                         color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                         opacity: 0
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 120

@@ -1,7 +1,7 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Core
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
 
 Rectangle {
     id: root
@@ -24,10 +24,12 @@ Rectangle {
     // State layer de fila completa
     Rectangle {
         id: rowStateLayer
+
         anchors.fill: parent
         radius: parent.radius
         color: Appearance.md3.on_surface
         opacity: 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 100
@@ -37,11 +39,13 @@ Rectangle {
 
     HoverHandler {
         id: rowHover
+
         onHoveredChanged: rowStateLayer.opacity = hovered ? 0.06 : 0
     }
 
     RowLayout {
         id: mainLayout
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -64,6 +68,7 @@ Rectangle {
 
             AppIcon {
                 id: notificationIcon
+
                 anchors.fill: parent
                 anchors.margins: 4
                 source: root.icon
@@ -73,6 +78,7 @@ Rectangle {
         ColumnLayout {
             id: cardContent
             Layout.fillWidth: true
+
             spacing: 2
 
             RowLayout {
@@ -116,10 +122,12 @@ Rectangle {
     // Botón (×) para borrar esta notificación individual
     AnimatedIconButton {
         id: closeButton
+
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 8
         opacity: rowHover.hovered ? 1 : 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 100
@@ -127,11 +135,17 @@ Rectangle {
         }
 
         iconName: "close"
+
         iconSize: 16
+
         implicitWidth: 24
+
         implicitHeight: 24
+
         iconColor: Appearance.md3.on_surface_variant
+
         baseColor: "transparent"
+
         onClicked: root.removeRequested()
     }
 }

@@ -1,7 +1,8 @@
 pragma Singleton
+
+import qs.Core.Modules
 import QtQuick
 import Quickshell
-import qs.Core.Modules
 
 Singleton {
     id: root
@@ -11,6 +12,7 @@ Singleton {
 
     Connections {
         target: ConfigService.configs.appearence
+
         function onDarkModeChanged() {
             root.updateMatugenColors(root.currentWallpaper)
         }
@@ -18,6 +20,7 @@ Singleton {
 
     Connections {
         target: ConfigService.configs.appearence.matugen
+
         function onTypeChanged() {
             root.updateMatugenColors(root.currentWallpaper)
         }

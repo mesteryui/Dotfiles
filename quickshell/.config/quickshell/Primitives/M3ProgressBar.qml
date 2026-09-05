@@ -1,8 +1,9 @@
-import QtQuick
 import qs.Core
+import QtQuick
 
 Item {
     id: root
+
     property real value: 0.0   // 0–1
     property color accentColor: Appearance.md3.primary
 

@@ -1,8 +1,9 @@
 pragma Singleton
-import Quickshell
-import QtQuick
-import Quickshell.Networking
+
 import qs.Core.Modules
+import QtQuick
+import Quickshell
+import Quickshell.Networking
 
 Singleton {
     id: root

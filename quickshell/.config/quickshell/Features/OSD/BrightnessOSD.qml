@@ -3,6 +3,7 @@ import QtQuick
 
 PercentageOSD {
     id: root
+
     type: "brightness"
     percentage: Services.BrightnessService.brightness
     icon: {
@@ -16,6 +17,7 @@ PercentageOSD {
 
     Connections {
         target: Services.BrightnessService
+
         function onBrightnessChanged() {    // ← brightness en lugar de rawValue
             if (Services.BrightnessService.ready) {
                 root.show();

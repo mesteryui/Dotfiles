@@ -1,10 +1,11 @@
 pragma ComponentBehavior: Bound
-import Quickshell
-import Quickshell.Wayland
+
+import qs.Core.Services
 import QtQuick
+import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import qs.Core.Services
+import Quickshell.Wayland
 
 // --- LockScreen ---
 // Gestiona la ventana de bloqueo Wayland (WlSessionLock) y el IPC.
@@ -12,6 +13,7 @@ import qs.Core.Services
 
 Scope {
     id: root
+
     property bool screenLocked: false
 
     // Se pone a true en cuanto la autenticación tiene éxito (o se fuerza un
@@ -56,6 +58,7 @@ Scope {
 
     Connections {
         target: AuthService
+
         function onSuccessUnlocking() {
             root.isUnlocking = true;
         }
@@ -63,6 +66,7 @@ Scope {
 
     WlSessionLock {
         id: sessionLock
+
         locked: root.screenLocked
 
         // WlSessionLock instancia este componente en cada pantalla automáticamente
@@ -70,6 +74,7 @@ Scope {
         // Variants/Scope manual por encima para el multi-monitor.
         surface: WlSessionLockSurface {
             id: lockSurface
+
             color: "transparent"
 
             LockScreenWrapper {
@@ -85,9 +90,11 @@ Scope {
 
     IpcHandler {
         target: "lockscreen"
+
         function lock() {
             root.captureLockedMonitor();
         }
+
         function unlock() {
             AuthService.abort();
             root.isUnlocking = true;

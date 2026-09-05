@@ -1,14 +1,15 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
+
 import qs.Core
 import qs.Primitives
 import qs.Core.Services as Services
-
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 Item {
     id: root
+
     implicitHeight: Math.min(
         Services.UpdatesTracking.packagesToUpdate.count * 44 + 16,
         44 * 5 + 16
@@ -45,6 +46,7 @@ Item {
             topMargin: 8
             bottomMargin: 8
         }
+
         clip: true
         model: Services.UpdatesTracking.packagesToUpdate
         spacing: 0
@@ -53,6 +55,7 @@ Item {
 
         delegate: UpdatePackageDelegate {
             required property var modelData
+
             width: packageList.width
             packageName: modelData.name
             oldVersion: modelData.oldVersion

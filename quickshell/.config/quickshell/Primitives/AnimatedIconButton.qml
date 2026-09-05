@@ -1,7 +1,7 @@
-import QtQuick
-import QtQuick.Effects
 import qs.Core
 import qs.Primitives
+import QtQuick
+import QtQuick.Effects
 
 Item {
     id: root
@@ -27,6 +27,7 @@ Item {
     implicitHeight: 44
 
     scale: mouseArea.pressed ? 0.92 : (mouseArea.containsMouse ? 1.06 : 1.0)
+
     Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
     MultiEffect {
@@ -42,9 +43,11 @@ Item {
 
     Rectangle {
         id: bgRect
+
         anchors.fill: parent
         radius: width / 2
         color: root.isActive ? root.accentColor : root.baseColor
+
         Behavior on color { ColorAnimation { duration: 150 } }
         
         Rectangle {
@@ -52,6 +55,7 @@ Item {
             radius: parent.radius
             color: root.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface
             opacity: mouseArea.pressed ? 0.12 : (mouseArea.containsMouse ? 0.08 : 0)
+
             Behavior on opacity { NumberAnimation { duration: 100 } }
         }
     }
@@ -61,11 +65,13 @@ Item {
         icon: root.iconName
         size: root.iconSize
         color: root.enabled ? (root.isActive ? root.activeIconColor : root.iconColor) : root.disabledIconColor
+
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         enabled: root.enabled
         hoverEnabled: true

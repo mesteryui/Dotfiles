@@ -1,12 +1,13 @@
 pragma ComponentBehavior: Bound
-import Quickshell
-import Quickshell.Services.Notifications
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Effects
+
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Services.Notifications
 
 // --- NotificationToastCard ---
 // Tarjeta de toast de notificación en estilo Material You (Material 3 Expressive).
@@ -22,7 +23,9 @@ Item {
     implicitHeight: card.implicitHeight
 
     readonly property bool isCritical: root.notification.urgency === NotificationUrgency.Critical
+
     readonly property bool hasActions: root.notification.actions && root.notification.actions.length > 0
+
     readonly property bool hasInlineReply: root.notification.hasInlineReply ?? false
 
     visible: !NotificationManager.dnd || isCritical
@@ -30,6 +33,7 @@ Item {
     // ── Temporizador de Expiración (se pausa al hacer hover) ──
     Timer {
         id: expireTimer
+
         running: !cardHover.hovered
         interval: (Services.ConfigService.configs.notifications.timeout || 5) * 1000
         onTriggered: root.notification.expire()
@@ -85,6 +89,7 @@ Item {
                 right: parent.right
                 margins: 12
             }
+
             spacing: 8
 
             // ════════════════════════════════════════════════════
@@ -117,6 +122,7 @@ Item {
 
                     AppIcon {
                         id: notifIcon
+
                         anchors.fill: parent
                         anchors.margins: 4
                         source: {
@@ -162,6 +168,7 @@ Item {
 
                             StyledText {
                                 id: critText
+
                                 anchors.centerIn: parent
                                 text: "Urgente"
                                 font.pixelSize: 9
@@ -229,6 +236,7 @@ Item {
 
                 Flickable {
                     id: actionsFlickable
+
                     anchors.fill: parent
                     contentWidth: actionRow.implicitWidth
                     flickableDirection: Flickable.HorizontalFlick
@@ -236,6 +244,7 @@ Item {
 
                     RowLayout {
                         id: actionRow
+
                         spacing: 6
 
                         Repeater {
@@ -243,6 +252,7 @@ Item {
 
                             delegate: AnimatedTextButton {
                                 required property var modelData
+
                                 text: modelData.text
                                 isFilled: false
 
@@ -295,6 +305,7 @@ Item {
 
                     TextInput {
                         id: replyInput
+
                         anchors.fill: parent
                         anchors.leftMargin: 12
                         anchors.rightMargin: 12

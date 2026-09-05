@@ -1,9 +1,11 @@
-import QtQuick
 import qs.Core.Services
+import QtQuick
 
 PercentageOSD {
     id: root
+
     type: "volume"
+
     property bool ready: false
 
     Connections {
@@ -14,6 +16,7 @@ PercentageOSD {
             if (root.ready)
                 root.show();
         }
+
         function onMutedChanged() {
             if (root.ready)
                 root.show();
@@ -22,6 +25,7 @@ PercentageOSD {
 
     Timer {
         id: readyTimer
+
         interval: 1000
         running: true
         repeat: false
@@ -29,5 +33,6 @@ PercentageOSD {
     }
 
     percentage: AudioService.volume
+
     icon: AudioService.materialIcon
 }

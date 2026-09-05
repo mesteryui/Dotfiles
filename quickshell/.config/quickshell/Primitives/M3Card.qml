@@ -1,10 +1,11 @@
 // M3Card — Material 3 Expressive Container Card.
+import qs.Core
 import QtQuick
 import QtQuick.Effects
-import qs.Core
 
 Item {
     id: root
+
     default property alias content: _inner.data
 
     property int radius: Appearance.shape.large
@@ -12,12 +13,13 @@ Item {
     property int padding: 0
     property bool clickable: false
     property bool shadowEnabled: true
-    signal clicked
 
     // Referencia al único hijo de contenido real (el Layout/Item que se
     // pasa vía "content"). Se asume un único hijo raíz, como se usa en
     // todo el proyecto (SectionCard pasa un ColumnLayout).
     readonly property Item _content: _inner.children.length > 0 ? _inner.children[0] : null
+
+    signal clicked
 
     // Dimensiones naturales basadas en el implicitWidth/implicitHeight
     // REAL del contenido, no en childrenRect (que depende de que el
@@ -28,6 +30,7 @@ Item {
     implicitHeight: (root._content ? root._content.implicitHeight : 0) + (padding * 2)
 
     scale: root.clickable ? (cardArea.pressed ? 0.98 : (cardArea.containsMouse ? 1.015 : 1.0)) : 1.0
+
     Behavior on scale {
         NumberAnimation {
             duration: 140
@@ -49,9 +52,11 @@ Item {
 
     Rectangle {
         id: _bg
+
         anchors.fill: parent
         radius: root.radius
         color: root.color
+
         Behavior on color {
             ColorAnimation {
                 duration: 150
@@ -66,6 +71,7 @@ Item {
         visible: root.clickable
         color: Appearance.md3.on_surface
         opacity: cardArea.pressed ? 0.12 : (cardArea.containsMouse ? 0.08 : 0.0)
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 100
@@ -75,6 +81,7 @@ Item {
 
     Item {
         id: _inner
+
         x: root.padding
         y: root.padding
         width: root.width - (root.padding * 2)
@@ -96,6 +103,7 @@ Item {
 
     MouseArea {
         id: cardArea
+
         anchors.fill: parent
         enabled: root.clickable
         hoverEnabled: true

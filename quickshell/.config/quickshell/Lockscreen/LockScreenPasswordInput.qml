@@ -1,27 +1,33 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Effects
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import qs.Components
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+import QtQuick.Layouts
 
 Item {
     id: root
+
     implicitWidth: 280
     implicitHeight: 48
 
     // ── Estado ────────────────────────────────────────────────────────
     property bool authFailed: false
+
     property bool isAuthenticating: false
+
     property string promptText: ""
+
     property bool isPasswordVisible: false
+
     property bool isFingerprintActive: false
 
     property alias passwordField: password
 
     signal accepted(string text)
+
     signal togglePasswordVisibility
 
     function triggerShake() {
@@ -48,11 +54,14 @@ Item {
     // Contenedor que absorbe la animación shake
     Item {
         id: shakeWrapper
+
         anchors.fill: parent
 
         SequentialAnimation {
             id: shakeAnim
+
             loops: 1
+
             NumberAnimation {
                 target: shakeWrapper
                 property: "x"
@@ -98,6 +107,7 @@ Item {
 
     Rectangle {
         id: passwordBg
+
         anchors.fill: parent
         radius: Appearance.shape.normal
         color: root.authFailed ? root.withAlpha(Appearance.md3.error_container, 0.35) : root.withAlpha(Appearance.md3.surface_container_high, 0.55)
@@ -125,6 +135,7 @@ Item {
 
             MaterialIcon {
                 id: statusIcon
+
                 icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
                 size: Appearance.font.pixelSize.normal
                 color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
@@ -140,6 +151,7 @@ Item {
                 SequentialAnimation {
                     running: root.isFingerprintActive
                     loops: Animation.Infinite
+
                     NumberAnimation {
                         target: statusIcon
                         property: "opacity"
@@ -163,6 +175,7 @@ Item {
                 id: password
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 echoMode: root.isPasswordVisible === false ? TextInput.Password : TextInput.Normal
                 placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : (root.isFingerprintActive ? I18nService.getTranslation("lockscreen.fingerprint", "Coloca tu dedo en el lector") : I18nService.getTranslation("lockscreen.password", "Contraseña...")))
                 placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)
@@ -216,6 +229,7 @@ Item {
                 icon: root.isPasswordVisible === false ? "visibility" : "visibility_off"
                 size: Appearance.font.pixelSize.normal
                 color: Appearance.md3.on_surface
+
                 MouseArea {
                     anchors.fill: parent
                     onClicked: root.togglePasswordVisibility()

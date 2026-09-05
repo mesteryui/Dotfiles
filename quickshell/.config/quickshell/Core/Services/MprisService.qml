@@ -4,8 +4,8 @@ pragma ComponentBehavior: Bound
 // From https://git.outfoxxed.me/outfoxxed/nixnew
 // It does not have a license, but the author is okay with redistribution.
 
-import QtQml.Models
 import QtQuick
+import QtQml.Models
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
@@ -16,9 +16,13 @@ import Quickshell.Services.Mpris
  */
 Singleton {
 	id: root;
+
 	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
+
 	property MprisPlayer trackedPlayer: null;
+
 	property MprisPlayer activePlayer: (trackedPlayer && isRealPlayer(trackedPlayer) && Mpris.players.values.includes(trackedPlayer)) ? trackedPlayer : (players[0] ?? null);
+
 	signal trackChanged(reverse: bool);
 
 	property bool __reverse: false;
@@ -47,6 +51,7 @@ Singleton {
 
 		Connections {
 			required property MprisPlayer modelData;
+
 			target: modelData;
 
 			Component.onCompleted: {
@@ -117,12 +122,15 @@ Singleton {
 	}
 
 	property bool isPlaying: this.activePlayer && this.activePlayer.isPlaying;
+
 	property bool canTogglePlaying: this.activePlayer?.canTogglePlaying ?? false;
+
 	function togglePlaying() {
 		if (this.canTogglePlaying) this.activePlayer.togglePlaying();
 	}
 
 	property bool canGoPrevious: this.activePlayer?.canGoPrevious ?? false;
+
 	function previous() {
 		if (this.canGoPrevious) {
 			this.__reverse = true;
@@ -131,6 +139,7 @@ Singleton {
 	}
 
 	property bool canGoNext: this.activePlayer?.canGoNext ?? false;
+
 	function next() {
 		if (this.canGoNext) {
 			this.__reverse = false;
@@ -141,7 +150,9 @@ Singleton {
 	property bool canChangeVolume: this.activePlayer && this.activePlayer.volumeSupported && this.activePlayer.canControl;
 
 	property bool loopSupported: this.activePlayer && this.activePlayer.loopSupported && this.activePlayer.canControl;
+
 	property var loopState: this.activePlayer?.loopState ?? MprisLoopState.None;
+
 	function setLoopState(loopState: var) {
 		if (this.loopSupported) {
 			this.activePlayer.loopState = loopState;
@@ -149,7 +160,9 @@ Singleton {
 	}
 
 	property bool shuffleSupported: this.activePlayer && this.activePlayer.shuffleSupported && this.activePlayer.canControl;
+
 	property bool hasShuffle: this.activePlayer?.shuffle ?? false;
+
 	function setShuffle(shuffle: bool) {
 		if (this.shuffleSupported) {
 			this.activePlayer.shuffle = shuffle;
@@ -180,7 +193,9 @@ Singleton {
 		}
 
 		function playPause(): void { root.togglePlaying(); }
+
 		function previous(): void { root.previous(); }
+
 		function next(): void { root.next(); }
 	}
 }

@@ -1,11 +1,12 @@
-import QtQuick
-import QtQuick.Layouts
-import Quickshell
-import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
+
 PanelWindow {
     id: root
     
@@ -43,6 +44,7 @@ PanelWindow {
 
     Rectangle {
         id: menuRect
+
         anchors.fill: parent
         color: Appearance.md3.surface
         radius: 20
@@ -76,6 +78,7 @@ PanelWindow {
 
         ColumnLayout {
             id: mainLayout
+
             x: 12
             y: 12
             width: parent.width - 24
@@ -83,6 +86,7 @@ PanelWindow {
 
             StyledText {
                 id: titleText
+
                 text: root.menuTitle
                 visible: text !== ""
                 font.family: Services.ConfigService.configs.appearence.fontSans

@@ -28,6 +28,7 @@ Shape {
 
     ShapePath {
         id: shapePath
+
         fillColor: root.fillColor
         strokeColor: "transparent"
         strokeWidth: -1

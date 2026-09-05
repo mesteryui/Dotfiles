@@ -1,6 +1,6 @@
-import QtQuick
 import qs.Primitives
 import qs.Bar.SystemTray
+import QtQuick
 import QtQuick.Layouts
 
 RowLayout {
@@ -14,6 +14,7 @@ RowLayout {
     MaterialIcon {
         id: chevron
         Layout.alignment: Qt.AlignVCenter
+
         size: 20
         icon: "chevron_backward"
         rotation: revealer.reveal ? 180 : 0
@@ -33,6 +34,7 @@ RowLayout {
 
     Revealer {
         id: revealer
+
         reveal: false
         vertical: false
         Layout.alignment: Qt.AlignVCenter

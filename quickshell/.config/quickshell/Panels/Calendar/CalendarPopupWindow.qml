@@ -1,14 +1,14 @@
 // CalendarPopupWindow — Wrapper
 // Gestiona estado del calendario y ensambla Background + Content.
 
-import QtQuick
-import QtQuick.Effects
-import Quickshell
-import Quickshell.Hyprland
 import qs.Core
 import qs.Core.Services as Services
 import qs.Shared.Background
 import qs.Primitives
+import QtQuick
+import QtQuick.Effects
+import Quickshell
+import Quickshell.Hyprland
 
 BarPopupWindow {
     id: root
@@ -19,8 +19,11 @@ BarPopupWindow {
 
     // ── Estado ────────────────────────────────────────────────
     property date currentDate:  new Date()
+
     property int  currentMonth: currentDate.getMonth()
+
     property int  currentYear:  currentDate.getFullYear()
+
     property int  selectedDay:  -1
 
     readonly property var currentLocale: Services.I18nService.locale
@@ -48,6 +51,7 @@ BarPopupWindow {
 
     PopupBackground {
         id: bg
+
         anchors.fill: parent
     }
 

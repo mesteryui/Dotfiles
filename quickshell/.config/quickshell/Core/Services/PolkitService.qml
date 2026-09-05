@@ -7,6 +7,7 @@ import Quickshell.Services.Polkit
 
 Singleton {
     id: root
+
     property alias agent: polkitAgent
     property alias active: polkitAgent.isActive
     property alias flow: polkitAgent.flow
@@ -35,6 +36,7 @@ Singleton {
 
     Connections {
         target: root.flow
+
         function onAuthenticationFailed() {
             root.interactionAvailable = true;
         }
@@ -42,6 +44,7 @@ Singleton {
 
     PolkitAgent {
         id: polkitAgent
+
         onAuthenticationRequestStarted: {
             root.interactionAvailable = true;
         }

@@ -1,13 +1,15 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import Quickshell
+
 import qs.Core.Services as Services
 import qs.Panels.MediaPlayer
 import qs.Bar.Content
 import qs.Bar
+import QtQuick
+import Quickshell
 
 Item {
     id: root
+
     implicitWidth: content.implicitWidth + 24
     implicitHeight: 30
 
@@ -20,12 +22,14 @@ Item {
 
     PlayerContent {
         id: content
+
         anchors.centerIn: parent
         isHovered: titleInteraction.containsMouse
     }
 
     MouseArea {
         id: titleInteraction
+
         enabled: Services.MprisService.activePlayer !== null
         width: content.width / 2
         height: parent.height
@@ -43,9 +47,11 @@ Item {
     // Helpers para no repetir la guardia null en cada binding
     LazyLoader {
         id: popupLoader
+
         loading: titleInteraction.pressed || titleInteraction.hoveredChanged
         component: MprisSubwindow {
             id: popup
+
             anchorItem: root
         }
     }

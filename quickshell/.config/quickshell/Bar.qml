@@ -1,16 +1,18 @@
-import Quickshell
-import Quickshell.Wayland
-import QtQuick
 import qs.Bar
 import qs.Core
 import qs.Core.Services as Services
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
 
 Variants {
     model: Quickshell.screens
     delegate: Scope {
         id: delegateScope
+
         required property ShellScreen modelData
         // qmllint disable uncreatable-type
+
         PanelWindow {
             id: root
             // qmllint enable uncreatable-type
@@ -25,6 +27,7 @@ Variants {
 
             // Configuramos cuánto queremos que mida la lágrima
             property real teardropLength: 30
+
             property real teardropWidth: 35
 
             WlrLayershell.layer: WlrLayer.Top
@@ -56,6 +59,7 @@ Variants {
             // 1. Fondo de la Barra
             BarBackground {
                 id: bg
+
                 anchors.left: parent.left
                 anchors.right: parent.right
                 // Lo anclamos según si está arriba o abajo
@@ -68,6 +72,7 @@ Variants {
             // 3. Contenido de la barra
             MainBar {
                 id: content
+
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.leftMargin: 6

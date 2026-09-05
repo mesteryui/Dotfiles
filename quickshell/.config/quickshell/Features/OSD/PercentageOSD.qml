@@ -1,8 +1,8 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Core
 import qs.Primitives
 import qs.Shared.Background
+import QtQuick
+import QtQuick.Layouts
 
 BaseOSD {
     id: root
@@ -27,6 +27,7 @@ BaseOSD {
 
         MaterialIcon {
             id: iconItem
+
             icon: root.icon
             size: Appearance.font.pixelSize.huge
             color: Appearance.md3.on_surface
@@ -36,6 +37,7 @@ BaseOSD {
 
         StyledProgressBar {
             id: barItem
+
             from: 0.0
             to: 1.0
             value: root.percentage
@@ -45,6 +47,7 @@ BaseOSD {
 
         StyledText {
             id: textPercentage
+
             text: Math.round(root.percentage * 100) + "%"
             font.pixelSize: 16
             color: Appearance.md3.on_surface

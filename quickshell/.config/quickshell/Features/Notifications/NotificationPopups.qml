@@ -1,11 +1,12 @@
 pragma ComponentBehavior: Bound
-import Quickshell
-import QtQuick
-import Quickshell.Wayland
-import QtQuick.Layouts
+
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Wayland
 
 PanelWindow {
     id: root
@@ -29,6 +30,7 @@ PanelWindow {
 
     ColumnLayout {
         id: column
+
         width: parent.width
         spacing: 12
 
@@ -37,6 +39,7 @@ PanelWindow {
 
             delegate: NotificationToastCard {
                 required property var modelData
+
                 notification: modelData
             }
         }

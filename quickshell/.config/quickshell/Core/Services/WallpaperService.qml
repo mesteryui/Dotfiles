@@ -1,19 +1,24 @@
 pragma Singleton
+
 import QtQuick
+import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 import Quickshell
 import Quickshell.Io
-import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 
 Singleton {
     id: root
+
     property alias wallpaperList: folderModel
     property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers"
+
     signal changed
+
     readonly property list<string> extensions: [ // TODO: add videos
         "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
 
     FolderListModel {
         id: folderModel
+
         folder: Qt.resolvedUrl(root.wallpaperDir)
         nameFilters: root.extensions.map(e => `*.${e}`) // Filtra solo imágenes
         showDirs: false
@@ -29,6 +34,7 @@ Singleton {
         let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
         root._apply(fullPath);
     }
+
     function _apply(file: string) {
         if (applyProcess.running) {
             applyProcess.running = false;

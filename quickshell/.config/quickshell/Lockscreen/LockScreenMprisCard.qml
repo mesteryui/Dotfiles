@@ -1,14 +1,15 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Effects
-import Quickshell.Widgets
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import qs.Components
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell.Widgets
 
 Item {
     id: root
+
     implicitWidth: mprisContent.childrenRect.width + 20
     implicitHeight: 100
     visible: MprisService.activePlayer !== null
@@ -36,6 +37,7 @@ Item {
 
     Rectangle {
         id: mprisBg
+
         anchors.fill: parent
         radius: Appearance.shape.normal
         color: root.withAlpha(Appearance.md3.surface_container_high, 0.55)
@@ -48,6 +50,7 @@ Item {
                 centerIn: parent
                 margins: 20
             }
+
             spacing: 12
 
             // Carátula de la canción
@@ -59,6 +62,7 @@ Item {
 
                 Image {
                     id: mprisArt
+
                     anchors.fill: parent
                     source: (MprisService.activeTrack && MprisService.activeTrack.artUrl) ? MprisService.activeTrack.artUrl : ""
                     fillMode: Image.PreserveAspectCrop

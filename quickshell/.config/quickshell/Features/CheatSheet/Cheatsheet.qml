@@ -7,9 +7,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 /**
  * Cheatsheet
@@ -48,6 +48,7 @@ PanelWindow {
 
     Timer {
         id: hideTimer
+
         interval: root.hideAnimDuration
     }
 
@@ -63,12 +64,15 @@ PanelWindow {
 
     IpcHandler {
         target: "cheatsheet"
+
         function toggle(): void {
             root.active = !root.active;
         }
+
         function show(): void {
             root.active = true;
         }
+
         function hide(): void {
             root.active = false;
         }
@@ -85,9 +89,11 @@ PanelWindow {
     // --- Scrim ---
     Rectangle {
         id: scrim
+
         anchors.fill: parent
         color: Appearance.md3.shadow
         opacity: root.active ? 0.55 : 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: root.hideAnimDuration
@@ -104,9 +110,11 @@ PanelWindow {
     // --- Content ---
     Item {
         id: sheet
+
         anchors.fill: parent
         opacity: root.active ? 1 : 0
         scale: root.active ? 1 : 0.98
+
         Behavior on opacity {
             NumberAnimation {
                 duration: root.hideAnimDuration
@@ -121,6 +129,7 @@ PanelWindow {
         }
 
         focus: root.active
+
         Keys.onPressed: event => {
             switch (event.key) {
             case Qt.Key_Escape:
@@ -180,6 +189,7 @@ PanelWindow {
 
         NumberAnimation {
             id: scrollAnim
+
             target: flick
             property: "contentY"
             duration: 180
@@ -334,6 +344,7 @@ PanelWindow {
                 fill: parent
                 margins: 48
             }
+
             spacing: 20
 
             // ----------------------------------------------------------------
@@ -344,6 +355,7 @@ PanelWindow {
                 Layout.fillWidth: false
                 Layout.preferredWidth: 480
                 Layout.alignment: Qt.AlignHCenter
+
                 implicitHeight: 52
 
                 // Fondo pill
@@ -353,6 +365,7 @@ PanelWindow {
                     color: Appearance.md3.surface_container_high
                     border.width: searchField.activeFocus ? 2 : 1
                     border.color: searchField.activeFocus ? Appearance.md3.primary : Appearance.md3.outline_variant
+
                     Behavior on border.color {
                         ColorAnimation {
                             duration: 120
@@ -368,9 +381,11 @@ PanelWindow {
                         leftMargin: 16
                         verticalCenter: parent.verticalCenter
                     }
+
                     iconName: "search"
                     size: Appearance.font.pixelSize.large
                     color: searchField.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+
                     Behavior on color {
                         ColorAnimation {
                             duration: 120
@@ -388,6 +403,7 @@ PanelWindow {
                         leftMargin: 8
                         rightMargin: 20
                     }
+
                     background: null
                     color: Appearance.md3.on_surface
                     placeholderText: Services.I18nService.getTranslation("cheatsheet.search", "Search keybinds…")
@@ -451,6 +467,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: Math.min(mainLayout.width, columnsRow.implicitWidth + 16)
                 Layout.fillHeight: true
+
                 visible: sheet.filteredCategories.length > 0
                 contentWidth: Math.max(width, columnsRow.implicitWidth)
                 contentHeight: columnsRow.implicitHeight
@@ -460,6 +477,7 @@ PanelWindow {
 
                 Row {
                     id: columnsRow
+
                     anchors.left: parent.left
                     spacing: 20
 
@@ -468,6 +486,7 @@ PanelWindow {
                         delegate: Column {
                             required property var modelData
                             required property int index   // column index
+
                             width: sheet.columnWidth
                             spacing: 20
 
@@ -476,6 +495,7 @@ PanelWindow {
                                 delegate: CheatsheetCategoryCard {
                                     required property var modelData
                                     required property int index   // card-in-column index
+
                                     width: parent?.width ?? 40
                                     category: modelData.category
                                     binds: modelData.binds
@@ -508,6 +528,7 @@ PanelWindow {
 
                     Column {
                         id: emptyContent
+
                         anchors.centerIn: parent
                         spacing: 14
 
@@ -581,7 +602,9 @@ PanelWindow {
 
         // --- Fixed column width + responsive column count ---
         readonly property int columnWidth: 380
+
         readonly property int desiredColumnCount: width > 1500 ? 3 : (width > 950 ? 2 : 1)
+
         property int columnCount: Math.max(1, Math.min(desiredColumnCount, filteredCategories.length || 1))
 
         // --- Balanced column distribution (greedy bin-packing by estimated height) ---

@@ -1,4 +1,5 @@
 pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
@@ -8,13 +9,16 @@ Singleton {
 
     PersistentProperties {
         id: storage
+
         property var historyData: []
         property bool dnd: false
+
         reloadableId: "notifications"
     }
 
     // 1. FORMA CORRECTA: Exponemos los modelos al exterior usando 'alias'
     property alias historyModel: _historyModel
+
     property alias activeModel: _activeModel
 
     // 2. Declaramos los ListModel como objetos hijos internos
@@ -84,6 +88,7 @@ Singleton {
 
     NotificationServer {
         id: server
+
         keepOnReload: true
         bodySupported: true
         actionsSupported: true

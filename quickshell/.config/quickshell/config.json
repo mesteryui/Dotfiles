@@ -18,7 +18,7 @@
     },
     "language": "es_ES",
     "lockscreen": {
-        "blurLevel": 0.63,
+        "blurLevel": 0.53,
         "useWallpaper": true
     },
     "nightLight": {
@@ -26,11 +26,11 @@
         "temperature": 3793
     },
     "notifications": {
-        "timeout": 10
+        "timeout": 12
     },
     "updates": {
         "command": "shelly -U",
-        "countTime": 8
+        "countTime": 9
     },
     "weather": {
         "autoLocation": true,

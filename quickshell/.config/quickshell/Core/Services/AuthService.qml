@@ -1,4 +1,5 @@
 pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pam
@@ -50,9 +51,11 @@ Singleton {
     // p.ej. "Coloca tu dedo en el lector" (responseRequired=false) vs.
     // el campo de contraseña (responseRequired=true).
     readonly property bool awaitingResponse: pam.responseRequired
+
     readonly property bool responseVisible: pam.responseVisible
     // true mientras hay una sesión PAM en curso (escaneo de huella incluido).
     // Útil para la UI: activo + !awaitingResponse == "esperando el dedo".
+
     readonly property bool active: pam.active
 
     // Guardamos la respuesta hasta que PAM realmente la pida.

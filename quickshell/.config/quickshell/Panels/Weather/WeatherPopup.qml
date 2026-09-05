@@ -1,8 +1,8 @@
-import Quickshell
 import qs.Shared.Background
-import QtQuick
 import qs.Primitives
 import qs.Core
+import QtQuick
+import Quickshell
 
 BarPopupWindow {
     id: root
@@ -17,6 +17,7 @@ BarPopupWindow {
     
     WeatherPopupContent {
         id: content
+
         anchors.fill: parent
     }
 }

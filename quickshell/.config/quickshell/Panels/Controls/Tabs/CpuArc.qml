@@ -1,7 +1,7 @@
 // CpuArc — Donut Canvas de uso de CPU estilo Material 3 Expressive.
-import QtQuick
 import qs.Primitives
 import qs.Core
+import QtQuick
 
 Item {
     id: root
@@ -16,6 +16,7 @@ Item {
 
     Canvas {
         id: canvas
+
         anchors.fill: parent
 
         onPaint: {
@@ -49,7 +50,9 @@ Item {
 
         Connections {
             target: Appearance.md3
+
             function onPrimaryChanged()                   { canvas.requestPaint() }
+
             function onSurface_container_highestChanged() { canvas.requestPaint() }
         }
     }

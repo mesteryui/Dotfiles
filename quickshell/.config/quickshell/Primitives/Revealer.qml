@@ -18,6 +18,7 @@ Item {
 
     Behavior on implicitWidth {
         enabled: !root.vertical
+
         NumberAnimation {
             duration: root.animationDuration
             easing.type: Easing.OutCubic
@@ -26,6 +27,7 @@ Item {
 
     Behavior on implicitHeight {
         enabled: root.vertical
+
         NumberAnimation {
             duration: root.animationDuration
             easing.type: Easing.OutCubic

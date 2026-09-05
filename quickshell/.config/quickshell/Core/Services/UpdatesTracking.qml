@@ -1,7 +1,8 @@
 pragma Singleton
+
+import QtQuick
 import Quickshell
 import Quickshell.Io
-import QtQuick
 
 Singleton {
     id: root
@@ -16,7 +17,9 @@ Singleton {
 
     PersistentProperties {
         id: persistent
+
         reloadableId: "updatePersistence"
+
         property int updateCount: 0
     }
 
@@ -29,6 +32,7 @@ Singleton {
 
     Process {
         id: countUpdates
+
         command: ["checkupdates"]
 
         onRunningChanged: {
@@ -72,6 +76,7 @@ Singleton {
     Process {
         id: updateProcess
         // Separa el comando de la config por espacios y expande los argumentos dentro del array base
+
         command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...ConfigService.configs.updates.command.split(" ")]
 
         onRunningChanged: {
@@ -85,11 +90,13 @@ Singleton {
     function checkNow() {
         countUpdates.running = true;
     }
+
     function update() {
         updateProcess.running = true;
     }
     IpcHandler {
         target: "update"
+
         function updateSystem() {
             root.update();
         }

@@ -1,6 +1,6 @@
-import QtQuick
 import qs.Core
 import qs.Primitives
+import QtQuick
 
 Rectangle {
     id: root
@@ -28,6 +28,7 @@ Rectangle {
     
     // Added scaling effect like the MPRIS buttons and Action chips
     scale: mouseArea.pressed ? 0.94 : (mouseArea.containsMouse ? 1.04 : 1.0)
+
     Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -38,11 +39,13 @@ Rectangle {
         radius: parent.radius
         color: root.overlayColor
         opacity: mouseArea.pressed ? 0.12 : (mouseArea.containsMouse ? 0.08 : 0)
+
         Behavior on opacity { NumberAnimation { duration: 100 } }
     }
 
     StyledText {
         id: textLabel
+
         anchors.centerIn: parent
         text: root.text
         color: root.textColor
@@ -52,6 +55,7 @@ Rectangle {
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         enabled: root.enabled
         hoverEnabled: true

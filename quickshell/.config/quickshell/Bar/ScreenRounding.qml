@@ -1,17 +1,22 @@
 pragma ComponentBehavior: Bound
+
+import qs.Core
+import qs.Core.Services
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import qs.Core
-import qs.Core.Services
 
 Variants {
     id: root
+
     model: Quickshell.screens
+
     readonly property var isFloating: ConfigService.configs.bar.barType === "full_hug"
+
     readonly property var isPartial: ConfigService.configs.bar.barType === "partial_hug"
     delegate: Scope {
         id: screenScope
+
         required property ShellScreen modelData
 
         // --- VARIABLES DE CONFIGURACIÓN ---
@@ -136,6 +141,7 @@ Variants {
             implicitWidth: screenScope.borderThickness
             color: "transparent"
             visible: root.isFloating
+
             Rectangle {
                 anchors.fill: parent
                 color: Appearance.md3.surface

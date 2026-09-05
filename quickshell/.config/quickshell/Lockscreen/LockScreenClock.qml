@@ -1,9 +1,9 @@
-import QtQuick
-import QtQuick.Layouts
-import Quickshell
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
 
 ColumnLayout {
     id: root
@@ -11,12 +11,14 @@ ColumnLayout {
 
     SystemClock {
         id: clock
+
         precision: SystemClock.Minutes
     }
 
     StyledText {
         id: clockText
         Layout.alignment: Qt.AlignHCenter
+
         color: Appearance.md3.on_surface
         opacity: 0.9
         font.pixelSize: Appearance.font.pixelSize.hugeass + 70
@@ -28,6 +30,7 @@ ColumnLayout {
     StyledText {
         id: dateText
         Layout.alignment: Qt.AlignHCenter
+
         color: Appearance.md3.on_surface
         opacity: 0.92
         font.pixelSize: Appearance.font.pixelSize.normal

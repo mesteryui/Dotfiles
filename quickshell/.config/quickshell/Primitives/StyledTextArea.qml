@@ -1,6 +1,7 @@
-import QtQuick.Controls
-import QtQuick
 import qs.Core
+import QtQuick
+import QtQuick.Controls
+
 TextArea {
     renderType: Text.NativeRendering
     placeholderTextColor: Appearance.md3.outline

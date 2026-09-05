@@ -1,10 +1,11 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import QtQuick.Layouts
-import Quickshell.Services.UPower
+
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
+import Quickshell.Services.UPower
 
 Item {
     id: root
@@ -102,6 +103,7 @@ Item {
 
     ColumnLayout {
         id: layout
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -118,6 +120,7 @@ Item {
 
             RowLayout {
                 id: batteryCardContent
+
                 anchors.fill: parent
                 anchors.margins: 12
                 spacing: 12
@@ -144,6 +147,7 @@ Item {
 
                     RowLayout {
                         spacing: 8
+
                         StyledText {
                             text: root.hasBattery ? Math.round(root.battery.percentage * 100) + "%" : "N/A"
                             font.pixelSize: Appearance.font.pixelSize.huge
@@ -195,6 +199,7 @@ Item {
 
                 delegate: Rectangle {
                     id: profileButton
+
                     required property var modelData
 
                     readonly property bool selected: PowerProfiles.profile === modelData
@@ -209,10 +214,12 @@ Item {
 
                     Rectangle {
                         id: stateLayer
+
                         anchors.fill: parent
                         radius: parent.radius
                         color: Appearance.md3.on_surface
                         opacity: 0
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 100

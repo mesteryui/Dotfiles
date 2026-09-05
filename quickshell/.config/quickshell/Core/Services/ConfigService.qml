@@ -1,11 +1,13 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
-import Quickshell
+
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
 Singleton {
     id: root
+
     property alias configs: jsonAdapter
 
     function load() {
@@ -13,6 +15,7 @@ Singleton {
 
     FileView {
         id: fileManagment
+
         path: Quickshell.shellPath("config.json")
         blockLoading: true
         watchChanges: true
@@ -20,8 +23,10 @@ Singleton {
         atomicWrites: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()
+
         JsonAdapter {
             id: jsonAdapter
+
             property string language: Qt.locale().name
             property Bar bar: Bar {}
             property Weather weather: Weather {}
@@ -32,6 +37,7 @@ Singleton {
             property Appearence appearence: Appearence {}
         }
     }
+
     component LockScreen: JsonObject {
         property real blurLevel: 1.3
         property bool useWallpaper: true

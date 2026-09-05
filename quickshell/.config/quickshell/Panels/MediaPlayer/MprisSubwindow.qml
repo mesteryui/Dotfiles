@@ -1,10 +1,10 @@
 // MprisSubwindow — Wrapper
 // Gestiona estado de posición, timers, focus y ensambla Background + Content.
 
-import QtQuick
 import qs.Core.Services as Services
 import qs.Shared.Background
 import qs.Primitives
+import QtQuick
 
 BarPopupWindow {
     id: root
@@ -18,13 +18,14 @@ BarPopupWindow {
     // Si no hay player o no hay arte, queda en "" (sin imagen), en vez de
     // resolver una URL basura contra el directorio del propio .qml.
     readonly property string artURL: player?.trackArtUrl ?? ""
+
     readonly property string finalArt: artURL.length > 0 ? Qt.resolvedUrl(artURL) : ""
 
     property real currentPosition: 0
 
-
     Timer {
         id: positionTimer
+
         interval: 100
         repeat: true
         running: root.visible && Services.MprisService.isPlaying
@@ -46,6 +47,7 @@ BarPopupWindow {
 
     Timer {
         id: seekConfirmTimer
+
         interval: 200
         repeat: false
         onTriggered: {
@@ -78,8 +80,6 @@ BarPopupWindow {
         }
     }
 
-
-
     // ── Background ────────────────────────────────────────────
     PopupBackground {
         anchors.fill: parent
@@ -88,6 +88,7 @@ BarPopupWindow {
     // ── Content ───────────────────────────────────────────────
     MprisContent {
         id: mprisContent
+
         anchors.fill: parent
         currentPosition: root.currentPosition
         onSeekRequested: newPosition => {

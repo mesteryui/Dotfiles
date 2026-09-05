@@ -1,5 +1,5 @@
-import QtQuick
 import qs.Core
+import QtQuick
 
 Rectangle {
     id: root
@@ -10,7 +10,9 @@ Rectangle {
     property int itemRadius: Appearance.shape.normal
 
     property bool clickable: false
+
     signal clicked(variant mouse)
+
     property alias area: mouseArea
 
     default property alias data: contentLoader.data
@@ -30,11 +32,13 @@ Rectangle {
 
     Item {
         id: contentLoader
+
         anchors.centerIn: parent
     }
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         enabled: root.clickable
         hoverEnabled: true

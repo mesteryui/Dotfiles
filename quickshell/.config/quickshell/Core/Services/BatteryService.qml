@@ -1,11 +1,13 @@
 pragma Singleton
-import Quickshell.Services.UPower
+
+import qs.Core.Modules
 import QtQuick
 import Quickshell
-import qs.Core.Modules
+import Quickshell.Services.UPower
 
 Singleton {
     id: root
+
     readonly property var displayDevice: UPower.displayDevice
     readonly property var percentage: {
         const p = displayDevice?.percentage ?? 0;
@@ -21,6 +23,7 @@ Singleton {
         return Icons.getBatteryIcon(p, isCharging);
     }
     readonly property var profile: PowerProfiles.profile
+
     function changeProfile(newProfile) {
         PowerProfiles.profile = newProfile;
     }

@@ -1,16 +1,18 @@
 import qs.Shared.Background
 import qs.Primitives
-import QtQuick.Layouts
 import qs.Core.Services
 import QtQuick
+import QtQuick.Layouts
 
 BaseOSD {
     id: root
+
     property string osdText: ""
     property string osdIcon: ""
 
     PopupBackground {
         id: popup
+
         anchors.fill: parent
     }
 

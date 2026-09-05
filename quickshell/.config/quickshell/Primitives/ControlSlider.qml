@@ -1,7 +1,7 @@
 // ControlSlider — Material 3 Expressive Slider primitive.
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
-import qs.Core
 
 RowLayout {
     id: root
@@ -21,10 +21,12 @@ RowLayout {
     // Icono Material con feedback interactivo opcional
     MaterialIcon {
         id: iconItem
+
         visible: root.iconName !== ""
         icon: root.iconName
         size: Appearance.font.pixelSize.large
         color: iconArea.containsMouse ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+
         Behavior on color {
             ColorAnimation {
                 duration: 150
@@ -33,6 +35,7 @@ RowLayout {
 
         MouseArea {
             id: iconArea
+
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
@@ -49,11 +52,13 @@ RowLayout {
         // Pista base (Capsule track)
         Rectangle {
             id: trackBg
+
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
             height: trackArea.pressed ? 14 : 12
             radius: height / 2
             color: Appearance.md3.surface_container_highest
+
             Behavior on height {
                 NumberAnimation {
                     duration: 120
@@ -67,6 +72,7 @@ RowLayout {
                 height: parent.height
                 radius: parent.radius
                 color: root.accentColor
+
                 Behavior on width {
                     NumberAnimation {
                         duration: 80
@@ -83,6 +89,7 @@ RowLayout {
         // Thumb / Manejador M3 Expressive
         Rectangle {
             id: thumb
+
             x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.value)) - width / 2))
             anchors.verticalCenter: parent.verticalCenter
             width: trackArea.pressed ? 20 : (trackArea.containsMouse ? 18 : 14)
@@ -118,15 +125,15 @@ RowLayout {
 
         MouseArea {
             id: trackArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
 
             function updateValue(mouseX) {
                 const newVal = Math.max(0.0, Math.min(1.0, mouseX / width));
                 root.moved(newVal);
             }
 
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
             onPositionChanged: mouse => {
                 if (pressed)
                     updateValue(mouse.x);

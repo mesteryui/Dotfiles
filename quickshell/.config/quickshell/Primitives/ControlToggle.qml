@@ -1,8 +1,8 @@
 // ControlToggle — Pill/Tile estilo Material 3 Expressive Quick Settings.
 // Soporta vista compacta o vista con estado de 2 líneas (stateText).
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
-import qs.Core
 
 Rectangle {
     id: root
@@ -12,6 +12,7 @@ Rectangle {
     property string iconName:  ""
     property bool   active:    false
     property bool   enable:   true
+
     signal toggled()
 
     implicitWidth:  140
@@ -35,6 +36,7 @@ Rectangle {
         radius: parent.radius
         color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
         opacity: hoverArea.pressed ? 0.12 : (hoverArea.containsMouse ? 0.08 : 0.0)
+
         Behavior on opacity { NumberAnimation { duration: 100 } }
     }
 
@@ -48,8 +50,10 @@ Rectangle {
             id: iconBadge
             Layout.preferredWidth: root.stateText !== "" ? 36 : 32
             Layout.preferredHeight: root.stateText !== "" ? 36 : 32
+
             radius: height / 2
             color: root.active ? Appearance.md3.primary : Appearance.md3.surface_container_highest
+
             Behavior on color { ColorAnimation { duration: 150 } }
 
             MaterialIcon {
@@ -57,6 +61,7 @@ Rectangle {
                 icon: root.iconName
                 size: root.stateText !== "" ? Appearance.font.pixelSize.large : Appearance.font.pixelSize.normal
                 color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -74,17 +79,20 @@ Rectangle {
                 font.weight: root.active ? Font.Medium : Font.Normal
                 color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                 elide: Text.ElideRight
+
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
 
             StyledText {
                 id: stateLabel
+
                 visible: root.stateText !== ""
                 Layout.fillWidth: true
                 text: root.stateText
                 font.pixelSize: Appearance.font.pixelSize.smallest
                 color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                 elide: Text.ElideRight
+
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -92,6 +100,7 @@ Rectangle {
 
     MouseArea {
         id: hoverArea
+
         anchors.fill: parent
         hoverEnabled: true
         enabled: root.enable

@@ -1,11 +1,12 @@
 pragma ComponentBehavior: Bound
-import QtQuick
-import Quickshell
-import Quickshell.Wayland
-import Quickshell.Io
-import Quickshell.Hyprland
+
 import qs.Shared.Background
 import qs.Panels.Wallpaper.Content
+import QtQuick
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
+import Quickshell.Wayland
 
 Scope {
     id: root
@@ -24,6 +25,7 @@ Scope {
 
     IpcHandler {
         target: "ui.wallpaperMenu"
+
         function toggleWallpaperMenu(): void {
             root.showing = !root.showing;
         }
@@ -61,6 +63,7 @@ Scope {
 
         Connections {
             target: root
+
             function onShowingChanged() {
                 if (root.showing)
                     menuContent.requestFocus();
@@ -74,6 +77,7 @@ Scope {
 
         Item {
             id: animatedContainer
+
             anchors.fill: parent
 
             opacity: 0.0
@@ -82,6 +86,7 @@ Scope {
 
             ParallelAnimation {
                 id: openAnim
+
                 OpacityAnimator {
                     target: animatedContainer
                     to: 1.0
@@ -99,6 +104,7 @@ Scope {
 
             ParallelAnimation {
                 id: closeAnim
+
                 OpacityAnimator {
                     target: animatedContainer
                     to: 0.0
@@ -111,6 +117,7 @@ Scope {
                     duration: root.animDuration
                     easing.type: Easing.OutCubic
                 }
+
                 onFinished: {
                     if (!root.showing)
                         root._isAnimatingOut = false;
@@ -126,6 +133,7 @@ Scope {
 
             Connections {
                 target: root
+
                 function onShowingChanged() {
                     if (root.showing) {
                         closeAnim.stop();
@@ -143,6 +151,7 @@ Scope {
 
             WallpaperMenuContent {
                 id: menuContent
+
                 anchors.fill: parent
                 anchors.margins: 18
                 onHideRequested: root.showing = false

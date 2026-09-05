@@ -1,10 +1,11 @@
 pragma ComponentBehavior: Bound
+
+import qs.Primitives
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import qs.Primitives
-import qs.Core
 
 PopupWindow {
     id: root
@@ -33,6 +34,7 @@ PopupWindow {
         // QsMenuOpener lee los hijos del handle
         QsMenuOpener {
             id: opener
+
             menu: root.menu
         }
 
@@ -44,6 +46,7 @@ PopupWindow {
                 right: parent.right
                 margins: 8
             }
+
             spacing: 2
 
             Repeater {
@@ -51,6 +54,7 @@ PopupWindow {
 
                 delegate: Item {
                     id: itemDelegate
+
                     required property QsMenuEntry modelData
 
                     width: menuColumn.width
@@ -69,6 +73,7 @@ PopupWindow {
                     // Item normal
                     Rectangle {
                         id: itemRoot
+
                         anchors.fill: parent
                         visible: !(itemDelegate.modelData?.isSeparator ?? false)
                         radius: 8
@@ -108,6 +113,7 @@ PopupWindow {
                                 color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
                                 font.pixelSize: 13
                                 elide: Text.ElideRight
+
                                 Behavior on color {
                                     ColorAnimation {
                                         duration: 100
@@ -137,6 +143,7 @@ PopupWindow {
 
                         MouseArea {
                             id: itemMouse
+
                             anchors.fill: parent
                             hoverEnabled: true
                             enabled: (itemDelegate.modelData?.enabled ?? false) && !(itemDelegate.modelData?.isSeparator ?? false)

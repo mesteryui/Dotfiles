@@ -1,8 +1,8 @@
-import QtQuick
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import qs.Shared.Background
+import QtQuick
 
 BaseOSD {
     id: keyOSD
@@ -10,17 +10,22 @@ BaseOSD {
     implicitWidth: contentRow.implicitWidth + 40
     implicitHeight: contentRow.implicitHeight + 20
     type: "specialKeys"
+
     property string osdIcon: "keyboard"
+
     property string osdText: ""
+
     property color activeColor: Appearance.md3.on_surface
 
     Connections {
         target: KeyboardThings
+
         function onCapsLockOnChanged() {
             const capsActive = KeyboardThings.capsLockOn;
             keyOSD.osdText = I18nService.getTranslation("osd.capsLock.text").arg(capsActive ? I18nService.getTranslation("osd.capsLock.activate") : I18nService.getTranslation("osd.capsLock.deactivate"));
             keyOSD.show();
         }
+
         function onNumsLockChanged() {
             const numLockActive = KeyboardThings.numsLock;
             keyOSD.osdText = "Nums Lock " + (numLockActive ? "activado" : "desactivado");
@@ -36,6 +41,7 @@ BaseOSD {
 
     Row {
         id: contentRow
+
         anchors.centerIn: parent
         spacing: 12
 

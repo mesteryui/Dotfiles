@@ -1,24 +1,29 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import Quickshell
 import qs.Core
 import qs.Core.Services
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
 
 FocusScope {
     id: root
+
     anchors.fill: parent
     focus: true
     Keys.forwardTo: [content.passwordField]
 
     // ── Contexto de Pantalla (Multi-monitor) ──────────────────────
     property ShellScreen screen: null
+
     property bool isPrimary: true
+
     property bool isPasswordVisible: false
 
     // ── Estado interno ────────────────────────────────────────────
     property bool authFailed: false
+
     property bool isAuthenticating: false
+
     property string promptText: ""
 
     // true mientras PAM está corriendo pero todavía no pide contraseña
@@ -35,8 +40,11 @@ FocusScope {
     // salida se anima ANTES de que LockScreen.qml pida el desbloqueo real.
     // isUnlocking lo controla el Scope padre (uno por pantalla, mismo valor).
     property bool isUnlocking: false
+
     readonly property int revealDuration: 420
+
     readonly property int hideDuration: 260
+
     signal unlockAnimationFinished
 
     opacity: 0
@@ -47,6 +55,7 @@ FocusScope {
 
     OpacityAnimator {
         id: revealOpacityAnim
+
         target: root
         from: 0
         to: 1
@@ -55,6 +64,7 @@ FocusScope {
     }
     ScaleAnimator {
         id: revealScaleAnim
+
         target: root
         from: 0.94
         to: 1
@@ -64,6 +74,7 @@ FocusScope {
 
     OpacityAnimator {
         id: hideOpacityAnim
+
         target: root
         from: 1
         to: 0
@@ -76,6 +87,7 @@ FocusScope {
     }
     ScaleAnimator {
         id: hideScaleAnim
+
         target: root
         from: 1
         to: 1.04
@@ -122,10 +134,12 @@ FocusScope {
     // ── Conexiones con AuthService ────────────────────────────────
     Connections {
         target: AuthService
+
         function onSuccessUnlocking() {
             root.isAuthenticating = false;
             root.promptText = "";
         }
+
         function onFailedUnlocking() {
             root.isAuthenticating = false;
             root.authFailed = true;
@@ -136,6 +150,7 @@ FocusScope {
             // contraseña.
             AuthService.start();
         }
+
         function onPromptMessage(message) {
             root.promptText = message;
             promptClearTimer.restart();
@@ -145,6 +160,7 @@ FocusScope {
     // Limpia el estado de error tras 2 segundos
     Timer {
         id: clearTimer
+
         interval: 2000
         onTriggered: root.authFailed = false
     }
@@ -152,6 +168,7 @@ FocusScope {
     // Limpia el prompt informativo tras 4 segundos
     Timer {
         id: promptClearTimer
+
         interval: 4000
         onTriggered: root.promptText = ""
     }
@@ -159,6 +176,7 @@ FocusScope {
     // ── 1. Capa de Fondo (Background) ─────────────────────────────
     LockScreenBackground {
         id: background
+
         anchors.fill: parent
         z: -1
         targetScreen: root.screen
@@ -167,6 +185,7 @@ FocusScope {
     // ── 2. Capa de Contenido Frontal (Content) ─────────────────────
     LockScreenContent {
         id: content
+
         anchors.fill: parent
         isPrimary: root.isPrimary
         authFailed: root.authFailed

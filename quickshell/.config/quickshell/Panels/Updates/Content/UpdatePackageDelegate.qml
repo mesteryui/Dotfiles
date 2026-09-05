@@ -1,16 +1,19 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Layouts
 
 // Fila de un paquete pendiente de actualización.
 Item {
     id: root
+
     height: 44
 
     required property string packageName
+
     required property string oldVersion
+
     required property string newVersion
 
     // ── Background + state layer ─────────────────────────────
@@ -28,6 +31,7 @@ Item {
             radius: parent.radius
             color: Appearance.md3.primary
             opacity: delegateHover.hovered ? 0.08 : 0
+
             Behavior on opacity {
                 NumberAnimation {
                     duration: 150

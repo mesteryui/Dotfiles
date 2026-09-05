@@ -1,13 +1,11 @@
-import QtQuick
-import QtQuick.Layouts
 import qs.Primitives
 import qs.Core
 import qs.Core.Services
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: overlay
-    anchors.fill: parent
-    focus: true
 
     required property bool usePasswordChars
 
@@ -29,6 +27,9 @@ Item {
         inputField.text = "";
     }
 
+    anchors.fill: parent
+    focus: true
+
     Keys.onPressed: event => { // Esc to close
         if (event.key === Qt.Key_Escape) {
             overlay.closed();
@@ -37,6 +38,7 @@ Item {
 
     Rectangle {
         id: dialogCard
+
         anchors.centerIn: parent
         width: 380
         radius: 28 // extraLarge shape token
@@ -51,6 +53,7 @@ Item {
             opacity = 1;
             scale = 1;
         }
+
         Behavior on opacity {
             OpacityAnimator {
                 duration: 150
@@ -66,6 +69,7 @@ Item {
 
         ColumnLayout {
             id: contentColumn
+
             anchors.centerIn: parent
             width: parent.width - 48
             spacing: 16

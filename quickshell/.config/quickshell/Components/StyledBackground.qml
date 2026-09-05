@@ -2,8 +2,8 @@
 // Thin wrapper de compatibilidad hacia SurfaceBackground.
 // Mantiene la propiedad `content` original pero delega el fondo a SurfaceBackground.
 // Todos los usos nuevos deben importar qs.Shared.Background y usar SurfaceBackground.
-import QtQuick
 import qs.Shared.Background
+import QtQuick
 
 SurfaceBackground {
     id: root
@@ -14,6 +14,7 @@ SurfaceBackground {
 
     Loader {
         id: contentLoader
+
         anchors.centerIn: parent
         sourceComponent: root.content
     }

@@ -1,10 +1,12 @@
 pragma Singleton
+
+import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import QtQuick
 
 Singleton {
     id: root 
+
     property string activeSubmap: ""
 
     Connections {

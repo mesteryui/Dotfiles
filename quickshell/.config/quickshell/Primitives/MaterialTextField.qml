@@ -1,7 +1,7 @@
-import QtQuick
 import qs.Core
-import QtQuick.Controls.Material
+import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 
 TextField {
     id: root
@@ -11,6 +11,7 @@ TextField {
     Material.background: Appearance.md3.surface
     Material.foreground: Appearance.md3.on_surface
     Material.containerStyle: Material.Outlined
+
     renderType: Text.QtRendering
     wrapMode: TextEdit.Wrap
     selectedTextColor: Appearance.md3.on_secondary_container

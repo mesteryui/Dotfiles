@@ -1,10 +1,11 @@
-import QtQuick
 import org.kde.kirigami as Kirigami
+import QtQuick
 
 Kirigami.Icon {
     id: root
 
     property real implicitSize: 26
+
     implicitWidth: implicitSize
     implicitHeight: implicitSize
 

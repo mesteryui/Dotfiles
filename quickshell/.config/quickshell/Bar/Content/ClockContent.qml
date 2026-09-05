@@ -1,16 +1,18 @@
-import QtQuick
-import Quickshell
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
+import Quickshell
 
 Item {
     id: root
+
     implicitWidth: clockText.implicitWidth
     implicitHeight: clockText.implicitHeight
     
     SystemClock {
         id: clock
+
         precision: SystemClock.Seconds
     }
     

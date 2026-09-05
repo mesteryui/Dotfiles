@@ -1,7 +1,7 @@
 pragma Singleton
 
-import Quickshell
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
 // --- Hyprsunset ---
@@ -86,6 +86,7 @@ Singleton {
 
     Socket {
         id: socket
+
         path: `${Quickshell.env("XDG_RUNTIME_DIR")}/hypr/${Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")}/.hyprsunset.sock`
 
         onConnectionStateChanged: {
@@ -157,6 +158,7 @@ Singleton {
     // socket.connected=true es idempotente si ya está conectado/conectando.
     Timer {
         id: reconnectTimer
+
         interval: 2000
         repeat: true
         running: true
@@ -165,12 +167,14 @@ Singleton {
                 socket.connected = true;
         }
     }
+
     Component.onCompleted: socket.connected = true
 
     // --- Debounce para sliders (evita saturar la cola al arrastrar) ---
     property int _pendingTemperature: -1
     Timer {
         id: temperatureDebounce
+
         interval: 120
         onTriggered: {
             if (root._pendingTemperature >= 0) {
@@ -187,6 +191,7 @@ Singleton {
     property real _pendingGamma: -1
     Timer {
         id: gammaDebounce
+
         interval: 120
         onTriggered: {
             if (root._pendingGamma >= 0) {
@@ -205,6 +210,7 @@ Singleton {
     // pisarlos.
     Timer {
         id: driftGuardTimer
+
         interval: 30000
         repeat: true
         running: root.available

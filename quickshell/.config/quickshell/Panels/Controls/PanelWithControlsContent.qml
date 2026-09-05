@@ -1,18 +1,18 @@
 // PanelWithControlsContent — Content Material 3 Expressive
 // Toda la UI del panel construida con qs.Primitives.
 pragma ComponentBehavior: Bound
-import Quickshell
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import Quickshell.Networking
 import qs.Core.Services as Services
 import qs.Primitives
 import qs.Core
-import Quickshell.Widgets
 import qs.Panels.Controls.Tabs
 import qs.Features.Notifications
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
+import Quickshell.Networking
+import Quickshell.Widgets
 
 Item {
     id: root
@@ -47,6 +47,7 @@ Item {
     // ── UI Principal (scrolleable) ───────────────────────────────────
     Flickable {
         id: flick
+
         anchors.fill: parent
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -66,6 +67,7 @@ Item {
                 margins: 20
                 topMargin: 24
             }
+
             spacing: 16
 
             // ══ HEADER — Avatar + Usuario + Power button ═════════════════
@@ -80,6 +82,7 @@ Item {
 
                     Rectangle {
                         id: avatarRing
+
                         anchors.fill: parent
                         radius: width / 2
                         color: Appearance.md3.primary_container
@@ -151,6 +154,7 @@ Item {
                         icon: "power_settings_new"
                         size: Appearance.font.pixelSize.large
                         color: powerArea.containsMouse ? Appearance.md3.error : Appearance.md3.on_surface_variant
+
                         Behavior on color {
                             ColorAnimation {
                                 duration: 150
@@ -160,6 +164,7 @@ Item {
 
                     MouseArea {
                         id: powerArea
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -167,6 +172,7 @@ Item {
 
                         Process {
                             id: buttonProc
+
                             command: ["bash", "-c", "qs ipc call ui.powermenu togglePowerMenu"]
                         }
                     }

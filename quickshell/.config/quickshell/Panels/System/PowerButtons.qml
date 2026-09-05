@@ -1,34 +1,40 @@
 pragma ComponentBehavior: Bound
+
+import qs.Core
+import qs.Core.Services as Services
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
-import qs.Core
-import qs.Core.Services as Services
 
 // --- PowerButtons ---
 // Overlay fullscreen de menú de apagado. Extiende PanelWindow directamente
 // (no MenuWindow) porque necesita cubrir toda la pantalla, no un panel pequeño.
 Scope {
     id: root
+
     property bool show: false
     property bool animating: false
+
     IpcHandler {
         target: "ui.powermenu"
+
         function togglePowerMenu(): void {
             root.show = !root.show;
         }
     }
     Timer {
         id: animatingTimer
+
         interval: 200
         onTriggered: root.animating = false
         running: false
     }
     Loader {
         id: loader
+
         active: root.show
         sourceComponent: PanelWindow {
             id: powerButtons
@@ -82,6 +88,7 @@ Scope {
                 color: Qt.alpha(Appearance.md3.surface, 0.6)
 
                 opacity: root.show ? 1 : 0
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 180
@@ -100,6 +107,7 @@ Scope {
 
                 scale: root.show ? 1 : 0.94
                 opacity: root.show ? 1 : 0
+
                 Behavior on scale {
                     NumberAnimation {
                         duration: 200
@@ -125,11 +133,13 @@ Scope {
 
                 RowLayout {
                     id: powerButtonsLayout
+
                     anchors.centerIn: parent
                     spacing: 20
 
                     PowerButton {
                         id: shutdownBtn
+
                         buttonText: Services.I18nService.getTranslation("power.shutdown")
                         buttonIcon: "power_settings_new"
                         command: "systemctl poweroff"
@@ -140,6 +150,7 @@ Scope {
 
                     PowerButton {
                         id: rebootBtn
+
                         buttonText: Services.I18nService.getTranslation("power.reboot")
                         buttonIcon: "restart_alt"
                         command: "systemctl reboot"
@@ -150,6 +161,7 @@ Scope {
 
                     PowerButton {
                         id: suspendBtn
+
                         buttonText: Services.I18nService.getTranslation("power.suspend")
                         buttonIcon: "bedtime"
                         command: "systemctl suspend"
@@ -160,6 +172,7 @@ Scope {
 
                     PowerButton {
                         id: lockBtn
+
                         buttonText: Services.I18nService.getTranslation("power.lock")
                         buttonIcon: "lock"
                         command: "qs ipc call lockscreen lock"
@@ -170,6 +183,7 @@ Scope {
 
                     PowerButton {
                         id: logoutBtn
+
                         buttonText: Services.I18nService.getTranslation("power.logout")
                         buttonIcon: "logout"
                         command: "hyprctl dispatch 'hl.dsp.exit()'"
@@ -187,6 +201,7 @@ Scope {
         property int targetRadiusUnfocused: 20
 
         radius: activeFocus ? targetRadiusFocused : targetRadiusUnfocused
+
         Behavior on radius {
             NumberAnimation {
                 duration: 250

@@ -1,27 +1,35 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Effects
-import Quickshell
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell
 
 Item {
     id: root
+
     anchors.fill: parent
 
     // ── Propiedades / Entradas de Estado ─────────────────────────────
     property bool isPrimary: true
+
     property bool authFailed: false
+
     property bool isAuthenticating: false
+
     property string promptText: ""
+
     property bool isPasswordVisible: false
+
     property bool isFingerprintActive: false
+
     property real mprisPosition: 0
 
     property alias passwordField: passwordInput.passwordField
 
     signal validatePassword(string password)
+
     signal togglePasswordVisibility
 
     function triggerShake() {
@@ -67,11 +75,13 @@ Item {
             id: avatarWrapper
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 8
+
             implicitWidth: 96
             implicitHeight: 96
 
             Rectangle {
                 id: avatarBg
+
                 anchors.fill: parent
                 radius: width / 2
                 color: Appearance.md3.primary_container
@@ -82,6 +92,7 @@ Item {
                     radius: parent.radius
                     border.color: Appearance.md3.primary
                     border.width: 2
+
                     Image {
                         anchors.fill: parent
                         source: Quickshell.env("HOME") + "/.face"
@@ -118,6 +129,7 @@ Item {
             id: passwordInput
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 4
+
             authFailed: root.authFailed
             isAuthenticating: root.isAuthenticating
             promptText: root.promptText
@@ -139,6 +151,7 @@ Item {
 
             StyledText {
                 id: statusText
+
                 anchors.centerIn: parent
                 text: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
                 color: root.authFailed ? Appearance.md3.error : Appearance.md3.tertiary
@@ -162,10 +175,12 @@ Item {
         StyledText {
             id: enterHint
             Layout.alignment: Qt.AlignHCenter
+
             text: I18nService.getTranslation("lockscreen.information", "Pulsa Enter para desbloquear")
             color: Appearance.md3.on_surface_variant
             font.pixelSize: Appearance.font.pixelSize.smallest
             opacity: passwordInput.passwordField.text.length > 0 ? 1 : 0
+
             Behavior on opacity {
                 NumberAnimation {
                     duration: 200
@@ -182,6 +197,7 @@ Item {
         LockScreenMprisCard {
             id: mprisCard
             Layout.alignment: Qt.AlignHCenter
+
             visible: root.isPrimary
             mprisPosition: root.mprisPosition
         }
@@ -189,6 +205,7 @@ Item {
         // 9. Frase / Cita Aleatoria
         StyledText {
             id: quoteText
+
             text: RandomPhraseses.splashPhrase
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: mprisCard.visible ? 8 : 0

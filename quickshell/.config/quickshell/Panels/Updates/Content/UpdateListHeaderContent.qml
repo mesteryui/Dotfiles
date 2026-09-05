@@ -1,7 +1,7 @@
-import QtQuick
 import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
+import QtQuick
 
 // Contenido visual de la cabecera: icono, título y botón refresh.
 // Sin fondos ni radius — eso es responsabilidad de UpdateListHeader.

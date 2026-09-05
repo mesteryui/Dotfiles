@@ -1,15 +1,17 @@
-import Quickshell
-import QtQuick
 import qs.Bar.Content
 import qs.Panels.Battery
+import QtQuick
+import Quickshell
 
 BarItem {
     id: root
+
     clickable: true
     horizontalPadding: 9
 
     LazyLoader {
         id: loader
+
         loading: root.area.hoveredChanged
         component: BatteryPopupWindow {
             id: popupWindow
@@ -24,6 +26,7 @@ BarItem {
 
     BatteryContent {
         id: content
+
         anchors.centerIn: parent
     }
 }

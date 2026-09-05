@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Primitives
 import QtQuick
@@ -40,6 +41,7 @@ Item {
 
     M3Card {
         id: card
+
         anchors.fill: parent
 
         ColumnLayout {
@@ -52,6 +54,7 @@ Item {
                 leftMargin: root.cardPadding
                 rightMargin: root.cardPadding
             }
+
             spacing: 4
 
             // Título de categoría con StyledText de Primitives
@@ -73,6 +76,7 @@ Item {
                     required property var modelData
                     required property int index
                     Layout.fillWidth: true
+
                     bind: modelData
                     highlighted: (root.firstRowIndex + index) === root.activeRowIndex
                     onHoverEntered: root.rowHovered(root.firstRowIndex + index)

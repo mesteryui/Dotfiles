@@ -1,14 +1,15 @@
 // SysInfoTab — Tab de información del sistema estilo Material 3 Expressive (Compacto).
 // Métricas detalladas construidas con Primitives.M3Card, M3ProgressBar, MaterialIcon y StyledText.
 
-import QtQuick
-import QtQuick.Layouts
 import qs.Primitives
 import qs.Core.Services as Services
 import qs.Core
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: root
+
     implicitWidth: mainColumn.implicitWidth
     implicitHeight: mainColumn.implicitHeight
 
@@ -48,6 +49,7 @@ Item {
             left: parent.left
             right: parent.right
         }
+
         spacing: 12 // Reducido de 16 a 12
 
         // ══ CPU HERO CARD ═════════════════════════════════════════
@@ -104,6 +106,7 @@ Item {
 
                             StyledText {
                                 id: tempLabel
+
                                 anchors.centerIn: parent
                                 text: (Services.SystemInfoService.cpuTemp ?? 0) + "°C"
                                 font.pixelSize: Appearance.font.pixelSize.smallest
@@ -122,6 +125,7 @@ Item {
 
                             StyledText {
                                 id: coresLabel
+
                                 anchors.centerIn: parent
                                 text: (Services.SystemInfoService.cpuCores ?? 0) + " " + Services.I18nService.getTranslation("panel.cores", "cores")
                                 font.pixelSize: Appearance.font.pixelSize.smallest
