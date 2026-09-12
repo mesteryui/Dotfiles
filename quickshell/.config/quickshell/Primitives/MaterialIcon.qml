@@ -15,7 +15,7 @@ StyledText {
     text: root.iconName
     font {
         hintingPreference: Font.PreferNoHinting
-        family: Appearance.font.iconMaterial
+        family: Appearance?.font.iconMaterial
         pixelSize: size
         variableAxes: {
             "FILL": truncatedFill,

@@ -19,7 +19,9 @@ Variants {
 
             screen: delegateScope.modelData
 
-            readonly property bool isFloating: Services.ConfigService.configs.bar.barType === "floating"
+            readonly property var barType: Services.GameMode.enabled ? "no_floating" : Services.ConfigService.configs.bar.barType
+
+            readonly property bool isFloating: barType === "floating"
 
             readonly property bool isTop: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == ""
 

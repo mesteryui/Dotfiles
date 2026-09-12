@@ -273,11 +273,11 @@ Item {
                 // No Molestar
                 ControlToggle {
                     Layout.fillWidth: true
-                    iconName: NotificationManager.dnd ? "bedtime" : "notifications"
+                    iconName: Services.NotificationService.dnd ? "bedtime" : "notifications"
                     label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
-                    stateText: NotificationManager.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
-                    active: NotificationManager.dnd
-                    onToggled: NotificationManager.toggleDnd()
+                    stateText: Services.NotificationService.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
+                    active: Services.NotificationService.dnd
+                    onToggled: Services.NotificationService.toggleDnd()
                 }
                 ControlToggle {
                     Layout.fillWidth: true

@@ -10,7 +10,7 @@ FocusScope {
 
     anchors.fill: parent
     focus: true
-    Keys.forwardTo: [content.passwordField]
+    //Keys.forwardTo: [content.passwordField]
 
     // ── Contexto de Pantalla (Multi-monitor) ──────────────────────
     property ShellScreen screen: null

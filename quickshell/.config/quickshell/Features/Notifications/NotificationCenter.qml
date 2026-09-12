@@ -36,7 +36,7 @@ PanelWindow {
         windows: [root]
         active: root.visible
         onCleared: Qt.callLater(() => {
-            NotificationManager.centerOpen = false;
+            NotificationService.centerOpen = false;
         })
     }
 
@@ -67,7 +67,7 @@ PanelWindow {
 
     Shortcut {
         sequence: "d"
-        enabled: root.visible && root.historyModel.count > 0
+        enabled: root.visible && (root.historyModel ? root.historyModel.count : 0) > 0
         onActivated: root.historyModel.clear()
     }
 
@@ -75,13 +75,13 @@ PanelWindow {
     Shortcut {
         sequence: "n"
         enabled: root.visible
-        onActivated: NotificationManager.toggleDnd()
+        onActivated: NotificationService.toggleDnd()
     }
 
     // Borrar la notificación actualmente seleccionada con 'Delete' o 'Supr'
     Shortcut {
         sequence: "Delete"
-        enabled: root.visible && root.historyModel.count > 0 && historyList.currentIndex >= 0
+        enabled: root.visible && (root.historyModel ? root.historyModel.count : 0) > 0 && historyList.currentIndex >= 0
         onActivated: root.historyModel.remove(historyList.currentIndex)
     }
 
@@ -120,14 +120,14 @@ PanelWindow {
                     implicitWidth: 32
                     implicitHeight: 32
 
-                    readonly property int dndShape: NotificationManager.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+                    readonly property int dndShape: NotificationService.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
 
                     MaterialShape {
                         id: dndContainer
 
                         anchors.fill: parent
                         shape: dndToggle.dndShape
-                        color: NotificationManager.dnd ? Appearance.md3.primary_container : "transparent"
+                        color: NotificationService.dnd ? Appearance.md3.primary_container : "transparent"
                         animationDuration: 300
 
                         Behavior on color {
@@ -157,9 +157,9 @@ PanelWindow {
                         id: dndIcon
 
                         anchors.centerIn: parent
-                        text: NotificationManager.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
+                        text: NotificationService.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
                         size: Appearance.font.pixelSize.large
-                        color: NotificationManager.dnd ? Appearance.md3.error : Appearance.md3.primary
+                        color: NotificationService.dnd ? Appearance.md3.error : Appearance.md3.primary
                     }
 
                     MouseArea {
@@ -170,13 +170,13 @@ PanelWindow {
                         onExited: dndStateLayer.opacity = 0
                         onPressed: dndStateLayer.opacity = 0.12
                         onReleased: dndStateLayer.opacity = containsMouse ? 0.08 : 0
-                        onClicked: NotificationManager.toggleDnd()
+                        onClicked: NotificationService.toggleDnd()
                     }
                 }
 
                 // --- Clear all: enlace de texto discreto, tipo cabecera GNOME ---
                 Item {
-                    visible: root.historyModel.count > 0
+                    visible: (root.historyModel ? root.historyModel.count : 0) > 0
                     implicitWidth: clearAllText.implicitWidth + 16
                     implicitHeight: 32
 
@@ -223,7 +223,7 @@ PanelWindow {
                 Layout.preferredHeight: 1
                 color: Appearance.md3.outline_variant
                 opacity: 0.5
-                visible: root.historyModel.count > 0
+                visible: (root.historyModel ? root.historyModel.count : 0) > 0
             }
 
             // --- Lista scrollable con altura acotada ---
@@ -232,7 +232,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(contentHeight, root.maxListHeight)
 
-                visible: root.historyModel.count > 0
+                visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 clip: true
                 focus: true
                 spacing: 8
@@ -259,7 +259,7 @@ PanelWindow {
                 Layout.topMargin: 24
                 Layout.bottomMargin: 24
                 Layout.alignment: Qt.AlignHCenter
-                visible: root.historyModel.count === 0
+                visible: (root.historyModel ? root.historyModel.count : 0) === 0
                 spacing: 8
 
                 // Icono del estado vacío: MaterialShape con sombra + respiración
@@ -303,7 +303,7 @@ PanelWindow {
                     // está visible
                     Timer {
                         interval: 1600
-                        running: root.historyModel.count === 0
+                        running: (root.historyModel ? root.historyModel.count : 0) === 0
                         repeat: true
                         onTriggered: emptyStateShape.shape = emptyStateShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
                     }

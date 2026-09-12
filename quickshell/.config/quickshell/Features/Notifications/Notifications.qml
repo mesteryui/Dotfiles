@@ -1,15 +1,16 @@
 import QtQuick
 import Quickshell
+import qs.Core.Services
 
 Scope {
     id: root
 
     NotificationCenter {
-        visible: NotificationManager.centerOpen
-        historyModel: NotificationManager.history
+        visible: NotificationService.centerOpen
+        historyModel: NotificationService.history
     }
 
     NotificationPopups {
-        trackedNotifications: NotificationManager.server.trackedNotifications
+        trackedNotifications: NotificationService.server.trackedNotifications
     }
 }

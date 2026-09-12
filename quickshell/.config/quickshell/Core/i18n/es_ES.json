@@ -84,5 +84,95 @@
     "authenticationRequired": "Autenticacion Requerida",
     "password": "Contraseña",
     "input": "Entrada"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "common": {
+      "activated": "Activado",
+      "deactivated": "Desactivado"
+    },
+    "tabs": {
+      "interface": {
+        "title": "Interfaz",
+        "description": "Apariencia"
+      },
+      "screen": {
+        "title": "Pantalla",
+        "description": "Bloqueo y luz"
+      },
+      "environment": {
+        "title": "Entorno",
+        "description": "Clima y avisos"
+      },
+      "system": {
+        "title": "Sistema",
+        "description": "Idioma y updates"
+      }
+    },
+    "interface": {
+      "appearance": {
+        "title": "Apariencia",
+        "dark_mode": "Modo oscuro",
+        "color_scheme": "Esquema de color (matugen)",
+        "font_sans": "Fuente principal (sans)",
+        "font_mono": "Fuente monoespaciada",
+        "font_reading": "Fuente de lectura",
+        "font_expressive": "Fuente expresiva"
+      },
+      "bar": {
+        "title": "Barra",
+        "position": "Posición",
+        "position_top": "Arriba",
+        "position_bottom": "Abajo",
+        "height": "Altura",
+        "workspace_style": "Estilo de espacios de trabajo",
+        "workspace_style_numbers": "Números",
+        "workspace_style_kanji": "Kanji",
+        "workspace_style_circles": "Círculos",
+        "type": "Tipo de barra",
+        "type_floating": "Flotante",
+        "type_full_hug": "Completa (Full hug)",
+        "type_partial_hug": "Parcial (Partial hug)",
+        "type_no_floating": "No flotante"
+      }
+    },
+    "screen": {
+      "lockscreen": {
+        "title": "Pantalla de bloqueo",
+        "use_wallpaper": "Usar fondo de pantalla",
+        "blur_level": "Nivel de desenfoque"
+      },
+      "night_light": {
+        "title": "Luz nocturna",
+        "temperature": "Temperatura de color",
+        "gamma": "Gamma"
+      }
+    },
+    "environment": {
+      "weather": {
+        "title": "Clima",
+        "auto_location": "Ubicación automática",
+        "city": "Ciudad",
+        "refresh_rate": "Frecuencia de actualización"
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "timeout": "Tiempo de espera"
+      }
+    },
+    "system": {
+      "language": {
+        "title": "Idioma",
+        "selection": "Selección de idiomas",
+        "es": "Español de España",
+        "en": "Inglés de EE. UU.",
+        "eo": "Esperanto"
+      },
+      "updates": {
+        "title": "Actualizaciones",
+        "check_frequency": "Frecuencia de comprobación",
+        "command": "Comando"
+      }
+    }
   }
 }

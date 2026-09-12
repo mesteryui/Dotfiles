@@ -28,7 +28,7 @@ Item {
 
     readonly property bool hasInlineReply: root.notification.hasInlineReply ?? false
 
-    visible: !NotificationManager.dnd || isCritical
+    visible: !Services.NotificationService.dnd || isCritical
 
     // ── Temporizador de Expiración (se pausa al hacer hover) ──
     Timer {

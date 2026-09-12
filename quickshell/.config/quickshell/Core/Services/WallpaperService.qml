@@ -4,6 +4,7 @@ import QtQuick
 import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 import Quickshell
 import Quickshell.Io
+import qs.Core.Modules
 
 Singleton {
     id: root
@@ -11,7 +12,7 @@ Singleton {
     property alias wallpaperList: folderModel
     property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers"
 
-    signal changed
+    signal changed(newWallpaper: string)
 
     readonly property list<string> extensions: [ // TODO: add videos
         "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
@@ -41,7 +42,22 @@ Singleton {
         }
         applyProcess.command = ["awww", "img", file, "--transition-type", "center"];
         applyProcess.running = true;
-        ThemeApplier.applyTheme(file);
-        root.changed();
+        Persistent.persistence.currentWallpaper = file;
+        root.changed(file);
+    }
+
+    // IPC: qs ipc call wallpaper set /ruta/absoluta/imagen.png
+    IpcHandler {
+        target: "wallpaper"
+
+        function set(path: string): void {
+            root._apply(path);
+        }
+        function restore() {
+            if (applyProcess.running)
+                applyProcess.running = false;
+            applyProcess.command = ["awww", "img", Persistent.persistence.currentWallpaper, "--transition-type", "center"];
+            applyProcess.running = true;
+        }
     }
 }

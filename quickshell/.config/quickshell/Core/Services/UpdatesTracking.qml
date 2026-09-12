@@ -21,6 +21,7 @@ Singleton {
         reloadableId: "updatePersistence"
 
         property int updateCount: 0
+        
     }
 
     Timer {

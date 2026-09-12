@@ -77,5 +77,95 @@
     "search": "Serĉi klavkombinojn…",
     "no_match": "Neniu klavkombino kongruas",
     "no_binds": "Neniuj dokumentitaj klavkombinoj trovigu"
+  },
+  "settings": {
+    "title": "Agordoj",
+    "common": {
+      "activated": "Aktivigita",
+      "deactivated": "Malaktivigita"
+    },
+    "tabs": {
+      "interface": {
+        "title": "Interfaco",
+        "description": "Aspekto"
+      },
+      "screen": {
+        "title": "Ekrano",
+        "description": "Ŝloso kaj lumo"
+      },
+      "environment": {
+        "title": "Medio",
+        "description": "Vetero kaj sciigoj"
+      },
+      "system": {
+        "title": "Sistemo",
+        "description": "Lingvo kaj ĝisdatigoj"
+      }
+    },
+    "interface": {
+      "appearance": {
+        "title": "Aspekto",
+        "dark_mode": "Malhela reĝimo",
+        "color_scheme": "Kolorskemo (matugen)",
+        "font_sans": "Ĉefa tiparo (sans)",
+        "font_mono": "Egallarĝa tiparo",
+        "font_reading": "Legotoparo",
+        "font_expressive": "Esprima tiparo"
+      },
+      "bar": {
+        "title": "Breto",
+        "position": "Pozicio",
+        "position_top": "Supre",
+        "position_bottom": "Malsupre",
+        "height": "Alteco",
+        "workspace_style": "Laborspaca stilo",
+        "workspace_style_numbers": "Nombroj",
+        "workspace_style_kanji": "Kanji",
+        "workspace_style_circles": "Cirkloj",
+        "type": "Bretspeco",
+        "type_floating": "Flosanta",
+        "type_full_hug": "Plena brakumo",
+        "type_partial_hug": "Parta brakumo",
+        "type_no_floating": "Neflosanta"
+      }
+    },
+    "screen": {
+      "lockscreen": {
+        "title": "Ŝlosekrano",
+        "use_wallpaper": "Uzi tapeton",
+        "blur_level": "Malklariga nivelo"
+      },
+      "night_light": {
+        "title": "Nokta lumo",
+        "temperature": "Kolortemperaturo",
+        "gamma": "Gama"
+      }
+    },
+    "environment": {
+      "weather": {
+        "title": "Vetero",
+        "auto_location": "Aŭtomata loko",
+        "city": "Urbo",
+        "refresh_rate": "Ĝisdatiga ofteco"
+      },
+      "notifications": {
+        "title": "Sciigoj",
+        "timeout": "Limtempo"
+      }
+    },
+    "system": {
+      "language": {
+        "title": "Lingvo",
+        "selection": "Lingvelekto",
+        "es": "Hispana",
+        "en": "Angla",
+        "eo": "Esperanto"
+      },
+      "updates": {
+        "title": "Ĝisdatigoj",
+        "check_frequency": "Kontrolfrekvenco",
+        "command": "Komando"
+      }
+    }
   }
 }

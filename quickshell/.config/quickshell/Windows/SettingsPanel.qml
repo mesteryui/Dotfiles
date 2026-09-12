@@ -6,28 +6,18 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import Quickshell.Wayland
 
-ApplicationWindow {
+FloatingWindow {
     id: root
 
-    flags: Qt.FramelessWindowHint
     color: "transparent"
 
-    width: 460
-    height: 720
+    implicitWidth: 460
+    implicitHeight: 720
     title: "ShinroShell Settings"
     visible: false
 
-    // Posicionamiento dinámico para ApplicationWindow
-    y: visible ? 30 : -height - 40
-
-    Behavior on y {
-        NumberAnimation {
-            duration: 250
-            easing.type: Easing.OutCubic
-        }
-    }
+    onClosed: root.visible = false
 
     // ── IPC ──────────────────────────────────────────────────────────
     // qs ipc call ui.settings toggle
@@ -59,7 +49,7 @@ ApplicationWindow {
         source: bg
         anchors.fill: bg
         shadowEnabled: true
-        shadowColor: Appearance.md3.shadow ?? "#000000"
+        shadowColor: Appearance.md3.shadow
         shadowOpacity: 0.20
         shadowBlur: 0.8
         shadowVerticalOffset: 4

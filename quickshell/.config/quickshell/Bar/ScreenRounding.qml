@@ -11,34 +11,32 @@ Variants {
 
     model: Quickshell.screens
 
-    readonly property var isFloating: ConfigService.configs.bar.barType === "full_hug"
+    // Propiedad visual puente: dictamina el estado actual
+    readonly property string activeBarType: GameMode.enabled ? "no_floating" : ConfigService.configs.bar.barType
 
-    readonly property var isPartial: ConfigService.configs.bar.barType === "partial_hug"
+    // Ahora derivan del estado puente, respetando el Modo Juego
+    readonly property bool isFloating: activeBarType === "full_hug"
+    readonly property bool isPartial: activeBarType === "partial_hug"
+
     delegate: Scope {
         id: screenScope
 
         required property ShellScreen modelData
 
         // --- VARIABLES DE CONFIGURACIÓN ---
-        property int cornerRadius: 29
-        property int borderThickness: 12
+        property int cornerRadius: 20
+        property int borderThickness: 10
 
         // --- INTERRUPTORES PARA LA BARRA ---
-        // Cambia estos valores a 'false' en el lado donde tengas tu barra
-        // para que no se dibuje la línea conectora en esa zona.
-        property bool drawTopLine: ConfigService.configs.bar.position !== "top"  // Apagado (asumiendo que hay una barra arriba)
-        property bool drawBottomLine: ConfigService.configs.bar.position !== "bottom" // Encendido
+        property bool drawTopLine: ConfigService.configs.bar.position !== "top"
+        property bool drawBottomLine: ConfigService.configs.bar.position !== "bottom"
 
-        // (Opcional) Si tampoco quieres que se dibujen las esquinas redondas
-        // donde está la barra, puedes usar estas variables en las esquinas:
         property bool drawTopCorners: true
         property bool drawBottomCorners: true
 
         // ==========================================
         // 1. ESQUINAS
         // ==========================================
-        // Las 4 esquinas comparten el mismo trazado (ver ScreenCorner.qml);
-        // solo cambia qué borde/esquina de la pantalla ocupan y su espejo.
 
         // --- ESQUINA SUPERIOR IZQUIERDA ---
         PanelWindow {
@@ -51,7 +49,8 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners && root.isFloating || root.isPartial // Se oculta si no quieres esquinas arriba
+            // full_hug: siempre. partial_hug: solo si la barra está arriba. no_floating: nunca.
+            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "top"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -71,7 +70,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners && root.isFloating || root.isPartial
+            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "top"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -92,7 +91,8 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawBottomCorners && root.isFloating
+            // full_hug: siempre. partial_hug: solo si la barra está abajo. no_floating: nunca.
+            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "bottom"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -113,8 +113,7 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-
-            visible: screenScope.drawBottomCorners && root.isFloating
+            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "bottom"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -178,8 +177,6 @@ Variants {
             }
             implicitHeight: screenScope.borderThickness
             color: "transparent"
-
-            // Aquí usamos la variable para mostrar u ocultar la línea
             visible: screenScope.drawTopLine && root.isFloating
 
             Rectangle {
@@ -199,8 +196,6 @@ Variants {
             }
             implicitHeight: screenScope.borderThickness
             color: "transparent"
-
-            // Aquí usamos la variable para mostrar u ocultar la línea
             visible: screenScope.drawBottomLine && root.isFloating
 
             Rectangle {

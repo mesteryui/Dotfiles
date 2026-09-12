@@ -6,7 +6,5 @@ PanelWindow {
     WlrLayershell.exclusionMode: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:wallhaven"
 
-    WallhavenWindowContent {
-        
-    }
+    WallhavenWindowContent {}
 }

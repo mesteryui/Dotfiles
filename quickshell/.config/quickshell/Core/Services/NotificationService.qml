@@ -1,99 +1,132 @@
 pragma Singleton
 
 import QtQuick
+import QtQml
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 Singleton {
     id: root
 
-    PersistentProperties {
-        id: storage
+    property bool centerOpen: false
+    property alias dnd: props.dnd
 
-        property var historyData: []
-        property bool dnd: false
+    PersistentProperties {
+        id: props
+
+        property bool dnd
+
+        
 
         reloadableId: "notifications"
     }
 
-    // 1. FORMA CORRECTA: Exponemos los modelos al exterior usando 'alias'
-    property alias historyModel: _historyModel
+    property ListModel historyModel: ListModel {}
+    readonly property alias history: root.historyModel
 
-    property alias activeModel: _activeModel
+    readonly property alias server: notificationServer
 
-    // 2. Declaramos los ListModel como objetos hijos internos
-    ListModel {
-        id: _historyModel
-    }
-    ListModel {
-        id: _activeModel
-    }
+    // Contador monotónico para historyId. No usamos n.id como clave porque
+    // el spec de notificaciones de escritorio permite que una app reutilice
+    // el mismo id para reemplazar una notificación anterior — dos entradas
+    // de historial distintas podrían terminar compartiendo id.
+    property int historyIdCounter: 0
 
-    Component.onCompleted: {
-        // CORRECCIÓN 1: Forzamos a que siempre sea un array
-        let initialData = storage.historyData || [];
-        for (let i = 0; i < initialData.length; i++) {
-            _historyModel.append(initialData[i]);
-        }
-    }
+    // { historyId, notification } por cada entrada que sigue viva en el
+    // historial. Es lo que mantiene el objeto Notification (y por lo tanto
+    // su .image / el handle image://qsimage/...) sin destruirse mientras
+    // siga apareciendo en historyModel. Ver Instantiator más abajo.
+    property var retainedForHistory: []
 
-    function addNotification(notification) {
-        if (storage.dnd && notification.urgency !== NotificationUrgency.Critical)
-            return;
-
-        const timestamp = new Date().toLocaleTimeString();
-
-        // 1. Guardar en el historial
-        const entry = {
-            summary: notification.summary ?? "Sin título",
-            body: notification.body ?? "",
-            appName: notification.appName ?? "Sistema",
-            icon: notification.appIcon ?? notification.image ?? "",
-            time: timestamp,
-            urgency: notification.urgency
-        };
-        _historyModel.insert(0, entry);
-
-        // CORRECCIÓN 2: Extraemos los datos a una variable segura con fallback a []
-        let currentData = storage.historyData || [];
-        let newData = [entry];
-        // Ahora currentData.length es 100% seguro y nunca será undefined
-        let maxLimit = Math.min(currentData.length, 49);
-        for (let i = 0; i < maxLimit; i++) {
-            newData.push(currentData[i]);
-        }
-        storage.historyData = newData;
-
-        // 2. Inyectar el objeto VIVO en el modelo activo
-        _activeModel.insert(0, {
-            "notifObj": notification
-        });
-    }
-
-    function disposeNotification(id) {
-        // Buscamos y eliminamos del ListModel activo de forma segura
-        for (let i = 0; i < _activeModel.count; i++) {
-            let item = _activeModel.get(i);
-            if (item && item.notifObj && item.notifObj.id === id) {
-                _activeModel.remove(i, 1);
+    // Llamar desde el (×) de NotificationHistoryCard en vez de tocar
+    // historyModel directamente — así soltamos también el RetainableLock.
+    function removeFromHistory(historyId) {
+        for (let i = 0; i < root.historyModel.count; i++) {
+            if (root.historyModel.get(i).historyId === historyId) {
+                root.historyModel.remove(i);
                 break;
             }
         }
+        root.retainedForHistory = root.retainedForHistory.filter(entry => entry.historyId !== historyId);
     }
 
-    function clearHistory() {
-        _historyModel.clear();
-        storage.historyData = [];
+    function toggleDnd() {
+        props.dnd = !props.dnd;
     }
 
     NotificationServer {
-        id: server
+        id: notificationServer
 
-        keepOnReload: true
-        bodySupported: true
         actionsSupported: true
+        bodySupported: true
         imageSupported: true
-        persistenceSupported: true
-        onNotification: n => root.addNotification(n)
+        actionIconsSupported: true
+
+        onNotification: n => {
+            const historyId = root.historyIdCounter++;
+
+            let resolvedIcon = n.image;
+            if ((!resolvedIcon || resolvedIcon === "") && n.appIcon && n.appIcon !== "") {
+                resolvedIcon = Quickshell.iconPath(n.appIcon, "image-missing");
+            }
+
+            root.historyModel.insert(0, {
+                historyId: historyId,
+                summary: n.summary,
+                body: n.body,
+                appName: n.appName,
+                urgency: n.urgency,
+                time: Qt.formatDateTime(new Date(), "HH:mm"),
+                icon: resolvedIcon || ""
+            });
+
+            // Retenemos el objeto vivo mientras siga en el historial: sin esto,
+            // Quickshell destruye la notificación al descartarse/expirar y el
+            // handle image://qsimage/... detrás de n.image queda huérfano
+            // (el WARN "unknown handle" que veías en consola).
+            root.retainedForHistory = [...root.retainedForHistory,
+                {
+                    historyId: historyId,
+                    notification: n
+                }
+            ];
+
+            n.tracked = true;
+        }
+    }
+
+    // Un RetainableLock vivo por cada notificación retenida para el historial.
+    // Al sacar una entrada de retainedForHistory (removeFromHistory), el
+    // Instantiator destruye su delegate y el lock se libera solo — así no
+    // hay que gestionar lock()/unlock() a mano ni arriesgarse a un leak.
+    Instantiator {
+        model: root.retainedForHistory
+        delegate: RetainableLock {
+            required property var modelData
+
+            object: modelData.notification
+            locked: true
+        }
+    }
+
+    IpcHandler {
+        target: "notifications"
+
+        function toggle(): void {
+            root.centerOpen = !root.centerOpen;
+        }
+
+        function show(): void {
+            root.centerOpen = true;
+        }
+
+        function hide(): void {
+            root.centerOpen = false;
+        }
+
+        function dndToggle() {
+            root.toggleDnd();
+        }
     }
 }

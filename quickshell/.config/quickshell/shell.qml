@@ -14,6 +14,7 @@ import qs.Panels.Wallpaper
 import qs.Features.Notifications
 import qs.Lockscreen
 import qs.Bar
+import qs.Panels.Volume
 import qs.Features.CheatSheet
 import qs.Windows
 import QtQuick
@@ -29,19 +30,17 @@ ShellRoot {
     Component.onCompleted: {
         ConfigService.load();
         KeyboardThings.load();
+        ThemeApplier;
     }
 
     Switcher {}
 
     SettingsPanel {}
     PanelWithControls {}
+    VolumeCenter {}
 
-    // OSDs: Carga inmediata (pequeños y críticos)
-    BrightnessOSD {}
-    VolumeOSD {}
-    SpecialKeysOSD {}
-    BatteryOSD {}
-    GameModeOSD {}
+    // Cargador de OSDs
+    OsdManager {}
 
     WallpaperMenu {}
 

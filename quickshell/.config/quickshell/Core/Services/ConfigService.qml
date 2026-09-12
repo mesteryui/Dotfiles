@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Core.Modules
 
 Singleton {
     id: root
@@ -16,10 +17,10 @@ Singleton {
     FileView {
         id: fileManagment
 
-        path: Quickshell.shellPath("config.json")
+        path: Quickshell.env("XDG_CONFIG_HOME") + "/shinro/config.json" //Quickshell.shellPath("config.json")
         blockLoading: true
         watchChanges: true
-        printErrors: false
+        printErrors: true
         atomicWrites: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()

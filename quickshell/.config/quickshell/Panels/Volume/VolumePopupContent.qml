@@ -208,5 +208,81 @@ Item {
             onMoved: val => Services.AudioService.setMicVolume(val)
             onIconClicked: Services.AudioService.toggleMicMuted()
         }
+
+        // --- Selector de micrófono ---
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 4
+
+            Repeater {
+                model: Services.AudioService.sources
+
+                delegate: Rectangle {
+                    id: sourceRow
+
+                    required property var modelData
+
+                    readonly property bool selected: Services.AudioService.source === sourceRow.modelData
+
+                    Layout.fillWidth: true
+                    implicitHeight: 40
+                    radius: Appearance.shape.small
+                    color: sourceRow.selected ? Appearance.md3.secondary_container : "transparent"
+
+                    Rectangle {
+                        id: sourceStateLayer
+
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Appearance.md3.on_surface
+                        opacity: 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 10
+
+                        MaterialIcon {
+                            icon: "mic"
+                            size: Appearance.font.pixelSize.large
+                            color: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: Services.AudioService.deviceLabel(sourceRow.modelData)
+                            elide: Text.ElideRight
+                            color: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        }
+
+                        MaterialIcon {
+                            visible: sourceRow.selected
+                            icon: "check"
+                            size: Appearance.font.pixelSize.large
+                            color: Appearance.md3.on_secondary_container
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: sourceStateLayer.opacity = 0.08
+                        onExited: sourceStateLayer.opacity = 0
+                        onPressed: sourceStateLayer.opacity = 0.12
+                        onReleased: sourceStateLayer.opacity = containsMouse ? 0.08 : 0
+                        onClicked: Services.AudioService.setSource(sourceRow.modelData)
+                    }
+                }
+            }
+        }
     }
 }

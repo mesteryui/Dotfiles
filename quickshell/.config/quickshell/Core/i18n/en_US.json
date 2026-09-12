@@ -89,5 +89,95 @@
     "authenticationRequired": "Authentication Required",
     "password": "Password",
     "input": "Input"
+  },
+  "settings": {
+    "title": "Settings",
+    "common": {
+      "activated": "Activated",
+      "deactivated": "Deactivated"
+    },
+    "tabs": {
+      "interface": {
+        "title": "Interface",
+        "description": "Appearance"
+      },
+      "screen": {
+        "title": "Screen",
+        "description": "Lock and light"
+      },
+      "environment": {
+        "title": "Environment",
+        "description": "Weather and notices"
+      },
+      "system": {
+        "title": "System",
+        "description": "Language and updates"
+      }
+    },
+    "interface": {
+      "appearance": {
+        "title": "Appearance",
+        "dark_mode": "Dark mode",
+        "color_scheme": "Color scheme (matugen)",
+        "font_sans": "Main font (sans)",
+        "font_mono": "Monospace font",
+        "font_reading": "Reading font",
+        "font_expressive": "Expressive font"
+      },
+      "bar": {
+        "title": "Bar",
+        "position": "Position",
+        "position_top": "Top",
+        "position_bottom": "Bottom",
+        "height": "Height",
+        "workspace_style": "Workspace style",
+        "workspace_style_numbers": "Numbers",
+        "workspace_style_kanji": "Kanji",
+        "workspace_style_circles": "Circles",
+        "type": "Bar type",
+        "type_floating": "Floating",
+        "type_full_hug": "Full hug",
+        "type_partial_hug": "Partial hug",
+        "type_no_floating": "Non-floating"
+      }
+    },
+    "screen": {
+      "lockscreen": {
+        "title": "Lock screen",
+        "use_wallpaper": "Use wallpaper",
+        "blur_level": "Blur level"
+      },
+      "night_light": {
+        "title": "Night light",
+        "temperature": "Color temperature",
+        "gamma": "Gamma"
+      }
+    },
+    "environment": {
+      "weather": {
+        "title": "Weather",
+        "auto_location": "Auto location",
+        "city": "City",
+        "refresh_rate": "Refresh rate"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "timeout": "Timeout"
+      }
+    },
+    "system": {
+      "language": {
+        "title": "Language",
+        "selection": "Language selection",
+        "es": "Spanish (Spain)",
+        "en": "English (US)",
+        "eo": "Esperanto"
+      },
+      "updates": {
+        "title": "Updates",
+        "check_frequency": "Check frequency",
+        "command": "Command"
+      }
+    }
   }
 }

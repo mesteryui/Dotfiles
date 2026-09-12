@@ -37,7 +37,41 @@ Scope {
         sourceComponent: PanelWindow {
             id: root
 
-            implicitWidth: 620
+            // Ancho de cada botón de ventana (140) + el spacing que ya lleva
+            // dentro el delegado (8). Debe coincidir con el cálculo del delegado.
+            readonly property int itemWidth: 148
+            readonly property int listMargins: 12
+            // Máximo de botones que se muestran a la vez sin crecer más el
+            // panel; a partir de aquí la lista pasa a navegarse (flechas,
+            // Tab, rueda) en vez de seguir ensanchando la ventana.
+            readonly property int maxVisibleItems: 4
+
+            // Misma lógica que isRealWindow del delegado, centralizada aquí para
+            // poder contar cuántos botones "reales" va a pintar el ListView.
+            function isRealToplevel(toplevel) {
+                if (!toplevel)
+                    return false;
+
+                const appId = (toplevel.wayland ? toplevel.wayland.appId : "") || toplevel.windowClass || toplevel.initialClass;
+                return appId !== undefined && appId !== "";
+            }
+
+            readonly property int realWindowCount: {
+                let count = 0;
+                const list = Hyprland.toplevels.values;
+                for (let i = 0; i < list.length; i++) {
+                    if (isRealToplevel(list[i]))
+                        count++;
+                }
+                return count;
+            }
+
+            // Con 0 ventanas se queda en el ancho de un único hueco (no
+            // colapsa a 0). Crece hasta maxVisibleItems; a partir de ahí el
+            // ancho se queda fijo y el ListView es quien se desplaza.
+            readonly property int visibleItemCount: Math.min(Math.max(realWindowCount, 1), maxVisibleItems)
+
+            implicitWidth: Math.min(screen.width * 0.9, listMargins * 2 + visibleItemCount * itemWidth)
             implicitHeight: 180
             color: "transparent"
 
