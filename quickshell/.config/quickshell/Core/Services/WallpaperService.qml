@@ -10,7 +10,7 @@ Singleton {
     id: root
 
     property alias wallpaperList: folderModel
-    property string wallpaperDir: Quickshell.env("HOME") + "/Imágenes/Wallpapers"
+    property string wallpaperDir: Directories.pictures + "/Wallpapers"
 
     signal changed(newWallpaper: string)
 

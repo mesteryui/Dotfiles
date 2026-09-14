@@ -17,7 +17,7 @@ Singleton {
     FileView {
         id: fileManagment
 
-        path: Quickshell.env("XDG_CONFIG_HOME") + "/shinro/config.json" //Quickshell.shellPath("config.json")
+        path: Directories.config + "/shinro/config.json" //Quickshell.shellPath("config.json")
         blockLoading: true
         watchChanges: true
         printErrors: true
