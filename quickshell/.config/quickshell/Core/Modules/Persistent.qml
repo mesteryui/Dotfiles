@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Core.Modules
 
 Singleton {
     id: root
@@ -34,7 +35,7 @@ Singleton {
         id: fileManagment
 
         watchChanges: true
-        path: Quickshell.env("XDG_STATE_HOME") + "/quickshell/persistence.json"
+        path: Directories.state + "/quickshell/persistence.json"
         onFileChanged: fileReloadTimer.restart()
         onAdapterUpdated: fileWriteTimer.restart()
         onLoaded: root.ready = true

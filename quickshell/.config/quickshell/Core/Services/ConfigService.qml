@@ -28,7 +28,7 @@ Singleton {
         JsonAdapter {
             id: jsonAdapter
 
-            property string language: Qt.locale().name
+            property string language: "auto"
             property Bar bar: Bar {}
             property Weather weather: Weather {}
             property Notifications notifications: Notifications {}

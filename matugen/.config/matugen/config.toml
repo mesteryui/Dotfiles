@@ -1,20 +1,28 @@
 [config]
-[templates.snappy-switcher]
-input_path = './templates/snappy-switcher.ini'
-output_path = '~/.config/snappy-switcher/themes/Matugen.ini'
-#post_hook = 'killall -9 snappy-switcher && snappy-switcher --daemon & disown'
+[templates.thunar]
+input_path = './templates/Thunar.css'
+output_path = "~/.config/gtk-3.0/thunar.css"
 
 [templates.quickshell]
 input_path = './templates/quickshell.json'
 output_path = '~/.local/state/quickshell/generated/colors.json'
 
-[templates.kvantum_kvconfig]
-input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.kvconfig'
-output_path = '/home/oscar/.config/Kvantum/matugen/matugen.kvconfig'
+[templates.cliamp]
+input_path = './templates/cliamp.toml'
+output_path = "~/.config/cliamp/themes/matugen.toml"
 
-[templates.kvantum_svg]
-input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.svg'
-output_path = '/home/oscar/.config/Kvantum/matugen/matugen.svg'
+#[templates.kvantum_kvconfig]
+#input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.kvconfig'
+#output_path = '/home/oscar/.config/Kvantum/matugen/matugen.kvconfig'
+
+#[templates.kvantum_svg]
+#input_path = '/home/oscar/.config/matugen/templates/kvantum-colors.svg'
+#output_path = '/home/oscar/.config/Kvantum/matugen/matugen.svg'
+
+[templates.neovim]
+input_path = "./templates/nvim-colors.json"
+output_path = "~/.config/matugen/themes/nvim-colors.json"
+post_hook = "pkill -SIGUSR1 nvim"
 
 [templates.wlogout]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
@@ -54,7 +62,7 @@ colors_to_compare = [
     { name = "yellow",     color = "#f9bd30" },
 ]
 compare_to = "{{ colors.primary.default.hex }}"
-post_hook = 'doas papirus-folders -C {{ closest_color }} -u'
+post_hook = 'nohup sudo -n papirus-folders -C {{ closest_color }} -u > /dev/null 2>&1 &'
 index = 1
 
 [templates.vscode-raw]
@@ -71,12 +79,12 @@ output_path = '/home/oscar/.config/television/themes/matugen.toml'
 
 [templates.walker]
 input_path = '/home/oscar/.config/matugen/templates/css_template.conf'
-output_path = '/home/oscar//.config/walker/colors.css'
+output_path = '/home/oscar/.config/walker/colors.css'
 
 [templates.swayosd]
 input_path = '~/.config/matugen/templates/css_template.conf'
 output_path = '~/.config/swayosd/colors.css'
-post_hook = 'systemctl restart --user swayosd'
+#post_hook = 'systemctl restart --user swayosd'
 
 
 [templates.bat]
@@ -117,16 +125,16 @@ post_hook = "hyprctl reload"
 input_path = './templates/hyprlock_template.conf'
 output_path = "~/.config/hypr/colors.conf"
 [templates.gtk3]
-input_path = './templates/gtk-colors.css'
+input_path = './templates/gtk3-colors.css'
 output_path = '~/.config/gtk-3.0/colors.css'
 
 [templates.kcolorscheme]
-input_path = './templates/kcolorscheme.colors'
-output_path = '~/.local/share/color-schemes/Matugen.colors'
-post_hook = 'systemctl restart --user hyprpolkitagent'
+input_path = './templates/Matugen.colors'
+output_path = '~/.local/share/color-schemes/matugen.colors'
+#post_hook = 'systemctl restart --user hyprpolkitagent'
 
 [templates.gtk4]
-input_path = './templates/gtk-colors.css'
+input_path = './templates/gtk4-colors.css'
 output_path = '~/.config/gtk-4.0/colors.css'
 post_hook = '~/.config/matugen/scripts/gtk-themes-reload.sh'
 #post_hook = "ags request restart"
@@ -138,7 +146,7 @@ post_hook = "hyprctl reload"
 
 [templates.vesktop]
 input_path = './templates/midnight-discord.css'
-output_path = '~/.config/vesktop/themes/midnight-discord.css'
+output_path = '~/.config/equibop/themes/midnight-discord.css'
 
 [templates.pywalfox]
 input_path = './templates/pywalfox-colors.json'
@@ -167,7 +175,7 @@ output_path = '/home/oscar/.dotfiles/cava/.config/cava/config'
 
 [templates.fish]
 input_path = '/home/oscar/.config/matugen/templates/fish_theme.fish'
-output_path = '/home/oscar/.config/fish/themes/Matugen.theme'
+output_path = '/home/oscar/.config/fish/conf.d/some_confs.fish'
 post_hook = "source ~/.config/fish/config.fish"
 
 [templates.zathura]
@@ -182,10 +190,25 @@ output_path = '/home/oscar/.config/yazi/theme.toml'
 [templates.spicetify]
 input_path = '~/.config/matugen/templates/spotify-colors.ini'
 output_path = '~/.config/spicetify/Themes/Sleek/color.ini'
-#post_hook = 'spicetify apply --no-restart'
+post_hook = 'spicefity-reload.sh'
 
-[templates.steam]
-input_path = './templates/steam.css'
-output_path = '~/.config/AdwSteamGtk/custom.css'
-post_hook =  'adwaita-steam-gtk -i'
+[templates.millenium]
+input_path = '/home/oscar/.config/matugen/millenium.css'
+output_path = "~/.steam/steam/millennium/themes/Material-Theme/css/main/colors/matugen.css"
+#post_hook =  'adwaita-steam-gtk -i'
 
+[templates.rmpc]
+input_path = './templates/rmpc.ron'
+output_path = '~/.config/rmpc/themes/matugen.ron'
+
+[templates.zen-userchrome]
+input_path = '~/.config/matugen/templates/zen-userchrome.css'
+output_path = '~/.config/zen/7gspj477.Default (release)/chrome/zen-userChrome.css'
+
+[templates.zen-usercontent]
+input_path = '~/.config/matugen/templates/zen-usercontent.css'
+output_path = '~/.config/zen/7gspj477.Default (release)/chrome/zen-userContent.css'
+
+[templates.hyprland-share-picker]
+input_path = './templates/share-picker.css'
+output_path = "~/.config/hyprland-preview-share-picker/style.css"

@@ -573,6 +573,10 @@ Item {
                             {
                                 "value": "eo",
                                 "text": Services.I18nService.getTranslation("settings.system.language.eo", "Esperanto")
+                            },
+                            {
+                                "value": "auto",
+                                "text": "Auto"
                             }
                         ]
                         onChosen: val => Services.ConfigService.configs.language = val

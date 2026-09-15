@@ -18,7 +18,7 @@ Item {
         active: titleInteraction.pressed
     }
 
-    visible: Services.MprisService.players.length > 0
+    //visible: Services.MprisService.players.length > 0
 
     PlayerContent {
         id: content
