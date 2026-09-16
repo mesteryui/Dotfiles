@@ -37,10 +37,8 @@ Singleton {
             } else {
                 splashProc.running = true;
             }
-        } else {
-            if (mode === RandomPhraseses.Modes.CUSTOM) {
-                root.splashPhrase = root.splashPrases[Math.floor(Math.random() * root.splashPrases.length)];
-            }
+        } else if (mode === RandomPhraseses.Modes.CUSTOM) {
+            root.splashPhrase = root.splashPrases[Math.floor(Math.random() * root.splashPrases.length)];
         }
     }
 

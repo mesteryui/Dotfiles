@@ -13,6 +13,7 @@ import qs.Panels.Controls
 import qs.Panels.Wallpaper
 import qs.Features.Notifications
 import qs.Lockscreen
+import qs.Launcher
 import qs.Bar
 import qs.Panels.Volume
 import qs.Features.CheatSheet
@@ -35,6 +36,7 @@ ShellRoot {
 
     Switcher {}
 
+    AppLauncher {}
     SettingsPanel {}
     PanelWithControls {}
     VolumeCenter {}

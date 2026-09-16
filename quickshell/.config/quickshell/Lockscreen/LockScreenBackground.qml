@@ -15,7 +15,8 @@ Item {
 
     required property ShellScreen targetScreen
 
-    property real scrimAlpha: 0.30
+    readonly property bool isDark: ConfigService.configs.appearence.darkMode
+    property real scrimAlpha: isDark ? 0.32 : 0.22
 
     function withAlpha(hexColor, alphaValue) {
         var c = Qt.color(hexColor);
@@ -39,6 +40,14 @@ Item {
             anchors.fill: parent
             sourceComponent: ConfigService.configs.lockscreen.useWallpaper ? wallpaperBackground : screenCopyBackground
         }
+    }
+
+    // ── Scrim para legibilidad ──────────────────────────────────────
+    // Capa oscura en tema oscuro / clara en tema claro, para asegurar
+    // que el texto (on_surface, etc.) se lea bien sobre cualquier fondo.
+    Rectangle {
+        anchors.fill: parent
+        color: root.isDark ? Qt.rgba(0, 0, 0, root.scrimAlpha) : Qt.rgba(1, 1, 1, root.scrimAlpha)
     }
 
     // ── Fondo de Wallpaper ────────────────────────────────────────────

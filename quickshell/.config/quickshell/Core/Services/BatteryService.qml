@@ -7,7 +7,6 @@ import Quickshell.Services.UPower
 
 Singleton {
     id: root
-
     readonly property var displayDevice: UPower.displayDevice
     readonly property var percentage: {
         const p = displayDevice?.percentage ?? 0;
@@ -17,10 +16,7 @@ Singleton {
         const device = displayDevice;
         if (!device)
             return "battery_unknown";
-
-        const p = device.percentage;
-        const isCharging = device.state === UPowerDeviceState.Charging;
-        return Icons.getBatteryIcon(p, isCharging);
+        return Icons.getBatteryIcon(device.percentage, device.state === UPowerDeviceState.Charging);
     }
     readonly property var profile: PowerProfiles.profile
 

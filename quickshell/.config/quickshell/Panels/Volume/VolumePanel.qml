@@ -27,22 +27,16 @@ BarPopupWindow {
         z: -1
     }
 
+    // Escape cierra. M/mute se maneja en el foco:
+    // bigButton con Enter/Espacio, sliders con M.
     Shortcut {
-        sequence: "Right"
-        onActivated: AudioService.setVolume(AudioService.volume + 0.05)
-    }
-    Shortcut {
-        sequence: "Left"
-        onActivated: AudioService.setVolume(AudioService.volume - 0.05)
+        sequence: "Escape"
+        onActivated: root.visible = false
     }
 
-    Shortcut {
-        sequence: "Shift + Left"
-        onActivated: AudioService.setMicVolume(AudioService.micVolume - 0.05)
-    }
-    Shortcut {
-        sequence: "Shift + Right"
-        onActivated: AudioService.setMicVolume(AudioService.micVolume + 0.05)
+    onVisibleChanged: {
+        if (visible)
+            Qt.callLater(() => popupContent.focusDefault());
     }
 
     PopupBackground {

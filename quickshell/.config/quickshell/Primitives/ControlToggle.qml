@@ -11,18 +11,36 @@ Rectangle {
     property string stateText: ""
     property string iconName:  ""
     property bool   active:    false
-    property bool   enable:   true
+    property bool   enable:    true
+    // Patrón focus-visible (ver ControlSlider): el anillo de foco solo se
+    // muestra en modo teclado. Por defecto true para no cambiar usos existentes.
+    property bool   keyboardMode: true
 
     signal toggled()
+    signal mouseUsed
 
     implicitWidth:  140
     implicitHeight: root.stateText !== "" ? 72 : 48
+
+    activeFocusOnTab: true
+
+    Accessible.role: Accessible.Button
+    Accessible.checkable: true
+    Accessible.checked: root.active
+    Accessible.name: root.label
+    Accessible.description: root.stateText
+
+    Keys.onReturnPressed: { if (root.enable) root.toggled(); }
+    Keys.onEnterPressed: { if (root.enable) root.toggled(); }
+    Keys.onSpacePressed: { if (root.enable) root.toggled(); }
 
     radius: Appearance.shape.large
     color: root.active
         ? Appearance.md3.primary_container
         : Appearance.md3.surface_container_high
     opacity: root.enable ? 1.0 : 0.45
+    border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
+    border.color: Appearance.md3.primary
 
     scale: hoverArea.pressed ? 0.96 : (hoverArea.containsMouse ? 1.02 : 1.0)
 
@@ -30,12 +48,12 @@ Rectangle {
     Behavior on opacity { OpacityAnimator { duration: 150 } }
     Behavior on scale { ScaleAnimator { duration: 140; easing.type: Easing.OutCubic } }
 
-    // Capa de estado M3 Expressive (Hover & Press overlay)
+    // Capa de estado M3 Expressive (Hover & Press overlay + foco de teclado)
     Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
-        opacity: hoverArea.pressed ? 0.12 : (hoverArea.containsMouse ? 0.08 : 0.0)
+        opacity: hoverArea.pressed ? 0.12 : (hoverArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 0.08 : 0.0)
 
         Behavior on opacity { NumberAnimation { duration: 100 } }
     }
@@ -105,6 +123,11 @@ Rectangle {
         hoverEnabled: true
         enabled: root.enable
         cursorShape: Qt.PointingHandCursor
+        onEntered: root.mouseUsed()
+        onPressed: {
+            root.forceActiveFocus();
+            root.mouseUsed();
+        }
         onClicked: root.toggled()
     }
 }

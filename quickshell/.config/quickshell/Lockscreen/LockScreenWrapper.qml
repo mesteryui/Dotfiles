@@ -19,6 +19,11 @@ FocusScope {
 
     property bool isPasswordVisible: false
 
+    // ── Dos etapas (estilo GNOME/Android) ─────────────────────────
+    // false = pantalla dormida (solo reloj). true = panel de auth visible.
+    property bool isAwake: false
+    property string _pendingKeyText: ""
+
     // ── Estado interno ────────────────────────────────────────────
     property bool authFailed: false
 
@@ -98,18 +103,47 @@ FocusScope {
     Component.onCompleted: {
         revealOpacityAnim.start();
         revealScaleAnim.start();
-        // Arranca la sesión PAM ya, sin esperar a que el usuario toque el
-        // teclado — así el lector de huella queda escuchando desde ya.
-        // WlSessionLock crea un LockScreenWrapper por monitor; start() está
-        // protegido internamente (no-op si ya hay una sesión activa), así
-        // que llamarlo desde cada instancia es seguro.
-        AuthService.start();
     }
 
     onIsUnlockingChanged: {
         if (root.isUnlocking) {
             hideOpacityAnim.start();
             hideScaleAnim.start();
+        }
+    }
+
+    // Cualquier tecla despierta la pantalla; si es imprimible se inyecta en el campo
+    Keys.onPressed: event => {
+        if (!root.isAwake) {
+            root.isAwake = true;
+            if (event.text.length > 0 && event.text.charCodeAt(0) >= 32) {
+                root._pendingKeyText = event.text;
+            }
+            event.accepted = true;
+        }
+    }
+
+    // Al despertar, dar foco al campo e inyectar el carácter pendiente
+    onIsAwakeChanged: {
+        if (root.isAwake) {
+            // Arranca la sesión PAM al entrar al diálogo de auth (huella + contraseña).
+            // isPrimary evita dobles llamadas cuando hay varios monitores;
+            // start() es no-op si ya hay sesión activa.
+            if (root.isPrimary)
+                AuthService.start();
+            wakeTimer.start();
+        }
+    }
+
+    Timer {
+        id: wakeTimer
+        interval: 50
+        onTriggered: {
+            content.passwordField.forceActiveFocus();
+            if (root._pendingKeyText.length > 0) {
+                content.passwordField.insert(content.passwordField.cursorPosition, root._pendingKeyText);
+                root._pendingKeyText = "";
+            }
         }
     }
 
@@ -152,6 +186,12 @@ FocusScope {
         }
 
         function onPromptMessage(message) {
+            // Los mensajes de fprintd durante el escaneo ("Place your finger...",
+            // etc.) duplicarían la pastilla de huella — se ignoran. Solo se
+            // muestra el prompt cuando PAM pide contraseña de verdad
+            // (awaitingResponse) o es un error explícito.
+            if (!AuthService.awaitingResponse && !message.startsWith("Error de PAM"))
+                return;
             root.promptText = message;
             promptClearTimer.restart();
         }
@@ -194,6 +234,10 @@ FocusScope {
         isPasswordVisible: root.isPasswordVisible
         isFingerprintActive: root.isFingerprintActive
         mprisPosition: root.mprisPosition
+        isAwake: root.isAwake
+
+        onWakeUp: root.isAwake = true
+        onSleepRequested: root.isAwake = false
 
         onValidatePassword: password => {
             if (!root.isAuthenticating) {

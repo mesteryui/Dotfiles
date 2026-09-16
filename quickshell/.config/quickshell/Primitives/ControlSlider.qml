@@ -12,11 +12,59 @@ RowLayout {
     property color accentColor: Appearance.md3.primary
     property bool showValue: true
     property string valueText: Math.round(root.value * 100) + "%"
+    property real stepSize: 0.05
+    property string accessibleName: root.label !== "" ? root.label : root.iconName
+    // Patrón focus-visible: el anillo de foco solo se muestra cuando el
+    // foco viene del teclado. El panel dueño lo pone a false con el ratón
+    // (vía mouseUsed) y a true con cualquier tecla (Keys.onPressed en la
+    // instancia). Por defecto true para no cambiar paneles existentes.
+    property bool keyboardMode: true
 
     signal moved(real val)
     signal iconClicked
+    signal mouseUsed
+
+    function adjust(delta) {
+        root.moved(Math.max(0.0, Math.min(1.0, root.value + delta)));
+    }
 
     spacing: 12
+    activeFocusOnTab: true
+
+    // ── Teclado ────────────────────────────────────────────────
+    // Izq/Der: ±step · Inicio/Fin: 0%/100% · RePág/AvPág: ±10%
+    // +/-: ±step · M: acción del icono (mute).
+    // Arriba/Abajo se reservan para navegar entre controles (KeyNavigation).
+    Keys.onLeftPressed: root.adjust(-root.stepSize)
+    Keys.onRightPressed: root.adjust(root.stepSize)
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Home) {
+            root.moved(0.0);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_End) {
+            root.moved(1.0);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_PageUp) {
+            root.adjust(0.10);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_PageDown) {
+            root.adjust(-0.10);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
+            root.adjust(root.stepSize);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Minus || event.key === Qt.Key_Underscore) {
+            root.adjust(-root.stepSize);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_M) {
+            root.iconClicked();
+            event.accepted = true;
+        }
+    }
+
+    Accessible.role: Accessible.Slider
+    Accessible.name: root.accessibleName
+    Accessible.description: root.valueText
 
     // Icono Material con feedback interactivo opcional
     MaterialIcon {
@@ -25,7 +73,7 @@ RowLayout {
         visible: root.iconName !== ""
         icon: root.iconName
         size: Appearance.font.pixelSize.large
-        color: iconArea.containsMouse ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+        color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : (iconArea.containsMouse ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
 
         Behavior on color {
             ColorAnimation {
@@ -37,8 +85,17 @@ RowLayout {
             id: iconArea
 
             anchors.fill: parent
+            anchors.margins: -6
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: {
+                root.forceActiveFocus();
+                root.mouseUsed();
+            }
+            onPressed: {
+                root.forceActiveFocus();
+                root.mouseUsed();
+            }
             onClicked: root.iconClicked()
         }
     }
@@ -58,6 +115,8 @@ RowLayout {
             height: trackArea.pressed ? 14 : 12
             radius: height / 2
             color: Appearance.md3.surface_container_highest
+            border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
+            border.color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : "transparent"
 
             Behavior on height {
                 NumberAnimation {
@@ -92,11 +151,11 @@ RowLayout {
 
             x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.value)) - width / 2))
             anchors.verticalCenter: parent.verticalCenter
-            width: trackArea.pressed ? 20 : (trackArea.containsMouse ? 18 : 14)
-            height: trackArea.pressed ? 22 : (trackArea.containsMouse ? 20 : 18)
+            width: trackArea.pressed ? 20 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 18 : 14)
+            height: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 20 : 18)
             radius: width / 2
             color: root.accentColor
-            border.color: Appearance.md3.surface_container_low
+            border.color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : Appearance.md3.surface_container_low
             border.width: 2
 
             Behavior on x {
@@ -134,11 +193,22 @@ RowLayout {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: {
+                root.forceActiveFocus();
+                root.mouseUsed();
+            }
+            onPressed: mouse => {
+                root.forceActiveFocus();
+                root.mouseUsed();
+            }
             onPositionChanged: mouse => {
                 if (pressed)
                     updateValue(mouse.x);
             }
-            onClicked: mouse => updateValue(mouse.x)
+            onClicked: mouse => {
+                root.forceActiveFocus();
+                updateValue(mouse.x);
+            }
         }
     }
 

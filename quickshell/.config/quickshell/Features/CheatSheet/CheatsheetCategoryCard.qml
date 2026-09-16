@@ -27,6 +27,10 @@ Item {
     property int firstRowIndex: 0
     /// Global flat-list index that is currently keyboard-focused.
     property int activeRowIndex: -1
+    /// Reference to the Flickable showing the cards (set by Cheatsheet.qml).
+    property var flickRef: null
+    /// Animated scroll helper from the sheet, signature scrollTo(y).
+    property var scrollToFunc: null
 
     /// Emitted with a row's global flat-list index when the mouse hovers it,
     /// so the parent can fold mouse and keyboard navigation into one
@@ -34,6 +38,24 @@ Item {
     signal rowHovered(int globalIndex)
 
     readonly property int cardPadding: 20
+
+    /// Scrolls just enough to make row `bindIdx` fully visible.
+    /// Uses the delegate's real mapped coordinates instead of estimated
+    /// heights — wrapped descriptions used to throw the math off and the
+    /// keyboard selection ended up out of view.
+    function ensureRowVisible(bindIdx) {
+        const row = rowsRepeater.itemAt(bindIdx);
+        if (!row || !flickRef || !flickRef.contentItem || !scrollToFunc)
+            return;
+        const p = row.mapToItem(flickRef.contentItem, 0, 0);
+        const viewTop = flickRef.contentY;
+        const viewBottom = viewTop + flickRef.height;
+        if (p.y < viewTop - 1) {
+            scrollToFunc(p.y - 8);
+        } else if (p.y + row.height > viewBottom + 1) {
+            scrollToFunc(p.y + row.height - flickRef.height + 8);
+        }
+    }
 
     implicitWidth: 360
     // Height = content + top/bottom padding. M3Card fills us, we size ourselves.
@@ -71,6 +93,8 @@ Item {
             }
 
             Repeater {
+                id: rowsRepeater
+
                 model: root.binds
                 delegate: CheatsheetKeybindRow {
                     required property var modelData

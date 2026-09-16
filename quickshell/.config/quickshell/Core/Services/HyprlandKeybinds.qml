@@ -21,6 +21,13 @@ import Quickshell.Io
  * matching hyprctl's own `has_description` flag rather than guessing from
  * an empty string.
  *
+ * Categorization convention (defined on the Hyprland side):
+ *   hl.bind(..., { description = "Ventanas: Cerrar ventana" })
+ * Everything before the FIRST ":" is the category, the rest is the label.
+ * No ":" → category "General" (always shown last).
+ * Known categories are shown in `categoryOrder`; unknown ones keep
+ * first-seen order in between; "General" always goes last.
+ *
  * Re-parses automatically whenever Hyprland reloads its config.
  */
 Singleton {
@@ -29,6 +36,11 @@ Singleton {
     property var keybinds: []
     property var keybindCategories: []
     property var groupedKeybinds: ({})
+
+    /// Preferred display order for known categories.
+    /// Debe coincidir con los prefijos "Categoría: ..." de la config de Hyprland.
+    /// "General" (sin prefijo) siempre va la última, la pongas donde la pongas.
+    readonly property var categoryOrder: ["Ventanas", "Scrolling", "Espacios", "Apps", "Sistema", "Multimedia", "Redimensionar", "Submapas"]
 
     // Hyprland's internal MODS bitmask (independent of X11's numbering).
     // Ordered so the decoded label list reads naturally: Super Ctrl Alt Shift.
@@ -182,7 +194,21 @@ Singleton {
             });
         }
 
-        root.keybindCategories = order;
+        root.keybindCategories = order.slice().sort((a, b) => {
+            if (a === "General")
+                return 1;
+            if (b === "General")
+                return -1;
+            const ai = root.categoryOrder.indexOf(a);
+            const bi = root.categoryOrder.indexOf(b);
+            if (ai >= 0 && bi >= 0)
+                return ai - bi;
+            if (ai >= 0)
+                return -1;
+            if (bi >= 0)
+                return 1;
+            return 0; // desconocidas: conservan orden de aparición
+        });
         root.groupedKeybinds = cats;
     }
 

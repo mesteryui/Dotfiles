@@ -86,6 +86,18 @@ PanelWindow {
         onCleared: Qt.callLater(() => root.visible = false)
     }
 
+    Shortcut {
+        sequence: "Escape"
+        onActivated: root.visible = false
+    }
+
+    onVisibleChanged: {
+        // Foco inicial silencioso: el teclado funciona desde el primer
+        // momento pero sin anillo visible hasta que se pulse una tecla.
+        if (visible)
+            Qt.callLater(() => panelContent.focusDefault());
+    }
+
     // ── Background & Sombra Tonal M3 Expressive ────────────────────
     MultiEffect {
         source: bg

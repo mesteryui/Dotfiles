@@ -298,7 +298,7 @@ Singleton {
 
         PluginParameter {
             name: "desktopId"
-            value: "com.oscar.Shell"
+            value: "com.shinro.shell"
         }
 
         onPositionChanged: {

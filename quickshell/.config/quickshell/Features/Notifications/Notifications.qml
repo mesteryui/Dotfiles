@@ -9,8 +9,12 @@ Scope {
         visible: NotificationService.centerOpen
         historyModel: NotificationService.history
     }
-
-    NotificationPopups {
-        trackedNotifications: NotificationService.server.trackedNotifications
+    Variants {
+        model: Quickshell.screens
+        delegate: NotificationPopups {
+            required property ShellScreen modelData
+            screen: modelData
+            trackedNotifications: NotificationService.server.trackedNotifications
+        }
     }
 }

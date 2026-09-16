@@ -1,8 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import qs.Core
-import qs.Core.Services
-import qs.Primitives
 import QtQuick
 import QtQuick.Layouts
 import Quickshell

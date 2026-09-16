@@ -2,6 +2,7 @@ import qs.Primitives
 import qs.Core
 import qs.Core.Services
 import QtQuick
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 Item {
@@ -15,6 +16,10 @@ Item {
 
     required property string cleanPrompt
 
+    // Estado de error: se activa con cada intento fallido y se limpia al
+    // escribir o reenviar.
+    property bool authError: false
+
     signal closed
 
     signal submit(text: string)
@@ -25,6 +30,18 @@ Item {
 
     function clearText() {
         inputField.text = "";
+    }
+
+    // Cada fallo de autenticación: marcar error + agitar la tarjeta.
+    Connections {
+        target: PolkitService
+
+        function onFailedAttemptsChanged() {
+            if (PolkitService.failedAttempts > 0) {
+                overlay.authError = true;
+                shakeAnim.restart();
+            }
+        }
     }
 
     anchors.fill: parent
@@ -67,6 +84,52 @@ Item {
             }
         }
 
+        // Agitación lateral para el error: usa Translate para no pelear
+        // con el anchors.centerIn.
+        transform: Translate {
+            id: shakeT
+        }
+
+        SequentialAnimation {
+            id: shakeAnim
+
+            NumberAnimation {
+                target: shakeT
+                property: "x"
+                to: -10
+                duration: 50
+                easing.type: Easing.OutQuad
+            }
+            NumberAnimation {
+                target: shakeT
+                property: "x"
+                to: 10
+                duration: 75
+                easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                target: shakeT
+                property: "x"
+                to: -6
+                duration: 75
+                easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                target: shakeT
+                property: "x"
+                to: 6
+                duration: 60
+                easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                target: shakeT
+                property: "x"
+                to: 0
+                duration: 50
+                easing.type: Easing.OutQuad
+            }
+        }
+
         ColumnLayout {
             id: contentColumn
 
@@ -77,8 +140,14 @@ Item {
             MaterialIcon {
                 Layout.alignment: Qt.AlignHCenter
                 size: 26
-                icon: "security"
-                color: Appearance.md3.secondary
+                icon: overlay.authError ? "error" : "security"
+                color: overlay.authError ? Appearance.md3.error : Appearance.md3.secondary
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
             }
 
             StyledText {
@@ -112,14 +181,29 @@ Item {
                 enabled: overlay.interactionAvailable
                 font.pixelSize: 14
                 placeholderText: overlay.cleanPrompt
+                placeholderTextColor: overlay.authError ? Appearance.md3.error : Appearance.md3.outline
                 echoMode: overlay.usePasswordChars ? TextInput.Password : TextInput.Normal
+                Material.accent: overlay.authError ? Appearance.md3.error : Appearance.md3.primary
                 focus: true
-                onAccepted: overlay.submit(inputField.text)
+                onTextEdited: overlay.authError = false
+                onAccepted: {
+                    overlay.authError = false;
+                    overlay.submit(inputField.text);
+                }
                 Keys.onPressed: event => { // Esc to close
                     if (event.key === Qt.Key_Escape) {
                         overlay.closed();
                     }
                 }
+            }
+
+            // Mensaje de error bajo el campo
+            StyledText {
+                Layout.fillWidth: true
+                visible: overlay.authError
+                text: I18nService.getTranslation("polkit.wrong_password", "Contraseña incorrecta, inténtalo de nuevo")
+                font.pixelSize: 12
+                color: Appearance.md3.error
             }
 
             // Button row
@@ -144,7 +228,10 @@ Item {
                     text: I18nService.getTranslation("polkit.ok", "OK")
                     isFilled: true
                     enabled: overlay.interactionAvailable
-                    onClicked: overlay.submit(inputField.text)
+                    onClicked: {
+                        overlay.authError = false;
+                        overlay.submit(inputField.text);
+                    }
                 }
             }
         }

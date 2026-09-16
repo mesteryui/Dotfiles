@@ -7,6 +7,17 @@ PercentageOSD {
     // Define el tipo para el namespace del WlrLayershell (se convertirá en "quickshell:osd-mic")
     type: "mic"
 
+    property bool ready: false
+
+    Timer {
+        id: readyTimer
+
+        interval: 1000
+        running: true
+        repeat: false
+        onTriggered: root.ready = true
+    }
+
     // Enlazamos las propiedades requeridas por PercentageOSD con las del AudioService
     percentage: AudioService.micVolume
     icon: AudioService.micMaterialIcon
@@ -18,12 +29,14 @@ PercentageOSD {
 
         // Se dispara al cambiar el volumen del micrófono
         function onMicVolumeChanged() {
-            root.show();
+            if (root.ready)
+                root.show();
         }
 
         // Se dispara al silenciar/desilenciar el micrófono
         function onMicMutedChanged() {
-            root.show();
+            if (root.ready)
+                root.show();
         }
     }
 }

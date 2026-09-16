@@ -26,6 +26,25 @@ Item {
     readonly property bool btEnabled: btAdapter ? btAdapter.enabled : false
     readonly property bool wifiEnabled: Networking.wifiEnabled
 
+    // ── Focus-visible ────────────────────────────────────────────
+    // keyboardMode=false → ningún anillo de foco aunque haya foco activo
+    // (ratón o foco inicial silencioso). Cualquier tecla lo pone a true y
+    // cualquier uso del ratón lo devuelve a false. Así el panel no "grita"
+    // el foco hasta que se usa el teclado.
+    property bool keyboardMode: false
+
+    function focusDefault() {
+        root.keyboardMode = false;
+        volumeSlider.forceActiveFocus();
+    }
+
+    function focusAboveToggles() {
+        if (brightnessSlider.visible)
+            brightnessSlider.forceActiveFocus();
+        else
+            volumeSlider.forceActiveFocus();
+    }
+
     readonly property var tabModel: [
         {
             label: Services.I18nService.getTranslation("panel.system", "Sistema"),
@@ -130,10 +149,24 @@ Item {
 
                 // Botón apagar sesión (Power Button con micro-animación)
                 Rectangle {
+                    id: powerButton
+
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 40
                     radius: 20
                     color: powerArea.pressed ? root.withAlpha(Appearance.md3.error_container, 0.9) : (powerArea.containsMouse ? root.withAlpha(Appearance.md3.error_container, 0.4) : Appearance.md3.surface_container_high)
+                    border.width: (activeFocus && root.keyboardMode) ? 2 : 0
+                    border.color: Appearance.md3.primary
+                    activeFocusOnTab: true
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "Apagar sesión"
+
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onReturnPressed: buttonProc.running = true
+                    Keys.onEnterPressed: buttonProc.running = true
+                    Keys.onSpacePressed: buttonProc.running = true
+                    Keys.onDownPressed: volumeSlider.forceActiveFocus()
 
                     scale: powerArea.pressed ? 0.92 : (powerArea.containsMouse ? 1.06 : 1.0)
 
@@ -168,6 +201,11 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
+                        onEntered: root.keyboardMode = false
+                        onPressed: {
+                            powerButton.forceActiveFocus();
+                            root.keyboardMode = false;
+                        }
                         onClicked: buttonProc.running = true
 
                         Process {
@@ -186,10 +224,13 @@ Item {
 
                 // Volumen
                 ControlSlider {
+                    id: volumeSlider
                     Layout.fillWidth: true
                     iconName: Services.AudioService.materialIcon
                     value: Services.AudioService.volume ?? 0
                     accentColor: Appearance.md3.primary
+                    accessibleName: "Volumen"
+                    keyboardMode: root.keyboardMode
                     onMoved: val => {
                         if (Services.AudioService.audio) {
                             Services.AudioService.audio.volume = val;
@@ -200,10 +241,20 @@ Item {
                             Services.AudioService.audio.muted = !Services.AudioService.audio.muted;
                         }
                     }
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: powerButton.forceActiveFocus()
+                    Keys.onDownPressed: {
+                        if (brightnessSlider.visible)
+                            brightnessSlider.forceActiveFocus();
+                        else
+                            wifiToggle.forceActiveFocus();
+                    }
+                    onMouseUsed: root.keyboardMode = false
                 }
 
                 // Brillo
                 ControlSlider {
+                    id: brightnessSlider
                     Layout.fillWidth: true
                     visible: Services.BrightnessService.ready
                     iconName: {
@@ -216,7 +267,13 @@ Item {
                     }
                     value: Services.BrightnessService.brightness
                     accentColor: Appearance.md3.tertiary
+                    accessibleName: "Brillo"
+                    keyboardMode: root.keyboardMode
                     onMoved: val => Services.BrightnessService.setBrightness(val)
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: volumeSlider.forceActiveFocus()
+                    Keys.onDownPressed: wifiToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
             }
 
@@ -237,63 +294,103 @@ Item {
 
                 // WiFi
                 ControlToggle {
+                    id: wifiToggle
                     Layout.fillWidth: true
                     iconName: root.wifiEnabled ? "wifi" : "wifi_off"
                     label: Services.I18nService.getTranslation("panel.wifi", "WiFi")
                     stateText: root.wifiEnabled ? Services.I18nService.getTranslation("panel.connected", "Conectado") : Services.I18nService.getTranslation("panel.disconnected", "Desconectado")
                     active: root.wifiEnabled
                     enable: Networking.wifiHardwareEnabled
+                    keyboardMode: root.keyboardMode
                     onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                    KeyNavigation.right: btToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: root.focusAboveToggles()
+                    Keys.onDownPressed: cafeToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
 
                 // Bluetooth
                 ControlToggle {
+                    id: btToggle
                     Layout.fillWidth: true
                     iconName: root.btEnabled ? "bluetooth" : "bluetooth_disabled"
                     label: Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
                     stateText: root.btEnabled ? Services.I18nService.getTranslation("panel.on", "Activado") : Services.I18nService.getTranslation("panel.off", "Desactivado")
                     active: root.btEnabled
                     enable: root.btAdapter !== null
+                    keyboardMode: root.keyboardMode
                     onToggled: {
                         if (root.btAdapter)
                             root.btAdapter.enabled = !root.btAdapter.enabled;
                     }
+                    KeyNavigation.left: wifiToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: root.focusAboveToggles()
+                    Keys.onDownPressed: dndToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
 
                 // Cafeína
                 ControlToggle {
+                    id: cafeToggle
                     Layout.fillWidth: true
                     iconName: "local_cafe"
                     label: Services.I18nService.getTranslation("panel.caffeine", "Cafeína")
                     stateText: Services.IdleInhibitedService.inhibited ? Services.I18nService.getTranslation("panel.caffeine_on", "Activada") : Services.I18nService.getTranslation("panel.caffeine_off", "Desactivada")
                     active: Services.IdleInhibitedService.inhibited
+                    keyboardMode: root.keyboardMode
                     onToggled: Services.IdleInhibitedService.toggle()
+                    KeyNavigation.right: dndToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: wifiToggle.forceActiveFocus()
+                    Keys.onDownPressed: nightToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
 
                 // No Molestar
                 ControlToggle {
+                    id: dndToggle
                     Layout.fillWidth: true
                     iconName: Services.NotificationService.dnd ? "bedtime" : "notifications"
                     label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
                     stateText: Services.NotificationService.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
                     active: Services.NotificationService.dnd
+                    keyboardMode: root.keyboardMode
                     onToggled: Services.NotificationService.toggleDnd()
+                    KeyNavigation.left: cafeToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: btToggle.forceActiveFocus()
+                    Keys.onDownPressed: gameToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
                 ControlToggle {
+                    id: nightToggle
                     Layout.fillWidth: true
                     iconName: Services.Hyprsunset.nightLightActive ? "bedtime" : "bedtime"
                     label: Services.I18nService.getTranslation("panel.night_light", "Luz nocturna")
                     stateText: Services.Hyprsunset.nightLightActive ? Services.I18nService.getTranslation("panel.night_light_onf", "Activado") : Services.I18nService.getTranslation("panel.nightlight_off", "Desactivado")
                     active: Services.Hyprsunset.nightLightActive
+                    keyboardMode: root.keyboardMode
                     onToggled: Services.Hyprsunset.toggleNightLight()
+                    KeyNavigation.right: gameToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: cafeToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
                 ControlToggle {
+                    id: gameToggle
                     Layout.fillWidth: true
                     iconName: "gamepad"
                     label: Services.I18nService.getTranslation("panel.gameMode", "Modo de Juego")
                     stateText: Services.GameMode.enabled ? Services.I18nService.getTranslation("panel.night_light_onf", "Activado") : Services.I18nService.getTranslation("panel.nightlight_off", "Desactivado")
                     active: Services.GameMode.enabled
+                    keyboardMode: root.keyboardMode
                     onToggled: Services.GameMode.toggle()
+                    KeyNavigation.left: nightToggle
+                    Keys.onPressed: root.keyboardMode = true
+                    Keys.onUpPressed: dndToggle.forceActiveFocus()
+                    onMouseUsed: root.keyboardMode = false
                 }
             }
 

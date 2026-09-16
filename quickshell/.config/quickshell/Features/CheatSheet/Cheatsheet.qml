@@ -131,9 +131,39 @@ PanelWindow {
         focus: root.active
 
         Keys.onPressed: event => {
+            const ctrl = event.modifiers & Qt.ControlModifier;
+            if (ctrl) {
+                switch (event.key) {
+                case Qt.Key_J:
+                case Qt.Key_N:
+                    sheet.moveSelection(1);
+                    event.accepted = true;
+                    return;
+                case Qt.Key_K:
+                case Qt.Key_P:
+                    sheet.moveSelection(-1);
+                    event.accepted = true;
+                    return;
+                case Qt.Key_H:
+                    sheet.moveColumn(-1);
+                    event.accepted = true;
+                    return;
+                case Qt.Key_L:
+                    sheet.moveColumn(1);
+                    event.accepted = true;
+                    return;
+                default:
+                    break;
+                }
+            }
             switch (event.key) {
             case Qt.Key_Escape:
                 root.active = false;
+                event.accepted = true;
+                break;
+            case Qt.Key_Tab:
+            case Qt.Key_Backtab:
+                searchField.forceActiveFocus();
                 event.accepted = true;
                 break;
             case Qt.Key_Down:
@@ -171,8 +201,14 @@ PanelWindow {
                 event.accepted = true;
                 break;
             default:
-                if (!searchField.activeFocus && event.text.length > 0) {
+                // Escribiendo con el foco fuera del buscador (p. ej. tras
+                // clicar el fondo): reinyecta el carácter en vez de perderlo.
+                // Se ignoran combinaciones con Ctrl/Alt/Meta (son atajos, no texto).
+                if (!searchField.activeFocus && event.text.length > 0 && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))) {
+                    searchField.text += event.text;
+                    searchField.cursorPosition = searchField.text.length;
                     searchField.forceActiveFocus();
+                    event.accepted = true;
                 }
                 break;
             }
@@ -303,39 +339,25 @@ PanelWindow {
         }
 
         /// Scroll the flickable so that the active item is fully visible.
+        /// Resolves the real delegate via the Repeaters and asks the card
+        /// for its mapped coordinates — no height estimates, so wrapped
+        /// descriptions can't push the selection out of view anymore.
         function scrollToActiveItem() {
             if (sheet.activeBindIndex < 0 || sheet.flatBinds.length === 0)
                 return;
 
-            // Estimate the Y position of the active item inside the flickable's content.
-            // We can't use mapToItem on the delegate directly from here (it's in a
-            // Repeater inside a Column inside a Row), so we approximate via the
-            // column heights computed by the bin-packing algorithm.
             const entry = sheet.flatBinds[sheet.activeBindIndex];
             if (!entry)
                 return;
 
-            const cols = sheet.columns;
-            // Height of all cards preceding our card in the same column.
-            let cardTop = 0;
-            for (let r = 0; r < entry.cardInCol; r++) {
-                cardTop += 60 + cols[entry.col][r].binds.length * 46 + 20; // estHeight + gap
-            }
-            // Offset inside the card: header ~(36 + 6 bottomMargin) + rows before us.
-            const rowHeight = 46;
-            const headerHeight = 42;
-            const cardPadding = 20;
-            const itemTop = cardTop + cardPadding + headerHeight + entry.bindInCard * rowHeight;
-            const itemBottom = itemTop + rowHeight;
-
-            const viewTop = flick.contentY;
-            const viewBottom = viewTop + flick.height;
-
-            if (itemTop < viewTop) {
-                sheet.scrollTo(itemTop - 8);
-            } else if (itemBottom > viewBottom) {
-                sheet.scrollTo(itemBottom - flick.height + 8);
-            }
+            // Los Repeaters pueden estar a mitad de reconstrucción al filtrar.
+            const colItem = columnsRepeater.itemAt(entry.col);
+            if (!colItem)
+                return;
+            const card = colItem.cardsRepeater.itemAt(entry.cardInCol);
+            if (!card)
+                return;
+            card.ensureRowVisible(entry.bindInCard);
         }
 
         ColumnLayout {
@@ -416,9 +438,51 @@ PanelWindow {
                     verticalAlignment: TextInput.AlignVCenter
 
                     Keys.onPressed: event => {
+                        const ctrl = event.modifiers & Qt.ControlModifier;
+                        // Ctrl+letra: navegar sin salir del buscador.
+                        // (El buscador acapara el foco; sin esto, ←/→/Home/End
+                        //  del nivel sheet serían inalcanzables escribiendo.)
+                        if (ctrl) {
+                            switch (event.key) {
+                            case Qt.Key_J:
+                            case Qt.Key_N:
+                                sheet.moveSelection(1);
+                                event.accepted = true;
+                                return;
+                            case Qt.Key_K:
+                            case Qt.Key_P:
+                                sheet.moveSelection(-1);
+                                event.accepted = true;
+                                return;
+                            case Qt.Key_H:
+                                sheet.moveColumn(-1);
+                                event.accepted = true;
+                                return;
+                            case Qt.Key_L:
+                                sheet.moveColumn(1);
+                                event.accepted = true;
+                                return;
+                            case Qt.Key_U:
+                                searchField.text = "";
+                                event.accepted = true;
+                                return;
+                            default:
+                                break;
+                            }
+                        }
                         switch (event.key) {
                         case Qt.Key_Escape:
-                            root.active = false;
+                            // 1º Esc con texto: limpia. 2º Esc (vacío): cierra.
+                            if (searchField.text.length > 0) {
+                                searchField.text = "";
+                            } else {
+                                root.active = false;
+                            }
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Tab:
+                        case Qt.Key_Backtab:
+                            // Atrapa el foco: no hay nada más enfocable aquí.
                             event.accepted = true;
                             break;
                         case Qt.Key_Down:
@@ -459,6 +523,17 @@ PanelWindow {
             }
 
             // ----------------------------------------------------------------
+            // Hint de teclado — una línea, centrada, mismo tono que el placeholder
+            // ----------------------------------------------------------------
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: Services.I18nService.getTranslation("cheatsheet.hint", "Ctrl+J/K move · Ctrl+H/L columns · Esc clear/close")
+                color: Appearance.md3.on_surface_variant
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                opacity: 0.8
+            }
+
+            // ----------------------------------------------------------------
             // Masonry grid — solo visible cuando hay resultados
             // ----------------------------------------------------------------
             Flickable {
@@ -482,6 +557,8 @@ PanelWindow {
                     spacing: 20
 
                     Repeater {
+                        id: columnsRepeater
+
                         model: sheet.columns
                         delegate: Column {
                             required property var modelData
@@ -490,7 +567,11 @@ PanelWindow {
                             width: sheet.columnWidth
                             spacing: 20
 
+                            property alias cardsRepeater: cardsRep
+
                             Repeater {
+                                id: cardsRep
+
                                 model: parent.modelData
                                 delegate: CheatsheetCategoryCard {
                                     required property var modelData
@@ -505,6 +586,8 @@ PanelWindow {
                                     // Repeater teardown/recreate on filter changes.
                                     firstRowIndex: sheet.firstIndexForCard(modelData.colIdx, index)
                                     activeRowIndex: sheet.activeBindIndex
+                                    flickRef: flick
+                                    scrollToFunc: y => sheet.scrollTo(y)
                                     onRowHovered: globalIndex => sheet.activeBindIndex = globalIndex
                                 }
                             }
@@ -596,8 +679,12 @@ PanelWindow {
         }
 
         onFilteredCategoriesChanged: {
-            // Reset focus to the first item whenever search results change.
+            // Reset focus to the first item whenever search results change,
+            // y vuelve arriba: sin esto el Flickable se quedaba a mitad de
+            // lista tras filtrar y parecía que no había resultados.
             sheet.activeBindIndex = 0;
+            scrollAnim.stop();
+            flick.contentY = 0;
         }
 
         // --- Fixed column width + responsive column count ---

@@ -5,9 +5,14 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
+// Reloj expresivo estilo Pixel / Material You.
+// large  = etapa dormida (hero clock). compact = etapa auth (pequeño).
 ColumnLayout {
     id: root
     Layout.alignment: Qt.AlignHCenter
+    spacing: 2
+
+    property bool compact: false
 
     SystemClock {
         id: clock
@@ -15,27 +20,32 @@ ColumnLayout {
         precision: SystemClock.Minutes
     }
 
+    // Fecha arriba estilo Pixel ("At a Glance")
+    StyledText {
+        id: dateText
+        Layout.alignment: Qt.AlignHCenter
+
+        color: Appearance.md3.on_surface_variant
+        opacity: 0.95
+        font.pixelSize: root.compact ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large
+        font.variableAxes: Appearance.font.variableAxes.title
+        font.family: Appearance.font.sans
+
+        text: root.compact ? clock.date.toLocaleDateString(I18nService.locale, "ddd, d MMM") : clock.date.toLocaleDateString(I18nService.locale, "dddd, d MMMM")
+    }
+
     StyledText {
         id: clockText
         Layout.alignment: Qt.AlignHCenter
 
         color: Appearance.md3.on_surface
-        opacity: 0.9
-        font.pixelSize: Appearance.font.pixelSize.hugeass + 70
+        opacity: 0.96
+        font.pixelSize: root.compact ? 54 : 124
         font.variableAxes: Appearance.font.variableAxes.title
+        font.family: Appearance.font.expressive
+        font.weight: root.compact ? Font.DemiBold : Font.Bold
+        lineHeight: 1.0
 
         text: clock.date.toLocaleTimeString(I18nService.locale, "hh:mm")
-    }
-
-    StyledText {
-        id: dateText
-        Layout.alignment: Qt.AlignHCenter
-
-        color: Appearance.md3.on_surface
-        opacity: 0.92
-        font.pixelSize: Appearance.font.pixelSize.normal
-        font.variableAxes: Appearance.font.variableAxes.title
-
-        text: clock.date.toLocaleDateString(I18nService.locale, "ddd dd MMM yyyy")
     }
 }

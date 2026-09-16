@@ -29,13 +29,15 @@ Item {
     implicitHeight: content.implicitHeight + 16
 
     // Keyboard-focus highlight layer — primary tint, always below the hover layer.
+    // 0.22 (antes 0.15): con el tint tan bajo la selección por teclado
+    // apenas se distinguía del hover.
     Rectangle {
         id: focusLayer
 
         anchors.fill: parent
         radius: Appearance.shape.small
         color: Appearance.md3.primary
-        opacity: root.highlighted ? 0.15 : 0
+        opacity: root.highlighted ? 0.22 : 0
 
         Behavior on opacity {
             NumberAnimation {

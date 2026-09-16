@@ -21,12 +21,8 @@ Singleton {
     }
 
     // QML emitirá automáticamente estos eventos cuando el JsonAdapter actualice los valores subyacentes
-    onMatugenModeChanged: {
-        root.updateMatugenColors(currentWallpaper);
-    }
-    onMatugenTypeChanged: {
-        root.updateMatugenColors(currentWallpaper);
-    }
+    onMatugenModeChanged: root.updateMatugenColors(currentWallpaper)
+    onMatugenTypeChanged: root.updateMatugenColors(currentWallpaper)
 
     function applyTheme(wallpaperPath: string) {
         root.updateMatugenColors(root.currentWallpaper);

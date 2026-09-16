@@ -12,6 +12,9 @@ Singleton {
     property alias active: polkitAgent.isActive
     property alias flow: polkitAgent.flow
     property bool interactionAvailable: false
+    // Contador de intentos fallidos: la UI lo observa para mostrar
+    // feedback (shake + estado de error). Se reinicia con cada petición nueva.
+    property int failedAttempts: 0
     property string cleanMessage: {
         if (!root.flow) return "";
         return root.flow.message.endsWith(".")
@@ -38,6 +41,7 @@ Singleton {
         target: root.flow
 
         function onAuthenticationFailed() {
+            root.failedAttempts += 1;
             root.interactionAvailable = true;
         }
     }
@@ -46,6 +50,7 @@ Singleton {
         id: polkitAgent
 
         onAuthenticationRequestStarted: {
+            root.failedAttempts = 0;
             root.interactionAvailable = true;
         }
     }

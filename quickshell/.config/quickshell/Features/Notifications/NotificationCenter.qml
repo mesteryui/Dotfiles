@@ -89,8 +89,10 @@ PanelWindow {
         id: panelBg
 
         anchors.fill: parent
-        radius: Appearance.shape.normal
-        color: Appearance.md3.surface
+        radius: Appearance.shape.verylarge
+        color: Appearance.md3.surface_container_low
+        border.width: 1
+        border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
         ColumnLayout {
             id: centerCol
@@ -101,50 +103,102 @@ PanelWindow {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 4
+                spacing: 8
 
                 StyledText {
                     Layout.fillWidth: true
                     text: I18nService.getTranslation("notifications.title", "")
-                    color: Appearance.md3.on_background
+                    color: Appearance.md3.on_surface
                     font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    font.bold: true
+                    font.variableAxes: Appearance.font.variableAxes.title
+                    font.pixelSize: Appearance.font.pixelSize.larger
                 }
 
-                // --- DND toggle: MaterialShape (Circle → Cookie4Sided al activar).
-                // 32×32 es cuadrado, así que la silueta se ve completa sin recortes.
+                // --- Contador: insignia tonal en forma de píldora ---
+                Rectangle {
+                    visible: (root.historyModel ? root.historyModel.count : 0) > 0
+                    implicitWidth: countLabel.implicitWidth + 16
+                    implicitHeight: 26
+                    radius: Appearance.shape.full
+                    color: Appearance.md3.primary_container
+
+                    StyledText {
+                        id: countLabel
+
+                        anchors.centerIn: parent
+                        text: root.historyModel ? root.historyModel.count : 0
+                        color: Appearance.md3.on_primary_container
+                        font.family: Appearance.font.sans
+                        font.variableAxes: Appearance.font.variableAxes.numbers
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.bold: true
+                    }
+                }
+
+                // --- DND: botón de icono tonal M3 (Circle ↔ Cookie4Sided).
+                // 40×40 es cuadrado, así que la silueta expresiva se ve completa.
+                // El halo de foco usa la MISMA forma que el fondo para que el
+                // anillo acompañe la morfología en vez de pelear con ella, y
+                // nada cambia de tamaño con el foco (sin saltos de layout).
                 Item {
                     id: dndToggle
 
-                    implicitWidth: 32
-                    implicitHeight: 32
+                    implicitWidth: 40
+                    implicitHeight: 40
+                    activeFocusOnTab: true
 
                     readonly property int dndShape: NotificationService.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+                    readonly property bool dndOn: NotificationService.dnd
 
+                    Accessible.role: Accessible.Button
+                    Accessible.checkable: true
+                    Accessible.checked: dndToggle.dndOn
+                    Accessible.name: I18nService.getTranslation("notifications.dnd", "No molestar")
+                    Accessible.description: dndToggle.dndOn ? I18nService.getTranslation("notifications.dnd_on", "No molestar activado") : I18nService.getTranslation("notifications.dnd_off", "No molestar desactivado")
+
+                    Keys.onReturnPressed: NotificationService.toggleDnd()
+                    Keys.onEnterPressed: NotificationService.toggleDnd()
+                    Keys.onSpacePressed: NotificationService.toggleDnd()
+
+                    // Halo de foco con la misma silueta expresiva, detrás del fondo
                     MaterialShape {
-                        id: dndContainer
-
                         anchors.fill: parent
+                        anchors.margins: -2
                         shape: dndToggle.dndShape
-                        color: NotificationService.dnd ? Appearance.md3.primary_container : "transparent"
+                        color: Appearance.md3.primary
                         animationDuration: 300
+                        opacity: dndToggle.activeFocus ? 1 : 0
 
-                        Behavior on color {
-                            ColorAnimation {
+                        Behavior on opacity {
+                            NumberAnimation {
                                 duration: 120
                             }
                         }
                     }
 
                     MaterialShape {
-                        id: dndStateLayer
+                        id: dndContainer
 
                         anchors.fill: parent
                         shape: dndToggle.dndShape
-                        color: Appearance.md3.on_background
+                        color: dndToggle.dndOn ? Appearance.md3.secondary_container : Appearance.md3.surface_container_highest
                         animationDuration: 300
-                        opacity: 0
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                    }
+
+                    // Capa de estado: misma forma y misma duración para que
+                    // morfe sincronizada con el fondo
+                    MaterialShape {
+                        anchors.fill: dndContainer
+                        shape: dndToggle.dndShape
+                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        animationDuration: 300
+                        opacity: dndMouse.pressed ? 0.12 : (dndMouse.containsMouse || dndToggle.activeFocus) ? 0.08 : 0
 
                         Behavior on opacity {
                             NumberAnimation {
@@ -157,61 +211,101 @@ PanelWindow {
                         id: dndIcon
 
                         anchors.centerIn: parent
-                        text: NotificationService.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
+                        text: dndToggle.dndOn ? "do_not_disturb_on" : "do_not_disturb_off"
                         size: Appearance.font.pixelSize.large
-                        color: NotificationService.dnd ? Appearance.md3.error : Appearance.md3.primary
-                    }
+                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
 
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: dndStateLayer.opacity = 0.08
-                        onExited: dndStateLayer.opacity = 0
-                        onPressed: dndStateLayer.opacity = 0.12
-                        onReleased: dndStateLayer.opacity = containsMouse ? 0.08 : 0
-                        onClicked: NotificationService.toggleDnd()
-                    }
-                }
-
-                // --- Clear all: enlace de texto discreto, tipo cabecera GNOME ---
-                Item {
-                    visible: (root.historyModel ? root.historyModel.count : 0) > 0
-                    implicitWidth: clearAllText.implicitWidth + 16
-                    implicitHeight: 32
-
-                    Rectangle {
-                        id: clearAllStateLayer
-
-                        anchors.fill: parent
-                        radius: Appearance.shape.full
-                        color: Appearance.md3.on_background
-                        opacity: 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
                             }
                         }
                     }
 
-                    StyledText {
-                        id: clearAllText
-
-                        anchors.centerIn: parent
-                        text: I18nService.getTranslation("notifications.clear_all", "Clear all")
-                        font.family: Appearance.font.sans
-                        color: Appearance.md3.primary
-                    }
-
                     MouseArea {
+                        id: dndMouse
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onEntered: clearAllStateLayer.opacity = 0.08
-                        onExited: clearAllStateLayer.opacity = 0
-                        onPressed: clearAllStateLayer.opacity = 0.12
-                        onReleased: clearAllStateLayer.opacity = containsMouse ? 0.08 : 0
+                        onEntered: dndToggle.forceActiveFocus()
+                        onPressed: dndToggle.forceActiveFocus()
+                        onClicked: NotificationService.toggleDnd()
+                    }
+                }
+
+                // --- Clear all: botón tonal relleno en forma de píldora ---
+                Item {
+                    id: clearAllButton
+
+                    visible: (root.historyModel ? root.historyModel.count : 0) > 0
+                    implicitWidth: clearAllRow.implicitWidth + 20
+                    implicitHeight: 40
+                    activeFocusOnTab: true
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: I18nService.getTranslation("notifications.clear_all", "Clear all")
+
+                    Keys.onReturnPressed: root.historyModel.clear()
+                    Keys.onEnterPressed: root.historyModel.clear()
+                    Keys.onSpacePressed: root.historyModel.clear()
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Appearance.shape.full
+                        color: clearAllButton.activeFocus ? Appearance.md3.primary_container : Appearance.md3.secondary_container
+                        border.width: clearAllButton.activeFocus ? 2 : 0
+                        border.color: Appearance.md3.primary
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: parent.radius
+                            color: Appearance.md3.on_secondary_container
+                            opacity: clearAllMouse.pressed ? 0.12 : (clearAllMouse.containsMouse ? 0.08 : 0)
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 100
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            id: clearAllRow
+
+                            anchors.centerIn: parent
+                            spacing: 6
+
+                            MaterialIcon {
+                                text: "delete_sweep"
+                                size: Appearance.font.pixelSize.normal
+                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
+                            }
+
+                            StyledText {
+                                text: I18nService.getTranslation("notifications.clear_all", "Clear all")
+                                font.family: Appearance.font.sans
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                font.bold: true
+                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        id: clearAllMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: clearAllButton.forceActiveFocus()
+                        onPressed: clearAllButton.forceActiveFocus()
                         onClicked: root.historyModel.clear()
                     }
                 }
@@ -235,7 +329,7 @@ PanelWindow {
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 clip: true
                 focus: true
-                spacing: 8
+                spacing: 12
                 keyNavigationWraps: true
                 highlightMoveDuration: 100
                 boundsBehavior: Flickable.StopAtBounds
@@ -248,7 +342,6 @@ PanelWindow {
                 Keys.onUpPressed: decrementCurrentIndex()
                 delegate: NotificationHistoryCard {
                     width: historyList.width
-                    opacity: ListView.isCurrentItem ? 1.0 : 0.85
                     onRemoveRequested: root.historyModel.remove(index)
                 }
             }
@@ -312,12 +405,35 @@ PanelWindow {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: I18nService.getTranslation("notifications.empty", "")
-                    color: Appearance.md3.on_surface_variant
+                    color: Appearance.md3.on_surface
                     font.family: Appearance.font.sans
-                    font.pixelSize: 12
+                    font.variableAxes: Appearance.font.variableAxes.title
+                    font.pixelSize: Appearance.font.pixelSize.large
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                 }
+
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: I18nService.getTranslation("notifications.empty_hint", "Las nuevas notificaciones aparecerán aquí")
+                    color: Appearance.md3.on_surface_variant
+                    font.family: Appearance.font.sans
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            // --- Pie sutil con atajos de teclado ---
+            StyledText {
+                Layout.fillWidth: true
+                visible: (root.historyModel ? root.historyModel.count : 0) > 0
+                text: I18nService.getTranslation("notifications.hint", "N no molestar · D borrar todo · Supr eliminar")
+                color: Appearance.md3.on_surface_variant
+                opacity: 0.7
+                font.family: Appearance.font.sans
+                font.pixelSize: Appearance.font.pixelSize.smallest
+                horizontalAlignment: Text.AlignHCenter
             }
         }
     }

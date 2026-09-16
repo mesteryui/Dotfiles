@@ -7,11 +7,12 @@ import QtQuick.Controls
 import QtQuick.Effects
 import QtQuick.Layouts
 
+// Campo M3 expresivo tipo Pixel: pill alta con estados tonales.
 Item {
     id: root
 
-    implicitWidth: 280
-    implicitHeight: 48
+    implicitWidth: 380
+    implicitHeight: 56
 
     // ── Estado ────────────────────────────────────────────────────────
     property bool authFailed: false
@@ -109,10 +110,10 @@ Item {
         id: passwordBg
 
         anchors.fill: parent
-        radius: Appearance.shape.normal
-        color: root.authFailed ? root.withAlpha(Appearance.md3.error_container, 0.35) : root.withAlpha(Appearance.md3.surface_container_high, 0.55)
-        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : root.withAlpha(Appearance.md3.outline_variant, 0.6))
-        border.width: 1.5
+        radius: Appearance.shape.full
+        color: root.authFailed ? root.withAlpha(Appearance.md3.error_container, 0.55) : root.withAlpha(Appearance.md3.surface_container_high, 0.78)
+        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : root.withAlpha(Appearance.md3.outline_variant, 0.55))
+        border.width: password.activeFocus || root.authFailed ? 2 : 1
 
         Behavior on color {
             ColorAnimation {
@@ -128,17 +129,18 @@ Item {
         RowLayout {
             anchors {
                 fill: parent
-                leftMargin: 14
-                rightMargin: 10
+                leftMargin: 8
+                rightMargin: 8
             }
-            spacing: 8
+            spacing: 6
 
-            MaterialIcon {
-                id: statusIcon
-
-                icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
-                size: Appearance.font.pixelSize.normal
-                color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
+            // Icono principal en contenedor tonal estilo Pixel (huella / lock)
+            Rectangle {
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 40
+                Layout.alignment: Qt.AlignVCenter
+                radius: width / 2
+                color: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.16) : root.withAlpha(Appearance.md3.primary, root.isFingerprintActive || password.activeFocus ? 0.18 : 0.10)
 
                 Behavior on color {
                     ColorAnimation {
@@ -146,27 +148,42 @@ Item {
                     }
                 }
 
-                // Pulso suave mientras espera la huella — distingue el estado
-                // "escaneando" del icono estático de lock/lock_open.
-                SequentialAnimation {
-                    running: root.isFingerprintActive
-                    loops: Animation.Infinite
+                MaterialIcon {
+                    id: statusIcon
 
-                    NumberAnimation {
-                        target: statusIcon
-                        property: "opacity"
-                        from: 1
-                        to: 0.4
-                        duration: 700
-                        easing.type: Easing.InOutQuad
+                    anchors.centerIn: parent
+                    icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
+                    size: 22
+                    color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive || password.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                        }
                     }
-                    NumberAnimation {
-                        target: statusIcon
-                        property: "opacity"
-                        from: 0.4
-                        to: 1
-                        duration: 700
-                        easing.type: Easing.InOutQuad
+
+                    // Pulso suave mientras espera la huella — distingue el estado
+                    // "escaneando" del icono estático de lock/lock_open.
+                    SequentialAnimation {
+                        running: root.isFingerprintActive
+                        loops: Animation.Infinite
+
+                        NumberAnimation {
+                            target: statusIcon
+                            property: "opacity"
+                            from: 1
+                            to: 0.4
+                            duration: 700
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            target: statusIcon
+                            property: "opacity"
+                            from: 0.4
+                            to: 1
+                            duration: 700
+                            easing.type: Easing.InOutQuad
+                        }
                     }
                 }
             }
@@ -177,7 +194,10 @@ Item {
                 Layout.fillHeight: true
 
                 echoMode: root.isPasswordVisible === false ? TextInput.Password : TextInput.Normal
-                placeholderText: root.authFailed ? I18nService.getTranslation("lockscreen.no_correct", "Contraseña incorrecta") : (root.promptText.length > 0 ? root.promptText : (root.isFingerprintActive ? I18nService.getTranslation("lockscreen.fingerprint", "Coloca tu dedo en el lector") : I18nService.getTranslation("lockscreen.password", "Contraseña...")))
+                // Un solo mensaje aquí: el prompt PAM o "Contraseña...".
+                // El error va en la pastilla de estado y la huella en su
+                // propia pastilla, para no duplicar textos.
+                placeholderText: root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña...")
                 placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)
                 color: Appearance.md3.on_surface
                 background: null
@@ -223,15 +243,31 @@ Item {
                 color: Appearance.md3.tertiary
             }
 
-            // Botón mostrar/ocultar contraseña
-            MaterialIcon {
-                visible: true
-                icon: root.isPasswordVisible === false ? "visibility" : "visibility_off"
-                size: Appearance.font.pixelSize.normal
-                color: Appearance.md3.on_surface
+            // Botón mostrar/ocultar contraseña en círculo tonal
+            Rectangle {
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 40
+                Layout.alignment: Qt.AlignVCenter
+                radius: width / 2
+                color: passwordMouse.containsMouse ? root.withAlpha(Appearance.md3.primary, 0.16) : "transparent"
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    icon: root.isPasswordVisible === false ? "visibility" : "visibility_off"
+                    size: 20
+                    color: Appearance.md3.on_surface_variant
+                }
 
                 MouseArea {
+                    id: passwordMouse
                     anchors.fill: parent
+                    hoverEnabled: true
                     onClicked: root.togglePasswordVisibility()
                     cursorShape: Qt.PointingHandCursor
                 }
