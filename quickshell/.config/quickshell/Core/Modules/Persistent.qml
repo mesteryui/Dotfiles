@@ -50,6 +50,8 @@ Singleton {
             id: persitenceStates
 
             property string currentWallpaper: ""
+            // IDs (.desktop) de apps fijadas en el launcher, en orden.
+            property list<string> pinnedApps: []
         }
     }
 }

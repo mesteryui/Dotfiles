@@ -33,6 +33,11 @@ Singleton {
     // de historial distintas podrían terminar compartiendo id.
     property int historyIdCounter: 0
 
+    // Tope de historial: en sesiones largas crecía sin fin (cada entrada
+    // retiene además su Notification con la imagen). El centro solo
+    // muestra las recientes; descartar las más viejas no cambia lo visible.
+    readonly property int historyLimit: 100
+
     // { historyId, notification } por cada entrada que sigue viva en el
     // historial. Es lo que mantiene el objeto Notification (y por lo tanto
     // su .image / el handle image://qsimage/...) sin destruirse mientras
@@ -93,6 +98,14 @@ Singleton {
             ];
 
             n.tracked = true;
+
+            // Poda: si se supera el tope, caen las más viejas (están al
+            // final porque se inserta por delante). Libera también el
+            // RetainableLock vía removeFromHistory.
+            while (root.historyModel.count > root.historyLimit) {
+                const oldest = root.historyModel.get(root.historyModel.count - 1);
+                root.removeFromHistory(oldest.historyId);
+            }
         }
     }
 

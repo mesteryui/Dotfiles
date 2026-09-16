@@ -1,14 +1,15 @@
-// Réplica de elephant menus/configuration.lua + menus/sistema.lua
-// ("configs": agrupa Packages / Setup / Configuración bajo Configuración).
+// --- Builtin: configure (unified menu system) ---
 
-.pragma library
+import QtQuick
 
-function info() {
-    return { sectionId: "configure", titleFallback: "Configuración", titleKey: "sysmenu.sec_configure", iconName: "settings", parentId: "main" };
-}
+QtObject {
+    property string sectionId: "configure"
+    property string titleFallback: "Configuración"
+    property string titleKey: "sysmenu.sec_configure"
+    property string iconName: "settings"
+    property string parentId: "main"
 
-function entries() {
-    return [
+    property var entries: [
         { entryId: "cfg-keybinds", titleFallback: "Editar atajos de teclado", titleKey: "sysmenu.cfg-keybinds_t", subtitleFallback: "hypr keybinds", subtitleKey: "sysmenu.cfg-keybinds_s", iconName: "keyboard",
           action: { kind: "shell", shellCommand: "emacsclient -c -a emacs ~/.config/hypr/configs/keybinds/" } },
         { entryId: "cfg-perms", titleFallback: "Permisos del compositor", titleKey: "sysmenu.cfg-perms_t", subtitleFallback: "permissions", subtitleKey: "sysmenu.cfg-perms_s", iconName: "security",
@@ -27,5 +28,7 @@ function entries() {
           action: { kind: "ipc", ipcCall: "ui.settings toggle" } },
         { entryId: "cfg-dashboard", titleFallback: "Panel de control", titleKey: "sysmenu.cfg-dashboard_t", subtitleFallback: "dashboard quickshell", subtitleKey: "sysmenu.cfg-dashboard_s", iconName: "dashboard",
           action: { kind: "ipc", ipcCall: "dashboard toggle" } }
-    ];
+    ]
+
+    function refresh() {}
 }

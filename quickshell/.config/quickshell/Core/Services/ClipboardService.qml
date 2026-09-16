@@ -1,6 +1,8 @@
 // --- ClipboardService (Singleton) ---
 // Historial del portapapeles vía cliphist (mismo backend que Walker/Elephant
-// esperan: `cliphist list | decode | delete-query | wipe` + `wl-copy`).
+// esperan: `cliphist list | decode | delete | wipe` + `wl-copy`).
+// Borrado por id con `echo <id> | cliphist delete` (delete-query borra por
+// contenido y no sirve para una entrada concreta).
 // Soporta texto e imágenes: las entradas `[[ binary data ... ]]` se marcan
 // como imagen y al previsualizar/copiar se decodifican a /tmp.
 //
@@ -35,15 +37,35 @@ Singleton {
     property string copyId: ""
     property bool copyIsImage: false
     property string previewId: ""
-    property string delQuery: ""
+    // Cola para no perder peticiones si se pulsa muy rápido:
+    // solo gana la última (igual que FilePreviewService).
+    property string pendingCopyId: ""
+    property bool pendingCopyIsImage: false
+    property bool hasPendingCopy: false
+    property string pendingPreviewId: ""
+    property var pendingDeleteQueue: []
+    property bool pendingRefresh: false
 
     signal previewReady(string cid)
 
+    function shEscape(s) {
+        return String(s).replace(/'/g, "'\\''");
+    }
+
+    function isValidId(cid) {
+        return /^[0-9]+$/.test(String(cid).trim());
+    }
+
     function refresh() {
-        if (listProc.running)
+        // Si el listado está en curso, no lo abortamos: marcamos
+        // pendiente y se refresca solo al terminar (evita lista vacía).
+        if (listProc.running) {
+            pendingRefresh = true;
             return;
+        }
         entries.clear();
-        snapshot = [];
+        // No vaciamos `snapshot` aquí: se reasigna al completar.
+        // Así la lista no parpadea en vacío en cada Supr.
         error = "";
         refreshing = true;
         listProc.running = true;
@@ -59,20 +81,76 @@ Singleton {
     }
 
     function copyEntry(cid, isImage) {
-        copyId = String(cid);
+        const id = String(cid).trim();
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: copy con id inválido '" + cid + "'");
+            return;
+        }
+        // Si ya hay una copia en curso, encolamos solo la última.
+        if (copyProc.running) {
+            pendingCopyId = id;
+            pendingCopyIsImage = !!isImage;
+            hasPendingCopy = true;
+            return;
+        }
+        startCopy(id, !!isImage);
+    }
+
+    function startCopy(id, isImage) {
+        copyId = id;
         copyIsImage = isImage;
+        // Asignación imperativa: evita la carrera de usar `command:`
+        // ligado a la propiedad y `running = true` en la misma función
+        // (el proceso podía arrancar con el id anterior).
+        if (isImage)
+            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy --type image/png"];
+        else
+            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy"];
         copyProc.running = true;
     }
 
     // Devuelve la ruta donde quedará el preview (emite previewReady al terminar)
     function previewImage(cid) {
-        previewId = String(cid);
+        const id = String(cid).trim();
+        if (!isValidId(id))
+            return "";
+        // Si hay preview en curso, solo gana el último (navegación rápida).
+        if (previewProc.running) {
+            pendingPreviewId = id;
+            return previewDir + "/preview-" + id + ".png";
+        }
+        startPreview(id);
+        return previewDir + "/preview-" + id + ".png";
+    }
+
+    function startPreview(id) {
+        previewId = id;
+        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(previewDir) + "/preview-" + shEscape(id) + ".png' && ([ -s \"$OUT\" ] || cliphist decode '" + shEscape(id) + "' > \"$OUT\")"];
         previewProc.running = true;
-        return previewDir + "/preview-" + previewId + ".png";
     }
 
     function deleteEntry(cid) {
-        delQuery = String(cid);
+        const id = String(cid).trim();
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: delete con id inválido '" + cid + "'");
+            return;
+        }
+        // Encolar: pulsar Supr rápido ya no pierde borrados.
+        if (delProc.running) {
+            pendingDeleteQueue.push(id);
+            return;
+        }
+        startDelete(id);
+    }
+
+    function startDelete(id) {
+        // NOTA: antes era `cliphist delete-query <id>`, que borra POR
+        // CONTENIDO (todo lo que contenga ese texto) y podía borrar
+        // varias entradas ajenas o ninguna. Lo correcto para un id es
+        // `echo <id> | cliphist delete`.
+        delProc.command = ["sh", "-c", "printf '%s' '" + shEscape(id) + "' | cliphist delete"];
+        // Guardamos el id en curso para limpiar su preview al terminar.
+        delProc.currentId = id;
         delProc.running = true;
     }
 
@@ -124,37 +202,73 @@ Singleton {
             root.rebuildSnapshot();
             if (!trimProc.running)
                 trimProc.running = true;
+            // Refresh pedido mientras listábamos (ej. Supr durante refresh).
+            if (root.pendingRefresh) {
+                root.pendingRefresh = false;
+                // diferir un tick para no reentrar en el mismo onExited
+                Qt.callLater(() => root.refresh());
+            }
         }
     }
 
     Process {
         id: copyProc
-        command: root.copyIsImage
-            ? ["sh", "-c", "cliphist decode " + root.copyId + " | wl-copy --type image/png"]
-            : ["sh", "-c", "cliphist decode " + root.copyId + " | wl-copy"]
         onExited: (code, status) => {
             if (code !== 0)
                 console.warn("ClipboardService: copy falló id=" + root.copyId);
+            // Si se pidió otra copia mientras tanto, ejecuta solo la última.
+            if (root.hasPendingCopy) {
+                const nid = root.pendingCopyId;
+                const nimg = root.pendingCopyIsImage;
+                root.hasPendingCopy = false;
+                root.pendingCopyId = "";
+                root.startCopy(nid, nimg);
+            }
         }
     }
 
     Process {
         id: previewProc
-        // Si el PNG ya existe y no está vacío se reutiliza: el decode solo
-        // ocurre la primera vez (acelera las miniaturas al navegar).
-        command: ["sh", "-c", "mkdir -p " + root.previewDir + " && OUT=" + root.previewDir + "/preview-" + root.previewId + ".png && ([ -s \"$OUT\" ] || cliphist decode " + root.previewId + " > \"$OUT\")"]
         onExited: (code, status) => {
             if (code === 0)
                 root.previewReady(root.previewId);
             else
                 console.warn("ClipboardService: preview falló id=" + root.previewId);
+            // Navegación rápida: atiende el último preview pendiente.
+            if (root.pendingPreviewId !== "") {
+                const nid = root.pendingPreviewId;
+                root.pendingPreviewId = "";
+                root.startPreview(nid);
+            }
         }
     }
 
     Process {
         id: delProc
-        command: ["cliphist", "delete-query", root.delQuery]
-        onExited: root.refresh()
+        property string currentId: ""
+        onExited: (code, status) => {
+            if (code !== 0)
+                console.warn("ClipboardService: delete falló id=" + delProc.currentId);
+            else if (delProc.currentId !== "")
+                // Limpia el preview cacheado de la entrada borrada para
+                // no mostrar una imagen fantasma si el id se recicla.
+                cleanProc.clean(delProc.currentId);
+            delProc.currentId = "";
+            if (root.pendingDeleteQueue.length > 0) {
+                root.startDelete(root.pendingDeleteQueue.shift());
+                return;
+            }
+            root.refresh();
+        }
+    }
+
+    Process {
+        id: cleanProc
+        // Borrado puntual de un preview; sin señales, no interfiere.
+        function clean(cid) {
+            cleanProc.command = ["sh", "-c", "rm -f '" + root.shEscape(root.previewDir) + "/preview-" + root.shEscape(String(cid).trim()) + ".png'"];
+            cleanProc.running = true;
+        }
     }
 
     Process {

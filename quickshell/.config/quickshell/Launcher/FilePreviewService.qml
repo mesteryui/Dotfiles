@@ -2,10 +2,12 @@
 // Miniaturas para el modo archivos del launcher:
 //   audio → carátula incrustada (ffmpeg, mjpeg)
 //   video → fotograma (ffmpegthumbnailer)
+//   pdf   → primera página (pdftoppm, poppler)
 //   imagen → se muestra directa (no pasa por aquí)
 // Caché en /tmp/qs-filepreview/<sha>.jpg (clave = ruta+mtime+tamaño,
-// tope 60 ficheros). El shell resuelve la ruta final y la devuelve por
-// stdout (QSOUT:). Peticiones rápidas seguidas: solo gana la última.
+// tope 60 ficheros; los pdf usan .png). El shell resuelve la ruta final
+// y la devuelve por stdout (QSOUT:). Peticiones rápidas seguidas: solo
+// gana la última.
 
 pragma Singleton
 
@@ -37,12 +39,17 @@ Singleton {
     function extractShell(path, kind) {
         const p = shEscape(path);
         const key = "$(echo -n '" + p + "|'$(stat -c '%Y %s' '" + p + "' 2>/dev/null) | sha256sum | cut -c1-16)";
-        const out = root.cacheDir + "/" + key + ".jpg";
+        const base = root.cacheDir + "/" + key;
+        // pdftoppm añade la extensión él mismo (-singlefile): el OUT final
+        // es .png; audio/video generan el .jpg.
+        const out = kind === "pdf" ? base + ".png" : base + ".jpg";
         let extract = "";
         if (kind === "audio")
-            extract = "ffmpeg -y -v error -i '" + p + "' -an -vcodec mjpeg \"$OUT\" 2>/dev/null";
+            extract = "ffmpeg -y -v error -i '" + p + "' -an -vcodec mjpeg \"" + out + "\" 2>/dev/null";
+        else if (kind === "pdf")
+            extract = "pdftoppm -png -f 1 -l 1 -singlefile -r 100 '" + p + "' \"" + base + "\" 2>/dev/null";
         else
-            extract = "ffmpegthumbnailer -i '" + p + "' -o \"$OUT\" -s 512 2>/dev/null";
+            extract = "ffmpegthumbnailer -i '" + p + "' -o \"" + out + "\" -s 512 2>/dev/null";
         return "mkdir -p '" + root.cacheDir + "' && OUT=" + out + " && ([ -s \"$OUT\" ] || " + extract + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
     }
 

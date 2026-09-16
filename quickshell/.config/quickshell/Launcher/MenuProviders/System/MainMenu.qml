@@ -1,17 +1,19 @@
-// Sección raíz. Réplica de elephant menus/menu.lua ("main").
-// Esquema de item:
-//   acción shell: { entryId, titleFallback, subtitleFallback, iconName, action: { kind: "shell", shellCommand: "..." } }
-//   acción qs:    { ..., action: { kind: "ipc", ipcCall: "cheatsheet toggle" } }
-//   submenú:      { ..., action: { kind: "section", targetSectionId: "screenshot" } }
+// --- Builtin: main (unified menu system) ---
+// Parte del sistema unificado: todo menú (incluidos los internos) es un
+// provider QML con la misma interfaz que MenuProviders/MenuProvider.qml.
+// Los internos viven en MenuProviders/System/*.qml, los tuyos en MenuProviders/*.qml.
+// El Registry no distingue el origen: solo pregunta a CustomMenuService.
 
-.pragma library
+import QtQuick
 
-function info() {
-    return { sectionId: "main", titleFallback: "Sistema", titleKey: "sysmenu.sec_main", iconName: "tune", parentId: "" };
-}
+QtObject {
+    property string sectionId: "main"
+    property string titleFallback: "Sistema"
+    property string titleKey: "sysmenu.sec_main"
+    property string iconName: "tune"
+    property string parentId: ""
 
-function entries() {
-    return [
+    property var entries: [
         { entryId: "about", titleFallback: "Sobre el sistema", titleKey: "sysmenu.about_t", subtitleFallback: "fastfetch en terminal flotante", subtitleKey: "sysmenu.about_s", iconName: "info",
           action: { kind: "shell", shellCommand: "xdg-terminal-exec --app-id=local.floating -e $SHELL -c 'fastfetch;read -n 1 -s;exit'" } },
         { entryId: "update", titleFallback: "Actualizar sistema", titleKey: "sysmenu.update_t", subtitleFallback: "topgrade vía tracker", subtitleKey: "sysmenu.update_s", iconName: "refresh",
@@ -32,5 +34,7 @@ function entries() {
           action: { kind: "shell", shellCommand: "wlogout" } },
         { entryId: "lock", titleFallback: "Bloquear pantalla", titleKey: "sysmenu.lock_t", subtitleFallback: "quickshell lock", subtitleKey: "sysmenu.lock_s", iconName: "lock",
           action: { kind: "shell", shellCommand: "qs ipc call lockscreen lock" } }
-    ];
+    ]
+
+    function refresh() {}
 }

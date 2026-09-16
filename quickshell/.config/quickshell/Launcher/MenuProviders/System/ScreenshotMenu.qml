@@ -1,14 +1,16 @@
-// Réplica de elephant menus/screenshot-opt.toml ("screenshot", parentId: main)
-// + selector de color (antes en binds de Hyprland). Sin cambios de comandos.
+// --- Builtin: screenshot (unified menu system) ---
+// Misma interfaz que un menú propio (ver MenuProviders/MenuProvider.qml).
 
-.pragma library
+import QtQuick
 
-function info() {
-    return { sectionId: "screenshot", titleFallback: "Captura", titleKey: "sysmenu.sec_screenshot", iconName: "screenshot_monitor", parentId: "main" };
-}
+QtObject {
+    property string sectionId: "screenshot"
+    property string titleFallback: "Captura"
+    property string titleKey: "sysmenu.sec_screenshot"
+    property string iconName: "screenshot_monitor"
+    property string parentId: "main"
 
-function entries() {
-    return [
+    property var entries: [
         { entryId: "shot-screen", titleFallback: "Capturar pantalla", titleKey: "sysmenu.shot-screen_t", subtitleFallback: "hyprshot output", subtitleKey: "sysmenu.shot-screen_s", iconName: "screenshot_monitor",
           action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m output -m eDP-1" } },
         { entryId: "shot-screen-copy", titleFallback: "Copiar pantalla", titleKey: "sysmenu.shot-screen-copy_t", subtitleFallback: "al portapapeles", subtitleKey: "sysmenu.shot-screen-copy_s", iconName: "content_copy",
@@ -25,5 +27,7 @@ function entries() {
           action: { kind: "shell", shellCommand: "grim - | satty --filename - --output-filename \"$HOME/Imágenes/satty-annotated-$(date +'%Y-%m-%d-%H%M%S').png\"" } },
         { entryId: "color-picker", titleFallback: "Selector de color", titleKey: "sysmenu.color-picker_t", subtitleFallback: "hyprpicker autocopy", subtitleKey: "sysmenu.color-picker_s", iconName: "palette",
           action: { kind: "shell", shellCommand: "hyprpicker --autocopy" } }
-    ];
+    ]
+
+    function refresh() {}
 }

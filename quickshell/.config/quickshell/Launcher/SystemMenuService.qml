@@ -106,7 +106,12 @@ Singleton {
             .concat(snapshotSection("animations", animModel));
     }
 
-    property var pendingCmd: ["true"]
+    // Lanzamiento desacoplado (ver AppLauncher.runCmd): las acciones del
+    // menú abren GUIs de larga vida y un Process atado bloquearía el
+    // siguiente lanzamiento mientras el anterior siga abierto.
+    function runShell(cmd) {
+        Quickshell.execDetached(["sh", "-c", cmd]);
+    }
 
     function shEscape(s) {
         return String(s).replace(/'/g, "'\\''");
@@ -178,22 +183,6 @@ Singleton {
                 "hyprctl reload && notify-send 'Hyprland Animations' 'Animacion cambiada a " + v + "'";
         }
         return "true";
-    }
-
-    function runShell(cmd) {
-        pendingCmd = ["sh", "-c", cmd];
-        runProc.running = true;
-    }
-
-    Process {
-        id: runProc
-
-        command: root.pendingCmd
-
-        onExited: (code, status) => {
-            if (code !== 0)
-                console.warn("SystemMenuService: falló", JSON.stringify(root.pendingCmd));
-        }
     }
 
     // CURRENT\t<file> + ENTRY\t<file>\t<preview|vacío>

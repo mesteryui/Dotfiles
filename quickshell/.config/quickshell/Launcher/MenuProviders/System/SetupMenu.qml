@@ -1,18 +1,20 @@
-// Réplica de elephant menus/setup.toml.
-// NOTA: el icono era "container" (no existe en Material Symbols y se veía
-// roto) → "deployed_code" (verificado en la fuente instalada).
+// --- Builtin: setup (unified menu system) ---
 
-.pragma library
+import QtQuick
 
-function info() {
-    return { sectionId: "setup", titleFallback: "Setup", titleKey: "sysmenu.sec_setup", iconName: "construction", parentId: "main" };
-}
+QtObject {
+    property string sectionId: "setup"
+    property string titleFallback: "Setup"
+    property string titleKey: "sysmenu.sec_setup"
+    property string iconName: "construction"
+    property string parentId: "main"
 
-function entries() {
-    return [
+    property var entries: [
         { entryId: "setup-docker", titleFallback: "Setup Docker", titleKey: "sysmenu.setup-docker_t", subtitleFallback: "docker-setup.sh", subtitleKey: "sysmenu.setup-docker_s", iconName: "deployed_code",
           action: { kind: "shell", shellCommand: "kitty --class=float_kitty -e docker-setup.sh" } },
         { entryId: "setup-python", titleFallback: "Setup Python", titleKey: "sysmenu.setup-python_t", subtitleFallback: "python-setup.sh", subtitleKey: "sysmenu.setup-python_s", iconName: "code",
           action: { kind: "shell", shellCommand: "kitty --class=float_kitty -e python-setup.sh" } }
-    ];
+    ]
+
+    function refresh() {}
 }
