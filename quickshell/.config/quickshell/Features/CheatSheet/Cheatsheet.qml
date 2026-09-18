@@ -428,7 +428,7 @@ PanelWindow {
 
                     background: null
                     color: Appearance.md3.on_surface
-                    placeholderText: Services.I18nService.getTranslation("cheatsheet.search", "Search keybinds…")
+                    placeholderText: Services.I18nService.getTranslation("cheatsheet.search", "Buscar atajos de teclado…")
                     placeholderTextColor: Appearance.md3.on_surface_variant
                     selectedTextColor: Appearance.md3.on_secondary_container
                     selectionColor: Appearance.md3.secondary_container
@@ -527,7 +527,7 @@ PanelWindow {
             // ----------------------------------------------------------------
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
-                text: Services.I18nService.getTranslation("cheatsheet.hint", "Ctrl+J/K move · Ctrl+H/L columns · Esc clear/close")
+                text: Services.I18nService.getTranslation("cheatsheet.hint", "Ctrl+J/K moverse · Ctrl+H/L columnas · Esc limpiar/cerrar")
                 color: Appearance.md3.on_surface_variant
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 opacity: 0.8
@@ -625,7 +625,7 @@ PanelWindow {
 
                         StyledText {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatsheet.no_match", "No keybinds match") + " \u201c" + searchField.text + "\u201d" : Services.I18nService.getTranslation("cheatsheet.no_binds", "No documented keybinds found")
+                            text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatsheet.no_match", "Ningún atajo coincide con") + " \u201c" + searchField.text + "\u201d" : Services.I18nService.getTranslation("cheatsheet.no_binds", "No se encontraron atajos documentados")
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: Appearance.font.pixelSize.normal
                         }

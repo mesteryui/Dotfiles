@@ -39,10 +39,8 @@ Singleton {
 
         interval: 60
         onTriggered: {
-            if (!capsLockProc.running)
-                capsLockProc.running = true;
-            if (!numsLock.running)
-                numsLock.running = true;
+            if (!keyStateProc.running)
+                keyStateProc.running = true;
         }
     }
 
@@ -51,10 +49,8 @@ Singleton {
 
         interval: 220
         onTriggered: {
-            if (!capsLockProc.running)
-                capsLockProc.running = true;
-            if (!numsLock.running)
-                numsLock.running = true;
+            if (!keyStateProc.running)
+                keyStateProc.running = true;
         }
     }
 
@@ -63,32 +59,21 @@ Singleton {
         confirmDebounce.restart();
     }
 
+    // Una sola llamada a `hyprctl -j devices` por refresco: del mismo JSON
+    // salen capsLock (teclado principal) y numLock (numpad dedicado o
+    // principal como fallback). Antes eran dos procesos con el mismo comando.
     Process {
-        id: capsLockProc
+        id: keyStateProc
 
         command: ["hyprctl", "-j", "devices"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const data = JSON.parse(text);
-                    const kb = data.keyboards.find(k => k.main) ?? data.keyboards[0];
-                    root.capsLockOn = kb?.capsLock ?? false;
-                } catch (e) {
-                    console.warn("No se pudo parsear hyprctl devices:", e);
-                }
-            }
-        }
-    }
-    Process {
-        id: numsLock
-
-        command: ["hyprctl", "-j", "devices"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const data = JSON.parse(text);
-                    const kb = data.keyboards.find(k => k.name === "asus_numpad") ?? data.keyboards[0];
-                    root.numsLock = kb?.numLock ?? false;
+                    const mainKb = data.keyboards.find(k => k.main) ?? data.keyboards[0];
+                    root.capsLockOn = mainKb?.capsLock ?? false;
+                    const numKb = data.keyboards.find(k => k.name === "asus_numpad") ?? data.keyboards[0];
+                    root.numsLock = numKb?.numLock ?? false;
                 } catch (e) {
                     console.warn("No se pudo parsear hyprctl devices:", e);
                 }

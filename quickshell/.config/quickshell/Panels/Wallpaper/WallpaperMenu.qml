@@ -65,8 +65,11 @@ Scope {
             target: root
 
             function onShowingChanged() {
+                // El contenido es lazy+async: en la primera apertura el item
+                // aún no existe aquí; onLoaded lo enfoca al completarse.
+                // Si ya existe (reapertura rápida), diferir un frame.
                 if (root.showing)
-                    menuContent.requestFocus();
+                    Qt.callLater(() => contentLoader.item?.requestFocus?.());
             }
         }
 
@@ -149,12 +152,29 @@ Scope {
                 anchors.fill: parent
             }
 
-            WallpaperMenuContent {
-                id: menuContent
+            Loader {
+                id: contentLoader
 
                 anchors.fill: parent
                 anchors.margins: 18
-                onHideRequested: root.showing = false
+                active: root.showing || root._isAnimatingOut
+                asynchronous: true
+                sourceComponent: menuComp
+                onLoaded: {
+                    // Carga asíncrona: el foco solo se puede pedir aquí,
+                    // cuando el item ya existe y la ventana está visible.
+                    if (root.showing)
+                        Qt.callLater(() => contentLoader.item?.requestFocus?.());
+                }
+            }
+
+            Component {
+                id: menuComp
+
+                WallpaperMenuContent {
+                    anchors.fill: parent
+                    onHideRequested: root.showing = false
+                }
             }
         }
     }

@@ -127,7 +127,7 @@ Item {
                                 id: coresLabel
 
                                 anchors.centerIn: parent
-                                text: (Services.SystemInfoService.cpuCores ?? 0) + " " + Services.I18nService.getTranslation("panel.cores", "cores")
+                                text: (Services.SystemInfoService.cpuCores ?? 0) + " " + Services.I18nService.getTranslation("panel.cores", "núcleos")
                                 font.pixelSize: Appearance.font.pixelSize.smallest
                                 color: Appearance.md3.on_surface_variant
                             }

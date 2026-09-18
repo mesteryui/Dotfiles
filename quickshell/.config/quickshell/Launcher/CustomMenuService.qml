@@ -2,20 +2,34 @@
 // SISTEMA ÚNICO de menús personalizados (todo lo que NO es Archivos,
 // Aplicaciones, Calculadora, Web, Emojis, Clipboard).
 //
-// Todo menú —interno o tuyo, estático o dinámico— es un provider QML con la
-// misma interfaz de MenuProviders/MenuProvider.qml:
-//   sectionId, titleFallback, titleKey, iconName, parentId, entries, refresh()
+// Todo menú —interno o tuyo, estático o dinámico— usa el componente base
+// Launcher/CustomMenu.qml (módulo qs.Launcher) como raíz:
+//   sectionId, titleFallback, titleKey, iconName, parentId, entries,
+//   helpers, refresh() + fábricas shell()/ipc()/submenu()/entry()
+// La base es genérica (no conoce ningún menú concreto); la lógica de cada
+// menú vive en su propio archivo. Los dinámicos (p. ej. powerprofiles,
+// fastfetch, animations en MenuProviders/System/) generan `entries` en
+// refresh() reasignando el array entero, con sus Process/Timer en `helpers`.
 //
-// Dónde vive cada uno (TODO bajo MenuProviders/):
-//   MenuProviders/System/*.qml → internos (misma interfaz, cargan primero)
-//   MenuProviders/*.qml         → tuyos (salvo plantilla MenuProvider.qml
-//                                y el generador new-menu.sh)
+// Dónde vive cada uno:
+//   Launcher/CustomMenu.qml           → componente base (no es un menú)
+//   MenuProviders/System/*.qml        → internos (cargan primero)
+//   MenuProviders/*.qml               → tuyos (+ el generador new-menu.sh)
+// Todos importan `qs.Launcher` para ver CustomMenu.
 //
-// Añadir un menú = soltar un archivo en MenuProviders/ y recargar el shell.
-// Quitarlo = borrarlo. Sin tocar Registry ni servicios.
+// Añadir un menú = soltar un archivo en MenuProviders/ (se aplica al
+// abrir el launcher, que comprueba cambios en disco). Quitarlo =
+// borrarlo. Sin tocar Registry ni servicios, y sin recargar todo el
+// shell. `qs ipc call launcher reloadMenus` fuerza la recarga inmediata.
 //
-// Prioridad: si un sectionId tuyo colisiona con uno interno o dinámico,
-// manda el interno y se avisa por consola (ver SystemMenuRegistry).
+// Reactividad: `revision` se incrementa en cada (re)descubrimiento y el
+// Registry lo lee en sus funciones, así los bindings del launcher se
+// reevalúan solos al recargar. Los `entries` reasignados en runtime
+// (menús dinámicos) ya invalidan los bindings por lectura de propiedad.
+//
+// Prioridad: si un sectionId tuyo colisiona con uno interno
+// (MenuProviders/System/, estático o dinámico), manda el interno y se
+// avisa por consola (ver SystemMenuRegistry).
 //
 // Nota: el descubrimiento es asíncrono al arrancar; si el launcher se abre
 // antes de completarse, las secciones aparecen solas al terminar
@@ -38,6 +52,12 @@ Singleton {
     property var systemProviders: []
     property var userProviders: []
     property var providers: []
+
+    // Contador de descubrimientos. El Registry lo lee para que los
+    // bindings del launcher se reevalúen solos tras un reload().
+    property int revision: 0
+    // Nº de reloads (rompe la caché de Qt.createComponent en loadOne).
+    property int loadEpoch: 0
 
     // true si el sectionId lo aporta un menú interno (MenuProviders/System/).
     function isSystemSection(sectionId) {
@@ -91,6 +111,67 @@ Singleton {
 
     Component.onCompleted: discoverProc.running = true
 
+    // --- Recarga en vivo sin polling fijo ---
+    // Antes había un Timer que firmaba los directorios cada 2 s. Ahora no
+    // hay proceso periódico: la comprobación en disco se hace al abrir el
+    // launcher (vía SystemMenuRegistry.refreshAll() → checkNow()) y bajo
+    // demanda con `qs ipc call launcher reloadMenus`.
+    // Coste: un `stat` por apertura en vez de uno cada 2 s siempre.
+    property bool autoReload: true
+    property string dirSignature: ""
+    property string watchAcc: ""
+
+    // Comprueba ahora (sin esperar a nada). Se llama al abrir el
+    // launcher vía SystemMenuRegistry.refreshAll().
+    function checkNow() {
+        if (root.autoReload && !watchProc.running && !discoverProc.running)
+            watchProc.running = true;
+    }
+
+    Process {
+        id: watchProc
+
+        command: ["sh", "-c",
+            "for d in '" + root.systemDir + "' '" + root.providersDir + "'; do " +
+            "for f in \"$d\"/*.qml; do [ -f \"$f\" ] || continue; " +
+            "stat -c '%n|%Y|%s' \"$f\"; done; done; " +
+            "stat -c '%n|%Y|%s' '" + root.providersDir + "/../CustomMenu.qml' " +
+            "2>/dev/null | sort"]
+        stdout: SplitParser {
+            onRead: data => {
+                root.watchAcc += data + "\n";
+            }
+        }
+        onRunningChanged: {
+            if (running)
+                root.watchAcc = "";
+        }
+        onExited: {
+            const sig = root.watchAcc;
+            if (root.dirSignature === "") {
+                root.dirSignature = sig;
+                return;
+            }
+            if (sig !== root.dirSignature) {
+                root.dirSignature = sig;
+                root.reload();
+            }
+        }
+    }
+
+    // Recarga los menús sin recargar todo el shell:
+    //   qs ipc call launcher reloadMenus
+    // Re-escanea ambos directorios, destruye los providers viejos, crea
+    // los nuevos y refresca los dinámicos. No-op si ya hay un
+    // descubrimiento en curso (el resultado en vuelo ya incluye lo último).
+    function reload() {
+        if (discoverProc.running)
+            return false;
+        loadEpoch += 1;
+        discoverProc.running = true;
+        return true;
+    }
+
     // "S:nombre.qml" = MenuProviders/System/, "U:nombre.qml" = MenuProviders/
     property var foundFiles: []
 
@@ -99,7 +180,7 @@ Singleton {
 
         command: ["sh", "-c",
             "for f in '" + root.systemDir + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"S:$n\"; done;" +
-            "for f in '" + root.providersDir + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; [ \"$n\" = MenuProvider.qml ] && continue; echo \"U:$n\"; done"]
+            "for f in '" + root.providersDir + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"U:$n\"; done"]
         stdout: SplitParser {
             onRead: data => {
                 const line = data.trim();
@@ -116,7 +197,12 @@ Singleton {
 
     function loadOne(tag, name) {
         const base = tag === "S" ? "MenuProviders/System/" : "MenuProviders/";
-        const comp = Qt.createComponent(Qt.resolvedUrl(base + name));
+        // En reloads se añade "?epoch=" para romper la caché del motor QML:
+        // sin esto, editar un provider y recargar devolvería el componente
+        // viejo compilado. La query no forma parte de la ruta del fichero
+        // local. En el arranque (epoch 0) se usa la URL tal cual.
+        const url = base + name + (root.loadEpoch > 0 ? "?epoch=" + root.loadEpoch : "");
+        const comp = Qt.createComponent(Qt.resolvedUrl(url));
         if (comp.status !== Component.Ready) {
             console.warn("CustomMenuService: no se pudo cargar " + base + name + ": " + comp.errorString());
             return null;
@@ -135,13 +221,16 @@ Singleton {
         const sys = [];
         const usr = [];
         const seen = {};
+        let loadErrors = 0;
         for (let i = 0; i < foundFiles.length; i++) {
             const raw = foundFiles[i];
             const tag = raw.slice(0, 1);
             const name = raw.slice(2);
             const obj = loadOne(tag, name);
-            if (!obj)
+            if (!obj) {
+                loadErrors += 1;
                 continue;
+            }
             if (seen[obj.sectionId]) {
                 console.warn("CustomMenuService: sectionId duplicado '" + obj.sectionId + "' en " + name + ", se ignora (manda el primero)");
                 obj.destroy();
@@ -153,6 +242,25 @@ Singleton {
             else
                 usr.push(obj);
         }
+        // Todo-o-nada en reloads: si algún fichero falla al compilar y ya
+        // había menús, se destruyen los nuevos a medias y se conservan los
+        // viejos (mejor menú viejo que menú roto). En el arranque se usa
+        // lo que haya, como antes.
+        if (loadErrors > 0 && root.loadEpoch > 0 && root.providers.length > 0) {
+            console.warn("CustomMenuService: " + loadErrors + " provider(s) con error, se conservan los menús actuales");
+            for (let d = 0; d < sys.length; d++)
+                sys[d].destroy();
+            for (let e = 0; e < usr.length; e++)
+                usr[e].destroy();
+            return;
+        }
+        // Si el redescubrimiento sale vacío pero había menús, se conservan
+        // los viejos (p. ej. error transitorio del ls): mejor menú viejo
+        // que ningún menú.
+        if (sys.length + usr.length === 0 && root.providers.length > 0) {
+            console.warn("CustomMenuService: redescubrimiento vacío, se conservan los providers actuales");
+            return;
+        }
         // Limpia providers anteriores (recarga) antes de reasignar.
         for (let k = 0; k < root.providers.length; k++)
             root.providers[k].destroy();
@@ -161,5 +269,9 @@ Singleton {
         // Internos primero: en colisiones con dinámicos manda el interno
         // (ver SystemMenuRegistry.sections()).
         root.providers = sys.concat(usr);
+        // Invalida los bindings que leen menús (ver SystemMenuRegistry).
+        root.revision += 1;
+        // Los dinámicos propios regeneran sus entries con la nueva instancia.
+        root.refreshAll();
     }
 }

@@ -1,6 +1,6 @@
 // --- ClipboardService (Singleton) ---
-// Historial del portapapeles vía cliphist (mismo backend que Walker/Elephant
-// esperan: `cliphist list | decode | delete | wipe` + `wl-copy`).
+// Historial del portapapeles vía cliphist
+// (`cliphist list | decode | delete | wipe` + `wl-copy`).
 // Borrado por id con `echo <id> | cliphist delete` (delete-query borra por
 // contenido y no sirve para una entrada concreta).
 // Soporta texto e imágenes: las entradas `[[ binary data ... ]]` se marcan
@@ -49,6 +49,8 @@ Singleton {
     signal previewReady(string cid)
 
     function shEscape(s) {
+        // Copia local a propósito: Core no debe depender del módulo
+        // qs.Launcher (ver Launcher/ShellUtils.js, misma semántica).
         return String(s).replace(/'/g, "'\\''");
     }
 
@@ -109,6 +111,18 @@ Singleton {
         copyProc.running = true;
     }
 
+    // Copia texto arbitrario al portapapeles (vía única para emoji y
+    // calculadora del launcher). Desacoplado como el resto de
+    // lanzamientos: no bloquea ni interfiere con copias en curso de
+    // entradas del historial (esas siguen su propia cola en copyProc).
+    function copyText(text) {
+        const t = String(text ?? "");
+        if (t === "")
+            return false;
+        Quickshell.execDetached(["sh", "-c", "printf '%s' '" + shEscape(t) + "' | wl-copy"]);
+        return true;
+    }
+
     // Devuelve la ruta donde quedará el preview (emite previewReady al terminar)
     function previewImage(cid) {
         const id = String(cid).trim();
@@ -127,6 +141,41 @@ Singleton {
         previewId = id;
         previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(previewDir) + "/preview-" + shEscape(id) + ".png' && ([ -s \"$OUT\" ] || cliphist decode '" + shEscape(id) + "' > \"$OUT\")"];
         previewProc.running = true;
+    }
+
+    // Texto completo de una entrada de texto (`cliphist list` solo trae la
+    // primera línea truncada; para la preview hay que hacer `decode`).
+    // Tope 20000 caracteres en el acumulador; si se corta, se marca con "…".
+    property string textCid: ""
+    property string textContent: ""
+    property string textAcc: ""
+    property string pendingTextId: ""
+    signal textReady(string cid)
+
+    // Pide el texto completo; devuelve el cacheado si ya es de este cid,
+    // "" si queda pendiente (llega vía textReady). Solo gana el último
+    // si se navega rápido (igual que previewImage).
+    function requestText(cid) {
+        const id = String(cid).trim();
+        if (!isValidId(id))
+            return "";
+        if (id === textCid && textContent !== "")
+            return textContent;
+        if (textProc.running) {
+            pendingTextId = id;
+            return "";
+        }
+        startTextRequest(id);
+        return "";
+    }
+
+    function startTextRequest(id) {
+        textCid = id;
+        textContent = "";
+        textAcc = "";
+        pendingTextId = "";
+        textProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' 2>/dev/null | head -c 20000"];
+        textProc.running = true;
     }
 
     function deleteEntry(cid) {
@@ -239,6 +288,37 @@ Singleton {
                 const nid = root.pendingPreviewId;
                 root.pendingPreviewId = "";
                 root.startPreview(nid);
+            }
+        }
+    }
+
+    Process {
+        id: textProc
+        stdout: SplitParser {
+            onRead: data => {
+                if (root.textAcc.length < 20000)
+                    root.textAcc += data + "\n";
+            }
+        }
+        onExited: (code, status) => {
+            if (code === 0) {
+                let t = root.textAcc;
+                if (t.endsWith("\n"))
+                    t = t.slice(0, -1);
+                // head -c cortó: el acumulador llegó al tope.
+                if (root.textAcc.length >= 20000)
+                    t += "\n…";
+                root.textContent = t;
+            } else {
+                console.warn("ClipboardService: texto falló id=" + root.textCid);
+                root.textContent = "";
+            }
+            root.textReady(root.textCid);
+            // Navegación rápida: atiende el último texto pendiente.
+            if (root.pendingTextId !== "") {
+                const nid = root.pendingTextId;
+                root.pendingTextId = "";
+                root.startTextRequest(nid);
             }
         }
     }

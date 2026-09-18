@@ -1,33 +1,39 @@
 // --- Builtin: screenshot (unified menu system) ---
-// Misma interfaz que un menú propio (ver MenuProviders/MenuProvider.qml).
+// Usa el componente base (ver Launcher/CustomMenu.qml).
 
-import QtQuick
+import qs.Launcher
 
-QtObject {
-    property string sectionId: "screenshot"
-    property string titleFallback: "Captura"
-    property string titleKey: "sysmenu.sec_screenshot"
-    property string iconName: "screenshot_monitor"
-    property string parentId: "main"
+CustomMenu {
+    sectionId: "screenshot"
+    titleFallback: "Captura"
+    titleKey: "sysmenu.sec_screenshot"
+    iconName: "screenshot_monitor"
+    parentId: "main"
 
-    property var entries: [
-        { entryId: "shot-screen", titleFallback: "Capturar pantalla", titleKey: "sysmenu.shot-screen_t", subtitleFallback: "hyprshot output", subtitleKey: "sysmenu.shot-screen_s", iconName: "screenshot_monitor",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m output -m eDP-1" } },
-        { entryId: "shot-screen-copy", titleFallback: "Copiar pantalla", titleKey: "sysmenu.shot-screen-copy_t", subtitleFallback: "al portapapeles", subtitleKey: "sysmenu.shot-screen-copy_s", iconName: "content_copy",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m output -m eDP-1 --clipboard-only" } },
-        { entryId: "shot-region", titleFallback: "Capturar región", titleKey: "sysmenu.shot-region_t", subtitleFallback: "hyprshot region", subtitleKey: "sysmenu.shot-region_s", iconName: "crop",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m region" } },
-        { entryId: "shot-region-copy", titleFallback: "Copiar región", titleKey: "sysmenu.shot-region-copy_t", subtitleFallback: "al portapapeles", subtitleKey: "sysmenu.shot-region-copy_s", iconName: "content_copy",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m region --clipboard-only" } },
-        { entryId: "shot-window-copy", titleFallback: "Copiar ventana activa", titleKey: "sysmenu.shot-window-copy_t", subtitleFallback: "al portapapeles", subtitleKey: "sysmenu.shot-window-copy_s", iconName: "content_copy",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m window -m active --clipboard-only" } },
-        { entryId: "shot-window", titleFallback: "Capturar ventana activa", titleKey: "sysmenu.shot-window_t", subtitleFallback: "hyprshot window", subtitleKey: "sysmenu.shot-window_s", iconName: "window",
-          action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m window -m active" } },
-        { entryId: "shot-annotate", titleFallback: "Capturar con anotaciones", titleKey: "sysmenu.shot-annotate_t", subtitleFallback: "grim + satty", subtitleKey: "sysmenu.shot-annotate_s", iconName: "edit",
-          action: { kind: "shell", shellCommand: "grim - | satty --filename - --output-filename \"$HOME/Imágenes/satty-annotated-$(date +'%Y-%m-%d-%H%M%S').png\"" } },
-        { entryId: "color-picker", titleFallback: "Selector de color", titleKey: "sysmenu.color-picker_t", subtitleFallback: "hyprpicker autocopy", subtitleKey: "sysmenu.color-picker_s", iconName: "palette",
-          action: { kind: "shell", shellCommand: "hyprpicker --autocopy" } }
+    entries: [
+        shell("shot-screen", "Capturar pantalla", "hyprshot output", "screenshot_monitor",
+            "sleep 0.5 && hyprshot -m output -m eDP-1",
+            { titleKey: "sysmenu.shot-screen_t", subtitleKey: "sysmenu.shot-screen_s" }),
+        shell("shot-screen-copy", "Copiar pantalla", "al portapapeles", "content_copy",
+            "sleep 0.5 && hyprshot -m output -m eDP-1 --clipboard-only",
+            { titleKey: "sysmenu.shot-screen-copy_t", subtitleKey: "sysmenu.shot-screen-copy_s" }),
+        shell("shot-region", "Capturar región", "hyprshot region", "crop",
+            "sleep 0.5 && hyprshot -m region",
+            { titleKey: "sysmenu.shot-region_t", subtitleKey: "sysmenu.shot-region_s" }),
+        shell("shot-region-copy", "Copiar región", "al portapapeles", "content_copy",
+            "sleep 0.5 && hyprshot -m region --clipboard-only",
+            { titleKey: "sysmenu.shot-region-copy_t", subtitleKey: "sysmenu.shot-region-copy_s" }),
+        shell("shot-window-copy", "Copiar ventana activa", "al portapapeles", "content_copy",
+            "sleep 0.5 && hyprshot -m window -m active --clipboard-only",
+            { titleKey: "sysmenu.shot-window-copy_t", subtitleKey: "sysmenu.shot-window-copy_s" }),
+        shell("shot-window", "Capturar ventana activa", "hyprshot window", "window",
+            "sleep 0.5 && hyprshot -m window -m active",
+            { titleKey: "sysmenu.shot-window_t", subtitleKey: "sysmenu.shot-window_s" }),
+        shell("shot-annotate", "Capturar con anotaciones", "grim + satty", "edit",
+            "grim - | satty --filename - --output-filename \"$HOME/Imágenes/satty-annotated-$(date +'%Y-%m-%d-%H%M%S').png\"",
+            { titleKey: "sysmenu.shot-annotate_t", subtitleKey: "sysmenu.shot-annotate_s" }),
+        shell("color-picker", "Selector de color", "hyprpicker autocopy", "palette",
+            "hyprpicker --autocopy",
+            { titleKey: "sysmenu.color-picker_t", subtitleKey: "sysmenu.color-picker_s" })
     ]
-
-    function refresh() {}
 }

@@ -30,11 +30,11 @@ Item {
     function profileLabel(profile) {
         switch (profile) {
         case PowerProfile.PowerSaver:
-            return Services.I18nService.getTranslation("battery.powersave");
+            return Services.I18nService.getTranslation("battery.powersave", "Ahorro");
         case PowerProfile.Performance:
-            return Services.I18nService.getTranslation("battery.performance");
+            return Services.I18nService.getTranslation("battery.performance", "Rendimiento");
         default:
-            return Services.I18nService.getTranslation("battery.balanced");
+            return Services.I18nService.getTranslation("battery.balanced", "Equilibrado");
         }
     }
 

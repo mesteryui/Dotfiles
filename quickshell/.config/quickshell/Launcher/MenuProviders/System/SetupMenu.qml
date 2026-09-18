@@ -1,20 +1,21 @@
 // --- Builtin: setup (unified menu system) ---
+// Usa el componente base (ver Launcher/CustomMenu.qml).
 
-import QtQuick
+import qs.Launcher
 
-QtObject {
-    property string sectionId: "setup"
-    property string titleFallback: "Setup"
-    property string titleKey: "sysmenu.sec_setup"
-    property string iconName: "construction"
-    property string parentId: "main"
+CustomMenu {
+    sectionId: "setup"
+    titleFallback: "Setup"
+    titleKey: "sysmenu.sec_setup"
+    iconName: "construction"
+    parentId: "main"
 
-    property var entries: [
-        { entryId: "setup-docker", titleFallback: "Setup Docker", titleKey: "sysmenu.setup-docker_t", subtitleFallback: "docker-setup.sh", subtitleKey: "sysmenu.setup-docker_s", iconName: "deployed_code",
-          action: { kind: "shell", shellCommand: "kitty --class=float_kitty -e docker-setup.sh" } },
-        { entryId: "setup-python", titleFallback: "Setup Python", titleKey: "sysmenu.setup-python_t", subtitleFallback: "python-setup.sh", subtitleKey: "sysmenu.setup-python_s", iconName: "code",
-          action: { kind: "shell", shellCommand: "kitty --class=float_kitty -e python-setup.sh" } }
+    entries: [
+        shell("setup-docker", "Setup Docker", "docker-setup.sh", "deployed_code",
+            "kitty --class=float_kitty -e docker-setup.sh",
+            { titleKey: "sysmenu.setup-docker_t", subtitleKey: "sysmenu.setup-docker_s" }),
+        shell("setup-python", "Setup Python", "python-setup.sh", "code",
+            "kitty --class=float_kitty -e python-setup.sh",
+            { titleKey: "sysmenu.setup-python_t", subtitleKey: "sysmenu.setup-python_s" })
     ]
-
-    function refresh() {}
 }

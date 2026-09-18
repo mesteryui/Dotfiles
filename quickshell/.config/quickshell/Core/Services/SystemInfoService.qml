@@ -8,7 +8,25 @@ Singleton {
     id: root
 
     // ── Intervalo de actualización (ms) ───────────────────────────
+    // No se toca por regla de no cambiar comportamiento: 2000 fijo.
     readonly property int pollInterval: 2000
+
+    // ── Demanda (multiconsumidor) ───────────────────────────────
+    // Cualquiera que necesite datos en vivo —paneles o servicios— llama a
+    // acquire() al empezar y release() al terminar. El bucle corre mientras
+    // haya al menos un cliente. `hasData` garantiza una primera lectura al
+    // arrancar aunque nadie lo pida todavía.
+    property int demandCount: 0
+    property bool hasData: false
+
+    function acquire() {
+        root.demandCount += 1;
+    }
+
+    function release() {
+        if (root.demandCount > 0)
+            root.demandCount -= 1;
+    }
 
     // ── API pública: CPU ──────────────────────────────────────────
     readonly property real   cpuUsage:     _cpu.usage
@@ -31,6 +49,11 @@ Singleton {
     // ── API pública: Uptime ───────────────────────────────────────
     readonly property string uptime:       _uptime.formatted
     readonly property real   uptimeSecs:   _uptime.seconds
+
+    // ── API pública: Host ─────────────────────────────────────────
+    // Sale del MISMO bucle (sin proceso extra): lo consume el panel de
+    // control en vez de lanzar `hostname` al arrancar.
+    readonly property string hostname:     _host.name
 
     // ── API pública: Disco ────────────────────────────────────────
     readonly property string diskUsagePct: _disk.usagePct
@@ -60,11 +83,13 @@ Singleton {
                 cat /proc/uptime
                 echo '---SEP---'
                 df -h /
+                echo '---SEP---'
+                cat /proc/sys/kernel/hostname 2>/dev/null || hostname
                 echo '===END==='
                 sleep ${root.pollInterval / 1000}
             done`
         ]
-        running: true
+        running: root.demandCount > 0 || !root.hasData
 
         stdout: SplitParser {
             // Este delimitador agrupa todo el ciclo en un solo callback
@@ -78,7 +103,12 @@ Singleton {
                     _mem.parse(chunks[2])
                     _uptime.parse(chunks[3])
                     _disk.parse(chunks[4])
+                    if (!root.hasData)
+                        root.hasData = true
                 }
+                // Sección añadida al final a propósito: no desplaza índices.
+                if (chunks.length >= 6)
+                    _host.parse(chunks[5])
             }
         }
     }
@@ -184,6 +214,18 @@ Singleton {
             swapTotalMiB = Math.round(swapTotalKiB / 1024)
             swapUsedMiB  = Math.round((swapTotalKiB - swapFreeKiB) / 1024)
             swapUsage    = swapTotalMiB > 0 ? swapUsedMiB / swapTotalMiB : 0.0
+        }
+    }
+
+    QtObject {
+        id: _host
+
+        property string name: ""
+
+        function parse(raw) {
+            const h = raw.trim().split("\n")[0].trim()
+            if (h !== "")
+                name = h
         }
     }
 

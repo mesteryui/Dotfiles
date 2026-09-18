@@ -51,10 +51,7 @@ Item {
                 iconSize: Appearance.font.pixelSize.normal
                 iconName: "skip_next"
                 enabled: Services.MprisService.activePlayer != null
-                onClicked: {
-                    console.log("next button clicked, hasPlayer:", Services.MprisService.hasPlayer);
-                    Services.MprisService.next();
-                }
+                onClicked: Services.MprisService.next()
                 Layout.alignment: Qt.AlignVCenter
             }
         }

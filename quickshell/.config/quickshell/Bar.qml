@@ -1,6 +1,7 @@
 import qs.Bar
 import qs.Core
 import qs.Core.Services as Services
+import qs.Shared.Background
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -59,7 +60,7 @@ Variants {
             color: "transparent"
 
             // 1. Fondo de la Barra
-            BarBackground {
+            SurfaceBackground {
                 id: bg
 
                 anchors.left: parent.left

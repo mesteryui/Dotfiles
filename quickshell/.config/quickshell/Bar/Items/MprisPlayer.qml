@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.Core.Services as Services
 import qs.Panels.MediaPlayer
 import qs.Bar.Content
-import qs.Bar
+import qs.Shared.Background
 import QtQuick
 import Quickshell
 
@@ -13,7 +13,7 @@ Item {
     implicitWidth: content.implicitWidth + 24
     implicitHeight: 30
 
-    BarBackground {
+    SurfaceBackground {
         anchors.fill: parent
         active: titleInteraction.pressed
     }

@@ -5,37 +5,35 @@ pragma Singleton
 // (Personalizado = todo lo que NO es Archivos, Aplicaciones, Calculadora,
 // Web, Emojis, Clipboard.)
 //
-// Orígenes (el display no distingue ninguno, siempre pregunta aquí):
-//   1. providers unificados → CustomMenuService (MenuProviders/System/*.qml
-//      internos primero, MenuProviders/*.qml tuyos después; misma interfaz)
-//   2. dinámicos en vivo    → SystemMenuService (powerprofiles, fastfetch,
-//      animations)
+// Origen único (el display no distingue ninguno, siempre pregunta aquí):
+//   providers unificados → CustomMenuService: todo menú usa el componente
+//   base Launcher/CustomMenu.qml (módulo qs.Launcher) como raíz, sea
+//   estático (entries fijas) o dinámico (entries generadas en refresh()).
+//   Internos: MenuProviders/System/*.qml (cargan primero).
+//   Tuyos: MenuProviders/*.qml (vía new-menu.sh o a mano).
 //
-// Crear un menú nuevo (única vía):
-//   copia MenuProviders/MenuProvider.qml a MenuProviders/MiMenu.qml,
-//   rellena sectionId/title/icon/parentId/entries (+ refresh() si es
-//   dinámico) y recarga el shell. Sin tocar este archivo.
+// Crear un menú nuevo (única vía, estático o dinámico):
+//   ejecuta MenuProviders/new-menu.sh MiMenu "Mi menú" (o escribe un
+//   CustomMenu { } a mano), rellena entries y guarda: la recarga en vivo
+//   lo aplica en ~2 s. Sin tocar este archivo y sin recargar todo el shell.
+//   Dinámico = implementa refresh() reasignando entries entero
+//   (ver MenuProviders/System/FastfetchMenu.qml).
+//
+// Reactividad: las funciones que sirven items/secciones leen
+// CustomMenuService.revision, así cualquier reload() reevalúa los bindings
+// del launcher automáticamente.
 //
 // i18n: títulos/subtítulos se resuelven aquí con I18nService usando las
-// claves titleKey/subtitleKey (fallback a los literales en español). El enlace
-// a perfiles de energía muestra además el perfil actual en vivo.
-//
-// LEGADO: SystemMenu/*.js (info()+entries()) queda como referencia; el
-// Registry ya no los importa. La fuente de verdad son los *.qml unificados.
+// claves titleKey/subtitleKey (fallback a los literales en español).
+// Esta fachada es genérica: no conoce ningún menú concreto; cada provider
+// describe lo suyo con entradas shell()/ipc()/submenu().
 
 import qs.Core.Services as Services
 import QtQuick
 import Quickshell
-import Quickshell.Services.UPower
 
 Singleton {
     id: root
-
-    readonly property var dynamicInfo: [
-        { sectionId: "powerprofiles", titleFallback: "Perfil de energía", titleKey: "sysmenu.sec_powerprofiles", iconName: "battery_charging_full", parentId: "configure" },
-        { sectionId: "fastfetch", titleFallback: "Tema Fastfetch", titleKey: "sysmenu.sec_fastfetch", iconName: "terminal", parentId: "appearance" },
-        { sectionId: "animations", titleFallback: "Animaciones Hyprland", titleKey: "sysmenu.sec_animations", iconName: "animation", parentId: "appearance" }
-    ]
 
     function tr(key, fallback) {
         return Services.I18nService.getTranslation(key || "", fallback || "");
@@ -45,23 +43,36 @@ Singleton {
         return tr(sectionInfo.titleKey, sectionInfo.titleFallback);
     }
 
-    // Etiqueta del perfil de energía actual (para mostrarla en el enlace).
-    function powerLabel() {
-        switch (PowerProfiles.profile) {
-        case PowerProfile.PowerSaver:
-            return tr("battery.powersave", "Ahorro");
-        case PowerProfile.Performance:
-            return tr("battery.performance", "Rendimiento");
-        default:
-            return tr("battery.balanced", "Equilibrado");
-        }
+    // Memoización behavior-preserving: sections()/flattenStatic() se
+    // llamaban por cada tecla y reconstruían + traducían todo. La caché
+    // se invalida con revision (contenido) e idioma (textos); la lectura
+    // explícita de ambas conserva la reactividad de los bindings.
+    // OJO: la caché vive en CAMPOS de un objeto JS y solo se muta, nunca
+    // se reasigna la propiedad: reasignar notificaría y, como estas
+    // funciones se llaman desde bindings que leen la caché, QML avisaría
+    // "Binding loop detected" aunque convergiera.
+    property var _memo: ({
+        sectionsKey: "", sectionsVal: [],
+        poolKey: "", poolVal: [], poolRefs: [],
+        sectionRev: "", sectionCache: ({})
+    })
+
+    function memoKey() {
+        return CustomMenuService.revision + "|" + Services.I18nService.language;
     }
 
     function sections() {
+        const key = root.memoKey();
+        if (key === root._memo.sectionsKey)
+            return root._memo.sectionsVal;
         const out = [];
         const seen = {};
-        // Providers unificados (internos primero, tuyos después; el store
-        // ya dedupica, aquí solo se traduce el título).
+        // Dependencia reactiva: tras un reload() este binding se reevalúa.
+        const rev = CustomMenuService.revision;
+        // Vía única: providers unificados (internos primero, tuyos después;
+        // el store ya dedupica, aquí solo se traduce el título).
+        // Estáticos y dinámicos llegan igual: los dinámicos regeneran sus
+        // entries en refresh() y la lectura de la propiedad invalida sola.
         const customs = CustomMenuService.sectionInfos();
         for (let k = 0; k < customs.length; k++) {
             if (seen[customs[k].sectionId])
@@ -69,28 +80,15 @@ Singleton {
             out.push(Object.assign({}, customs[k], { title: sectionTitle(customs[k]) }));
             seen[customs[k].sectionId] = true;
         }
-        // Dinámicos en vivo (si colisionan con un provider, manda el
-        // provider y se avisa; en la práctica no colisionan).
-        for (let j = 0; j < dynamicInfo.length; j++) {
-            if (seen[dynamicInfo[j].sectionId]) {
-                console.warn("SystemMenuRegistry: sectionId duplicado '" + dynamicInfo[j].sectionId + "', se ignora el dinámico");
-                continue;
-            }
-            out.push(Object.assign({}, dynamicInfo[j], { title: sectionTitle(dynamicInfo[j]) }));
-            seen[dynamicInfo[j].sectionId] = true;
-        }
+        root._memo.sectionsKey = key;
+        root._memo.sectionsVal = out;
         return out;
     }
 
-    // true si la sección es interna (provider de MenuProviders/System/ o dinámica).
+    // true si la sección es interna (provider de MenuProviders/System/).
     // Los duplicados propios se ignoran en el store, así que basta con esto.
     function isBuiltinSection(sectionId) {
-        if (CustomMenuService.isSystemSection(sectionId))
-            return true;
-        for (let j = 0; j < dynamicInfo.length; j++)
-            if (dynamicInfo[j].sectionId === sectionId)
-                return true;
-        return false;
+        return CustomMenuService.isSystemSection(sectionId);
     }
 
     function sectionInfo(sectionId) {
@@ -101,33 +99,10 @@ Singleton {
         return { sectionId: "main", title: tr("sysmenu.sec_main", "Sistema"), iconName: "tune", parentId: "" };
     }
 
-    // Entradas unificadas de una sección ([] si no hay o si es dinámica pura).
+    // Entradas unificadas de una sección ([] si no hay).
+    // Vale para estáticas y dinámicas: ambas exponen `entries`.
     function staticEntries(sectionId) {
         return CustomMenuService.entriesOf(sectionId);
-    }
-
-    // Items dinámicos internos de una sección (snapshot de SystemMenuService).
-    // Se lee el snapshot y NO los ListModel en vivo: esos notifican por cada
-    // item y reevaluar resultados con cada append disparaba binding loops.
-    function builtinDynamicItems(sectionId, withCat) {
-        const label = withCat ? sectionInfo(sectionId).title : "";
-        const snap = SystemMenuService.dynSnapshot;
-        const out = [];
-        for (let i = 0; i < snap.length; i++) {
-            const dynEntry = snap[i];
-            if (dynEntry.section !== sectionId)
-                continue;
-            out.push({
-                kind: "system", title: dynEntry.title, sub: dynEntry.sub,
-                iconName: dynEntry.iconName, appIcon: "", ch: "",
-                imagePath: (dynEntry.preview && dynEntry.preview !== "") ? ("file://" + dynEntry.preview) : "",
-                cat: label,
-                shell: dynEntry.native ? "" : SystemMenuService.shellFor(sectionId, dynEntry.value),
-                nativeApply: dynEntry.native || "", nativeValue: dynEntry.nativeValue,
-                isSubmenu: false, section: ""
-            });
-        }
-        return out;
     }
 
     // ---- Fachada única para el display (AppLauncher) ----
@@ -135,32 +110,72 @@ Singleton {
     // estáticos o dinámicos. El display no distingue el origen.
 
     // Items listos para pintar de una sección (navegación sin query).
+    // La caché se invalida también si el provider reasignó `entries`
+    // (los dinámicos lo hacen sin bump de revision): se lee entriesOf
+    // siempre (dependencia reactiva) y se compara la referencia.
     function sectionResultItems(sectionId) {
-        const out = [];
+        // Dependencia reactiva (ver sections()).
+        const rev = CustomMenuService.revision;
         const statics = staticEntries(sectionId);
+        const key = sectionId + "|" + root.memoKey();
+        const hit = root._memo.sectionCache[sectionId];
+        if (hit && hit.key === key && hit.src === statics)
+            return hit.val;
+        const out = [];
         for (let i = 0; i < statics.length; i++)
             out.push(toResultItem(statics[i], ""));
-        return out.concat(builtinDynamicItems(sectionId, false));
+        if (rev !== root._memo.sectionRev) {
+            root._memo.sectionRev = rev;
+            root._memo.sectionCache = {};
+        }
+        root._memo.sectionCache[sectionId] = { key: key, src: statics, val: out };
+        return out;
     }
 
     // Todo lo buscable del menú de sistema (búsqueda global con query).
     function systemSearchPool() {
-        let pool = flattenStatic();
-        for (let k = 0; k < dynamicInfo.length; k++)
-            pool = pool.concat(builtinDynamicItems(dynamicInfo[k].sectionId, true));
-        return pool;
+        return flattenStatic();
     }
 
-    // Refresca una sección si es dinámica (no-op en el resto).
+    // Refresca una sección si es dinámica (no-op en las estáticas:
+    // su refresh() es vacío por defecto en CustomMenu).
     function refreshSection(sectionId) {
-        SystemMenuService.refreshSection(sectionId);
         CustomMenuService.refreshSection(sectionId);
     }
 
-    // Refresca todos los modelos live al abrir el launcher.
+    // Guarda temporal del refresco completo: reabrir en <8 s no regenera
+    // (entrar en una sección vía refreshSection() sigue siendo siempre
+    // fresco; reloadMenus fuerza vía reload()). Las fuentes dinámicas
+    // cambian poco (layouts/animaciones) y el perfil de energía se
+    // actualiza solo por D-Bus en su provider.
+    property double lastRefreshAll: 0
+
+    // Refresca todos los providers al abrir el launcher.
+    // Además dispara la comprobación de cambios en disco (recarga en
+    // vivo: si editaste un provider, se aplica solo).
     function refreshAll() {
-        SystemMenuService.refreshAll();
+        if (Date.now() - root.lastRefreshAll < 8000)
+            return;
+        root.lastRefreshAll = Date.now();
         CustomMenuService.refreshAll();
+        CustomMenuService.checkNow();
+    }
+
+    // Recarga completa de menús sin recargar el shell (vía IPC:
+    // `qs ipc call launcher reloadMenus`). Re-escanea providers en disco,
+    // refresca los dinámicos y devuelve diagnóstico.
+    function reloadCustomMenus(): string {
+        const started = CustomMenuService.reload();
+        const infos = CustomMenuService.sectionInfos();
+        const ids = [];
+        for (let i = 0; i < infos.length; i++)
+            ids.push(infos[i].sectionId);
+        // Ojo: el redescubrimiento es asíncrono (Process ls); los nuevos
+        // providers aparecen solos al terminar vía revision. Este resumen
+        // describe el estado previo + si se lanzó el escaneo.
+        return (started ? "rescanning" : "already-scanning")
+            + " menus=" + ids.length + " rev=" + CustomMenuService.revision
+            + " [" + ids.join(",") + "]";
     }
 
     // Miga de pan desde la raíz hasta la sección (para el breadcrumb).
@@ -179,41 +194,62 @@ Singleton {
     }
 
     // Comando shell final de una entrada (lo que ejecuta AppLauncher).
+    // Las secciones no tienen shell ("").
     function shellOf(entry) {
+        if (!entry || !entry.action)
+            return "";
         if (entry.action.kind === "ipc")
             return "qs ipc call " + entry.action.ipcCall;
-        return entry.action.shellCommand;
+        if (entry.action.kind === "shell")
+            return entry.action.shellCommand;
+        return "";
     }
 
     // Entrada unificada → item de resultados del launcher.
     // `previewPath` (menús con imagen) se expone como imagen para el
     // preview lateral (ver MenuModes.needsPreview).
     function toResultItem(entry, sectionLabel) {
-        let subtitle = tr(entry.subtitleKey, entry.subtitleFallback);
-        // El enlace a perfiles muestra el perfil actual en vivo.
-        if (entry.action.kind === "section" && entry.action.targetSectionId === "powerprofiles")
-            subtitle += " · " + powerLabel();
+        const kind = (entry && entry.action && entry.action.kind) || "";
         return {
-            kind: "system", title: tr(entry.titleKey, entry.titleFallback), sub: subtitle,
+            kind: "system", title: tr(entry.titleKey, entry.titleFallback), sub: tr(entry.subtitleKey, entry.subtitleFallback),
             iconName: entry.iconName, appIcon: "", ch: "",
             imagePath: entry.previewPath ? ("file://" + entry.previewPath) : "",
             cat: sectionLabel, shell: shellOf(entry),
-            isSubmenu: entry.action.kind === "section",
-            section: entry.action.kind === "section" ? entry.action.targetSectionId : ""
+            isSubmenu: kind === "section",
+            section: kind === "section" ? entry.action.targetSectionId : ""
         };
     }
 
     // Todas las unificadas aplanadas (búsqueda global con query).
+    // Igual que sectionResultItems: si algún provider dinámico reasignó
+    // sus `entries`, las referencias dejan de coincidir y se reconstruye.
     function flattenStatic() {
-        const out = [];
+        const key = root.memoKey();
+        // Dependencia reactiva (ver sections()).
+        const rev = CustomMenuService.revision;
         const all = sections();
+        const refs = [];
+        for (let i = 0; i < all.length; i++)
+            refs.push(staticEntries(all[i].sectionId));
+        if (key === root._memo.poolKey && root._memo.poolRefs.length === refs.length) {
+            let same = true;
+            for (let k = 0; k < refs.length; k++)
+                if (root._memo.poolRefs[k] !== refs[k]) {
+                    same = false;
+                    break;
+                }
+            if (same)
+                return root._memo.poolVal;
+        }
+        const out = [];
         for (let i = 0; i < all.length; i++) {
-            // Las dinámicas puras no tienen entries unificadas; se añaden
-            // aparte en systemSearchPool() vía builtinDynamicItems().
-            const items = staticEntries(all[i].sectionId);
+            const items = refs[i];
             for (let j = 0; j < items.length; j++)
                 out.push(toResultItem(items[j], all[i].title));
         }
+        root._memo.poolKey = key;
+        root._memo.poolRefs = refs;
+        root._memo.poolVal = out;
         return out;
     }
 }

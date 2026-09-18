@@ -13,7 +13,9 @@ Item {
     SystemClock {
         id: clock
 
-        precision: SystemClock.Seconds
+        // Solo se pinta "hh:mm": Minutes evita 60x wakeups/segundo
+        // sin cambiar el texto visible.
+        precision: SystemClock.Minutes
     }
     
     StyledText {

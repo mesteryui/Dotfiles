@@ -153,7 +153,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: I18nService.getTranslation("polkit.authenticationRequired", "Authentication Required")
+                text: I18nService.getTranslation("polkit.authenticationRequired", "Autenticación requerida")
                 font.pixelSize: 18
                 font.bold: true
                 color: Appearance.md3.on_surface
@@ -218,14 +218,14 @@ Item {
 
                 // Cancel button
                 AnimatedTextButton {
-                    text: I18nService.getTranslation("polkit.cancel", "Cancel")
+                    text: I18nService.getTranslation("polkit.cancel", "Cancelar")
                     isFilled: false
                     onClicked: overlay.closed()
                 }
 
                 // OK button
                 AnimatedTextButton {
-                    text: I18nService.getTranslation("polkit.ok", "OK")
+                    text: I18nService.getTranslation("polkit.ok", "Aceptar")
                     isFilled: true
                     enabled: overlay.interactionAvailable
                     onClicked: {

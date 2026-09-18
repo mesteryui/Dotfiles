@@ -244,7 +244,7 @@ PanelWindow {
                     activeFocusOnTab: true
 
                     Accessible.role: Accessible.Button
-                    Accessible.name: I18nService.getTranslation("notifications.clear_all", "Clear all")
+                    Accessible.name: I18nService.getTranslation("notifications.clear_all", "Limpiar todo")
 
                     Keys.onReturnPressed: root.historyModel.clear()
                     Keys.onEnterPressed: root.historyModel.clear()
@@ -289,7 +289,7 @@ PanelWindow {
                             }
 
                             StyledText {
-                                text: I18nService.getTranslation("notifications.clear_all", "Clear all")
+                                text: I18nService.getTranslation("notifications.clear_all", "Limpiar todo")
                                 font.family: Appearance.font.sans
                                 font.pixelSize: Appearance.font.pixelSize.smaller
                                 font.bold: true

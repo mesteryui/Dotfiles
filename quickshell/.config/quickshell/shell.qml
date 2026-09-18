@@ -26,8 +26,6 @@ ShellRoot {
 
     settings.watchFiles: true
 
-    //ReloadPopup {}
-
     Component.onCompleted: {
         ConfigService.load();
         KeyboardThings.load();

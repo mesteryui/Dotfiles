@@ -11,7 +11,7 @@ import QtQuick.Layouts
  * One row inside a CheatsheetCategoryCard:
  *   [Super] + [Shift] + [Q]   Close active window
  *
- * `bind` is one entry from CheatsheetKeybinds.groupedKeybinds[category]:
+ * `bind` is one entry from HyprlandKeybinds.groupedKeybinds[category]:
  *   { mods: string[], keyLabel: string, label: string, repeat: bool, searchText: string }
  */
 Item {

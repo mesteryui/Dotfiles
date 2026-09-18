@@ -65,19 +65,12 @@ PanelWindow {
     // ── Datos ──────────────────────────────────────────────────────
     property string username: Quickshell.env("USER")
 
-    property string hostname: ""
+    // Sin proceso `hostname` dedicado: viene del bucle de SystemInfoService.
+    property string hostname: SystemInfoService.hostname
 
     readonly property var btAdapter: BluetoothService.currentAdapter
 
     readonly property var audioSink: AudioService.audio
-
-    Process {
-        command: ["hostname"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: root.hostname = this.text.trim()
-        }
-    }
 
     // ── Ciclo de vida ──────────────────────────────────────────────
     HyprlandFocusGrab {
@@ -91,11 +84,34 @@ PanelWindow {
         onActivated: root.visible = false
     }
 
+    // Demanda pareada sobre SystemInfoService: adquirir al abrir y liberar
+    // al cerrar (con guardia para no desbalancear el contador si visible
+    // cambia dos veces seguidas al mismo valor, y liberación al destruir).
+    property bool _sysInfoAcquired: false
+
+    function syncSysInfoDemand() {
+        if (root.visible && !root._sysInfoAcquired) {
+            SystemInfoService.acquire();
+            root._sysInfoAcquired = true;
+        } else if (!root.visible && root._sysInfoAcquired) {
+            SystemInfoService.release();
+            root._sysInfoAcquired = false;
+        }
+    }
+
+    Component.onDestruction: {
+        if (root._sysInfoAcquired)
+            SystemInfoService.release();
+    }
+
     onVisibleChanged: {
         // Foco inicial silencioso: el teclado funciona desde el primer
         // momento pero sin anillo visible hasta que se pulse una tecla.
+        // El contenido es lazy: puede no existir aún en la primera apertura
+        // (onLoaded del Loader lo enfoca al completarse).
+        syncSysInfoDemand();
         if (visible)
-            Qt.callLater(() => panelContent.focusDefault());
+            Qt.callLater(() => contentLoader.item?.focusDefault?.());
     }
 
     // ── Background & Sombra Tonal M3 Expressive ────────────────────
@@ -124,19 +140,35 @@ PanelWindow {
         color: Appearance.md3.surface
     }
 
-    // ── Content ────────────────────────────────────────────────────
-    PanelWithControlsContent {
-        id: panelContent
+    // ── Content (lazy) ─────────────────────────────────────────
+    // Incluye SysInfoTab (gráficos) + bluetooth/audio: se crea solo al abrir.
+    Loader {
+        id: contentLoader
+
         anchors {
             top: bg.top
             left: bg.left
             right: bg.right
             bottom: bg.bottom
         }
+        active: root.visible
+        asynchronous: false
+        sourceComponent: panelComp
+        onLoaded: {
+            if (root.visible)
+                Qt.callLater(() => contentLoader.item?.focusDefault?.());
+        }
+    }
 
-        username: root.username
-        hostname: root.hostname
-        btAdapter: root.btAdapter
-        audioSink: root.audioSink
+    Component {
+        id: panelComp
+
+        PanelWithControlsContent {
+            anchors.fill: parent
+            username: root.username
+            hostname: root.hostname
+            btAdapter: root.btAdapter
+            audioSink: root.audioSink
+        }
     }
 }

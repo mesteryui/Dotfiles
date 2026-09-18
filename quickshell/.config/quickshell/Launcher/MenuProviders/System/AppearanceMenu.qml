@@ -1,22 +1,22 @@
 // --- Builtin: appearance (unified menu system) ---
+// Usa el componente base (ver Launcher/CustomMenu.qml).
 
-import QtQuick
+import qs.Launcher
 
-QtObject {
-    property string sectionId: "appearance"
-    property string titleFallback: "Apariencia"
-    property string titleKey: "sysmenu.sec_appearance"
-    property string iconName: "palette"
-    property string parentId: "main"
+CustomMenu {
+    sectionId: "appearance"
+    titleFallback: "Apariencia"
+    titleKey: "sysmenu.sec_appearance"
+    iconName: "palette"
+    parentId: "main"
 
-    property var entries: [
-        { entryId: "theme-wallpapers", titleFallback: "Wallpapers", titleKey: "sysmenu.theme-wallpapers_t", subtitleFallback: "panel del shell", subtitleKey: "sysmenu.theme-wallpapers_s", iconName: "photo_library",
-          action: { kind: "ipc", ipcCall: "ui.wallpaperMenu toggleWallpaperMenu" } },
-        { entryId: "theme-fastfetch", titleFallback: "Tema Fastfetch", titleKey: "sysmenu.theme-fastfetch_t", subtitleFallback: "elegir config", subtitleKey: "sysmenu.theme-fastfetch_s", iconName: "terminal",
-          action: { kind: "section", targetSectionId: "fastfetch" } },
-        { entryId: "theme-anims", titleFallback: "Animaciones Hyprland", titleKey: "sysmenu.theme-anims_t", subtitleFallback: "elegir y recargar", subtitleKey: "sysmenu.theme-anims_s", iconName: "animation",
-          action: { kind: "section", targetSectionId: "animations" } }
+    entries: [
+        ipc("theme-wallpapers", "Wallpapers", "panel del shell", "photo_library",
+            "ui.wallpaperMenu toggleWallpaperMenu",
+            { titleKey: "sysmenu.theme-wallpapers_t", subtitleKey: "sysmenu.theme-wallpapers_s" }),
+        submenu("theme-fastfetch", "Tema Fastfetch", "elegir config", "terminal", "fastfetch",
+            { titleKey: "sysmenu.theme-fastfetch_t", subtitleKey: "sysmenu.theme-fastfetch_s" }),
+        submenu("theme-anims", "Animaciones Hyprland", "elegir y recargar", "animation", "animations",
+            { titleKey: "sysmenu.theme-anims_t", subtitleKey: "sysmenu.theme-anims_s" })
     ]
-
-    function refresh() {}
 }

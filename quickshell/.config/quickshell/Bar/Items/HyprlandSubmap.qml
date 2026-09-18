@@ -1,6 +1,6 @@
 import qs.Core
 import qs.Bar.Content
-import qs.Bar
+import qs.Shared.Background
 import qs.Core.Services
 import QtQuick
 
@@ -13,7 +13,7 @@ Item {
     
     readonly property string currentSubmap: HyprlandSubmap.activeSubmap
     
-    BarBackground {
+    SurfaceBackground {
         color: Appearance.md3.primary_container
         anchors.fill: parent
     }

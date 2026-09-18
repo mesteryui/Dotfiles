@@ -12,7 +12,7 @@ IconTextOSD {
         target: Services.GameMode
 
         function onEnabledChanged() {
-            root.osdText = "Game Mode " + (Services.GameMode.enabled ? "Activado" : "Desactivado");
+            root.osdText = "Modo de Juego " + (Services.GameMode.enabled ? "Activado" : "Desactivado");
             root.show();
         }
     }

@@ -59,13 +59,33 @@ Singleton {
         id: setProc
 
         stdout: StdioCollector {
-            onStreamFinished: brightnessView.reload()
+            onStreamFinished: {
+                // Muerte provocada para superseder (slider/tecla repetida):
+                // reintenta con lo último en vez de perderlo (`running = true`
+                // en caliente es no-op y el valor final se perdería).
+                if (root._pendingBrightness >= 0) {
+                    const v = root._pendingBrightness;
+                    root._pendingBrightness = -1;
+                    root.setBrightness(v);
+                    return;
+                }
+                brightnessView.reload();
+            }
         }
     }
+
+    // Último valor pedido mientras brightnessctl seguía corriendo (-1 = ninguno).
+    property real _pendingBrightness: -1
 
     function setBrightness(value: real): void {
         if (root.device === "") return
         const clamped = Math.max(0.05, Math.min(1.0, value))
+        if (setProc.running) {
+            _pendingBrightness = clamped
+            setProc.running = false
+            return
+        }
+        _pendingBrightness = -1
         const percent = Math.round(clamped * 100)
         setProc.command = ["brightnessctl", "-d", root.device, "set", percent + "%"]
         setProc.running = true

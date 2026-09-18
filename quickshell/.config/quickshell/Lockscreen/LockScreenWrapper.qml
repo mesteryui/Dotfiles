@@ -37,8 +37,10 @@ FocusScope {
     // en cualquier momento como alternativa.
     readonly property bool isFingerprintActive: AuthService.active && !AuthService.awaitingResponse && !root.isAuthenticating
 
-    // ── Estado MPRIS (posición vía polling) ────────────────────────
-    property real mprisPosition: 0
+    // ── Estado MPRIS (posición centralizada y throttled en el servicio) ──
+    // Este wrapper se apunta al crearse (uno por pantalla: el servicio
+    // lleva la cuenta) y se desapunta al destruirse.
+    property real mprisPosition: MprisService.position
 
     // ── Animación de entrada / salida ("look Caelestia") ────────────
     // WlSessionLockSurface nunca se oculta, solo se destruye — así que la
@@ -103,6 +105,10 @@ FocusScope {
     Component.onCompleted: {
         revealOpacityAnim.start();
         revealScaleAnim.start();
+        MprisService.positionClients += 1;
+    }
+    Component.onDestruction: {
+        MprisService.positionClients -= 1;
     }
 
     onIsUnlockingChanged: {
@@ -147,23 +153,7 @@ FocusScope {
         }
     }
 
-    Timer {
-        interval: 250
-        running: MprisService.activePlayer !== null && MprisService.isPlaying
-        repeat: true
-        onTriggered: {
-            const p = MprisService.activePlayer;
-            if (!p || !p.isPlaying)
-                return;
-            if (p.canSeek || p.canControl) {
-                try {
-                    root.mprisPosition = p.position;
-                } catch (e) {
-                    console.warn("[Mpris] lockscreen position read failed:", e);
-                }
-            }
-        }
-    }
+    // (polling propio eliminado: ver MprisService.position)
 
     // ── Conexiones con AuthService ────────────────────────────────
     Connections {

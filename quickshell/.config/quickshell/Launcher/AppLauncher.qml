@@ -1,23 +1,24 @@
 // --- UnifiedLauncher (antes AppLauncher) ---
-// Menú único estilo Walker + datos Elephant, con FuzzySearch en todo:
-//   modos por prefijo (igual que walker config.toml):
+// Menú único con FuzzySearch en todo:
+//   modos por prefijo:
 //     (nada) todo: apps + calc + sistema + atajo web
-//     >  sistema (menú Omarchy: secciones de MenuProviders/ + live SystemMenuService)
+//     >  sistema (menús personalizados: secciones CustomMenu de
+//        MenuProviders/System/ + MenuProviders/*.qml, estáticos o
+//        dinámicos vía refresh())
 //     /  archivos (fd en $HOME)
-//     @  búsqueda web (DuckDuckGo, como websearch.toml)
-//     .  emojis/símbolos (como symbols.toml -> wl-copy)
-//     =  calculadora (como provider calc)
+//     @  búsqueda web (DuckDuckGo)
+//     .  emojis/símbolos (EmojiService: catálogo + librería python,
+//        grupos, recientes/favoritos; Enter copia -> wl-copy)
+//     =  calculadora
 //     :  portapapeles (cliphist, texto + preview de imágenes)
 // Panel derecho = preview (iconos grandes, imágenes de archivos,
-// capturas del clipboard, wallpapers). Igual que walker preview.xml.
+// capturas del clipboard, wallpapers).
 pragma ComponentBehavior: Bound
 import qs.Core
 import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Primitives
 import qs.Shared.Background
-import "EmojiData.js" as EmojiData
-import "EmojiFull.js" as EmojiFull
 import "MenuModes.js" as MenuModes
 import QtQuick
 import QtQuick.Controls
@@ -68,24 +69,6 @@ PanelWindow {
             launcher.forcedMode = "";
             launcher.launcherVisible = !launcher.launcherVisible;
         }
-        function open(): void {
-            launcher.forcedMode = "";
-            launcher.launcherVisible = true;
-        }
-        // Abre con un texto de búsqueda ya puesto (respeta prefijos de modo).
-        function search(text: string): void {
-            launcher.forcedMode = "";
-            launcher.launcherVisible = true;
-            searchField.text = text || "";
-        }
-        function close(): void {
-            launcher.launcherVisible = false;
-        }
-        // Diagnóstico: `qs ipc call launcher appStats` -> "apps=N pins=M [...]".
-        function appStats(): string {
-            const pins = launcher.pinnedIds();
-            return "apps=" + launcher.appCount + " pins=" + pins.length + " [" + pins.join(",") + "] ready=" + Persistent.ready;
-        }
         function openClipboard(): void {
             toggleMode("clip");
         }
@@ -102,20 +85,24 @@ PanelWindow {
                 launcher.launcherVisible = false;
                 return;
             }
-            launcher.menuSection = target;
             launcher.forcedMode = "system";
             launcher.launcherVisible = true;
+            // Igual que navegar con chips o teclear ">": el campo muestra el
+            // carácter y la sección se refresca (al abrir ya lo pone
+            // onLauncherVisibleChanged; si seguía abierto hay que ponerlo aquí).
+            launcher.goSection(target);
         }
-        function openFiles(query: string): void {
-            if (launcher.launcherVisible && launcher.activeMode === "files") {
-                launcher.launcherVisible = false;
-                return;
-            }
-            launcher.forcedMode = "files";
-            launcher.launcherVisible = true;
-            searchField.text = "/" + (query || "");
+        // Recarga los menús personalizados sin recargar todo el shell:
+        // `qs ipc call launcher reloadMenus` -> "menus=S+U rev=N [...]".
+        // Re-escanea MenuProviders/, recrea los providers (con la última
+        // versión de cada fichero) y refresca los dinámicos. La UI se
+        // actualiza sola vía CustomMenuService.revision.
+        function reloadMenus(): string {
+            return SystemMenuRegistry.reloadCustomMenus();
         }
         // Toggle por menú: si ya está abierto en ese menú, cierra; si no, abre.
+        // Al cambiar, el campo muestra el carácter del modo, igual que al
+        // pulsar su chip o teclear su prefijo (uniforme en las tres vías).
         function toggleMode(name: string): void {
             const m = name || "todo";
             const cur = launcher.forcedMode !== "" ? launcher.forcedMode : launcher.activeMode;
@@ -123,10 +110,19 @@ PanelWindow {
                 launcher.launcherVisible = false;
                 return;
             }
-            if (m === "system")
-                launcher.menuSection = "main";
+            if (m === "system") {
+                launcher.forcedMode = "system";
+                launcher.launcherVisible = true;
+                launcher.goSection("main");
+                return;
+            }
             launcher.forcedMode = (m === "todo") ? "" : m;
             launcher.launcherVisible = true;
+            // Al abrir ya lo pone onLauncherVisibleChanged; si seguía
+            // abierto hay que ponerlo aquí (si no, el prefijo viejo
+            // seguiría mandando sobre el modo forzado).
+            searchField.text = launcher.prefixOf(launcher.forcedMode);
+            searchField.forceActiveFocus();
         }
     }
 
@@ -209,6 +205,10 @@ PanelWindow {
             searchField.forceActiveFocus();
         } else {
             forcedMode = "";
+            // Sin selecciones a medias al cerrar: el diferido no debe pintar
+            // nada de una sesión ya cerrada.
+            previewDebounce.stop();
+            previewPendingIndex = -1;
         }
     }
 
@@ -263,9 +263,8 @@ PanelWindow {
     }
 
     // ---------- helpers ----------
-    function shellEscape(s) {
-        return s.replace(/'/g, "'\\''");
-    }
+    // Sin shellEscape local: la copia de texto va por
+    // ClipboardService.copyText (misma semántica, vía única).
 
     // Lanzamiento desacoplado: los comandos abren GUIs de larga vida
     // (emacsclient, terminales, wlogout, hyprpicker…). Un Process atado al
@@ -307,13 +306,10 @@ PanelWindow {
         }
         switch (it.kind) {
         case "system":
-            if (it.nativeApply === "power")
-                SystemMenuService.applyPowerProfile(it.nativeValue);
-            else
-                launcher.runShell(it.shell);
+            launcher.runShell(it.shell);
             break;
         case "emoji":
-            launcher.runCmd(["sh", "-c", "printf '%s' '" + launcher.shellEscape(it.ch) + "' | wl-copy"]);
+            EmojiService.copy(it.ch);
             break;
         case "clip":
             Services.ClipboardService.copyEntry(it.cid, it.isImage);
@@ -322,7 +318,7 @@ PanelWindow {
             launcher.runCmd(["xdg-open", it.path]);
             break;
         case "calc":
-            launcher.runCmd(["sh", "-c", "printf '%s' '" + launcher.shellEscape(it.result) + "' | wl-copy"]);
+            Services.ClipboardService.copyText(it.result);
             break;
         case "web":
             launcher.runCmd(["xdg-open", it.url]);
@@ -393,7 +389,6 @@ PanelWindow {
     }
 
     // ---------- resultados ----------
-    property var emojiList: EmojiData.getEmojis()
     property ListModel fileResults: ListModel {}
     // Snapshot de archivos: fileResults se llena por streaming (fd) y leer
     // el ListModel en vivo desde `results` disparaba binding loops.
@@ -511,6 +506,59 @@ PanelWindow {
     // modo, se reabra o se fije otra. Guarda IDs en orden visible.
     property var frozenIds: []
 
+    // Deduplica .desktop duplicados (ej. "Aplicaciones web" sale dos veces:
+    // webapp-manager.desktop y kde4/webapp-manager.desktop, mismo Exec y
+    // mismo nombre). Quickshell filtra Hidden/NoDisplay pero no
+    // OnlyShowIn/NotShowIn, así que ambas variantes llegan aquí.
+    // Clave = línea de comando normalizada (+ nombre como desempate);
+    // ante choque gana la canónica (id sin "kde4", más corto).
+    function appDedupKey(e) {
+        let cmd = "";
+        if (e && e.command && typeof e.command.length === "number" && e.command.length > 0) {
+            const parts = [];
+            for (let i = 0; i < e.command.length; i++)
+                parts.push(String(e.command[i]));
+            cmd = parts.join(" ").trim().toLowerCase();
+        } else if (e && e.execString) {
+            cmd = String(e.execString).trim().toLowerCase();
+        }
+        const nm = String((e && e.name) || "").trim().toLowerCase();
+        if (cmd !== "")
+            return "c:" + cmd + "|n:" + nm;
+        return "n:" + nm + "|id:" + String((e && e.id) || "");
+    }
+
+    function preferApp(a, b) {
+        // true = quedarse con b en vez de a.
+        const aid = String(a.id || "");
+        const bid = String(b.id || "");
+        const aKde = aid.toLowerCase().indexOf("kde4") >= 0;
+        const bKde = bid.toLowerCase().indexOf("kde4") >= 0;
+        if (aKde !== bKde)
+            return bKde === false;
+        if (bid.length !== aid.length)
+            return bid.length < aid.length;
+        return false;
+    }
+
+    function uniqueApps(list) {
+        const seen = {};
+        const out = [];
+        for (let i = 0; i < list.length; i++) {
+            const e = list[i];
+            if (!e || e.noDisplay === true)
+                continue;
+            const k = launcher.appDedupKey(e);
+            if (seen[k] === undefined) {
+                seen[k] = out.length;
+                out.push(e);
+            } else if (launcher.preferApp(out[seen[k]], e)) {
+                out[seen[k]] = e;
+            }
+        }
+        return out;
+    }
+
     // ---------- aplicaciones (modo todo) ----------
     // Fuente única y viva: DesktopEntries -> fijadas primero -> filtro.
     // ScriptModel re-suscribe el binding ante altas/bajas de .desktop y
@@ -521,7 +569,7 @@ PanelWindow {
         id: appModel
 
         values: {
-            const base = [...DesktopEntries.applications.values];
+            const base = launcher.uniqueApps([...DesktopEntries.applications.values]);
             const pins = launcher.pinnedIds();
             const q = launcher.query;
             if (q === "" && launcher.frozenIds.length > 0) {
@@ -577,42 +625,56 @@ PanelWindow {
         return Services.FuzzySearch.filterItemsMulti(q, systemPool(), it => [it.title, it.sub, it.cat]);
     }
 
-    function emojiItem(e) {
-        return { kind: "emoji", title: e.ch + "  " + e.name, sub: e.kw, iconName: "",
-                 appIcon: "", ch: e.ch, imagePath: "", cat: tr("launcher.cat_emoji", "Emoji") };
-    }
-
-    // Base de emojis fusionada (curados + catálogo) y envuelta para pintar.
-    // Se construye una vez por idioma en vez de en cada tecla: EmojiFull
-    // devuelve miles de objetos nuevos en cada llamada. El guardián hace
-    // que converja en una sola re-evaluación extra tras construir.
-    property var emojiBase: []
-    property string emojiBaseLang: ""
-
-    function emojiBaseItems() {
-        const lang = Services.I18nService.language;
-        if (launcher.emojiBase.length > 0 && launcher.emojiBaseLang === lang)
-            return launcher.emojiBase;
-        const curated = launcher.emojiList.map(emojiItem);
-        const seen = {};
-        for (let i = 0; i < curated.length; i++)
-            seen[launcher.emojiList[i].ch] = true;
-        const items = curated.slice();
-        const all = EmojiFull.getEmojis();
-        for (let j = 0; j < all.length; j++)
-            if (!seen[all[j].ch])
-                items.push(emojiItem(all[j]));
-        launcher.emojiBase = items;
-        launcher.emojiBaseLang = lang;
-        return items;
+    // ---------- emojis vía EmojiService ----------
+    // Búsqueda, ranking, grupos, recientes/favoritos y copia centralizada
+    // viven en Launcher/EmojiService.qml (catálogo runtime generado por
+    // scripts/emoji-dump.py). Aquí solo se delega y se exponen los grupos
+    // para los chips de categoría.
+    // `revision` como dependencia reactiva: la lista se reevalúa sola
+    // al fusionarse la librería o cambiar recientes/favoritos.
+    property var emojiGroups: {
+        EmojiService.revision;
+        EmojiService.ready;
+        return EmojiService.groups();
     }
 
     function emojiResults(q) {
-        // Curados (español) primero, luego catálogo completo estilo elephant.
-        const items = launcher.emojiBaseItems();
-        if (q === "")
-            return items.slice(0, 60);
-        return Services.FuzzySearch.filterItemsMulti(q, items, it => [it.title, it.sub]).slice(0, 60);
+        const rev = EmojiService.revision;
+        void rev;
+        const cat = tr("launcher.cat_emoji", "Emoji");
+        // Sin tope: el buscador permite todos los emojis.
+        return EmojiService.queryItems(q, cat);
+    }
+
+    // Grupo activo según el token `g:` / `group:` del query actual
+    // (normalizado: `g:símbolos` y `g:tech` valen como sus grupos nuevos).
+    function emojiActiveGroup() {
+        const m = launcher.query.toLowerCase().match(/(?:group|g):([a-záéíóú]+)/);
+        return m ? EmojiService.normGroup(m[1]) : "";
+    }
+
+    // Chips de categoría: alternan el filtro `g:<id>` manteniendo el resto
+    // del query. Equivale a teclear `. g:smileys ...` a mano.
+    function toggleEmojiGroup(id) {
+        const full = searchField.text;
+        const body = full.startsWith(".") ? full.slice(1) : full;
+        const m = body.toLowerCase().match(/(?:group|g):([a-záéíóú]+)/);
+        let rest = body.replace(/(?:group|g):[a-záéíóú]+/gi, "").trim();
+        if (m && EmojiService.normGroup(m[1]) === id)
+            searchField.text = rest === "" ? "." : ". " + rest;
+        else
+            searchField.text = ". g:" + id + (rest !== "" ? " " + rest : "");
+        searchField.forceActiveFocus();
+    }
+
+    // Favorito sobre la selección (solo modo emoji).
+    function toggleFavCurrent() {
+        if (launcher.activeMode !== "emoji")
+            return;
+        const cur = resultList.currentItem;
+        const d = cur ? cur.modelData : null;
+        if (d && d.ch)
+            EmojiService.toggleFavorite(d.ch);
     }
 
     function clipResults(q) {
@@ -716,7 +778,7 @@ PanelWindow {
         return out;
     }
 
-    // ---------- búsqueda de archivos con fd (provider files de walker) ----------
+    // ---------- búsqueda de archivos con fd ----------
     // Recursiva por todo $HOME hasta llegar a los archivos (--max-results
     // corta en cuanto se llena: el escaneo es instantáneo aunque el home
     // sea enorme). --fixed-strings para que lo tecleado se busque literal
@@ -796,12 +858,20 @@ PanelWindow {
     property string previewPath: ""
     property string previewFile: ""
     property string previewText: ""
+    // Texto completo del item de clipboard seleccionado (vía decode;
+    // `cliphist list` solo trae la primera línea truncada).
+    property string clipTextCid: ""
+    property string clipText: ""
 
     Connections {
         target: Services.ClipboardService
         function onPreviewReady(cid) {
             if (cid === launcher.previewCid)
                 launcher.previewOk = true;
+        }
+        function onTextReady(cid) {
+            if (cid === launcher.clipTextCid)
+                launcher.clipText = Services.ClipboardService.textContent;
         }
     }
 
@@ -835,8 +905,45 @@ PanelWindow {
         return cur && cur.kind === "file" && cur.media === "text";
     }
 
-    function updatePreview(item) {
-        // Preview solo donde es imprescindible (ver MenuModes.js):
+    // ¿Es un texto del portapapeles? Tiene preview propia de texto completo
+    // (sin icono grande ni título duplicado: el cuerpo ya es el texto).
+    function isClipText(cur) {
+        return cur && cur.kind === "clip" && !cur.isImage;
+    }
+
+    // Preview diferido: al moverse rápido por la lista (↑/↓, hover, filtrado)
+    // solo se genera el del item donde se asienta la selección (~120 ms).
+    // Lo barato (limpiar al caer en un item sin preview) es inmediato para
+    // no retrasar el panel. Ver FilePreviewService (además mata lo obsoleto).
+    property int previewPendingIndex: -1
+
+    function schedulePreview() {
+        const item = resultList.currentItem ? resultList.currentItem.modelData : null;
+        if (!MenuModes.supportsPreview(launcher.activeMode) || !MenuModes.needsPreview(launcher.activeMode, item)) {
+            previewDebounce.stop();
+            previewPendingIndex = -1;
+            updatePreview(item);
+            return;
+        }
+        previewPendingIndex = resultList.currentIndex;
+        previewDebounce.restart();
+    }
+
+    Timer {
+        id: previewDebounce
+
+        interval: 120
+        onTriggered: {
+            // Solo si la selección sigue donde estaba al programar: si se
+            // movió, ya hay otra llamada en camino y esta queda obsoleta.
+            // Se lee el item fresco (el objeto puede haberse reconstruido).
+            if (launcher.previewPendingIndex === resultList.currentIndex)
+                launcher.updatePreview(resultList.currentItem ? resultList.currentItem.modelData : null);
+            launcher.previewPendingIndex = -1;
+        }
+    }
+
+    function updatePreview(item) {        // Preview solo donde es imprescindible (ver MenuModes.js):
         // clip siempre, files/system solo si el item trae imagen o texto.
         // En el resto de menús no se pide ni se muestra nada.
         if (!MenuModes.supportsPreview(launcher.activeMode) || !MenuModes.needsPreview(launcher.activeMode, item)) {
@@ -845,6 +952,8 @@ PanelWindow {
             previewPath = "";
             previewFile = "";
             previewText = "";
+            clipTextCid = "";
+            clipText = "";
             return;
         }
         // Ya visible para este mismo item: no recargar (evita parpadeo).
@@ -860,11 +969,19 @@ PanelWindow {
         previewPath = "";
         previewFile = "";
         previewText = "";
+        clipTextCid = "";
+        clipText = "";
         if (!item)
             return;
         if (item.kind === "clip" && item.isImage) {
             previewCid = item.cid;
             previewPath = Services.ClipboardService.previewImage(item.cid);
+        } else if (launcher.isClipText(item)) {
+            // Texto completo vía decode (con fallback a la línea del listado
+            // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto
+            // hay algo que enseñar.
+            clipTextCid = item.cid;
+            clipText = Services.ClipboardService.requestText(item.cid);
         } else if (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media === "pdf")) {
             previewFile = item.path;
             FilePreviewService.request(item.path, item.media);
@@ -911,7 +1028,7 @@ PanelWindow {
                     case "system": return tr("launcher.ph_system", "Sistema… (> para este modo)");
                     case "files": return tr("launcher.ph_files", "Archivos en $HOME…");
                     case "web": return tr("launcher.ph_web", "Buscar en DuckDuckGo…");
-                    case "emoji": return tr("launcher.ph_emoji", "Emojis y símbolos…");
+                    case "emoji": return tr("launcher.ph_emoji", "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
                     case "calc": return tr("launcher.ph_calc", "Calculadora… ej: 45*1.21");
                     case "clip": return tr("launcher.ph_clip", "Portapapeles (cliphist)…");
                     default: return tr("launcher.ph_todo", "Buscar aplicaciones…");
@@ -931,6 +1048,12 @@ PanelWindow {
                         // Fija/quita la app seleccionada (solo modo todo).
                         // Va antes del Ctrl+P de navegación: lleva Shift.
                         launcher.togglePinCurrent();
+                        event.accepted = true;
+                        return;
+                    }
+                    if (ctrl && shift && event.key === Qt.Key_F) {
+                        // Marca/desmarca el emoji seleccionado como favorito.
+                        launcher.toggleFavCurrent();
                         event.accepted = true;
                         return;
                     }
@@ -959,7 +1082,7 @@ PanelWindow {
                         event.accepted = true;
                         break;
                     case Qt.Key_Tab:
-                        // Rota de modo (como cambiar de provider en walker)
+                        // Rota de modo
                         cycleMode(event.modifiers & Qt.ShiftModifier ? -1 : 1);
                         event.accepted = true;
                         break;
@@ -990,7 +1113,7 @@ PanelWindow {
                 }
             }
 
-            // Pestañas de modo (equivale a los prefijos de walker).
+            // Pestañas de modo (equivale a los prefijos).
             // Fila con scroll horizontal: los chips conservan su ancho natural
             // y no se aplastan cuando el menú está estrecho (600px).
             Flickable {
@@ -1097,6 +1220,61 @@ PanelWindow {
                 }
             }
 
+            // Chips de categoría del selector de emojis (grupos + Recientes
+            // + Favoritos del EmojiService). Clic = alternar `g:<id>`.
+            // Flow adaptable: cada chip mide según su contenido y el
+            // conjunto salta de línea solo; la altura la decide el
+            // contenido (sin alto fijo ni scroll).
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: launcher.activeMode === "emoji"
+
+                Repeater {
+                    model: launcher.emojiGroups
+                    delegate: Rectangle {
+                        required property var modelData
+                        required property int index
+
+                        property bool isActive: launcher.emojiActiveGroup() === modelData.id
+
+                        width: Math.max(56, groupChipText.implicitWidth + 30)
+                        height: 26
+                        radius: 13
+                        color: isActive ? Appearance.md3.secondary_container : "transparent"
+                        border.width: isActive ? 0 : 1
+                        border.color: Appearance.md3.outline_variant
+
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            MaterialIcon {
+                                anchors.verticalCenter: parent.verticalCenter
+                                iconName: modelData.icon || "circle"
+                                size: 14
+                                color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                            }
+                            StyledText {
+                                id: groupChipText
+
+                                anchors.verticalCenter: parent.verticalCenter
+                                // Sin conteo: chips compactos de una fila.
+                                text: modelData.label
+                                font.pixelSize: 12
+                                color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: launcher.toggleEmojiGroup(modelData.id)
+                        }
+                    }
+                }
+            }
+
             // Miga de pan del menú de sistema (navegación estilo Omarchy)
             Row {
                 Layout.fillWidth: true
@@ -1154,6 +1332,9 @@ PanelWindow {
                         anchors.fill: parent
                         clip: true
                         spacing: 4
+                        // Delegados ya instanciados fuera de vista (~4 por lado):
+                        // scroll rápido sin crear/destruir en cada frame.
+                        cacheBuffer: 224
                         currentIndex: count > 0 ? 0 : -1
                         highlightMoveDuration: 100
                         keyNavigationEnabled: false
@@ -1174,9 +1355,10 @@ PanelWindow {
                             // El reseteo del modelo no siempre emite currentIndexChanged
                             // (el índice puede conservar el valor) y el currentItem aún
                             // puede ser nulo: diferir para que existan los delegados.
-                            Qt.callLater(() => launcher.updatePreview(resultList.currentItem ? resultList.currentItem.modelData : null));
+                            // Pasa por el diferido (solo genera al asentarse).
+                            Qt.callLater(() => launcher.schedulePreview());
                         }
-                        onCurrentIndexChanged: launcher.updatePreview(currentItem ? currentItem.modelData : null)
+                        onCurrentIndexChanged: launcher.schedulePreview()
 
                         delegate: Rectangle {
                             id: entryDelegate
@@ -1359,8 +1541,8 @@ PanelWindow {
 
                 // ---- preview lateral: solo donde es imprescindible ----
                 // clip (texto completo/imagen), files image/text/audio/video,
-                // system con imagePath (fastfetch). En el resto de menús se
-                // oculta y la lista ocupa todo el ancho.
+                // system con imagePath (fastfetch).
+                // En el resto de menús se oculta y la lista ocupa todo el ancho.
                 Rectangle {
                     id: previewPanel
 
@@ -1404,11 +1586,12 @@ PanelWindow {
                         }
 
                         // Icono / emoji grande cuando no hay imagen ni texto
+                        // (en clip-texto se oculta: el cuerpo ya es el texto).
                         Item {
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 96
                             Layout.preferredHeight: 96
-                            visible: parent.cur && ((parent.cur.imagePath || "") === "") && !(launcher.hasLivePreview(parent.cur) && launcher.previewOk) && !(launcher.hasTextPreview(parent.cur) && launcher.previewText !== "")
+                            visible: parent.cur && ((parent.cur.imagePath || "") === "") && !(launcher.hasLivePreview(parent.cur) && launcher.previewOk) && !(launcher.hasTextPreview(parent.cur) && launcher.previewText !== "") && !launcher.isClipText(parent.cur)
 
                             AppIcon {
                                 anchors.fill: parent
@@ -1437,6 +1620,9 @@ PanelWindow {
                             wrapMode: Text.Wrap
                             maximumLineCount: 3
                             elide: Text.ElideRight
+                            // En clip-texto no hay cabecera: el cuerpo ya muestra
+                            // el texto completo (evita verlo dos veces).
+                            visible: !(parent.cur && launcher.isClipText(parent.cur))
                             text: parent.cur ? (parent.cur.title || "") : ""
                             font.pixelSize: 14
                             color: Appearance.md3.on_surface
@@ -1473,6 +1659,8 @@ PanelWindow {
                             wrapMode: Text.Wrap
                             maximumLineCount: 6
                             elide: Text.ElideRight
+                            // En clip-texto el cuerpo ya es el texto: sin pie duplicado.
+                            visible: !(parent.cur && launcher.isClipText(parent.cur))
                             text: {
                                 if (!parent.cur)
                                     return "";
@@ -1482,6 +1670,29 @@ PanelWindow {
                             }
                             font.pixelSize: 12
                             color: Appearance.md3.on_surface_variant
+                        }
+                        // Texto del portapapeles (clip texto): bloque con scroll que
+                        // ocupa todo el alto libre. Muestra el decode completo en
+                        // cuanto llega; mientras tanto, la línea del listado.
+                        Flickable {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            visible: launcher.isClipText(parent.cur)
+                            contentWidth: width
+                            contentHeight: clipDoc.implicitHeight
+                            clip: true
+                            boundsBehavior: Flickable.StopAtBounds
+
+                            Text {
+                                id: clipDoc
+
+                                width: parent.width
+                                wrapMode: Text.Wrap
+                                textFormat: Text.PlainText
+                                text: launcher.clipText !== "" ? launcher.clipText : (parent.cur ? (parent.cur.fullText || parent.cur.title) : "")
+                                font.pixelSize: 13
+                                color: Appearance.md3.on_surface
+                            }
                         }
                     }
                 }

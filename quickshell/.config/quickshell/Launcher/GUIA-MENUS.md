@@ -4,7 +4,7 @@
 
 ## 0. La idea en 30 segundos
 
-`Launcher/` es **una ventanita buscadora** que se abre con el teclado (estilo Walker / Elephant / Rofi / Spotlight).
+`Launcher/` es **una ventanita buscadora** que se abre con el teclado (estilo Spotlight).
 
 Tú escribes, él filtra, pulsas `Enter` y ejecuta algo: abrir una app, copiar un emoji, pegar del portapapeles, abrir un archivo, calcular `45*1.21`, buscar en la web o tocar un ajuste del sistema.
 
@@ -13,13 +13,20 @@ Analogía de restaurante:
 * **AppLauncher.qml** = el camarero y el local (lo que ves y lo que hace al pulsar).
 * **MenuModes.js** = la carta dividida en secciones (menús).
 * **SystemMenuRegistry.qml** = el jefe de cocina que junta todas las recetas.
-* **MenuProviders/System/*.qml** = recetas fijas internas (misma interfaz que las tuyas).
+* **MenuProviders/System/*.qml** = recetas internas (estáticas o dinámicas,
+  todas heredan `CustomMenu`, igual que las tuyas).
 * **MenuProviders/*.qml (tus archivos)** = TUS menús. Todo unificado bajo `MenuProviders/`.
-* **SystemMenuService.qml** = cocina en vivo (mira qué hay *ahora mismo* en tu PC).
-* **CustomMenuService.qml (UnifiedMenuStore) + MenuProviders/*.qml** = SISTEMA ÚNICO: aquí creas **tus propios menús** sin tocar lo demás. Los internos usan la misma interfaz.
+* **CustomMenuService.qml (UnifiedMenuStore) + `CustomMenu`** = SISTEMA ÚNICO: aquí viven
+  **todos los menús personalizados** (todo lo que NO es Archivos, Aplicaciones,
+  Calculadora, Web, Emojis, Clipboard), sean internos o tuyos, estáticos o dinámicos.
 * **MenuProviders/new-menu.sh** = generador: `new-menu.sh MiMenu "Mi menú"` crea el archivo por ti.
 * **FilePreviewService.qml** = el fotógrafo que hace miniaturas.
-* **EmojiData.js / EmojiFull.js** = dos diccionarios de emojis.
+* **EmojiService.qml** = servicio del selector de emojis: genera el
+  catálogo en runtime con un programa (ver §9), grupos, recientes,
+  favoritos, ranking y copia. Sin datos hardcodeados en JS.
+* **EmojiCustom.js** = TUS emojis/símbolos (tu config, prioridad máxima).
+* **scripts/emoji-dump.py** = el programa: vuelca emojis de la librería
+  `emoji` de PyPI + símbolos de la stdlib `unicodedata`.
 
 Todo vive en:
 
@@ -27,20 +34,22 @@ Todo vive en:
 ~/.config/quickshell/Launcher/
 ├── AppLauncher.qml          # ventana + lógica + interfaz
 ├── MenuModes.js             # qué menús existen y con qué letra se activan
-├── SystemMenuRegistry.qml   # une menús fijos + vivos + tuyos
-├── SystemMenuService.qml    # datos vivos: energía, fastfetch, animaciones
-├── CustomMenuService.qml    # descubre tus menús automáticamente
+├── SystemMenuRegistry.qml   # fachada única: solo lee CustomMenuService
+├── CustomMenu.qml           # componente base (herédalo, no lo copies)
+├── CustomMenuService.qml    # descubre todos los menús automáticamente
 ├── FilePreviewService.qml   # miniaturas de archivos
-├── EmojiData.js             # ~120 emojis curados en español
-├── EmojiFull.js             # miles de emojis en inglés (respaldo)
+├── EmojiService.qml        # servicio del selector de emojis (ver §9)
+├── EmojiCustom.js           # TUYOS (prioridad máxima, edita este)
+├── scripts/emoji-dump.py    # programa: genera el catálogo en runtime
+│                            # (librería `emoji` + stdlib `unicodedata`)
 ├── MenuProviders/           # SISTEMA ÚNICO (todo aquí dentro)
-│   ├── MenuProvider.qml     # PLANTILLA del sistema único
 │   ├── new-menu.sh          # generador: ./new-menu.sh MiMenu "Mi menú"
-│   ├── System/              # 7 internos (misma interfaz que los tuyos)
-│   └── MiMenu.qml           # tus menús (uno por archivo, al lado de System/)
-└── SystemMenu/
-    └── *.js                 # LEGADO solo referencia (el Registry ya no los usa)
+│   ├── System/              # 10 internos (7 estáticos + 3 dinámicos, heredan CustomMenu)
+│   └── MiMenu.qml           # tus menús (heredan CustomMenu)
 ```
+(No hay nada más: el antiguo `SystemMenu/*.js` se eliminó; la fuente de
+verdad son los `MenuProviders/*.qml`. Si algún doc viejo lo menciona,
+ignóralo.)
 
 ---
 
@@ -86,7 +95,7 @@ Tabla real (`defs()`):
 | `system` | `>` | Ajustes del sistema (secciones, ver §5) | solo si el item trae `imagePath` (ej. temas fastfetch) |
 | `files` | `/` | Archivos de tu `$HOME` con `fd` | solo imagen/texto/pdf/audio/video |
 | `web` | `@` | DuckDuckGo + abrir URL directa | nunca |
-| `emoji` | `.` | Emojis/símbolos → `wl-copy` | nunca |
+| `emoji` | `.` | Emojis/símbolos → `wl-copy` (vía EmojiService) | nunca |
 | `calc` | `=` | Calculadora con `qalc` → copia resultado | nunca |
 | `clip` | `:` | Historial `cliphist` (texto + imágenes) | siempre |
 
@@ -122,11 +131,12 @@ qs ipc call launcher openSystem
 qs ipc call launcher openEmoji
 qs ipc call launcher openClipboard
 qs ipc call launcher openMenu appearance
-qs ipc call launcher openFiles "doc"
-qs ipc call launcher search "> wall"
+qs ipc call launcher toggleMode files   # también: web, calc, clip, emoji, system, todo
+qs ipc call launcher reloadMenus   # manual: re-escanea MenuProviders/ (lo normal es que no haga falta: hay recarga en vivo)
 ```
 
-`toggleMode(name)` es la lógica de "si ya estoy en ese menú, cierro; si no, abro".
+`toggleMode(name)` es la lógica de "si ya estoy en ese menú, cierro; si no, abro
+y dejo su carácter (`> / @ . = :`) en el campo, igual que pulsar su chip".
 
 ### 3.2. ¿En qué menú estoy? ¿Qué busco?
 
@@ -145,8 +155,10 @@ Al abrirse (`onLauncherVisibleChanged`): limpia búsqueda, limpia archivos, refr
 Cada resultado lleva un `kind`. Según eso:
 
 * `app` → `entry.execute()` (o en terminal si lo pide el `.desktop`).
-* `system` → si es `nativeApply=="power"`, cambia perfil nativo; si es submenú (`isSubmenu`), **no cierra**, navega con `goSection`; si no, ejecuta `shell` con `sh -c`.
-* `emoji` / `calc` → `printf ... | wl-copy` (copia al portapapeles).
+* `system` → si es submenú (`isSubmenu`), **no cierra**, navega con `goSection`; si no, ejecuta `shell` con `sh -c` (todas las hojas son `shell`/`ipc`: la base es genérica).
+* `emoji` / `calc` → `printf ... | wl-copy` (copia al portapapeles). En
+  emoji la copia la hace `EmojiService.copy()` (que además registra el uso
+  en Recientes).
 * `clip` → `ClipboardService.copyEntry(cid, isImage)`.
 * `file` → `xdg-open <ruta>`.
 * `web` → `xdg-open <url>`.
@@ -166,7 +178,11 @@ property var results: {
 
 * `todoResults`: todas las apps si `q==""`, si no filtro difuso por nombre/comentario/id.
 * `systemResults`: si `q==""` → `sectionItems(menuSection)` (navegación por secciones estilo Omarchy, con botón "Atrás"). Si hay query → búsqueda global en `systemPool()` (todo el sistema aplanado).
-* `emojiResults`: junta curados + full (sin repetir por `ch`), top 60.
+* `emojiResults`: delega en `EmojiService.queryItems(q)` (ver §9, sin
+  tope: devuelve todos). Encima hay chips de categoría (grupos + Recientes
+  + Favoritos, en Flow adaptable que salta de línea solo) que alternan el
+  filtro `g:<grupo>`.
+  `Ctrl+Mayús+F` marca/desmarca favorito sobre la selección.
 * `clipResults`: foto (`snapshot`) del `ClipboardService`, filtro por título.
 * `fileResultsList`: convierte `fileSnapshot` (llenado por `fd`) en items con icono/media, y pone primero lo que **empieza** por lo escrito.
 * `calcResults`: solo muestra el resultado si es "fresco" (`calcForQuery===q`). Si no, "Calculando…" o "Escribe una operación".
@@ -184,9 +200,12 @@ Cada item tiene forma común: `{ kind, title, sub, iconName/appIcon/ch/imagePath
 `updatePreview(item)` + `hasLivePreview` + `hasTextPreview`:
 
 * Solo pide preview si `MenuModes.supportsPreview + needsPreview` lo permiten.
+* La petición va diferida (`schedulePreview` + `previewDebounce` 120 ms): moverse
+  rápido solo genera el preview donde se asienta la selección; salir a un item
+  sin preview limpia al instante (el panel no se retrasa).
 * `clip` imagen → `ClipboardService.previewImage(cid)` (ruta temporal).
-* `file` audio/video/pdf → `FilePreviewService.request(path, media)`.
-* `file` texto → `FilePreviewService.requestText(path)` (primeros 6000 bytes, tope 200 KB).
+* `file` audio/video/pdf → `FilePreviewService.request(path, media)` (mata lo obsoleto).
+* `file` texto → `FilePreviewService.requestText(path)` (primeros 6000 bytes, tope 200 KB; mata lo obsoleto).
 * Si ya es el mismo item, no recarga (evita parpadeo).
 
 En QML el `previewPanel.hasPreview` decide el ancho (600 vs 900) y qué mostrar: `Image` (miniatura), bloque de texto monoespaciado con scroll, o icono/emoji grande.
@@ -206,123 +225,141 @@ En QML el `previewPanel.hasPreview` decide el ancho (600 vs 900) y qué mostrar:
 
 Es un `Singleton`. No pinta nada, solo **responde preguntas**: "¿qué secciones hay?", "¿qué items tiene X?", "¿qué coincide con esta búsqueda?".
 
-Tres orígenes:
+Vía única (el display no distingue nada):
 
-1. **Estáticos**: `staticModules = [Main, Screenshot, Configure, Appearance, Packages, Setup, Games]` (los `.js`).
-2. **Dinámicos internos**: `dynamicInfo = [powerprofiles, fastfetch, animations]` (datos vivos de `SystemMenuService`).
-3. **Tuyos**: `CustomMenuService.sectionInfos()` (ver §6). Si tu `sectionId` choca con uno interno, **gana el interno** y sale aviso en consola.
+* **Providers unificados** vía `CustomMenuService.sectionInfos()`: `MenuProviders/System/*.qml`
+  (internos, cargan primero) + tus `MenuProviders/*.qml` (ver §6). Estáticos y dinámicos
+  llegan igual: los dinámicos regeneran `entries` en `refresh()`. Si tu `sectionId` choca
+  con uno interno, **gana el interno** y sale aviso en consola.
+
+(No existe una vía clásica `.js`: los antiguos `SystemMenu/*.js` se
+eliminaron, y el antiguo `SystemMenuService` también: los dinámicos
+`powerprofiles/fastfetch/animations` hoy son providers `CustomMenu` en
+`MenuProviders/System/`. Todo menú es un provider.)
 
 Funciones importantes:
 
 * `sections()` → lista única con títulos ya traducidos (`I18nService`).
 * `sectionInfo(id)` / `trail(id)` → info y breadcrumb (subiendo por `parentId`).
-* `staticEntries(id)` → `entries()` crudas del `.js`.
-* `builtinDynamicItems(id, withCat)` → convierte `dynSnapshot` en items pintables (`nativeApply` para energía, `shellFor` para el resto, `imagePath` con `file://` para previews fastfetch).
-* `sectionResultItems(id)` → **vía única para navegar**: estáticos + dinámicos + tuyos de esa sección.
+* `staticEntries(id)` → `entries` crudas del provider tal cual (estático o dinámico).
+* `sectionResultItems(id)` → **vía única para navegar**: items de esa sección.
 * `systemSearchPool()` → **vía única para buscar**: todo aplanado con `cat` = nombre de sección.
-* `refreshSection(id)` / `refreshAll()` → reenvían a `SystemMenuService` + `CustomMenuService`.
-* `toResultItem(entry, label)` → traduce `entry` semántica a item pintable. Aquí el enlace a `powerprofiles` añade `" · Equilibrado/Actual..."` al subtítulo, y `previewPath` se convierte en `imagePath`.
-* `shellOf(entry)` → `qs ipc call X` si `kind=="ipc"`, o el `shellCommand` si `kind=="shell"`.
+* `refreshSection(id)` / `refreshAll()` → reenvían a `CustomMenuService` (no-op en estáticos).
+* `toResultItem(entry, label)` → traduce `entry` semántica a item pintable (`previewPath` se convierte en `imagePath`).
+* `shellOf(entry)` → `qs ipc call X` si `kind=="ipc"`, el `shellCommand` si `kind=="shell"`, `""` si `section`/`power`.
 
 > Si entiendes esto, entiendes por qué el display (`AppLauncher`) no distingue orígenes: siempre llama al Registry.
 
 ---
 
-## 5. `SystemMenu/*.js` — las secciones fijas (vía clásica)
+## 5. `MenuProviders/System/*.qml` — las secciones internas (estáticas + dinámicas)
 
-Cada archivo es una librería (`.pragma library`) con dos funciones:
+Son providers con el componente base (`Launcher/CustomMenu.qml`, misma API que los tuyos):
+`sectionId/titleFallback/titleKey/iconName/parentId/entries/refresh()`.
 
-```js
-function info() { return { sectionId:"...", titleFallback:"...", titleKey:"...", iconName:"...", parentId:"..." }; }
-function entries() { return [ {...}, {...} ]; }
+Cada entrada se escribe con las fábricas del componente:
+
+```qml
+shell("shot-region", "Capturar región", "hyprshot region", "crop",
+  "sleep 0.5 && hyprshot -m region",
+  { titleKey: "sysmenu.shot-region_t", subtitleKey: "sysmenu.shot-region_s" })
+  // o ipc("keys", "Atajos", "ver cheatsheet", "keyboard", "cheatsheet toggle")
+  // o submenu("cfg", "Configuración", "...", "settings", "configure")
 ```
 
-Cada entrada:
-
-```js
-{
-  entryId: "shot-region",
-  titleFallback: "Capturar región", titleKey: "sysmenu.shot-region_t",
-  subtitleFallback: "hyprshot region", subtitleKey: "sysmenu.shot-region_s",
-  iconName: "crop",
-  action: { kind: "shell", shellCommand: "sleep 0.5 && hyprshot -m region" }
-  // o { kind: "ipc", ipcCall: "cheatsheet toggle" }
-  // o { kind: "section", targetSectionId: "screenshot" }
-}
-```
-
-* `titleFallback/subtitleFallback` = texto en español si no hay traducción.
-* `titleKey/subtitleKey` = clave de `I18nService` para otros idiomas (puede ser `""`).
+* `titleFallback/subtitleFallback` = texto en español si no hay traducción (`opts.titleKey/subtitleKey` = claves `I18nService`).
 * `iconName` = icono Material Symbols (¡debe existir o se ve roto!).
-* `action.kind`: `shell` ejecuta comando, `ipc` llama a otra parte del shell, `section` navega a otra sección.
+* `shell` ejecuta comando, `ipc` llama a otra parte del shell, `submenu` navega a otra sección.
+  No hay más fábricas a propósito: la base es genérica y todo lo específico
+  (energía, fastfetch, animaciones…) vive en su propio archivo.
 
-Contenido actual:
+Contenido actual (7 estáticos + 3 dinámicos, todos `CustomMenu`):
 
-* `Main.js` (`main`, padre `""`): la raíz. Sobre el sistema, Actualizar, Atajos, Captura→`screenshot`, Configuración→`configure`, Apariencia→`appearance`, Juegos→`games`, Setup→`setup`, Power (`wlogout`), Bloquear.
-* `Screenshot.js` (`screenshot` ← `main`): 6 variantes `hyprshot` + anotar con `grim|satty` + `hyprpicker`.
-* `Configure.js` (`configure` ← `main`): editar keybinds/permisos/monitores con emacs, DNS, energía→`powerprofiles`, paquetes→`packages`, setup→`setup`, ajustes y dashboard por IPC.
-* `Appearance.js` (`appearance` ← `main`): wallpapers por IPC, fastfetch→`fastfetch`, animaciones→`animations`.
-* `Packages.js` (`packages` ← `configure`): installer/uninstaller en terminal flotante.
-* `Setup.js` (`setup` ← `main`): `docker-setup.sh`, `python-setup.sh` en kitty flotante.
-* `Games.js` (`games` ← `main`): `steam-setup`, `cartridges`.
+Estáticos (`entries` fijas):
 
-**Añadir una sección clásica**: crea `SystemMenu/MiSeccion.js`, impórtala arriba del Registry y añádela a `staticModules`. Funciona, pero la vía recomendada hoy es la de abajo (no tocas el Registry).
+* `MainMenu.qml` (`main`, padre `""`): la raíz. Sobre el sistema, Actualizar, Atajos, Captura→`screenshot`, Configuración→`configure`, Apariencia→`appearance`, Juegos→`games`, Setup→`setup`, Power (`wlogout`), Bloquear.
+* `ScreenshotMenu.qml` (`screenshot` ← `main`): 6 variantes `hyprshot` + anotar con `grim|satty` + `hyprpicker`.
+* `ConfigureMenu.qml` (`configure` ← `main`): editar keybinds/permisos/monitores con emacs, DNS, energía→`powerprofiles`, paquetes→`packages`, setup→`setup`, ajustes y dashboard por IPC.
+* `AppearanceMenu.qml` (`appearance` ← `main`): wallpapers por IPC, fastfetch→`fastfetch`, animaciones→`animations`.
+* `PackagesMenu.qml` (`packages` ← `configure`): installer/uninstaller en terminal flotante.
+* `SetupMenu.qml` (`setup` ← `main`): `docker-setup.sh`, `python-setup.sh` en kitty flotante.
+* `GamesMenu.qml` (`games` ← `main`): `steam-setup`, `cartridges`.
+
+Dinámicos (`entries` generadas en `refresh()`, reasignando el array entero,
+con sus `Process` en `helpers` porque la raíz es `QtObject` y no admite hijos directos):
+
+* `PowerProfilesMenu.qml` (`powerprofiles` ← `configure`): lee `PowerProfiles.profile`
+  para marcar el activo con el badge `● Actual`. Si tu PC no tiene perfil Rendimiento,
+  lo oculta. Genera `shell()` con `powerprofilesctl set ...`.
+* `FastfetchMenu.qml` (`fastfetch` ← `appearance`): lista `~/.config/fastfetch/layouts/*`,
+  detecta el actual con `readlink .../config.jsonc`, busca `previews/<nombre>.png` para el
+  preview lateral, y genera `shell()` con `ln -sf ... && notify-send ...`.
+* `AnimationsMenu.qml` (`animations` ← `appearance`): lista
+  `~/.config/hypr/configs/animations/*.lua`, detecta la actual con `grep require(`, y genera
+  `shell()` con `sed ... && hyprctl reload && notify-send ...`. El `sed` solo se ejecuta
+  al pulsar `Enter` en una entrada, nunca solo.
+
+Patrón anti-loops (el que usan los 3 dinámicos): el `Process` acumula en `_found/_current`
+y solo al terminar (`onExited`) reasigna `entries` entero. Nunca `push` parcial a `entries`.
+
+Para editar uno: toca el `.qml` y se aplica al abrir el launcher (comprueba cambios en disco). O fuerza con `qs ipc call launcher reloadMenus`.
 
 ---
 
 ## 6. Menús personalizados — la parte estrella ⭐
 
-Hay **dos formas**. La recomendada es la **vía libre** (providers). La clásica (`.js` + Registry) ya la viste arriba.
+Hay **una sola forma**: providers (ver §5 para el formato de entradas).
 
-### 6.1. Arquitectura: `CustomMenuService.qml` + `MenuProvider.qml`
+### 6.1. Arquitectura: `CustomMenuService.qml` + `CustomMenu.qml`
 
-* `MenuProviders/MenuProvider.qml` es una **plantilla**. No hace nada por sí sola, es para copiar.
-* `CustomMenuService.qml` es un detective: al arrancar ejecuta un `sh` que lista `MenuProviders/*.qml` (menos `MenuProvider.qml`), los carga con `Qt.createComponent`, los instancia y guarda la lista en `providers`.
+* `Launcher/CustomMenu.qml` es el **componente base genérico** (módulo `qs.Launcher`).
+  No es un menú ni sabe nada de ninguno: solo el contrato
+  (`sectionId/titleFallback/titleKey/iconName/parentId/entries/helpers/refresh()`)
+  + fábricas `shell()/ipc()/submenu()/entry()`. Toda la lógica vive en cada archivo.
+* `CustomMenuService.qml` es un detective: al arrancar ejecuta un `sh` que lista `MenuProviders/System/*.qml` + `MenuProviders/*.qml`, los carga con `Qt.createComponent`, los instancia y guarda la lista en `providers` (internos primero). Al abrir el launcher se firman los ficheros y se recarga solo si cambiaron (sin proceso periódico).
 * Reglas: si el archivo no carga → aviso y se salta. Si no expone `sectionId` → se ignora. Si el `sectionId` choca con uno interno → gana el interno.
 * `sectionInfos()` / `entriesOf(id)` / `providerFor(id)` exponen tus menús al Registry.
 * `refreshSection(id)` / `refreshAll()` llaman a tu `refresh()` (en menús fijos es vacío, no pasa nada).
 
-> Resultado: **añadir un menú = soltar un archivo y recargar el shell. Quitarlo = borrarlo.** Sin tocar Registry ni servicios.
+> Resultado: **añadir un menú = soltar un archivo (se aplica al abrir el launcher). Quitarlo = borrarlo.** Sin tocar Registry ni servicios. `qs ipc call launcher reloadMenus` fuerza la recarga inmediata.
 
-### 6.2. El contrato: qué debe exponer tu archivo
+### 6.2. El contrato: tu archivo es un `CustomMenu`
 
-Copia `MenuProvider.qml` a `MenuProviders/MiMenu.qml` y rellena:
-
-```qml
-import QtQuick
-QtObject {
-  property string sectionId: "mimenu"       // ÚNICO, sin espacios. Ej: "notas", "trabajo"
-  property string titleFallback: "Mi menú"  // Nombre visible
-  property string titleKey: ""              // "" = usa el fallback (recomendado para empezar)
-  property string iconName: "menu"          // Material Symbol válido
-  property string parentId: "main"          // ¿De quién cuelga? "main" = aparece en Sistema
-  property var entries: [ ... ]             // Tus botones
-  function refresh() {}                     // Solo si es dinámico (ver 6.5)
-}
-```
-
-Cada item de `entries` usa el **mismo esquema que `SystemMenu/*.js`**, más un extra:
+Ejecuta `MenuProviders/new-menu.sh MiMenu "Mi menú"` (o escribe el archivo a mano en `MenuProviders/` con `import qs.Launcher`):
 
 ```qml
-{
-  entryId: "abrir-notas",
-  titleFallback: "Abrir notas", titleKey: "",
-  subtitleFallback: "carpeta ~/Notas", subtitleKey: "",
-  iconName: "folder",
-  action: { kind: "shell", shellCommand: "xdg-open ~/Notas" },
-  previewPath: ""  // opcional: "/home/tu/foto.png" → preview lateral
+import qs.Launcher
+CustomMenu {
+  sectionId: "mimenu"             // ÚNICO, sin espacios. Ej: "notas", "trabajo"
+  titleFallback: "Mi menú"        // Nombre visible
+  titleKey: ""                    // "" = usa el fallback (recomendado para empezar)
+  iconName: "menu"                // Material Symbol válido
+  parentId: "main"                // ¿De quién cuelga? "main" = aparece en Sistema
+  entries: [ ... ]                // Tus botones con shell()/ipc()/submenu()
+  // function refresh() {}       // Solo si es dinámico: heredado no-op (ver 6.5)
 }
 ```
+> Asigna a secas: NO pongas `property` delante (redeclarar rompe el menú).
 
-Tipos de `action`:
+Fábricas (todas aceptan `opts` opcional `{titleKey, subtitleKey, preview}`):
 
-| `kind` | Forma | Qué hace |
-|---|---|---|
-| `"shell"` | `{ kind:"shell", shellCommand:"..." }` | Ejecuta en `sh -c`. Para apps, scripts, `notify-send`, etc. |
-| `"ipc"` | `{ kind:"ipc", ipcCall:"cheatsheet toggle" }` | Ejecuta `qs ipc call ...`. Para hablar con el propio shell. |
-| `"section"` | `{ kind:"section", targetSectionId:"..." }` | Navega a otra sección (tuya o interna). No cierra el menú. |
+```qml
+shell("abrir-notas", "Abrir notas", "carpeta ~/Notas", "folder", "xdg-open ~/Notas")
+ipc("atajos", "Atajos", "ver cheatsheet", "keyboard", "cheatsheet toggle")
+submenu("cliente", "Cliente X", "submenú", "arrow_forward", "cliente-x")
+entry("tema", "Tema oscuro", "ver preview", "palette",
+  { kind: "shell", shellCommand: "notify-send 'Tema' 'oscuro'" },
+  { preview: "/home/tu/.config/fastfetch/previews/oscuro.png" })
+```
 
-`titleKey/subtitleKey` pueden ser `""` (usa el literal español). `previewPath` si es imagen existente → aparece en el panel derecho cuando estás en `>` y seleccionas ese item.
+| Fábrica | Qué hace |
+|---|---|
+| `shell(id, título, sub, icono, cmd, opts)` | Ejecuta en `sh -c`. Para apps, scripts, `notify-send`, etc. |
+| `ipc(id, título, sub, icono, call, opts)` | Ejecuta `qs ipc call ...`. Para hablar con el propio shell. |
+| `submenu(id, título, sub, icono, sección, opts)` | Navega a otra sección (tuya o interna). No cierra el menú. |
+| `entry(id, título, sub, icono, action, opts)` | Control total con `action` cruda (`shell`/`ipc`/`section`). |
+
+`opts.preview` con imagen existente → preview en el panel derecho (modo `>`). `titleKey/subtitleKey` para i18n (si no, literales en español).
 
 ### 6.3. Ejemplo 1 — menú estático (5 minutos, copiar-pegar)
 
@@ -331,42 +368,37 @@ Objetivo: un menú "Proyectos" colgado de Sistema con 3 acciones.
 Crea `Launcher/MenuProviders/Proyectos.qml`:
 
 ```qml
-import QtQuick
-QtObject {
-  property string sectionId: "proyectos"
-  property string titleFallback: "Proyectos"
-  property string titleKey: ""
-  property string iconName: "folder"
-  property string parentId: "main"
-  property var entries: [
-    { entryId: "web", titleFallback: "Abrir web", titleKey: "", subtitleFallback: "mi portafolio", subtitleKey: "", iconName: "open_in_new",
-      action: { kind: "shell", shellCommand: "xdg-open https://ejemplo.com" } },
-    { entryId: "carpeta", titleFallback: "Abrir carpeta", titleKey: "", subtitleFallback: "~/Proyectos", subtitleKey: "", iconName: "folder",
-      action: { kind: "shell", shellCommand: "xdg-open ~/Proyectos" } },
-    { entryId: "editar", titleFallback: "Editar en Emacs", titleKey: "", subtitleFallback: "emacsclient", subtitleKey: "", iconName: "edit",
-      action: { kind: "shell", shellCommand: "emacsclient -c -a emacs ~/Proyectos" } }
+import qs.Launcher
+CustomMenu {
+  sectionId: "proyectos"
+  titleFallback: "Proyectos"
+  iconName: "folder"
+  parentId: "main"
+  entries: [
+    shell("web", "Abrir web", "mi portafolio", "open_in_new", "xdg-open https://ejemplo.com"),
+    shell("carpeta", "Abrir carpeta", "~/Proyectos", "folder", "xdg-open ~/Proyectos"),
+    shell("editar", "Editar en Emacs", "emacsclient", "edit", "emacsclient -c -a emacs ~/Proyectos")
   ]
-  function refresh() {}
 }
 ```
 
-Recarga el shell. Abre con `>` (sistema), entra en `Proyectos`. También lo encontrarás escribiendo `> proy`.
+Se aplica al abrir el launcher (comprueba cambios en disco). Abre con `>` (sistema), entra en `Proyectos`. También lo encontrarás escribiendo `> proy`.
 
 Para que tenga sub-niveles, crea otro provider con `parentId: "proyectos"` y una entrada que apunte a él:
 
 ```qml
 // en Proyectos.qml, añade:
-{ entryId: "ver-cliente", titleFallback: "Cliente X", titleKey: "", subtitleFallback: "submenú", subtitleKey: "", iconName: "arrow_forward",
-  action: { kind: "section", targetSectionId: "cliente-x" } }
+submenu("ver-cliente", "Cliente X", "submenú", "arrow_forward", "cliente-x")
 ```
 
 ```qml
 // en ClienteX.qml:
-QtObject {
-  property string sectionId: "cliente-x"
-  property string titleFallback: "Cliente X"
+import qs.Launcher
+CustomMenu {
+  sectionId: "cliente-x"
+  titleFallback: "Cliente X"
   ...
-  property string parentId: "proyectos"
+  parentId: "proyectos"
   ...
 }
 ```
@@ -376,10 +408,10 @@ El breadcrumb mostrará `Sistema › Proyectos › Cliente X` solo.
 ### 6.4. Ejemplo 2 — con preview de imagen
 
 ```qml
-property var entries: [
-  { entryId: "tema-oscuro", titleFallback: "Tema oscuro", titleKey: "", subtitleFallback: "ver preview", subtitleKey: "", iconName: "palette",
-    action: { kind: "shell", shellCommand: "notify-send 'Tema' 'oscuro aplicado'" },
-    previewPath: "/home/tu/.config/fastfetch/previews/oscuro.png" }
+entries: [
+  entry("tema-oscuro", "Tema oscuro", "ver preview", "palette",
+    { kind: "shell", shellCommand: "notify-send 'Tema' 'oscuro aplicado'" },
+    { preview: "/home/tu/.config/fastfetch/previews/oscuro.png" })
 ]
 ```
 
@@ -392,28 +424,34 @@ Objetivo: listar tus scripts `~/.local/bin/mis-*` como botones.
 > Regla de oro: **reasigna `entries` entero al terminar, no lo mutes por partes** (`entries = nuevaLista`). Así QML se entera de golpe.
 
 ```qml
-import QtQuick
+import qs.Launcher
 import Quickshell
 import Quickshell.Io
-QtObject {
+import "../ShellUtils.js" as ShellUtils
+CustomMenu {
   id: root
-  property string sectionId: "scripts"
-  property string titleFallback: "Mis scripts"
-  property string titleKey: ""
-  property string iconName: "terminal"
-  property string parentId: "main"
-  property var entries: []
+  sectionId: "scripts"
+  titleFallback: "Mis scripts"
+  iconName: "terminal"
+  parentId: "main"
+  entries: []
 
-  function shEscape(s) { return String(s).replace(/'/g, "'\\''"); }
+  // Escape común (misma implementación para todo Launcher).
 
   function refresh() {
     // Se llama al abrir el launcher y al entrar en la sección.
     // Aquí lanzamos un proceso que lista scripts; al terminar, rellenamos entries.
+    if (listProc.running)
+      return;
+    listProc.command = ["sh", "-c", "ls -1 ~/.local/bin/mis-* 2>/dev/null"];
     listProc.running = true;
   }
 
   property var _found: []
-  Process {
+  // OJO: el Process va en `helpers`, no como hijo directo: la raíz es un
+  // QtObject y QML rechaza hijos declarativos en él
+  // ("Cannot assign to non-existent default property").
+  helpers: [ Process {
     id: listProc
     stdout: SplitParser {
       onRead: data => {
@@ -426,49 +464,45 @@ QtObject {
       const out = [];
       for (let i = 0; i < root._found.length; i++) {
         const name = root._found[i].split("/").pop();
-        out.push({
-          entryId: "script-" + name,
-          titleFallback: name, titleKey: "",
-          subtitleFallback: "ejecutar script", subtitleKey: "",
-          iconName: "terminal",
-          action: { kind: "shell", shellCommand: "xdg-terminal-exec -e '" + root.shEscape(root._found[i]) + "'" }
-        });
+        out.push(root.shell("script-" + name, name, "ejecutar script", "terminal",
+          "xdg-terminal-exec -e '" + ShellUtils.shellEscape(root._found[i]) + "'"));
       }
       root.entries = out; // ← reasignación entera
     }
-  }
-  Component.onCompleted: {
-    // Comando inicial: lista una vez para que tenga algo si se busca globalmente
-    listProc.command = ["sh", "-c", "ls -1 ~/.local/bin/mis-* 2>/dev/null"];
-    listProc.command = ["sh", "-c", "ls -1 ~/.local/bin/mis-* 2>/dev/null"];
-  }
+  } ]
 }
 ```
 
-*Nota: adapta el `command` antes de `running=true`. El patrón de arriba (acumular en `_found` y volcar en `onExited`) es el mismo que usan `SystemMenuService` y `FilePreviewService`.*
+*Nota: adapta el `command` antes de `running=true`. El patrón de arriba (acumular en `_found` y volcar en `onExited`) es el mismo que usan `FastfetchMenu/AnimationsMenu` y `FilePreviewService`.*
 
 ### 6.6. Errores típicos de principiantes
 
 1. **`sectionId` duplicado o con espacios** → usa minúsculas-guiones (`"mis-notas"`). Si choca con `main/screenshot/configure/...`, se ignora el tuyo.
 2. **Icono roto (círculo vacío)** → `iconName` debe existir en Material Symbols (`folder`, `terminal`, `palette`, `menu`...). Prueba con `menu` si dudas.
-3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `MenuProvider.qml`? ¿Recargaste el shell? Mira la consola: `CustomMenuService: ...` te dice qué falló.
+3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `CustomMenu.qml`? Abre de nuevo el launcher (comprueba cambios en disco) o fuerza con `qs ipc call launcher reloadMenus`. Mira la consola: `CustomMenuService: ...` te dice qué falló.
 4. **Comillas rotas en `shellCommand`** → si tu ruta tiene `'`, escápala. Usa comillas dobles fuera y simples dentro, o la función `shEscape` del ejemplo.
 5. **Mutar `entries` con `push`** → no se refresca bien. Siempre `entries = nuevaLista`.
-6. **Esperar preview en `todo/@/./=/ :`** → el preview propio solo funciona en modo `>` (`system`). Es por diseño (`MenuModes.needsPreview`).
+6. **Badge vivo + `subtitleKey`** → si el subtítulo lleva estado (ej. `● Actual`),
+   NO pases `subtitleKey`: el Registry prefiere la clave y la traduce pelada,
+   perdiendo el badge. Deja el texto ya compuesto en el fallback (el idioma se
+   mantiene con `langWatch → refresh()`).
+7. **Esperar preview en `todo/@/./=/ :`** → el preview propio solo funciona en modo `>` (`system`). Es por diseño (`MenuModes.needsPreview`).
 
 ---
 
-## 7. `SystemMenuService.qml` — datos vivos (dinámicos internos)
+## 7. Menús dinámicos internos — ya son `CustomMenu` (sin servicio aparte)
 
-Tres secciones que **no están escritas en `.js`** porque cambian solas:
+No hay servicio de "datos vivos": las 3 secciones que cambian solas son providers
+dinámicos en `MenuProviders/System/` (ver §5). Cada uno implementa `refresh()` y
+reasigna `entries` entero al terminar; `SystemMenuRegistry.refreshSection/refreshAll()`
+simplemente llama a ese `refresh()` (no-op en los estáticos).
 
-* `powerprofiles` (← `configure`):lee `PowerProfiles.profile` por D-Bus (nativo, reactivo). `applyPowerProfile(v)` lo cambia. Si tu PC no tiene perfil Rendimiento, lo oculta. El badge `● Actual` marca el activo.
-* `fastfetch` (← `appearance`): lista `~/.config/fastfetch/layouts/*`, detecta el actual con `readlink .../config.jsonc`, busca `previews/<nombre>.png` para el preview, y `shellFor` genera `ln -sf ... && notify-send ...`.
-* `animations` (← `appearance`): lista `~/.config/hypr/configs/animations/*.lua`, detecta la actual con `grep require(`, y `shellFor` hace `sed ... && hyprctl reload && notify-send ...`.
+* `powerprofiles`: D-Bus nativo + `power()` + badge `● Actual`.
+* `fastfetch`: `Process` + `shell()` + `opts.preview` con PNG.
+* `animations`: `Process` + `shell()` con `sed + hyprctl reload`.
 
-Patrón anti-loops: los `Process` escriben en `fastfetchModel/animModel` (ruidosos), pero al terminar se congela todo en `dynSnapshot` (silencioso). El Registry solo lee `dynSnapshot`. `powerSnapshot()` se reconstruye al cambiar idioma o perfil.
-
-Si creas un provider dinámico, imita este patrón.
+Si creas un provider dinámico, imita ese patrón (`FastfetchMenu.qml` es el ejemplo
+a copiar: `_found/_current` + `onExited: root.entries = out`).
 
 ---
 
@@ -481,28 +515,63 @@ Solo para modo `/` (archivos). Las imágenes se muestran directas, el resto pasa
 * `pdf` → primera página con `pdftoppm -png -r 100`.
 * `texto` → `requestText`: `head -c 6000`, tope 200 KB (`QSTEXT_TOO_BIG` si se pasa).
 
-Caché en `/tmp/qs-filepreview/<sha16>.jpg|.png` (clave = ruta+mtime+tamaño, tope 60 ficheros, se podan los viejos). El shell imprime `QSOUT:<ruta>` y el servicio emite `ready(path,image)` / `textReady(path,text)`. Si pides otra cosa mientras trabaja, la encola como `pending` y solo gana la última.
+Caché en `/tmp/qs-filepreview/<sha16>.jpg|.png` (clave = ruta+mtime+tamaño, tope 60 ficheros, se podan los viejos). El shell imprime `QSOUT:<ruta>` y el servicio emite `ready(path,image)` / `textReady(path,text)`. Si pides otra cosa mientras trabaja, mata lo en curso y solo gana la última (nada en paralelo).
 
 ---
 
-## 9. `EmojiData.js` y `EmojiFull.js` — los dos diccionarios
+## 9. Emojis — generados en runtime por un programa (nada hardcodeado)
 
-Ambos exponen `getEmojis()` con `{ ch, name, kw }`:
+El modo `.` lo sirve **`EmojiService.qml`** (Singleton en `Launcher/`).
+El catálogo NO vive en ningún `.js`: al arrancar, el servicio ejecuta UN
+solo proceso `python3 scripts/emoji-dump.py --all` (la versión de la
+librería viene en la cabecera `#VERSION`, sin segundo proceso) y consume
+su salida TSV (`CH \t NOMBRE \t GRUPO \t KEYWORDS`) línea a línea vía
+`Process` + `SplitParser`. Fuentes del programa:
 
-* `EmojiData.js` (~120 líneas): curado a mano, **en español**. `name` + `kw` pensados para `FuzzySearch` (`{ ch:"😂", name:"risa llanto", kw:"laugh joy lol jaja" }`).
-* `EmojiFull.js` (1 línea gigante): generado por script desde el paquete python `emoji`. Miles de emojis en inglés, sin tonos de piel, solo fully-qualified.
+* emojis: librería `emoji` de PyPI (`EMOJI_DATA`, solo fully-qualified,
+  sin tonos de piel). `pip install emoji` (ya es dependencia del shell).
+* símbolos: stdlib `unicodedata` (flechas, operadores mates, moneda,
+  formas, dingbats), elegidos por bloque Unicode + patrones de nombre
+  en el propio script. Sin caracteres hardcodeados.
+* grupo amplio por clasificador (`caras/gente/cosas/simbolos`) y keywords
+  con variantes morfológicas (`smile`↔`smiling`, `heart`↔`hearts`) más
+  sinónimos (`#SYN`: sirven al indexar y al expandir tu consulta),
+  todo en el script, en inglés siempre (mezclar idiomas rompía el ranking).
 
-`AppLauncher.emojiResults` los junta (curados primero, sin duplicar `ch`) y corta a 60. Al activar, `wl-copy`. Para añadir tus símbolos, edita `EmojiData.js` (ej: `{ ch:"→", name:"flecha", kw:"arrow flecha" }`).
+Encima solo va tu `EmojiCustom.js` (tu config, prioridad máxima; si un
+`ch` tuyo coincide con uno generado, manda el tuyo). `sourceInfo()`
+resume el estado (`custom/lib/symbols/status/total`).
+
+Si la librería `emoji` no está instalada, el proceso falla y el picker
+sigue funcionando con tus custom + símbolos stdlib (avisa por consola).
+
+Búsqueda con ranking propio (nombre exacto > palabra exacta > prefijo de
+nombre > prefijo de keyword > contiene, con boost de favoritos/recientes
+y de lo tuyo sobre lo generado, SIN tope: devuelve todas las
+coincidencias). Las keywords traen variantes morfológicas
+(`smile`↔`smiling`, `heart`↔`hearts`) y los `#SYN` del script expanden la
+consulta (`lol`→`laugh`/`joy`, `tux`→`penguin`), así el ruido por
+subcadena (`lollipop`, `joystick`) queda debajo. Filtro por grupo:
+`. g:cosas game` o `. group:simbolos arrow` (valen alias antiguos como
+`g:tech` y acentos como `g:símbolos`). Vista vacía: recientes
+primero y luego todo lo generado (caras delante, símbolos al final).
+
+Recientes + favoritos persistidos en `~/.local/state/quickshell/emoji.json`
+(vía FileView, como `Persistent.qml`, mismo debounce de 100 ms). Editar
+`EmojiCustom.js` lo detecta otro FileView (sin `stat` periódico) y se
+reaplica al momento.
+El modo emoji NO usa preview lateral (`previewMode: "never"`): la lista
+ocupa todo el ancho y cada fila ya muestra carácter + nombre + keywords.
 
 ---
 
 ## 10. Flujo completo (para fijar ideas)
 
 1. Pulsas atajo → `qs ipc call launcher openSystem` → `forcedMode="system"`, `menuSection="main"`, `launcherVisible=true`.
-2. Al abrir: `refreshAll()` (energía/fastfetch/anims + tus `refresh()`), foco en buscador con `">"`.
+2. Al abrir: `refreshAll()` (llama al `refresh()` de todos los providers; no-op en los estáticos; con guarda de 8 s si acabas de abrirlo), foco en buscador con `">"`. Entrar en una sección (`refreshSection`) es siempre fresco.
 3. Escribes `> ani` → `activeMode="system"`, `query="ani"` → `systemResults` filtra `systemSearchPool()` → ves "Animaciones Hyprland".
 4. `Enter` en un `isSubmenu` → `goSection("animations")` → `refreshSection` → lista dinámica + preview si hay PNG.
-5. `Enter` en hoja → `runShell(shellFor(...))` → `launcherVisible=false`.
+5. `Enter` en hoja → `runShell(entry.shell)` → `launcherVisible=false` (p. ej. `powerprofilesctl set balanced`).
 
 Abrir `/home` y previsualizar un PDF: modo `files`, `fd` llena `fileSnapshot`, seleccionas el PDF → `FilePreviewService.request` → `ready` → imagen a la derecha.
 
@@ -514,15 +583,18 @@ Abrir `/home` y previsualizar un PDF: modo `files`, `fd` llena `fileSnapshot`, s
 |---|---|
 | Cambiar prefijos/modos base | `MenuModes.js` (`defs`) |
 | Cambiar ventana/lista/preview/atajos | `AppLauncher.qml` |
-| Añadir botón fijo clásico | `SystemMenu/*.js` + Registry `staticModules` |
-| Añadir sección dinámica interna | `SystemMenuService.qml` + Registry `dynamicInfo` |
-| **Crear MI menú (recomendado)** | **Copiar `MenuProviders/MenuProvider.qml` → `MenuProviders/X.qml`** |
+| Añadir/editar sección interna | `MenuProviders/System/*.qml` (se aplica al abrir el launcher) |
+| Añadir sección dinámica interna | `MenuProviders/System/NuevoDinamico.qml` (`CustomMenu` + `refresh()`; copia `FastfetchMenu.qml`) |
+| **Crear MI menú (recomendado)** | **`./new-menu.sh X "Título"` o `CustomMenu { }` a mano (se aplica al abrir)** |
 | Miniaturas audio/video/pdf/texto | `FilePreviewService.qml` |
-| Más emojis | `EmojiData.js` |
+| Más emojis / símbolos | `EmojiCustom.js` (tuyos, manda sobre lo generado) |
+| Cómo se genera el catálogo emoji | `scripts/emoji-dump.py --all` (runtime, sin .js de datos) |
+| Escape shell en comandos `sh -c` | `ShellUtils.shellEscape` (única implementación en Launcher) |
+| Copiar texto al portapapeles | `ClipboardService.copyText` (vía única) |
 | Traducciones | claves `titleKey/subtitleKey` + `I18nService` |
 
-Recarga el shell tras cada cambio en `MenuProviders/` o `SystemMenu/`.
+Tras crear/editar/borrar un `MenuProviders/*.qml` no hay que hacer nada: se aplica al abrir el launcher (o fuerza con `qs ipc call launcher reloadMenus`).
 
 ---
 
-*Fin. Si solo te quedas con una frase: **para un menú propio, duplica `MenuProvider.qml`, ponle un `sectionId` único, rellena `entries` con `{titleFallback, iconName, action}` y recarga.***
+*Fin. Si solo te quedas con una frase: **para un menú propio, escribe un `CustomMenu { }` con `sectionId` único y `entries` con `shell()/ipc()/submenu()`: se aplica al abrir el launcher.***

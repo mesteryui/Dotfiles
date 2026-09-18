@@ -30,6 +30,14 @@ import Quickshell.Io
 // recibirlos concatenados en un solo read() y el parseo se rompe (por eso
 // `syncState()` en la versión anterior era poco fiable). Aquí se resuelve con
 // una cola FIFO que solo tiene un request "en vuelo" a la vez.
+//
+// Fuentes externas y propiedad del estado:
+//   el socket lo puede escribir cualquiera (otro cliente, perfiles por hora
+//   de hyprsunset.conf, timers de systemd con `qs ipc call night_light ...`):
+//   gana el último escritor y este servicio converge leyendo (sync al
+//   conectar + drift cada 30 s). Los comandos mutadores mandados sin conexión
+//   no se pierden: se guardan en _offlineJournal y se reproducen en orden al
+//   conectar, antes del sync.
 Singleton {
     id: root
 
@@ -49,6 +57,14 @@ Singleton {
     property var _queue: []
     property bool _busy: false
     property string _pendingKey: ""
+    // Reensamblado de replies (el stream puede partirlas en trozos).
+    property string _stash: ""
+    // Comandos mutadores pedidos sin conexión, en orden (incluido `reset`).
+    property var _offlineJournal: []
+    // Anti-spam de warns por episodio de desconexión.
+    property bool _offlineWarned: false
+    // Backoff de reconexión: intentos desde la última conexión.
+    property int _connectAttempts: 0
 
     function _enqueue(cmd, key) {
         _queue.push({
@@ -66,11 +82,23 @@ Singleton {
         _pendingKey = next.key;
         socket.write(next.cmd);
         socket.flush();
+        replyTimeout.restart();
     }
 
     function send(cmd, key) {
         if (!socket.connected) {
-            console.warn("[Hyprsunset] socket no conectado, ¿está corriendo el daemon?");
+            // Sin conexión los mutadores (key vacía: sets, reset) se guardan
+            // en orden para reproducirlos al conectar; los gets de
+            // confirmación no importan (el sync posterior los cubre).
+            if (!key) {
+                if (root._offlineJournal.length > 50)
+                    root._offlineJournal.shift();
+                root._offlineJournal.push(cmd);
+            }
+            if (!root._offlineWarned) {
+                root._offlineWarned = true;
+                console.warn("[Hyprsunset] socket no conectado, comando guardado para al conectar:", cmd);
+            }
             return;
         }
         _enqueue(cmd, key);
@@ -84,17 +112,41 @@ Singleton {
         _enqueue("gamma", "gamma");
     }
 
+    // Ruta como la construye el daemon (ver IPCSocket.cpp): sin
+    // XDG_RUNTIME_DIR se usa /run/user/UID, y sin
+    // HYPRLAND_INSTANCE_SIGNATURE el sock cuelga directo de USERDIR.
+    readonly property string socketPath: {
+        const his = Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE");
+        const rt = Quickshell.env("XDG_RUNTIME_DIR");
+        const uid = Quickshell.env("UID");
+        const userDir = rt ? rt + "/hypr/" : (uid ? "/run/user/" + uid + "/hypr/" : "");
+        if (userDir === "")
+            return "";
+        return his ? userDir + his + "/.hyprsunset.sock" : userDir + ".hyprsunset.sock";
+    }
+
     Socket {
         id: socket
 
-        path: `${Quickshell.env("XDG_RUNTIME_DIR")}/hypr/${Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")}/.hyprsunset.sock`
+        path: root.socketPath
 
         onConnectionStateChanged: {
             root.available = connected;
+            replySettle.stop();
+            replyTimeout.stop();
+            root._stash = "";
             if (connected) {
                 root._busy = false;
                 root._pendingKey = "";
                 root._queue = [];
+                root._connectAttempts = 0;
+                reconnectTimer.interval = 2000;
+                root._offlineWarned = false;
+                // Reproduce en orden lo pedido sin conexión (incluido un
+                // posible `reset`) y luego sincroniza para confirmar.
+                for (let i = 0; i < root._offlineJournal.length; i++)
+                    root._enqueue(root._offlineJournal[i], "");
+                root._offlineJournal = [];
                 Qt.callLater(root.syncState);
             } else {
                 // conexión caída: limpiamos la cola, ya no tiene sentido
@@ -108,11 +160,15 @@ Singleton {
         }
 
         onError: err => {
-            console.warn("[Hyprsunset] error de socket:", err);
             // Un connectToServer() fallido (daemon no corriendo todavía) no
             // siempre dispara onSocketDisconnected en Quickshell, así que
             // forzamos el ciclo connected=false -> true para que el próximo
             // tick de reconnectTimer pueda reintentar realmente.
+            // Un aviso por episodio: si el daemon no existe, no spamea.
+            if (!root._offlineWarned) {
+                root._offlineWarned = true;
+                console.warn("[Hyprsunset] error de socket:", err);
+            }
             socket.connected = false;
         }
 
@@ -120,51 +176,100 @@ Singleton {
             splitMarker: "" // las respuestas no siempre traen \n
 
             onRead: data => {
-                const reply = data.trim();
-                const key = root._pendingKey;
-                root._busy = false;
-                root._pendingKey = "";
-
-                if (reply !== "") {
-                    switch (key) {
-                    case "identity":
-                        root.identity = (reply === "true");
-                        break;
-                    case "temperature":
-                        if (!isNaN(Number(reply))) {
-                            root.temperature = Math.round(Number(reply));
-                            if (!root.identity)
-                                root.lastKnownTemperature = root.temperature;
-                        }
-                        break;
-                    case "gamma":
-                        if (!isNaN(Number(reply)))
-                            root.gammaPct = Math.round(Number(reply));
-                        break;
-                    // key === "" -> confirmaciones "ok" de comandos mutadores,
-                    // no requieren acción (ya aplicamos el estado optimista).
-                    }
-                }
-
-                if (key === "temperature" || key === "gamma" || key === "identity")
-                    root.syncing = _queue.length > 0;
-
-                Qt.callLater(root._pump);
+                // Reensamblado: el stream puede partir una respuesta en
+                // varios trozos; se consume cuando lleva 30 ms quieta.
+                root._stash += data;
+                replySettle.restart();
             }
         }
     }
 
+    // Una respuesta por ráfaga: el daemon escribe cada reply en un solo
+    // write(), así que 30 ms de quietud = reply completa.
+    Timer {
+        id: replySettle
+
+        interval: 30
+        onTriggered: {
+            const reply = root._stash;
+            root._stash = "";
+            root._consumeReply(reply);
+        }
+    }
+
+    // Si una respuesta no llega, no se reintenta (un relativo se aplicaría
+    // dos veces): se desbloquea y la confirmación/get que va detrás, o el
+    // próximo sync, converge al valor real.
+    Timer {
+        id: replyTimeout
+
+        interval: 2000
+        onTriggered: {
+            if (!root._busy)
+                return;
+            root._busy = false;
+            root._pendingKey = "";
+            if (root._queue.length === 0)
+                root.syncing = false;
+            root._pump();
+        }
+    }
+
+    // Consume UNA reply ya reensamblada (ver replySettle).
+    function _consumeReply(data) {
+        replyTimeout.stop();
+        const reply = data.trim();
+        const key = root._pendingKey;
+        root._busy = false;
+        root._pendingKey = "";
+
+        if (reply !== "") {
+            switch (key) {
+            case "identity":
+                // Solo "true"/"false" valen: un error del daemon ("invalid
+                // command", ...) no debe tumbar el estado a false.
+                if (reply === "true")
+                    root.identity = true;
+                else if (reply === "false")
+                    root.identity = false;
+                break;
+            case "temperature":
+                if (!isNaN(Number(reply))) {
+                    root.temperature = Math.round(Number(reply));
+                    if (!root.identity)
+                        root.lastKnownTemperature = root.temperature;
+                }
+                break;
+            case "gamma":
+                if (!isNaN(Number(reply)))
+                    root.gammaPct = Math.round(Number(reply));
+                break;
+            // key === "" -> confirmaciones "ok" de comandos mutadores,
+            // no requieren acción (ya aplicamos el estado optimista).
+            }
+        }
+
+        if (key === "temperature" || key === "gamma" || key === "identity")
+            root.syncing = _queue.length > 0;
+
+        Qt.callLater(root._pump);
+    }
+
     // Reintento de conexión mientras el daemon no esté disponible.
-    // socket.connected=true es idempotente si ya está conectado/conectando.
+    // Backoff: intentos rápidos (~30 s) tras una caída para reconectar
+    // enseguida; si nunca hubo daemon, tick lento para no spamear.
     Timer {
         id: reconnectTimer
 
         interval: 2000
         repeat: true
-        running: true
+        running: root.socketPath !== "" && !socket.connected
         onTriggered: {
-            if (!socket.connected)
-                socket.connected = true;
+            if (socket.connected || root.socketPath === "")
+                return;
+            root._connectAttempts += 1;
+            reconnectTimer.interval = root._connectAttempts < 15 ? 2000 : 30000;
+            socket.connected = true;
         }
     }
 
@@ -215,7 +320,7 @@ Singleton {
         repeat: true
         running: root.available
         onTriggered: {
-            if (socket.connected && !root._busy && root._queue.length === 0)
+            if (socket.connected && !root.syncing && !root._busy && root._queue.length === 0)
                 root.syncState();
         }
     }
@@ -227,6 +332,8 @@ Singleton {
     // OJO: el daemon SIEMPRE fuerza identity=false al setear temperatura
     // explícitamente (ver IPCSocket.cpp), así que lo reflejamos optimistamente.
     function setTemperature(kelvin) {
+        if (!isFinite(kelvin))
+            return;
         const clamped = Math.max(1000, Math.min(20000, Math.round(kelvin)));
         temperature = clamped;
         lastKnownTemperature = clamped;
@@ -247,6 +354,8 @@ Singleton {
     // Gamma en % (0-100 típico, hasta `gamma_max` si el daemon fue lanzado
     // con --gamma_max > 100). No tocamos `identity`: gamma es independiente.
     function setGamma(percent) {
+        if (!isFinite(percent))
+            return;
         const clamped = Math.max(0, percent);
         gammaPct = clamped;
         _pendingGamma = clamped;
@@ -271,10 +380,12 @@ Singleton {
         }
         identity = false;
         // el "set" NO lleva key -> su reply ("ok") se ignora sin tocar
-        // `identity`; el "get" que sigue sí lleva key y confirma el valor
-        // real que quedó aplicado en el daemon.
+        // `identity`; los "get" que siguen sí llevan key y confirman los
+        // valores reales que quedaron aplicados en el daemon (la temperatura
+        // también: pudo cambiar externamente con el filtro apagado).
         send("identity false");
         send("identity get", "identity");
+        send("temperature", "temperature");
     }
 
     function deactivate() {
@@ -295,6 +406,19 @@ Singleton {
     function resetToProfile() {
         send("reset");
         Qt.callLater(syncState);
+    }
+
+    // Foto del estado para scripts y automatización externa:
+    // `qs ipc call night_light status`
+    // -> {"temperature":6000,"gamma":100,"identity":true,"active":false,"available":true}
+    function statusSnapshot(): string {
+        return JSON.stringify({
+            temperature: temperature,
+            gamma: gammaPct,
+            identity: identity,
+            active: nightLightActive,
+            available: available
+        });
     }
 
     IpcHandler {
@@ -322,6 +446,10 @@ Singleton {
 
         function reset() {
             root.resetToProfile();
+        }
+
+        function status(): string {
+            return root.statusSnapshot();
         }
     }
 }

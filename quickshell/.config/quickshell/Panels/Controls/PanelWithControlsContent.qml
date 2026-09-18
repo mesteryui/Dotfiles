@@ -5,14 +5,12 @@ import qs.Core.Services as Services
 import qs.Primitives
 import qs.Core
 import qs.Panels.Controls.Tabs
-import qs.Features.Notifications
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
-import Quickshell.Widgets
 
 Item {
     id: root
@@ -114,7 +112,7 @@ Item {
 
                             Image {
                                 anchors.fill: parent
-                                source: Quickshell.env("HOME") + "/.face"
+                                source: Qt.resolvedUrl(Quickshell.env("HOME") + "/.face")
                                 fillMode: Image.PreserveAspectCrop
                                 sourceSize.width: 52
                                 sourceSize.height: 52
@@ -211,7 +209,9 @@ Item {
                         Process {
                             id: buttonProc
 
-                            command: ["bash", "-c", "qs ipc call ui.powermenu togglePowerMenu"]
+                            // Sin `bash -c` intermedio: argv directo al mismo
+                            // endpoint que usa el atajo de hyprland.
+                            command: ["qs", "ipc", "call", "ui.powermenu", "togglePowerMenu"]
                         }
                     }
                 }
@@ -257,6 +257,8 @@ Item {
                     id: brightnessSlider
                     Layout.fillWidth: true
                     visible: Services.BrightnessService.ready
+                    // Roundtrip lento (spawn + sysfs): eco local al arrastrar.
+                    liveEcho: true
                     iconName: {
                         const b = Services.BrightnessService.brightness;
                         if (b > 0.6)

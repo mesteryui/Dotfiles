@@ -23,25 +23,15 @@ BarPopupWindow {
 
     property real currentPosition: 0
 
-    Timer {
-        id: positionTimer
-
-        interval: 100
-        repeat: true
-        running: root.visible && Services.MprisService.isPlaying
-        onTriggered: {
-            if (!mprisContent.sliderDragging) {
-                const p = Services.MprisService.activePlayer;
-                if (!p)
-                    return;
-                if (p.canSeek || p.canControl) {
-                    try {
-                        root.currentPosition = p.position;
-                    } catch (e) {
-                        console.warn("[Mpris] position read failed:", e);
-                    }
-                }
-            }
+    // Posición vía MprisService.position (timer único centralizado):
+    // este popup se apunta al hacerse visible y se desapunta al
+    // ocultarse/destruirse. La confirmación post-seek sigue siendo un
+    // one-shot por gesto (barato y dirigido).
+    Connections {
+        target: Services.MprisService
+        function onPositionChanged() {
+            if (!mprisContent.sliderDragging)
+                root.currentPosition = Services.MprisService.position;
         }
     }
 
@@ -65,6 +55,7 @@ BarPopupWindow {
     }
 
     onVisibleChanged: {
+        Services.MprisService.positionClients += visible ? 1 : -1;
         if (visible) {
             const p = Services.MprisService.activePlayer;
             if (!p) {
@@ -78,6 +69,11 @@ BarPopupWindow {
                 }
             }
         }
+    }
+
+    Component.onDestruction: {
+        if (root.visible)
+            Services.MprisService.positionClients -= 1;
     }
 
     // ── Background ────────────────────────────────────────────

@@ -11,9 +11,21 @@ RowLayout {
     property real value: 0.0          // 0.0 – 1.0
     property color accentColor: Appearance.md3.primary
     property bool showValue: true
-    property string valueText: Math.round(root.value * 100) + "%"
+    property string valueText: Math.round(root.displayValue() * 100) + "%"
     property real stepSize: 0.05
     property string accessibleName: root.label !== "" ? root.label : root.iconName
+    // Eco local opt-in para roundtrips lentos (ej. brillo: spawn + sysfs).
+    // Con liveEcho el thumb/% siguen el dedo durante el arrastre y la verdad
+    // (propiedad `value` del padre) manda al soltar o en reposo. Apagado por
+    // defecto: comportamiento idéntico al de siempre.
+    property bool liveEcho: false
+    property real dragValue: 0.0
+    readonly property alias dragging: trackArea.pressed
+
+    // Valor mostrado: dedo mientras se arrastra con eco, verdad en reposo.
+    function displayValue() {
+        return (root.liveEcho && root.dragging) ? root.dragValue : root.value;
+    }
     // Patrón focus-visible: el anillo de foco solo se muestra cuando el
     // foco viene del teclado. El panel dueño lo pone a false con el ratón
     // (vía mouseUsed) y a true con cualquier tecla (Keys.onPressed en la
@@ -25,7 +37,10 @@ RowLayout {
     signal mouseUsed
 
     function adjust(delta) {
-        root.moved(Math.max(0.0, Math.min(1.0, root.value + delta)));
+        const v = Math.max(0.0, Math.min(1.0, root.displayValue() + delta));
+        if (root.liveEcho)
+            root.dragValue = v;
+        root.moved(v);
     }
 
     spacing: 12
@@ -127,7 +142,7 @@ RowLayout {
 
             // Pista activa (Fill)
             Rectangle {
-                width: Math.max(height, trackBg.width * Math.max(0, Math.min(1, root.value)))
+                width: Math.max(height, trackBg.width * Math.max(0, Math.min(1, root.displayValue())))
                 height: parent.height
                 radius: parent.radius
                 color: root.accentColor
@@ -149,7 +164,7 @@ RowLayout {
         Rectangle {
             id: thumb
 
-            x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.value)) - width / 2))
+            x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.displayValue())) - width / 2))
             anchors.verticalCenter: parent.verticalCenter
             width: trackArea.pressed ? 20 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 18 : 14)
             height: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 20 : 18)
@@ -187,6 +202,8 @@ RowLayout {
 
             function updateValue(mouseX) {
                 const newVal = Math.max(0.0, Math.min(1.0, mouseX / width));
+                if (root.liveEcho)
+                    root.dragValue = newVal;
                 root.moved(newVal);
             }
 
@@ -200,6 +217,9 @@ RowLayout {
             onPressed: mouse => {
                 root.forceActiveFocus();
                 root.mouseUsed();
+                // El eco parte de la verdad al apoyar el dedo.
+                if (root.liveEcho)
+                    root.dragValue = root.value;
             }
             onPositionChanged: mouse => {
                 if (pressed)

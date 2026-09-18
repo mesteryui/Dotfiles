@@ -5,9 +5,21 @@ import qs.Core.Services
 Scope {
     id: root
 
-    NotificationCenter {
-        visible: NotificationService.centerOpen
-        historyModel: NotificationService.history
+    // NotificationCenter es PanelWindow pesado pero pasa oculto casi siempre:
+    // se difiere. Los popups por pantalla se quedan directos (instantáneos).
+    Loader {
+        active: NotificationService.centerOpen
+        asynchronous: true
+        sourceComponent: centerComp
+    }
+
+    Component {
+        id: centerComp
+
+        NotificationCenter {
+            visible: NotificationService.centerOpen
+            historyModel: NotificationService.history
+        }
     }
     Variants {
         model: Quickshell.screens

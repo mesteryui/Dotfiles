@@ -108,7 +108,6 @@ Singleton {
 	onActivePlayerChanged: this.updateTrack();
 
 	function updateTrack() {
-		//console.log(`update: ${this.activePlayer?.trackTitle ?? ""} : ${this.activePlayer?.trackArtists}`)
 		this.activeTrack = {
 			uniqueId: this.activePlayer?.uniqueId ?? 0,
 			artUrl: this.activePlayer?.trackArtUrl ?? "",
@@ -122,6 +121,33 @@ Singleton {
 	}
 
 	property bool isPlaying: this.activePlayer && this.activePlayer.isPlaying;
+
+	// Posición centralizada y throttled: antes la leían por separado el
+	// popup (cada 100 ms) y el lockscreen (cada 250 ms) con dos timers y
+	// dos lecturas D-Bus por ciclo. Un solo timer la sirve a ambos.
+	// Los consumidores se apuntan con positionClients al hacerse visibles
+	// y se desapuntan al ocultarse/destruirse (contador, vale para N
+	// pantallas en el lockscreen).
+	property int positionClients: 0
+	property real position: 0
+
+	Timer {
+		interval: 150
+		running: root.isPlaying && root.positionClients > 0
+		repeat: true
+		onTriggered: {
+			const p = root.activePlayer;
+			if (!p)
+				return;
+			if (p.canSeek || p.canControl) {
+				try {
+					root.position = p.position;
+				} catch (e) {
+					console.warn("[Mpris] position read failed:", e);
+				}
+			}
+		}
+	}
 
 	property bool canTogglePlaying: this.activePlayer?.canTogglePlaying ?? false;
 
@@ -171,7 +197,6 @@ Singleton {
 
 	function setActivePlayer(player: MprisPlayer) {
 		const targetPlayer = (player && isRealPlayer(player)) ? player : (players[0] ?? null);
-		console.log(`[Mpris] Active player ${targetPlayer} << ${activePlayer}`)
 
 		if (targetPlayer && this.activePlayer) {
 			this.__reverse = Mpris.players.indexOf(targetPlayer) < Mpris.players.indexOf(this.activePlayer);

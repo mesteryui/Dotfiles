@@ -13,10 +13,18 @@ Singleton {
     // Locale del sistema
     readonly property string systemLang: Qt.locale().name
 
-    // Candidato antes de comprobar si existe el archivo de traducción
-    readonly property string candidateLang: (userDefinedLang === "auto" || userDefinedLang === "")
-        ? systemLang
-        : userDefinedLang
+    // Candidato antes de comprobar si existe el archivo de traducción.
+    // Normaliza variantes ("es", "es-ES") al nombre de archivo ("es_ES")
+    // para no caer a en_US cuando Qt no devuelve el locale completo.
+    readonly property string candidateLang: {
+        const raw = (userDefinedLang === "auto" || userDefinedLang === "") ? systemLang : userDefinedLang;
+        const norm = raw.replace("-", "_");
+        if (norm === "es")
+            return "es_ES";
+        if (norm === "en")
+            return "en_US";
+        return norm;
+    }
 
     // Idioma resuelto (se actualiza tras comprobar existencia del archivo)
     property string language: "en_US"
@@ -32,6 +40,7 @@ Singleton {
 
         onExited: code => {
             root.language = (code === 0) ? root.candidateLang : "en_US";
+            console.info("[I18n] system=" + root.systemLang + " candidate=" + root.candidateLang + " -> " + root.language);
             fileManagment.reload();
         }
     }

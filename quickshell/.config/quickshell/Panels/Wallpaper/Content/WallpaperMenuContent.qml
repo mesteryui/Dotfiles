@@ -66,7 +66,7 @@ Item {
             spacing: 12
 
             StyledText {
-                text: Services.I18nService?.getTranslation("wallpaper.title", "Wallpapers") ?? "Wallpapers"
+                text: Services.I18nService?.getTranslation("wallpaper.title", "Fondos de Pantalla") ?? "Fondos de Pantalla"
                 font.pixelSize: Appearance.font.pixelSize.title
                 font.weight: Font.Bold
                 font.family: Appearance.font.sans

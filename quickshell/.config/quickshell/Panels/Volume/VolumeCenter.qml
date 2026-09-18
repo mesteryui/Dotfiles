@@ -13,8 +13,8 @@ PanelWindow {
 
     visible: false
 
-    implicitWidth: popupContent.implicitWidth + 24
-    implicitHeight: popupContent.implicitHeight + 24
+    implicitWidth: (contentLoader.item ? contentLoader.item.implicitWidth : 300) + 24
+    implicitHeight: (contentLoader.item ? contentLoader.item.implicitHeight : 200) + 24
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
@@ -42,7 +42,7 @@ PanelWindow {
 
     onVisibleChanged: {
         if (visible)
-            Qt.callLater(() => popupContent.focusDefault());
+            Qt.callLater(() => contentLoader.item?.focusDefault?.());
     }
     PopupBackground {
         id: bg
@@ -63,11 +63,31 @@ PanelWindow {
         z: -1
     }
 
-    VolumePopupContent {
-        id: popupContent
+    // Síncrono a propósito: el contenido mide según datos vivos (número
+    // de dispositivos, volúmenes) y en async la ventana abría en tamaño
+    // de fallback y saltaba al real, desplazando los sliders a la vista.
+    // Es un popup pequeño: instanciar en el mismo frame no se nota y al
+    // cerrar se sigue destruyendo (ahorro intacto).
+    Loader {
+        id: contentLoader
+
         anchors {
             fill: parent
             margins: 12
+        }
+        active: root.visible
+        sourceComponent: volumeComp
+        onLoaded: {
+            if (root.visible)
+                Qt.callLater(() => contentLoader.item?.focusDefault?.());
+        }
+    }
+
+    Component {
+        id: volumeComp
+
+        VolumePopupContent {
+            anchors.fill: parent
         }
     }
 }

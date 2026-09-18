@@ -66,10 +66,23 @@ FloatingWindow {
         showBorder: false
     }
 
-    // ── Content ──────────────────────────────────────────────────────
-    SettingsPanelContent {
-        id: settingsContent
+    // ── Content (lazy) ─────────────────────────────────────────
+    // SettingsPanelContent es pesado y el panel pasa el 99% del tiempo
+    // oculto: se difiere sin cambiar IPC ni comportamiento.
+    Loader {
+        id: contentLoader
 
         anchors.fill: bg
+        active: root.visible
+        asynchronous: true
+        sourceComponent: settingsComp
+    }
+
+    Component {
+        id: settingsComp
+
+        SettingsPanelContent {
+            anchors.fill: parent
+        }
     }
 }

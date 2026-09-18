@@ -22,13 +22,13 @@ BaseOSD {
 
         function onCapsLockOnChanged() {
             const capsActive = KeyboardThings.capsLockOn;
-            keyOSD.osdText = I18nService.getTranslation("osd.capsLock.text").arg(capsActive ? I18nService.getTranslation("osd.capsLock.activate") : I18nService.getTranslation("osd.capsLock.deactivate"));
+            keyOSD.osdText = I18nService.getTranslation("osd.capsLock.text", "Bloq Mayús %1").arg(capsActive ? I18nService.getTranslation("osd.capsLock.activate", "Activado") : I18nService.getTranslation("osd.capsLock.deactivate", "Desactivado"));
             keyOSD.show();
         }
 
         function onNumsLockChanged() {
             const numLockActive = KeyboardThings.numsLock;
-            keyOSD.osdText = "Nums Lock " + (numLockActive ? "activado" : "desactivado");
+            keyOSD.osdText = "Bloq Num " + (numLockActive ? "activado" : "desactivado");
             keyOSD.show();
         }
     }
