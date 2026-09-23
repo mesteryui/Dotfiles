@@ -1,6 +1,7 @@
 import qs.Core.Services as Services
 import QtQuick
 import Quickshell.Services.UPower
+import M3Shapes
 
 IconTextOSD {
     id: batteryOSD
@@ -9,6 +10,8 @@ IconTextOSD {
 
     osdIcon: "battery_full"
     osdText: ""
+    // Identidad de forma por nivel: Circle(llena) → Bun(baja) → Boom(crítica).
+    property int iconShape: MaterialShape.Circle
 
     // Igual que VolumeOSD/MicOSD: suprime el spam de UPower durante el arranque,
     // que es cuando I18nService aún sirve en_US y el OSD cachearía inglés.
@@ -30,12 +33,21 @@ IconTextOSD {
         if (batteryOSD.lastCharging) {
             batteryOSD.osdIcon = "battery_charging_full";
             batteryOSD.osdText = Services.I18nService.getTranslation("battery.charging", "Cargando batería");
+            batteryOSD.iconShape = MaterialShape.Circle;
         } else if (batteryOSD.lastPct === 10) {
             batteryOSD.osdIcon = "battery_alert";
             batteryOSD.osdText = Services.I18nService.getTranslation("battery.critical", "¡Batería crítica (%1%)! Conecta el cargador de inmediato").arg(batteryOSD.lastPct);
+            batteryOSD.iconShape = MaterialShape.SemiCircle;
+            batteryOSD.alert = true;
         } else if (batteryOSD.lastPct === 20) {
             batteryOSD.osdIcon = "battery_low";
             batteryOSD.osdText = Services.I18nService.getTranslation("battery.low", "Batería baja (%1%): Te recomendamos cargar el equipo").arg(batteryOSD.lastPct);
+            batteryOSD.iconShape = MaterialShape.Bun;
+            batteryOSD.alert = false;
+        } else {
+            batteryOSD.osdText = Math.round(batteryOSD.lastPct) + "%";
+            batteryOSD.iconShape = MaterialShape.Circle;
+            batteryOSD.alert = false;
         }
     }
 

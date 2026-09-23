@@ -1,36 +1,36 @@
 // --- Builtin: configure (unified menu system) ---
-// Usa el componente base (ver Launcher/CustomMenu.qml).
+// Usa el componente base (ver Launcher/MenuDefinition.qml).
 
 import qs.Launcher
 
-CustomMenu {
+MenuDefinition {
     sectionId: "configure"
     titleFallback: "Configuración"
-    titleKey: "sysmenu.sec_configure"
+    titleKey: "sysmenu.section_configure"
     iconName: "settings"
     parentId: "main"
 
     entries: [
         shell("cfg-keybinds", "Editar atajos de teclado", "hypr keybinds", "keyboard",
             "emacsclient -c -a emacs ~/.config/hypr/configs/keybinds/",
-            { titleKey: "sysmenu.cfg-keybinds_t", subtitleKey: "sysmenu.cfg-keybinds_s" }),
+            { titleKey: "sysmenu.config_keybinds_title", subtitleKey: "sysmenu.config_keybinds_subtitle" }),
         shell("cfg-perms", "Permisos del compositor", "permissions", "security",
             "emacsclient -c -a emacs \"${XDG_CONFIG_HOME:-$HOME/.config}/hypr/configs/permissions.lua\"",
-            { titleKey: "sysmenu.cfg-perms_t", subtitleKey: "sysmenu.cfg-perms_s" }),
+            { titleKey: "sysmenu.config_permissions_title", subtitleKey: "sysmenu.config_permissions_subtitle" }),
         shell("cfg-monitor", "Configuración de monitor", "monitors", "monitor",
             "emacsclient -c -a emacs \"${XDG_CONFIG_HOME:-$HOME/.config}/hypr/configs/monitors.lua\"",
-            { titleKey: "sysmenu.cfg-monitor_t", subtitleKey: "sysmenu.cfg-monitor_s" }),
+            { titleKey: "sysmenu.config_monitor_title", subtitleKey: "sysmenu.config_monitor_subtitle" }),
         shell("cfg-dns", "Cambiar DNS", "dns-manager.sh", "dns",
             "xdg-terminal-exec --app-id=local.floating -e dns-manager.sh",
-            { titleKey: "sysmenu.cfg-dns_t", subtitleKey: "sysmenu.cfg-dns_s" }),
+            { titleKey: "sysmenu.config_dns_title", subtitleKey: "sysmenu.config_dns_subtitle" }),
         submenu("cfg-power", "Perfil de energía", "powerprofilesctl", "battery_charging_full", "powerprofiles",
-            { titleKey: "sysmenu.cfg-power_t", subtitleKey: "sysmenu.cfg-power_s" }),
+            { titleKey: "sysmenu.config_power_title", subtitleKey: "sysmenu.config_power_subtitle" }),
         submenu("cfg-packages", "Paquetes", "Instalar / desinstalar", "package_2", "packages",
-            { titleKey: "sysmenu.cfg-packages_t", subtitleKey: "sysmenu.cfg-packages_s" }),
+            { titleKey: "sysmenu.config_packages_title", subtitleKey: "sysmenu.config_packages_subtitle" }),
         submenu("cfg-setup", "Setup", "Docker, Python", "construction", "setup",
-            { titleKey: "sysmenu.cfg-setup_t", subtitleKey: "sysmenu.cfg-setup_s" }),
+            { titleKey: "sysmenu.config_setup_title", subtitleKey: "sysmenu.config_setup_subtitle" }),
         ipc("cfg-settings", "Ajustes del shell", "panel quickshell", "tune",
             "ui.settings toggle",
-            { titleKey: "sysmenu.cfg-settings_t", subtitleKey: "sysmenu.cfg-settings_s" })
+            { titleKey: "sysmenu.config_settings_title", subtitleKey: "sysmenu.config_settings_subtitle" })
     ]
 }

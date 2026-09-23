@@ -6,21 +6,21 @@ pragma Singleton
 // Web, Emojis, Clipboard.)
 //
 // Origen único (el display no distingue ninguno, siempre pregunta aquí):
-//   providers unificados → CustomMenuService: todo menú usa el componente
-//   base Launcher/CustomMenu.qml (módulo qs.Launcher) como raíz, sea
+//   providers unificados → MenuStore: todo menú usa el componente
+//   base Launcher/MenuDefinition.qml (módulo qs.Launcher) como raíz, sea
 //   estático (entries fijas) o dinámico (entries generadas en refresh()).
 //   Internos: MenuProviders/System/*.qml (cargan primero).
 //   Tuyos: MenuProviders/*.qml (vía new-menu.sh o a mano).
 //
 // Crear un menú nuevo (única vía, estático o dinámico):
 //   ejecuta MenuProviders/new-menu.sh MiMenu "Mi menú" (o escribe un
-//   CustomMenu { } a mano), rellena entries y guarda: la recarga en vivo
+//   MenuDefinition { } a mano), rellena entries y guarda: la recarga en vivo
 //   lo aplica en ~2 s. Sin tocar este archivo y sin recargar todo el shell.
 //   Dinámico = implementa refresh() reasignando entries entero
 //   (ver MenuProviders/System/FastfetchMenu.qml).
 //
 // Reactividad: las funciones que sirven items/secciones leen
-// CustomMenuService.revision, así cualquier reload() reevalúa los bindings
+// MenuStore.revision, así cualquier reload() reevalúa los bindings
 // del launcher automáticamente.
 //
 // i18n: títulos/subtítulos se resuelven aquí con I18nService usando las
@@ -31,6 +31,7 @@ pragma Singleton
 import qs.Core.Services as Services
 import QtQuick
 import Quickshell
+import "Base/ShellUtils.js" as ShellUtils
 
 Singleton {
     id: root
@@ -58,7 +59,7 @@ Singleton {
     })
 
     function memoKey() {
-        return CustomMenuService.revision + "|" + Services.I18nService.language;
+        return MenuStore.revision + "|" + Services.I18nService.language;
     }
 
     function sections() {
@@ -68,12 +69,12 @@ Singleton {
         const out = [];
         const seen = {};
         // Dependencia reactiva: tras un reload() este binding se reevalúa.
-        const rev = CustomMenuService.revision;
+        const rev = MenuStore.revision;
         // Vía única: providers unificados (internos primero, tuyos después;
         // el store ya dedupica, aquí solo se traduce el título).
         // Estáticos y dinámicos llegan igual: los dinámicos regeneran sus
         // entries en refresh() y la lectura de la propiedad invalida sola.
-        const customs = CustomMenuService.sectionInfos();
+        const customs = MenuStore.sectionInfos();
         for (let k = 0; k < customs.length; k++) {
             if (seen[customs[k].sectionId])
                 continue;
@@ -88,7 +89,7 @@ Singleton {
     // true si la sección es interna (provider de MenuProviders/System/).
     // Los duplicados propios se ignoran en el store, así que basta con esto.
     function isBuiltinSection(sectionId) {
-        return CustomMenuService.isSystemSection(sectionId);
+        return MenuStore.isSystemSection(sectionId);
     }
 
     function sectionInfo(sectionId) {
@@ -96,13 +97,13 @@ Singleton {
         for (let i = 0; i < all.length; i++)
             if (all[i].sectionId === sectionId)
                 return all[i];
-        return { sectionId: "main", title: tr("sysmenu.sec_main", "Sistema"), iconName: "tune", parentId: "" };
+        return { sectionId: "main", title: tr("sysmenu.section_main", "Sistema"), iconName: "tune", parentId: "" };
     }
 
     // Entradas unificadas de una sección ([] si no hay).
     // Vale para estáticas y dinámicas: ambas exponen `entries`.
     function staticEntries(sectionId) {
-        return CustomMenuService.entriesOf(sectionId);
+        return MenuStore.entriesOf(sectionId);
     }
 
     // ---- Fachada única para el display (AppLauncher) ----
@@ -115,7 +116,7 @@ Singleton {
     // siempre (dependencia reactiva) y se compara la referencia.
     function sectionResultItems(sectionId) {
         // Dependencia reactiva (ver sections()).
-        const rev = CustomMenuService.revision;
+        const rev = MenuStore.revision;
         const statics = staticEntries(sectionId);
         const key = sectionId + "|" + root.memoKey();
         const hit = root._memo.sectionCache[sectionId];
@@ -138,9 +139,9 @@ Singleton {
     }
 
     // Refresca una sección si es dinámica (no-op en las estáticas:
-    // su refresh() es vacío por defecto en CustomMenu).
+    // su refresh() es vacío por defecto en MenuDefinition).
     function refreshSection(sectionId) {
-        CustomMenuService.refreshSection(sectionId);
+        MenuStore.refreshSection(sectionId);
     }
 
     // Guarda temporal del refresco completo: reabrir en <8 s no regenera
@@ -157,16 +158,16 @@ Singleton {
         if (Date.now() - root.lastRefreshAll < 8000)
             return;
         root.lastRefreshAll = Date.now();
-        CustomMenuService.refreshAll();
-        CustomMenuService.checkNow();
+        MenuStore.refreshAll();
+        MenuStore.checkNow();
     }
 
     // Recarga completa de menús sin recargar el shell (vía IPC:
     // `qs ipc call launcher reloadMenus`). Re-escanea providers en disco,
     // refresca los dinámicos y devuelve diagnóstico.
-    function reloadCustomMenus(): string {
-        const started = CustomMenuService.reload();
-        const infos = CustomMenuService.sectionInfos();
+    function reloadMenus(): string {
+        const started = MenuStore.reload();
+        const infos = MenuStore.sectionInfos();
         const ids = [];
         for (let i = 0; i < infos.length; i++)
             ids.push(infos[i].sectionId);
@@ -174,7 +175,9 @@ Singleton {
         // providers aparecen solos al terminar vía revision. Este resumen
         // describe el estado previo + si se lanzó el escaneo.
         return (started ? "rescanning" : "already-scanning")
-            + " menus=" + ids.length + " rev=" + CustomMenuService.revision
+            + " menus=" + ids.length + " rev=" + MenuStore.revision
+            + " errors=" + MenuStore.loadErrors
+            + (MenuStore.lastError !== "" ? " lastError=" + MenuStore.lastError : "")
             + " [" + ids.join(",") + "]";
     }
 
@@ -213,7 +216,7 @@ Singleton {
         return {
             kind: "system", title: tr(entry.titleKey, entry.titleFallback), sub: tr(entry.subtitleKey, entry.subtitleFallback),
             iconName: entry.iconName, appIcon: "", ch: "",
-            imagePath: entry.previewPath ? ("file://" + entry.previewPath) : "",
+            imagePath: entry.previewPath ? ShellUtils.fileUrl(entry.previewPath) : "",
             cat: sectionLabel, shell: shellOf(entry),
             isSubmenu: kind === "section",
             section: kind === "section" ? entry.action.targetSectionId : ""
@@ -226,7 +229,7 @@ Singleton {
     function flattenStatic() {
         const key = root.memoKey();
         // Dependencia reactiva (ver sections()).
-        const rev = CustomMenuService.revision;
+        const rev = MenuStore.revision;
         const all = sections();
         const refs = [];
         for (let i = 0; i < all.length; i++)

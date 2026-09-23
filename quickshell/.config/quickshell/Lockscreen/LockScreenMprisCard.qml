@@ -74,6 +74,11 @@ Item {
                     source: (MprisService.activeTrack && MprisService.activeTrack.artUrl) ? MprisService.activeTrack.artUrl : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
+                    cache: true
+                    // Caja de 64px: la carátula suele venir a 500px+,
+                    // decodificarla entera es memoria/tiempo gratis.
+                    sourceSize.width: 128
+                    sourceSize.height: 128
                     visible: source !== "" && status === Image.Ready
                 }
                 MaterialIcon {

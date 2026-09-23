@@ -1,4 +1,5 @@
 import qs.Core
+import qs.Core.Services as Services
 import qs.Primitives
 import QtQuick
 import QtQuick.Layouts
@@ -18,10 +19,27 @@ Rectangle {
     required property string time
     required property string icon
     required property int index
+    // Id de historial para borrado via NotificationService.removeFromHistory.
+    // Opcional para no romper usos existentes (NotificationCenter usa index).
+    property int historyId: -1
+    // Segundos Unix de llegada (para hora relativa; <=0 = usa `time`).
+    property int historyEpoch: -1
 
     signal removeRequested
 
     readonly property bool current: ListView.isCurrentItem ?? false
+
+    // Reloj barato para refrescar el "hace X min".
+    // (SystemClock no existe en el contexto de este módulo versionado;
+    //  un Timer por minuto hace lo mismo y Qt lo comparte.)
+    property int relTick: 0
+
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: root.relTick++
+    }
 
     implicitHeight: mainLayout.implicitHeight + 24
     color: root.current ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
@@ -119,8 +137,14 @@ Rectangle {
                     Layout.fillWidth: true
                 }
                 StyledText {
-                    visible: root.time !== ""
-                    text: root.time
+                    visible: root.time !== "" || root.historyEpoch > 0
+                    // relTick invalida el binding cada minuto.
+                    text: {
+                        root.relTick;
+                        if (root.historyEpoch > 0)
+                            return Services.NotificationService.formatRelative(root.historyEpoch);
+                        return root.time;
+                    }
                     color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                     font.pixelSize: Appearance.font.pixelSize.smallest
                     font.family: Appearance.font.sans
@@ -152,14 +176,15 @@ Rectangle {
         }
     }
 
-    // Botón (×) para borrar esta notificación individual
+    // Botón (×) para borrar esta notificación individual.
+    // Visible con hover o al ser la tarjeta actual (teclado/táctil).
     AnimatedIconButton {
         id: closeButton
 
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 8
-        opacity: rowHover.hovered ? 1 : 0
+        opacity: (rowHover.hovered || root.current) ? 1 : 0
 
         Behavior on opacity {
             NumberAnimation {

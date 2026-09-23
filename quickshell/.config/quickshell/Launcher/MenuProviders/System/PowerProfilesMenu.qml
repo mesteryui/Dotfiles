@@ -1,5 +1,5 @@
-// --- Dinámico unificado: powerprofiles (CustomMenu) ---
-// Toda la lógica de energía vive AQUÍ (la base CustomMenu no sabe nada
+// --- Dinámico unificado: powerprofiles (MenuDefinition) ---
+// Toda la lógica de energía vive AQUÍ (la base MenuDefinition no sabe nada
 // de perfiles): lee PowerProfiles para marcar el actual y genera
 // entradas shell() genéricas con `powerprofilesctl`.
 // Si tu PC no expone el perfil de rendimiento, se oculta solo.
@@ -9,12 +9,12 @@ import qs.Launcher
 import QtQuick
 import Quickshell.Services.UPower
 
-CustomMenu {
+MenuDefinition {
     id: root
 
     sectionId: "powerprofiles"
     titleFallback: "Perfil de energía"
-    titleKey: "sysmenu.sec_powerprofiles"
+    titleKey: "sysmenu.section_powerprofiles"
     iconName: "battery_charging_full"
     parentId: "configure"
 
@@ -54,7 +54,7 @@ CustomMenu {
             // El badge va en el fallback SIN subtitleKey: el Registry prefiere
             // la clave y la traduciría pelada, perdiendo el "● Actual".
             // El idioma se mantiene vía langWatch → refresh().
-            const sub = (badge !== "" ? "● " + badge + " · " : "") + tr("sysmenu.dyn_power", "Perfil de energía");
+            const sub = (badge !== "" ? "● " + badge + " · " : "") + tr("sysmenu.dynamic_power", "Perfil de energía");
             out.push(root.shell("pp-" + m.ctl, tr(m.label, m.fallback), sub, m.icon,
                 "powerprofilesctl set " + m.ctl,
                 { titleKey: m.label }));

@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Core.Services
+import M3Shapes
 
 PercentageOSD {
     id: root
@@ -21,6 +22,15 @@ PercentageOSD {
     // Enlazamos las propiedades requeridas por PercentageOSD con las del AudioService
     percentage: AudioService.micVolume
     icon: AudioService.micMaterialIcon
+
+    // Morph continuo: Circle → Cookie9Sided (energía sonora).
+    // Silenciado: ClamShell (boca cerrada) + error.
+    continuousMorph: true
+    soundMorphFrom: MaterialShape.Circle
+    soundMorphTo: MaterialShape.Cookie9Sided
+
+    // Silenciado: contenedor ClamShell + error (ver PercentageOSD).
+    alert: AudioService.micMuted
 
     // Escuchamos los cambios en el servicio de audio para mostrar el OSD
     Connections {

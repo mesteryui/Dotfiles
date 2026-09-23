@@ -6,6 +6,9 @@
 //   previewMode   → "always" (clip: texto completo/imagen),
 //                   "conditional" (files/system: solo si el item trae
 //                   imagen o texto previsualizable), "never" (resto).
+//   view          → "list" (filas con título+sub) o "grid" (cuadrícula
+//                   de iconos). Para cambiar un menú, basta editar su
+//                   entrada en defs().
 //
 // needsPreview(modeId, item) decide si el panel lateral de preview es
 // imprescindible para el item actual:
@@ -18,13 +21,13 @@
 
 function defs() {
     return [
-        { modeId: "todo", selectorChar: "", previewMode: "never" },
-        { modeId: "system", selectorChar: ">", previewMode: "conditional" },
-        { modeId: "files", selectorChar: "/", previewMode: "conditional" },
-        { modeId: "web", selectorChar: "@", previewMode: "never" },
-        { modeId: "emoji", selectorChar: ".", previewMode: "never" },
-        { modeId: "calc", selectorChar: "=", previewMode: "never" },
-        { modeId: "clip", selectorChar: ":", previewMode: "always" }
+        { modeId: "todo", selectorChar: "", previewMode: "never", view: "list" },
+        { modeId: "system", selectorChar: ">", previewMode: "conditional", view: "list" },
+        { modeId: "files", selectorChar: "/", previewMode: "conditional", view: "list" },
+        { modeId: "web", selectorChar: "@", previewMode: "never", view: "list" },
+        { modeId: "emoji", selectorChar: ".", previewMode: "never", view: "grid" },
+        { modeId: "calc", selectorChar: "=", previewMode: "never", view: "list" },
+        { modeId: "clip", selectorChar: ":", previewMode: "always", view: "list" }
     ];
 }
 
@@ -52,6 +55,15 @@ function supportsPreview(modeId) {
         if (d[i].modeId === modeId)
             return d[i].previewMode !== "never";
     return false;
+}
+
+// Vista del menú: "list" o "grid". Desconocido → "list".
+function viewFor(modeId) {
+    var d = defs();
+    for (var i = 0; i < d.length; i++)
+        if (d[i].modeId === modeId)
+            return d[i].view || "list";
+    return "list";
 }
 
 // ¿El item actual necesita preview? Solo se usa donde es imprescindible.

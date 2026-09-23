@@ -8,6 +8,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
+import M3Shapes
 
 // --- PowerButtons ---
 // Overlay fullscreen de menú de apagado. Extiende PanelWindow directamente
@@ -32,12 +33,16 @@ Scope {
         onTriggered: root.animating = false
         running: false
     }
-    Loader {
+    // LazyLoader: el overlay se incuba en background y se cachea. Como ya
+    // no se destruye al cerrarse, el visible de la ventana va atado a show.
+    LazyLoader {
         id: loader
 
-        active: root.show
-        sourceComponent: PanelWindow {
+        loading: root.show
+        component: PanelWindow {
             id: powerButtons
+
+            visible: root.show
 
             WlrLayershell.namespace: "quickshell:logout_dialog"
             WlrLayershell.layer: WlrLayer.Overlay
@@ -142,6 +147,8 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.shutdown")
                         buttonIcon: "power_settings_new"
+                        buttonShape: MaterialShape.Circle
+                        accentColor: Appearance.md3.error
                         command: "systemctl poweroff"
                         KeyNavigation.left: logoutBtn
                         KeyNavigation.right: rebootBtn
@@ -153,6 +160,7 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.reboot")
                         buttonIcon: "restart_alt"
+                        buttonShape: MaterialShape.Cookie6Sided
                         command: "systemctl reboot"
                         KeyNavigation.left: shutdownBtn
                         KeyNavigation.right: suspendBtn
@@ -164,6 +172,7 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.suspend")
                         buttonIcon: "bedtime"
+                        buttonShape: MaterialShape.ClamShell
                         command: "systemctl suspend"
                         KeyNavigation.left: rebootBtn
                         KeyNavigation.right: lockBtn
@@ -175,6 +184,7 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.lock")
                         buttonIcon: "lock"
+                        buttonShape: MaterialShape.Diamond
                         command: "qs ipc call lockscreen lock"
                         KeyNavigation.left: suspendBtn
                         KeyNavigation.right: logoutBtn
@@ -186,6 +196,7 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.logout")
                         buttonIcon: "logout"
+                        buttonShape: MaterialShape.Arrow
                         command: "hyprctl dispatch 'hl.dsp.exit()'"
                         KeyNavigation.left: lockBtn
                         KeyNavigation.right: shutdownBtn
@@ -196,18 +207,9 @@ Scope {
         }
     }
 
+    // El morph al resaltar lo gestiona GenericButton (reposo Circle,
+    // resaltado con forma-identidad); aquí solo se fija la identidad
+    // de cada acción vía buttonShape.
     component PowerButton: GenericButton {
-        property int targetRadiusFocused: 50
-        property int targetRadiusUnfocused: 20
-
-        radius: activeFocus ? targetRadiusFocused : targetRadiusUnfocused
-
-        Behavior on radius {
-            NumberAnimation {
-                duration: 250
-                easing.type: Easing.Bezier
-                easing.overshoot: 1.5
-            }
-        }
     }
 }

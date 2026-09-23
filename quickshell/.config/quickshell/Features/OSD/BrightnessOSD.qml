@@ -1,10 +1,15 @@
 import qs.Core.Services as Services
 import QtQuick
+import M3Shapes
 
 PercentageOSD {
     id: root
 
     type: "brightness"
+    // Morph continuo Sunny→VerySunny (luz). Atado al valor.
+    continuousMorph: true
+    morphFrom: MaterialShape.Sunny
+    morphTo: MaterialShape.VerySunny
     percentage: Services.BrightnessService.brightness
     icon: {
         const b = Services.BrightnessService.brightness;

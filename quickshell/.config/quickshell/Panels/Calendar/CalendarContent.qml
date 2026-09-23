@@ -256,7 +256,7 @@ Item {
                     StyledText {
                         anchors.centerIn: parent
                         text: delegateItem.model.day
-                        font.family: Services.ConfigService.configs.appearence.fontSans
+                        font.family: Services.ConfigService.configs.appearance.fontSans
                         font.pixelSize: 13
                         font.bold: delegateItem.isToday || delegateItem.isSelected
                         color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : delegateItem.isCurrentMonth ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant

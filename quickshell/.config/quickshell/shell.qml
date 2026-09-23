@@ -16,10 +16,12 @@ import qs.Lockscreen
 import qs.Launcher
 import qs.Bar
 import qs.Panels.Volume
+import qs.Panels.Wallhaven
 import qs.Features.CheatSheet
 import qs.Windows
 import QtQuick
 import Quickshell
+import "./Core/Log.js" as Log
 
 ShellRoot {
     id: root
@@ -27,28 +29,64 @@ ShellRoot {
     settings.watchFiles: true
 
     Component.onCompleted: {
+        Log.init(Quickshell.env("QS_LOG_LEVEL"));
         ConfigService.load();
         KeyboardThings.load();
-        ThemeApplier;
+        // Aplica el tema persistido al arrancar (no-op sin wallpaper).
+        ThemeApplier.init();
     }
 
     Switcher {}
 
-    AppLauncher {}
-    SettingsPanel {}
-    PanelWithControls {}
-    VolumeCenter {}
+    // El launcher también es pesado (1200+ líneas + warmup de .desktop):
+    // se incuba en background; el warmup vive dentro y se conserva.
+    LazyLoader {
+        loading: true
+        component: AppLauncher {}
+    }
+
+    // Paneles pesados: LazyLoader los crea en los gaps entre frames sin
+    // bloquear el primero. Son ventanas/Scopes (sin padre visual
+    // necesario), el caso para el que está hecho LazyLoader. El IPC de
+    // cada uno vive dentro de su ventana: hay un breve margen tras
+    // arrancar sin handlers hasta que termina su incubación.
+    LazyLoader {
+        loading: true
+        component: SettingsPanel {}
+    }
+    LazyLoader {
+        loading: true
+        component: PanelWithControls {}
+    }
+    LazyLoader {
+        loading: true
+        component: VolumeCenter {}
+    }
 
     // Cargador de OSDs
     OsdManager {}
 
-    WallpaperMenu {}
+    LazyLoader {
+        loading: true
+        component: WallpaperMenu {}
+    }
+
+    LazyLoader {
+        loading: true
+        component: WallhavenWindow {}
+    }
 
     ScreenRounding {}
 
-    PowerButtons {}
+    LazyLoader {
+        loading: true
+        component: PowerButtons {}
+    }
     Notifications {}
-    Cheatsheet {}
+    LazyLoader {
+        loading: true
+        component: Cheatsheet {}
+    }
     PolkitWindow {}
     Bar {}
     LockScreen {}

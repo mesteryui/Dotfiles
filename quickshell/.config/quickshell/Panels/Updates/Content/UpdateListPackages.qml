@@ -34,7 +34,7 @@ Item {
         anchors.centerIn: parent
         visible: Services.UpdatesTracking.updateCount === 0
             && !Services.UpdatesTracking.checking
-        text: Services.I18nService.getTranslation("update.no_pending")
+        text: Services.I18nService.getTranslation("updates.list_empty")
         font.pixelSize: 13
         color: Appearance.md3.on_surface_variant
     }

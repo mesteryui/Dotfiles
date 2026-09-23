@@ -12,6 +12,13 @@ PopupWindow {
 
     required property QsMenuHandle menu
 
+    signal dismissed
+
+    onVisibleChanged: {
+        if (!root.visible)
+            root.dismissed();
+    }
+
     visible: false
     color: "transparent"
     grabFocus: true
@@ -103,6 +110,8 @@ PopupWindow {
                                 Layout.preferredHeight: 16
                                 sourceSize.width: 16
                                 sourceSize.height: 16
+                                asynchronous: true
+                                cache: true
                                 fillMode: Image.PreserveAspectFit
                             }
 

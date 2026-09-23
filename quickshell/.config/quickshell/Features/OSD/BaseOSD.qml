@@ -1,3 +1,4 @@
+import qs.Core.Modules
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -7,7 +8,8 @@ Scope {
     id: root
 
     property string type: ""
-    readonly property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+    // Fuente única del monitor enfocado (con fallback a la primera pantalla).
+    readonly property var focusedScreen: Screens.focusedScreen
     property int implicitHeight: 20
     property int implicitWidth: 20
     default property alias content: container.data

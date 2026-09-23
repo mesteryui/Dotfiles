@@ -45,13 +45,13 @@ Singleton {
 
     component FontConfig: QtObject {
 
-        readonly property string sans: ConfigService.configs.appearence.fontSans ?? "Google Sans Flex"
+        readonly property string sans: ConfigService.configs.appearance.fontSans ?? "Google Sans Flex"
 
-        readonly property string mono: ConfigService.configs.appearence.monospace ?? "JetBrains Mono Nerd Font"
+        readonly property string mono: ConfigService.configs.appearance.monospace ?? "JetBrains Mono Nerd Font"
 
-        readonly property string reading: ConfigService.configs.appearence.reading ?? "Google Sans Flex"
+        readonly property string reading: ConfigService.configs.appearance.reading ?? "Google Sans Flex"
 
-        readonly property string expressive: ConfigService.configs.appearence.expressive ?? "Google Sans Flex"
+        readonly property string expressive: ConfigService.configs.appearance.expressive ?? "Google Sans Flex"
 
         property string iconMaterial: "Material Symbols Rounded"
 

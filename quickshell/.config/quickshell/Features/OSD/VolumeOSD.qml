@@ -1,5 +1,6 @@
 import qs.Core.Services
 import QtQuick
+import M3Shapes
 
 PercentageOSD {
     id: root
@@ -35,4 +36,12 @@ PercentageOSD {
     percentage: AudioService.volume
 
     icon: AudioService.materialIcon
+
+    // Morph continuo: Circle → Cookie9Sided (energía sonora).
+    // Muteado: ClamShell (boca cerrada) + error.
+    continuousMorph: true
+    soundMorphFrom: MaterialShape.Circle
+    soundMorphTo: MaterialShape.Cookie9Sided
+
+    alert: AudioService.muted
 }

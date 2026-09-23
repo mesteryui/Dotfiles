@@ -6,10 +6,14 @@ import Quickshell
 import Quickshell.Wayland
 
 Scope {
-    Loader {
-        active: PolkitService.active
-        sourceComponent: PanelWindow {
+    // LazyLoader: el diálogo se incuba en background y se cachea. Como ya
+    // no se destruye al cerrarse, el visible va atado al servicio.
+    LazyLoader {
+        loading: PolkitService.active
+        component: PanelWindow {
             id: root
+
+            visible: PolkitService.active
 
             readonly property bool usePasswordChars: !PolkitService.flow?.responseVisible ?? true
 

@@ -60,6 +60,26 @@ Singleton {
         props.dnd = !props.dnd;
     }
 
+    // Hora relativa humana ("ahora mismo", "hace 5 min", "ayer").
+    // epochSec: segundos Unix (los que guarda el historial).
+    function formatRelative(epochSec) {
+        const now = Math.floor(Date.now() / 1000);
+        const d = Math.max(0, now - (epochSec || 0));
+        if (d < 60)
+            return I18nService.getTranslation("notifications.time_now", "ahora mismo");
+        if (d < 3600) {
+            const m = Math.floor(d / 60);
+            return I18nService.getTranslation("notifications.time_min_ago", "hace %1 min").arg(m);
+        }
+        if (d < 86400) {
+            const h = Math.floor(d / 3600);
+            return I18nService.getTranslation("notifications.time_hour_ago", "hace %1 h").arg(h);
+        }
+        if (d < 172800)
+            return I18nService.getTranslation("notifications.time_yesterday", "ayer");
+        return Qt.formatDate(new Date(epochSec * 1000), "d MMM");
+    }
+
     NotificationServer {
         id: notificationServer
 
@@ -71,8 +91,15 @@ Singleton {
         onNotification: n => {
             const historyId = root.historyIdCounter++;
 
-            let resolvedIcon = n.image;
-            if ((!resolvedIcon || resolvedIcon === "") && n.appIcon && n.appIcon !== "") {
+            // Las data: URLs (p. ej. imágenes de notificaciones de
+            // navegadores) suelen venir truncadas y spamean los
+            // decodificadores Qt ("Corrupt JPEG data"): se descartan al
+            // icono de la app (misma idea que MprisService._cleanArtUrl).
+            // Centralizado aquí cubre toast + centro + historial de una vez.
+            let resolvedIcon = String(n.image ?? "");
+            if (resolvedIcon.startsWith("data:"))
+                resolvedIcon = "";
+            if (resolvedIcon === "" && n.appIcon && n.appIcon !== "") {
                 resolvedIcon = Quickshell.iconPath(n.appIcon, "image-missing");
             }
 
@@ -83,6 +110,7 @@ Singleton {
                 appName: n.appName,
                 urgency: n.urgency,
                 time: Qt.formatDateTime(new Date(), "HH:mm"),
+                historyEpoch: Math.floor(Date.now() / 1000),
                 icon: resolvedIcon || ""
             });
 

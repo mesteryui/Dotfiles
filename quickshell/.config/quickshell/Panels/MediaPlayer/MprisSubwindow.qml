@@ -1,7 +1,8 @@
 // MprisSubwindow — Wrapper
 // Gestiona estado de posición, timers, focus y ensambla Background + Content.
 
-import qs.Core.Services as Services
+import qs.Core.Services
+import "../../Core/Log.js" as Log
 import qs.Shared.Background
 import qs.Primitives
 import QtQuick
@@ -12,12 +13,18 @@ BarPopupWindow {
     implicitWidth: 360
     implicitHeight: mprisContent.implicitHeight
 
-    readonly property var player: Services.MprisService.activePlayer
+    readonly property var player: MprisService.activePlayer
 
     // Portada: cadena declarativa, sin onXChanged con efectos secundarios.
     // Si no hay player o no hay arte, queda en "" (sin imagen), en vez de
     // resolver una URL basura contra el directorio del propio .qml.
-    readonly property string artURL: player?.trackArtUrl ?? ""
+    // Las data: URLs (navegadores) se descartan aquí también: suelen venir
+    // truncadas y spamean el log desde los decodificadores Qt (ver
+    // MprisService._cleanArtUrl).
+    readonly property string artURL: {
+        const u = String(player?.trackArtUrl ?? "");
+        return u.startsWith("data:") ? "" : u;
+    }
 
     readonly property string finalArt: artURL.length > 0 ? Qt.resolvedUrl(artURL) : ""
 
@@ -28,10 +35,10 @@ BarPopupWindow {
     // ocultarse/destruirse. La confirmación post-seek sigue siendo un
     // one-shot por gesto (barato y dirigido).
     Connections {
-        target: Services.MprisService
+        target: MprisService
         function onPositionChanged() {
             if (!mprisContent.sliderDragging)
-                root.currentPosition = Services.MprisService.position;
+                root.currentPosition = MprisService.position;
         }
     }
 
@@ -42,22 +49,22 @@ BarPopupWindow {
         repeat: false
         onTriggered: {
             if (!mprisContent.sliderDragging) {
-                const p = Services.MprisService.activePlayer;
+                const p = MprisService.activePlayer;
                 if (!p)
                     return;
                 try {
                     root.currentPosition = p.position;
                 } catch (e) {
-                    console.warn("[Mpris] seek confirm read failed:", e);
+                    Log.warn("[Mpris] seek confirm read failed:", e);
                 }
             }
         }
     }
 
     onVisibleChanged: {
-        Services.MprisService.positionClients += visible ? 1 : -1;
+        MprisService.positionClients += visible ? 1 : -1;
         if (visible) {
-            const p = Services.MprisService.activePlayer;
+            const p = MprisService.activePlayer;
             if (!p) {
                 root.currentPosition = 0;
             } else {
@@ -65,7 +72,7 @@ BarPopupWindow {
                     root.currentPosition = p.position;
                 } catch (e) {
                     root.currentPosition = 0;
-                    console.warn("[Mpris] visible init read failed:", e);
+                    Log.warn("[Mpris] visible init read failed:", e);
                 }
             }
         }
@@ -73,7 +80,7 @@ BarPopupWindow {
 
     Component.onDestruction: {
         if (root.visible)
-            Services.MprisService.positionClients -= 1;
+            MprisService.positionClients -= 1;
     }
 
     // ── Background ────────────────────────────────────────────
@@ -88,18 +95,18 @@ BarPopupWindow {
         anchors.fill: parent
         currentPosition: root.currentPosition
         onSeekRequested: newPosition => {
-            const p = Services.MprisService.activePlayer;
+            const p = MprisService.activePlayer;
             if (!p)
                 return;
             if (!(p.canSeek || p.canControl)) {
-                console.warn("[Mpris] seek ignored: player not controllable");
+                Log.warn("[Mpris] seek ignored: player not controllable");
                 return;
             }
             try {
                 p.position = newPosition;
             } catch (e) {
-                console.warn("[Mpris] seek failed:", e);
-                // opcional: Services.MprisService.setActivePlayer(null);
+                Log.warn("[Mpris] seek failed:", e);
+                // opcional: MprisService.setActivePlayer(null);
             }
             root.currentPosition = newPosition;
             seekConfirmTimer.start();

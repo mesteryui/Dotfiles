@@ -1,5 +1,6 @@
-// SysInfoTab — Tab de información del sistema estilo Material 3 Expressive (Compacto).
-// Métricas detalladas construidas con Primitives.M3Card, M3ProgressBar, MaterialIcon y StyledText.
+// SysInfoTab — Tab de información del sistema estilo Material 3 Expressive.
+// Versión compacta: cabe sin apenas scroll junto al header del panel.
+// Métricas construidas con Primitives.M3Card, M3ProgressBar y MaterialIcon.
 
 import qs.Primitives
 import qs.Core.Services as Services
@@ -50,23 +51,23 @@ Item {
             right: parent.right
         }
 
-        spacing: 12 // Reducido de 16 a 12
+        spacing: 8
 
         // ══ CPU HERO CARD ═════════════════════════════════════════
         M3Card {
             Layout.fillWidth: true
-            padding: 16 // Reducido de 20 a 16
-            radius: 20 // Radio ligeramente menor para compensar
+            padding: 12
+            radius: 20
             color: Appearance.md3.surface_container_high
 
             RowLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: 16 // Reducido de 20 a 16
+                spacing: 12
 
                 // Arco Donut de CPU M3
                 CpuArc {
-                    size: 48 // Reducido de 64 a 48
+                    size: 42
                     value: Services.SystemInfoService.cpuUsage ?? 0
                     Layout.alignment: Qt.AlignVCenter
                 }
@@ -74,11 +75,11 @@ Item {
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
-                    spacing: 6 // Reducido de 8 a 6
+                    spacing: 6
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8 // Reducido de 10 a 8
+                        spacing: 6
 
                         MaterialIcon {
                             icon: "memory"
@@ -89,7 +90,7 @@ Item {
 
                         StyledText {
                             text: "CPU"
-                            font.pixelSize: Appearance.font.pixelSize.normal
+                            font.pixelSize: Appearance.font.pixelSize.small
                             font.weight: Font.Medium
                             color: Appearance.md3.on_surface
                             Layout.fillWidth: true
@@ -98,8 +99,8 @@ Item {
 
                         // Badge de Temperatura
                         Rectangle {
-                            implicitWidth: tempLabel.implicitWidth + 12 // Menos padding lateral
-                            implicitHeight: 20 // Reducido de 24 a 20
+                            implicitWidth: tempLabel.implicitWidth + 12
+                            implicitHeight: 20
                             radius: 10
                             Layout.alignment: Qt.AlignVCenter
                             color: root.withAlpha(root.getTempColor(Services.SystemInfoService.cpuTemp), 0.20)
@@ -118,7 +119,7 @@ Item {
                         // Badge de Núcleos
                         Rectangle {
                             implicitWidth: coresLabel.implicitWidth + 12
-                            implicitHeight: 20 // Reducido de 24 a 20
+                            implicitHeight: 20
                             radius: 10
                             Layout.alignment: Qt.AlignVCenter
                             color: root.withAlpha(Appearance.md3.surface_container_highest, 0.9)
@@ -138,7 +139,7 @@ Item {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.cpuUsage ?? 0
                         accentColor: root.getUsageColor(Services.SystemInfoService.cpuUsage, Appearance.md3.primary)
-                        implicitHeight: 6 // Reducido de 8 a 6
+                        implicitHeight: 6
                     }
                 }
             }
@@ -147,24 +148,24 @@ Item {
         // ══ RAM + SWAP ════════════════════════════════════════════
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12 // Reducido de 16 a 12
+            spacing: 8
 
             // RAM Card
             M3Card {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 12 // Reducido de 16 a 12
+                padding: 10
                 radius: 20
                 color: Appearance.md3.surface_container_high
 
                 ColumnLayout {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    spacing: 8 // Reducido de 12 a 8
+                    spacing: 6
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 6 // Reducido de 8 a 6
+                        spacing: 6
 
                         MaterialIcon {
                             icon: "developer_board"
@@ -212,7 +213,7 @@ Item {
             M3Card {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 12 // Reducido de 16 a 12
+                padding: 10
                 radius: 20
                 color: Appearance.md3.surface_container_high
                 opacity: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? 1.0 : 0.50
@@ -222,7 +223,7 @@ Item {
                 ColumnLayout {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    spacing: 8
+                    spacing: 6
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -275,94 +276,95 @@ Item {
             }
         }
 
-        // ══ DISCO CARD ═════════════════════════════════════════════
+        // ══ DISCO + UPTIME (una sola tarjeta) ═════════════════════
         M3Card {
             Layout.fillWidth: true
-            padding: 12 // Reducido de 20 a 12
+            padding: 10
             radius: 20
             color: Appearance.md3.surface_container_high
 
-            RowLayout {
+            ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: 12 // Reducido de 16 a 12
+                spacing: 8
 
-                MaterialIcon {
-                    icon: "hard_drive"
-                    size: Appearance.font.pixelSize.large
-                    color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6 // Reducido de 8 a 6
+                    spacing: 10
 
-                    RowLayout {
+                    MaterialIcon {
+                        icon: "hard_drive"
+                        size: Appearance.font.pixelSize.large
+                        color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    ColumnLayout {
                         Layout.fillWidth: true
+                        spacing: 6
 
-                        StyledText {
-                            text: Services.I18nService.getTranslation("panel.disk", "Disco") + " (/)"
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.Medium
-                            color: Appearance.md3.on_surface
+                        RowLayout {
                             Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignBottom
+
+                            StyledText {
+                                text: Services.I18nService.getTranslation("panel.disk", "Disco") + " (/)"
+                                font.pixelSize: Appearance.font.pixelSize.small
+                                font.weight: Font.Medium
+                                color: Appearance.md3.on_surface
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignBottom
+                            }
+
+                            StyledText {
+                                text: (Services.SystemInfoService.diskUsed ?? "0G") + " / " + (Services.SystemInfoService.diskTotal ?? "0G") + " (" + (Services.SystemInfoService.diskUsagePct ?? "0%") + ")"
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                font.weight: Font.Bold
+                                color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                                Layout.alignment: Qt.AlignBottom
+                            }
                         }
 
-                        StyledText {
-                            text: (Services.SystemInfoService.diskUsed ?? "0G") + " / " + (Services.SystemInfoService.diskTotal ?? "0G") + " (" + (Services.SystemInfoService.diskUsagePct ?? "0%") + ")"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            font.weight: Font.Bold
-                            color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
-                            Layout.alignment: Qt.AlignBottom
+                        M3ProgressBar {
+                            Layout.fillWidth: true
+                            value: Services.SystemInfoService.diskUsage ?? 0
+                            accentColor: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                            implicitHeight: 6
                         }
                     }
-
-                    M3ProgressBar {
-                        Layout.fillWidth: true
-                        value: Services.SystemInfoService.diskUsage ?? 0
-                        accentColor: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
-                        implicitHeight: 6
-                    }
-                }
-            }
-        }
-
-        // ══ UPTIME CARD ════════════════════════════════════════════
-        M3Card {
-            Layout.fillWidth: true
-            padding: 10 // Reducido de 16 a 10
-            radius: 14 // Reducido de 16 a 14
-            color: root.withAlpha(Appearance.md3.surface_container, 0.7)
-
-            RowLayout {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                spacing: 10 // Reducido de 12 a 10
-
-                MaterialIcon {
-                    icon: "schedule"
-                    size: Appearance.font.pixelSize.normal
-                    color: Appearance.md3.primary
-                    Layout.alignment: Qt.AlignVCenter
                 }
 
-                StyledText {
-                    text: Services.I18nService.getTranslation("panel.uptime", "Tiempo activo")
-                    font.pixelSize: Appearance.font.pixelSize.small
-                    font.weight: Font.Medium
-                    color: Appearance.md3.on_surface_variant
+                Rectangle {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 1
+                    color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
                 }
 
-                StyledText {
-                    text: Services.SystemInfoService.uptime ?? "N/A"
-                    font.pixelSize: Appearance.font.pixelSize.small
-                    font.weight: Font.Bold
-                    color: Appearance.md3.on_surface
-                    Layout.alignment: Qt.AlignVCenter
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    MaterialIcon {
+                        icon: "schedule"
+                        size: Appearance.font.pixelSize.normal
+                        color: Appearance.md3.primary
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    StyledText {
+                        text: Services.I18nService.getTranslation("panel.uptime", "Tiempo activo")
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        color: Appearance.md3.on_surface_variant
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    StyledText {
+                        text: Services.SystemInfoService.uptime ?? "N/A"
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.weight: Font.Bold
+                        color: Appearance.md3.on_surface
+                        Layout.alignment: Qt.AlignVCenter
+                    }
                 }
             }
         }

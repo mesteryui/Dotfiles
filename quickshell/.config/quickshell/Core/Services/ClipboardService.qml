@@ -15,6 +15,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
+import "../Log.js" as Log
+
 Singleton {
     id: root
 
@@ -50,7 +52,7 @@ Singleton {
 
     function shEscape(s) {
         // Copia local a propósito: Core no debe depender del módulo
-        // qs.Launcher (ver Launcher/ShellUtils.js, misma semántica).
+        // qs.Launcher (ver Launcher/Base/ShellUtils.js, misma semántica).
         return String(s).replace(/'/g, "'\\''");
     }
 
@@ -85,7 +87,7 @@ Singleton {
     function copyEntry(cid, isImage) {
         const id = String(cid).trim();
         if (!isValidId(id)) {
-            console.warn("ClipboardService: copy con id inválido '" + cid + "'");
+            Log.warn("ClipboardService: copy con id inválido '" + cid + "'");
             return;
         }
         // Si ya hay una copia en curso, encolamos solo la última.
@@ -115,11 +117,13 @@ Singleton {
     // calculadora del launcher). Desacoplado como el resto de
     // lanzamientos: no bloquea ni interfiere con copias en curso de
     // entradas del historial (esas siguen su propia cola en copyProc).
+    // El texto viaja como argumento $1, NUNCA interpolado en el shell:
+    // ni siquiera un portapapeles hostil puede escapar el quoting.
     function copyText(text) {
         const t = String(text ?? "");
         if (t === "")
             return false;
-        Quickshell.execDetached(["sh", "-c", "printf '%s' '" + shEscape(t) + "' | wl-copy"]);
+        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "wl-copy-text", t]);
         return true;
     }
 
@@ -181,7 +185,7 @@ Singleton {
     function deleteEntry(cid) {
         const id = String(cid).trim();
         if (!isValidId(id)) {
-            console.warn("ClipboardService: delete con id inválido '" + cid + "'");
+            Log.warn("ClipboardService: delete con id inválido '" + cid + "'");
             return;
         }
         // Encolar: pulsar Supr rápido ya no pierde borrados.
@@ -247,7 +251,7 @@ Singleton {
             root.refreshing = false;
             root.ready = true;
             if (code !== 0 && root.entries.count === 0)
-                root.error = I18nService.getTranslation("launcher.empty_clipboard_error", "Sin historial (¿daemon cliphist activo?)");
+                root.error = I18nService.getTranslation("launcher.clipboard_error", "Sin historial (¿daemon cliphist activo?)");
             root.rebuildSnapshot();
             if (!trimProc.running)
                 trimProc.running = true;
@@ -264,7 +268,7 @@ Singleton {
         id: copyProc
         onExited: (code, status) => {
             if (code !== 0)
-                console.warn("ClipboardService: copy falló id=" + root.copyId);
+                Log.warn("ClipboardService: copy falló id=" + root.copyId);
             // Si se pidió otra copia mientras tanto, ejecuta solo la última.
             if (root.hasPendingCopy) {
                 const nid = root.pendingCopyId;
@@ -282,7 +286,7 @@ Singleton {
             if (code === 0)
                 root.previewReady(root.previewId);
             else
-                console.warn("ClipboardService: preview falló id=" + root.previewId);
+                Log.warn("ClipboardService: preview falló id=" + root.previewId);
             // Navegación rápida: atiende el último preview pendiente.
             if (root.pendingPreviewId !== "") {
                 const nid = root.pendingPreviewId;
@@ -310,7 +314,7 @@ Singleton {
                     t += "\n…";
                 root.textContent = t;
             } else {
-                console.warn("ClipboardService: texto falló id=" + root.textCid);
+                Log.warn("ClipboardService: texto falló id=" + root.textCid);
                 root.textContent = "";
             }
             root.textReady(root.textCid);
@@ -328,7 +332,7 @@ Singleton {
         property string currentId: ""
         onExited: (code, status) => {
             if (code !== 0)
-                console.warn("ClipboardService: delete falló id=" + delProc.currentId);
+                Log.warn("ClipboardService: delete falló id=" + delProc.currentId);
             else if (delProc.currentId !== "")
                 // Limpia el preview cacheado de la entrada borrada para
                 // no mostrar una imagen fantasma si el id se recicla.

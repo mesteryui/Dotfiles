@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Core.Modules
+import "../Log.js" as Log
 
 Singleton {
     id: root
@@ -40,7 +41,7 @@ Singleton {
         onAdapterUpdated: fileWriteTimer.restart()
         onLoaded: root.ready = true
         onLoadFailed: error => {
-            console.log("Failed to load persistent states file:", error);
+            Log.info("Failed to load persistent states file:", error);
             if (error == FileViewError.FileNotFound) {
                 fileWriteTimer.restart();
             }

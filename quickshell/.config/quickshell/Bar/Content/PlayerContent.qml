@@ -23,7 +23,7 @@ Item {
                 StyledText {
                     id: titleText
 
-                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media")
+                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.empty")
                     color: Appearance.md3.on_surface
                     Layout.alignment: Qt.AlignVCenter
                     elide: Text.ElideRight

@@ -9,6 +9,7 @@ import QtQml.Models
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
+import "../Log.js" as Log
 
 
 /**
@@ -105,12 +106,26 @@ Singleton {
 		}
 	}
 
-	onActivePlayerChanged: this.updateTrack();
+	onActivePlayerChanged: {
+		// Evita mostrar la posición congelada del reproductor anterior
+		// mientras el nuevo aún no reporta la suya.
+		root.position = 0;
+		this.updateTrack();
+	}
+
+	// Las integraciones de navegador exponen la carátula como URL data:
+	// JPEG a menudo truncada; los decodificadores Qt (jpeg/svg) inundan
+	// el log con "Corrupt JPEG data" al intentar cargarla. Se descarta:
+	// los reproductores reales usan file:// o http(s).
+	function _cleanArtUrl(u) {
+		const s = String(u ?? "");
+		return s.startsWith("data:") ? "" : s;
+	}
 
 	function updateTrack() {
 		this.activeTrack = {
 			uniqueId: this.activePlayer?.uniqueId ?? 0,
-			artUrl: this.activePlayer?.trackArtUrl ?? "",
+			artUrl: this._cleanArtUrl(this.activePlayer?.trackArtUrl),
 			title: this.activePlayer?.trackTitle || "Unknown Title",
 			artist: this.activePlayer?.trackArtist || "Unknown Artist",
 			album: this.activePlayer?.trackAlbum || "Unknown Album",
@@ -139,11 +154,19 @@ Singleton {
 			const p = root.activePlayer;
 			if (!p)
 				return;
+			// Firefox expone org.mpris.MediaPlayer2.firefox.instance_* pero su
+			// objeto /org/mpris/MediaPlayer2 desaparece (pestaña cerrada, sin
+			// medio): cada Get de Position falla con ServiceUnknown /
+			// UnknownMethod y quickshell.dbus.properties lo loguea como WARN.
+			// positionSupported es la puerta documentada (position vale 0 si
+			// es false); sin ella no se toca D-Bus.
+			if (!p.positionSupported)
+				return;
 			if (p.canSeek || p.canControl) {
 				try {
 					root.position = p.position;
 				} catch (e) {
-					console.warn("[Mpris] position read failed:", e);
+					Log.warn("[Mpris] position read failed:", e);
 				}
 			}
 		}

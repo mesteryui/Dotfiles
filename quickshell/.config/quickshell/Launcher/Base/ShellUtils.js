@@ -16,3 +16,13 @@
 function shellEscape(s) {
     return String(s).replace(/'/g, "'\\''");
 }
+
+// file:// seguro para Image.source: codifica cada segmento para que
+// '#', '?', espacios o '%' en el nombre no se parseen como fragmento,
+// query o escape de la URL (ver AppLauncher y SystemMenuRegistry).
+function fileUrl(path) {
+    const p = String(path ?? "");
+    if (p === "")
+        return "";
+    return "file://" + p.split("/").map(encodeURIComponent).join("/");
+}

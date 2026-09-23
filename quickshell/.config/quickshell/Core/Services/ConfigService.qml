@@ -10,20 +10,52 @@ Singleton {
     id: root
 
     property alias configs: jsonAdapter
+    property bool ready: false
 
+    readonly property string configDir: Directories.config + "/shinro"
+    readonly property string configFile: configDir + "/config.json"
+
+    // load() es solo excusa para instanciar el singleton (ver shell.qml).
     function load() {
+    }
+
+    // Debounce igual que Persistent: evita bucles escritura->watch->recarga.
+    Timer {
+        id: reloadTimer
+
+        interval: 100
+        repeat: false
+        onTriggered: fileManagment.reload()
+    }
+
+    Timer {
+        id: writeTimer
+
+        interval: 100
+        repeat: false
+        onTriggered: fileManagment.writeAdapter()
     }
 
     FileView {
         id: fileManagment
 
-        path: Directories.config + "/shinro/config.json" //Quickshell.shellPath("config.json")
+        path: root.configFile
         blockLoading: true
         watchChanges: true
         printErrors: true
         atomicWrites: true
-        onFileChanged: reload()
-        onAdapterUpdated: writeAdapter()
+        onFileChanged: reloadTimer.restart()
+        onAdapterUpdated: writeTimer.restart()
+        onLoaded: {
+            root.ready = true;
+        }
+        onLoadFailed: error => {
+            // Primera ejecución: el archivo no existe. Al volcar el
+            // adapter, FileView crea el archivo y los directorios padre.
+            if (error == FileViewError.FileNotFound) {
+                writeTimer.restart();
+            }
+        }
 
         JsonAdapter {
             id: jsonAdapter
@@ -35,7 +67,7 @@ Singleton {
             property Updates updates: Updates {}
             property LockScreen lockscreen: LockScreen {}
             property NightLight nightLight: NightLight {}
-            property Appearence appearence: Appearence {}
+            property Appearance appearance: Appearance {}
         }
     }
 
@@ -52,7 +84,7 @@ Singleton {
         property int temperature: 3000
         property int gamma: 100
     }
-    component Appearence: JsonObject {
+    component Appearance: JsonObject {
         property bool darkMode: true
         property string fontSans: "Google Sans Flex"
         property string monospace: "JetBrains Mono Nerd Font"

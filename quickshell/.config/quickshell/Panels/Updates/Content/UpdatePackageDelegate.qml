@@ -53,7 +53,7 @@ Item {
             Layout.fillWidth: true
             text: root.packageName
             font.pixelSize: 13
-            font.family: Services.ConfigService.configs.appearence.fontSans
+            font.family: Services.ConfigService.configs.appearance.fontSans
             color: Appearance.md3.on_surface
             elide: Text.ElideRight
         }
@@ -63,7 +63,7 @@ Item {
             Layout.minimumWidth: 0
             text: root.oldVersion
             font.pixelSize: 11
-            font.family: Services.ConfigService.configs.appearence.monospace
+            font.family: Services.ConfigService.configs.appearance.monospace
             color: Appearance.md3.on_surface_variant
             opacity: 0.7
             elide: Text.ElideMiddle
@@ -80,7 +80,7 @@ Item {
             Layout.minimumWidth: 0
             text: root.newVersion
             font.pixelSize: 11
-            font.family: Services.ConfigService.configs.appearence.monospace
+            font.family: Services.ConfigService.configs.appearance.monospace
             color: Appearance.md3.primary
             elide: Text.ElideMiddle
         }

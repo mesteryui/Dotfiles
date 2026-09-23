@@ -31,14 +31,14 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (Services.UpdatesTracking.failed)
-                    return Services.I18nService.getTranslation("update.error");
+                    return Services.I18nService.getTranslation("updates.error");
                 if (Services.UpdatesTracking.checking)
-                    return Services.I18nService.getTranslation("update.checking");
+                    return Services.I18nService.getTranslation("updates.checking");
                 if (Services.UpdatesTracking.updateCount === 0)
-                    return Services.I18nService.getTranslation("update.up_to_date");
+                    return Services.I18nService.getTranslation("updates.up_to_date");
                 const key = Services.UpdatesTracking.updateCount === 1
-                    ? "update.package_singular"
-                    : "update.package_plural";
+                    ? "updates.count_singular"
+                    : "updates.count_plural";
                 return Services.UpdatesTracking.updateCount + " "
                      + Services.I18nService.getTranslation(key);
             }

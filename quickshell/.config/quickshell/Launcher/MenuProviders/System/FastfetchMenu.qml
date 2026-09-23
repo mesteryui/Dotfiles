@@ -1,30 +1,28 @@
-// --- Dinámico unificado: fastfetch (CustomMenu) ---
+// --- Dinámico unificado: fastfetch (MenuDefinition) ---
 // Lista ~/.config/fastfetch/layouts/*, detecta el actual con readlink y
 // expone previews/<nombre>.png en el panel lateral.
 // Antes vivía en SystemMenuService; ahora es un provider como los demás.
 
+import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Launcher
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "../../ShellUtils.js" as ShellUtils
+import "../../Base/ShellUtils.js" as ShellUtils
 
-CustomMenu {
+MenuDefinition {
     id: root
 
     sectionId: "fastfetch"
     titleFallback: "Tema Fastfetch"
-    titleKey: "sysmenu.sec_fastfetch"
+    titleKey: "sysmenu.section_fastfetch"
     iconName: "terminal"
     parentId: "appearance"
 
     entries: []
 
-    readonly property string configHome: {
-        const xdg = Quickshell.env("XDG_CONFIG_HOME");
-        return (xdg && xdg !== "") ? xdg : Quickshell.env("HOME") + "/.config";
-    }
+    readonly property string configHome: Directories.config
     readonly property string langWatch: Services.I18nService.language
 
     onLangWatchChanged: refresh()
@@ -34,7 +32,7 @@ CustomMenu {
         return Services.I18nService.getTranslation(key || "", fallback || "");
     }
 
-    // Escape común (ver Launcher/ShellUtils.js, única implementación).
+    // Escape común (ver Launcher/Base/ShellUtils.js, única implementación).
 
     function pretty(name) {
         let n = name.replace(/\.[^.]+$/, "").replace(/-/g, " ");
@@ -101,7 +99,7 @@ CustomMenu {
         }
         onExited: {
             const out = [];
-            const subBase = root.tr("sysmenu.dyn_fastfetch", "Tema de fastfetch");
+            const subBase = root.tr("sysmenu.dynamic_fastfetch", "Tema de fastfetch");
             const badgeCur = root.tr("sysmenu.badge_current", "Actual");
             for (let i = 0; i < root._found.length; i++) {
                 const f = root._found[i];

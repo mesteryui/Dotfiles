@@ -153,7 +153,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: I18nService.getTranslation("polkit.authenticationRequired", "Autenticación requerida")
+                text: I18nService.getTranslation("polkit.authentication_required", "Autenticación requerida")
                 font.pixelSize: 18
                 font.bold: true
                 color: Appearance.md3.on_surface
@@ -201,7 +201,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 visible: overlay.authError
-                text: I18nService.getTranslation("polkit.wrong_password", "Contraseña incorrecta, inténtalo de nuevo")
+                text: I18nService.getTranslation("polkit.incorrect_password", "Contraseña incorrecta, inténtalo de nuevo")
                 font.pixelSize: 12
                 color: Appearance.md3.error
             }
@@ -225,7 +225,7 @@ Item {
 
                 // OK button
                 AnimatedTextButton {
-                    text: I18nService.getTranslation("polkit.ok", "Aceptar")
+                    text: I18nService.getTranslation("polkit.accept", "Aceptar")
                     isFilled: true
                     enabled: overlay.interactionAvailable
                     onClicked: {

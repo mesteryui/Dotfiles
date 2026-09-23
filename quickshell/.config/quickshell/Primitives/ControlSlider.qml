@@ -2,6 +2,7 @@
 import qs.Core
 import QtQuick
 import QtQuick.Layouts
+import M3Shapes
 
 RowLayout {
     id: root
@@ -160,18 +161,24 @@ RowLayout {
             }
         }
 
-        // Thumb / Manejador M3 Expressive
-        Rectangle {
+        // Thumb / Manejador M3 Expressive con morph MANUAL atado al valor:
+        // 0% = Circle, 100% = Cookie4Sided. Al arrastrar ves la forma
+        // transformarse con el nivel (además de crecer con hover/press).
+        // Región cuadrada obligatoria para que el morph no colapse.
+        MaterialShape {
             id: thumb
 
             x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.displayValue())) - width / 2))
             anchors.verticalCenter: parent.verticalCenter
-            width: trackArea.pressed ? 20 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 18 : 14)
-            height: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 20 : 18)
-            radius: width / 2
+            width: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 20 : 16)
+            height: width
+            fromShape: MaterialShape.Circle
+            toShape: MaterialShape.Cookie4Sided
+            morphProgress: Math.max(0, Math.min(1, root.displayValue()))
+            animationDuration: 200
             color: root.accentColor
-            border.color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : Appearance.md3.surface_container_low
-            border.width: 2
+            strokeColor: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : Appearance.md3.surface_container_low
+            strokeWidth: 2
 
             Behavior on x {
                 NumberAnimation {
@@ -179,12 +186,6 @@ RowLayout {
                 }
             }
             Behavior on width {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
-                }
-            }
-            Behavior on height {
                 NumberAnimation {
                     duration: 120
                     easing.type: Easing.OutCubic

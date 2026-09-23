@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import QtQuick.Layouts
+import M3Shapes
 
 // Campo M3 expresivo tipo Pixel: pill alta con estados tonales.
 Item {
@@ -24,11 +25,50 @@ Item {
 
     property bool isFingerprintActive: false
 
+    // Pantalla primaria de la sesión de bloqueo: solo ella anima la
+    // respiración. Las secundarias muestran el mismo estado en estático.
+    property bool isPrimary: true
+
     property alias passwordField: password
 
     signal accepted(string text)
 
     signal togglePasswordVisibility
+
+    signal requestSleep
+
+    // Respiración del contenedor mientras espera la huella
+    // (Cookie4Sided↔Puffy), igual que el estado vacío de notificaciones.
+    property int breathShape: MaterialShape.Cookie4Sided
+    // Flash de éxito al validar la huella (Heart breve antes de desbloquear).
+    property bool wasScanning: false
+    property bool successFlash: false
+
+    onIsFingerprintActiveChanged: {
+        if (isFingerprintActive) {
+            root.wasScanning = true;
+            root.successFlash = false;
+        } else if (root.wasScanning && !root.authFailed) {
+            root.wasScanning = false;
+            root.successFlash = true;
+            flashTimer.restart();
+        } else {
+            root.wasScanning = false;
+        }
+    }
+
+    Timer {
+        id: flashTimer
+        interval: 600
+        onTriggered: root.successFlash = false
+    }
+
+    Timer {
+        interval: 900
+        running: root.isPrimary && root.isFingerprintActive && !root.authFailed
+        repeat: true
+        onTriggered: root.breathShape = root.breathShape === MaterialShape.Cookie4Sided ? MaterialShape.Puffy : MaterialShape.Cookie4Sided
+    }
 
     function triggerShake() {
         shakeAnim.restart();
@@ -36,14 +76,6 @@ Item {
 
     function clearInput() {
         password.text = "";
-    }
-
-    onIsFingerprintActiveChanged: {
-        // El SequentialAnimation deja el icono a medio pulso al desactivarse
-        // (fprintd tuvo éxito, falló, o entró en modo password) — restaurar
-        // opacidad plena para el icono de lock/lock_open normal.
-        if (!isFingerprintActive)
-            statusIcon.opacity = 1;
     }
 
     function withAlpha(hexColor, alphaValue) {
@@ -133,12 +165,14 @@ Item {
             }
             spacing: 6
 
-            // Icono principal en contenedor tonal estilo Pixel (huella / lock)
-            Rectangle {
+            // Icono principal en contenedor expresivo estilo Pixel (huella / lock):
+            // respira entre formas al escanear, Boom al fallar.
+            MaterialShape {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
-                radius: width / 2
+                shape: root.successFlash ? MaterialShape.Heart : root.authFailed ? MaterialShape.Boom : (root.isPrimary && root.isFingerprintActive) ? root.breathShape : MaterialShape.Circle
+                animationDuration: 350
                 color: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.16) : root.withAlpha(Appearance.md3.primary, root.isFingerprintActive || password.activeFocus ? 0.18 : 0.10)
 
                 Behavior on color {
@@ -158,30 +192,6 @@ Item {
                     Behavior on color {
                         ColorAnimation {
                             duration: 200
-                        }
-                    }
-
-                    // Pulso suave mientras espera la huella — distingue el estado
-                    // "escaneando" del icono estático de lock/lock_open.
-                    SequentialAnimation {
-                        running: root.isFingerprintActive
-                        loops: Animation.Infinite
-
-                        NumberAnimation {
-                            target: statusIcon
-                            property: "opacity"
-                            from: 1
-                            to: 0.4
-                            duration: 700
-                            easing.type: Easing.InOutQuad
-                        }
-                        NumberAnimation {
-                            target: statusIcon
-                            property: "opacity"
-                            from: 0.4
-                            to: 1
-                            duration: 700
-                            easing.type: Easing.InOutQuad
                         }
                     }
                 }
@@ -213,8 +223,12 @@ Item {
                 }
 
                 Keys.onEscapePressed: {
-                    text = "";
-                    root.authFailed = false;
+                    if (text.length === 0) {
+                        root.requestSleep();
+                    } else {
+                        text = "";
+                        root.authFailed = false;
+                    }
                 }
             }
 

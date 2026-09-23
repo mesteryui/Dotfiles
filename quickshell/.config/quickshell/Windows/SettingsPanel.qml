@@ -1,4 +1,5 @@
 import qs.Core
+import qs.Core.Services
 import qs.Shared.Background
 import QtQuick
 import QtQuick.Controls
@@ -59,6 +60,10 @@ FloatingWindow {
 
     PopupBackground {
         id: bg
+
+        // Accessible en el contenido (Item), no en la FloatingWindow.
+        Accessible.role: Accessible.Dialog
+        Accessible.name: I18nService.getTranslation("settings.title", "Ajustes")
 
         anchors.fill: parent
         surfaceRadius: 0

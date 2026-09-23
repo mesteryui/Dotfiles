@@ -25,10 +25,20 @@ Singleton {
     }
 
     Timer {
-        interval: ConfigService.configs.updates.countTime * 60000
+        id: pollTimer
+
+        // Sujeto a la config: mínimo 1 min, y se reinicia si countTime cambia.
+        interval: Math.max(1, ConfigService.configs.updates.countTime) * 60000
         running: true
         repeat: true
         onTriggered: countUpdates.running = true
+    }
+
+    Connections {
+        target: ConfigService.configs.updates
+        function onCountTimeChanged() {
+            pollTimer.restart();
+        }
     }
 
     Process {
@@ -78,7 +88,7 @@ Singleton {
         id: updateProcess
         // Separa el comando de la config por espacios y expande los argumentos dentro del array base
 
-        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...ConfigService.configs.updates.command.split(" ")]
+        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...ConfigService.configs.updates.command.split(" ").filter(s => s !== "")]
 
         onRunningChanged: {
             root.updating = running;

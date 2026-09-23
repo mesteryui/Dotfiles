@@ -14,6 +14,12 @@ Rectangle {
     color:  baseColor
     clip:   true          // necesario para que las secciones internas respeten el radius
 
+    // Fundido suave al cambiar de tema (matugen): evita el corte duro
+    // de colors.json. La primera carga funde desde transparente.
+    Behavior on color {
+        ColorAnimation { duration: 150 }
+    }
+
     // Borde encima de todo el contenido clippeado
     Rectangle {
         anchors.fill: parent

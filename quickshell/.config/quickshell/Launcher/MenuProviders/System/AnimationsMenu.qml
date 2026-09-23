@@ -1,30 +1,28 @@
-// --- Dinámico unificado: animations (CustomMenu) ---
+// --- Dinámico unificado: animations (MenuDefinition) ---
 // Lista ~/.config/hypr/configs/animations/*.lua y detecta la actual con
 // grep require(. La aplicación es sed + hyprctl reload + notify.
 // Antes vivía en SystemMenuService; ahora es un provider como los demás.
 
+import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Launcher
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "../../ShellUtils.js" as ShellUtils
+import "../../Base/ShellUtils.js" as ShellUtils
 
-CustomMenu {
+MenuDefinition {
     id: root
 
     sectionId: "animations"
     titleFallback: "Animaciones Hyprland"
-    titleKey: "sysmenu.sec_animations"
+    titleKey: "sysmenu.section_animations"
     iconName: "animation"
     parentId: "appearance"
 
     entries: []
 
-    readonly property string configHome: {
-        const xdg = Quickshell.env("XDG_CONFIG_HOME");
-        return (xdg && xdg !== "") ? xdg : Quickshell.env("HOME") + "/.config";
-    }
+    readonly property string configHome: Directories.config
     readonly property string langWatch: Services.I18nService.language
 
     onLangWatchChanged: refresh()
@@ -34,7 +32,7 @@ CustomMenu {
         return Services.I18nService.getTranslation(key || "", fallback || "");
     }
 
-    // Escape común (ver Launcher/ShellUtils.js, única implementación).
+    // Escape común (ver Launcher/Base/ShellUtils.js, única implementación).
 
     function pretty(name) {
         let n = name.replace(/\.[^.]+$/, "").replace(/-/g, " ");
@@ -95,7 +93,7 @@ CustomMenu {
         }
         onExited: {
             const out = [];
-            const subBase = root.tr("sysmenu.dyn_anims", "Animación de Hyprland");
+            const subBase = root.tr("sysmenu.dynamic_animations", "Animación de Hyprland");
             const badgeCur = root.tr("sysmenu.badge_current", "Actual");
             for (let i = 0; i < root._found.length; i++) {
                 const name = root._found[i];

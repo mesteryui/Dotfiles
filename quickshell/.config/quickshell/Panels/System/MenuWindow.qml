@@ -89,7 +89,7 @@ PanelWindow {
 
                 text: root.menuTitle
                 visible: text !== ""
-                font.family: Services.ConfigService.configs.appearence.fontSans
+                font.family: Services.ConfigService.configs.appearance.fontSans
                 color: Appearance.md3.on_surface
                 font.pixelSize: 18
                 font.bold: true

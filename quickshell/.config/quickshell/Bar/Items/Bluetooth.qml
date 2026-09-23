@@ -2,12 +2,19 @@ import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
 import qs.Core.Modules
+import qs.Panels.Bluetooth
 import QtQuick
 import Quickshell
 
 BarItem {
+    id: root
+
     clickable: true
-    onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "bluetui"])
+    onClicked: btPanel.visible = !btPanel.visible
+
+    BluetoothPanel {
+        id: btPanel
+    }
 
     MaterialIcon {
         color: Appearance.md3.on_surface

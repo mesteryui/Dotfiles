@@ -19,4 +19,15 @@ Singleton {
     readonly property BluetoothDevice connectedDevice: devices.find(d => d.state === BluetoothDeviceState.Connected) ?? null
 
     readonly property bool isConnected: connectedDevice !== null
+
+    // Batería del conectado (-1 sin dato). Tolera escala 0..1 o 0..100.
+    readonly property int connectedBatteryPct: {
+        const d = connectedDevice;
+        if (!d || !d.batteryAvailable)
+            return -1;
+        const v = d.battery ?? -1;
+        if (v < 0)
+            return -1;
+        return Math.round(v > 1 ? v : v * 100);
+    }
 }

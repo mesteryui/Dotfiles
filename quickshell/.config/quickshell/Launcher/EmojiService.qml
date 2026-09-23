@@ -18,7 +18,7 @@
 //     U+XXXX, grupo, keywords).
 //
 // AppLauncher solo llama a `queryItems()` / `copy()` / `groups()` y lee
-// `revision` como dependencia reactiva (igual que CustomMenuService).
+// `revision` como dependencia reactiva (igual que MenuStore).
 
 pragma Singleton
 
@@ -26,7 +26,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Core.Modules
-import qs.Core.Services as Services
+import qs.Core.Services
+import "../Core/Log.js" as Log
 import "EmojiCustom.js" as EmojiCustom
 
 Singleton {
@@ -182,11 +183,16 @@ Singleton {
     FileView {
         id: customWatch
 
-        path: Quickshell.env("HOME") + "/.config/quickshell/Launcher/EmojiCustom.js"
+        path: Directories.config + "/quickshell/Launcher/EmojiCustom.js"
         watchChanges: true
         onFileChanged: {
             // Pequeño respiro por si el editor escribe en varios pasos.
             customReloadTimer.restart();
+        }
+        onLoadFailed: error => {
+            // Instalación fresca sin capa custom: no es un error.
+            if (error !== FileViewError.FileNotFound)
+                Log.warn("EmojiService: no se pudo leer EmojiCustom.js: " + error);
         }
     }
 
@@ -200,6 +206,10 @@ Singleton {
 
     // ---- persistencia (recientes + favoritos) ----
     property alias store: emojiStore
+    // Recientes acotados: tope en memoria/disco y caducidad. No tiene
+    // sentido persistirlos meses ni sin límite.
+    property int maxRecents: 12
+    property int recentsTtlSec: 2592000 // 30 días
 
     function recentList() {
         const v = emojiStore.recents;
@@ -245,7 +255,30 @@ Singleton {
 
     function clearRecents() {
         emojiStore.recents = [];
+        emojiStore.recentsStamp = 0;
         root.revision += 1;
+    }
+
+    // Poda por tope y caducidad (se aplica al cargar y al registrar uso).
+    function pruneRecents() {
+        var rec = root.recentList();
+        var changed = false;
+        if (rec.length > root.maxRecents) {
+            emojiStore.recents = rec.slice(0, root.maxRecents);
+            changed = true;
+        }
+        var stamp = emojiStore.recentsStamp || 0;
+        var now = Date.now() / 1000;
+        if (stamp > 0 && now - stamp > root.recentsTtlSec) {
+            emojiStore.recents = [];
+            emojiStore.recentsStamp = 0;
+            changed = true;
+        } else if (rec.length > 0 && stamp === 0) {
+            emojiStore.recentsStamp = now;
+            changed = true;
+        }
+        if (changed)
+            root.revision += 1;
     }
 
     function recordUse(ch) {
@@ -256,7 +289,8 @@ Singleton {
         if (i >= 0)
             rec.splice(i, 1);
         rec.unshift(ch);
-        emojiStore.recents = rec.slice(0, 24);
+        emojiStore.recents = rec.slice(0, root.maxRecents);
+        emojiStore.recentsStamp = Date.now() / 1000;
         root.revision += 1;
     }
 
@@ -282,17 +316,21 @@ Singleton {
         path: Directories.state + "/quickshell/emoji.json"
         onFileChanged: reloadTimer.restart()
         onAdapterUpdated: writeTimer.restart()
-        onLoaded: root.revision += 1
+        onLoaded: {
+            root.pruneRecents();
+            root.revision += 1;
+        }
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound)
                 writeTimer.restart();
             else
-                console.warn("EmojiService: no se pudo leer emoji.json: " + error);
+                Log.warn("EmojiService: no se pudo leer emoji.json: " + error);
         }
 
         JsonAdapter {
             id: emojiStore
             property list<string> recents: []
+            property double recentsStamp: 0
             property list<string> favorites: []
         }
     }
@@ -303,9 +341,22 @@ Singleton {
     //   CH \t NAME \t GROUP \t KEYWORDS   (una línea por entrada)
     //   #SYN / #SECTION                   (sinónimos y secciones)
     // (emojis de la librería `emoji` + símbolos de `unicodedata`).
-    readonly property string dumpScript: Quickshell.env("HOME") + "/.config/quickshell/Launcher/scripts/emoji-dump.py"
+    readonly property string dumpScript: Directories.config + "/quickshell/Launcher/scripts/emoji-dump.py"
 
     property var libLines: []
+
+    // Arranque perezoso: el proceso python NO corre en boot (Component
+    // solo deja lista tu capa custom, instantánea). AppLauncher llama a
+    // ensureLib() al abrirse; la UI muestra tu config al momento y se
+    // reevalúa sola vía `revision` cuando el generador termina.
+    property bool libRequested: false
+
+    function ensureLib() {
+        if (root.libStatus !== "pending" || root.libRequested)
+            return root.libStatus === "ok";
+        root.libRequested = true;
+        return root.refreshFromLib();
+    }
 
     function refreshFromLib() {
         if (libProc.running)
@@ -388,13 +439,14 @@ Singleton {
     }
 
     Component.onCompleted: {
+        // Solo la capa custom (local, inmediata). La librería/símbolos
+        // arrancan con ensureLib() al primer uso (ver arriba).
         root.ensureBase();
-        libProc.running = true;
     }
 
     // ---- helpers ----
     // Sin shellEscape local: la copia va por ClipboardService.copyText
-    // (misma semántica; ver Launcher/ShellUtils.js).
+    // (misma semántica; ver Launcher/Base/ShellUtils.js).
 
     function codepoints(ch) {
         const out = [];
@@ -419,7 +471,7 @@ Singleton {
     function copy(ch) {
         if (!ch)
             return false;
-        Services.ClipboardService.copyText(ch);
+        ClipboardService.copyText(ch);
         root.recordUse(ch);
         return true;
     }

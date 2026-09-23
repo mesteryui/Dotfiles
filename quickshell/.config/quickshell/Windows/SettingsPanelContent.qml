@@ -308,15 +308,15 @@ Item {
 
                     ControlToggle {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.dark_mode", "Modo oscuro")
-                        stateText: Services.ConfigService.configs.appearence.darkMode ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        stateText: Services.ConfigService.configs.appearance.darkMode ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
                         iconName: "dark_mode"
-                        active: Services.ConfigService.configs.appearence.darkMode
-                        onToggled: Services.ConfigService.configs.appearence.darkMode = !Services.ConfigService.configs.appearence.darkMode
+                        active: Services.ConfigService.configs.appearance.darkMode
+                        onToggled: Services.ConfigService.configs.appearance.darkMode = !Services.ConfigService.configs.appearance.darkMode
                     }
 
                     ChoiceRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
-                        value: Services.ConfigService.configs.appearence.matugen.type
+                        value: Services.ConfigService.configs.appearance.matugen.type
                         choicesModel: [
                             {
                                 value: "scheme-tonal-spot",
@@ -355,28 +355,28 @@ Item {
                                 text: "Vibrant"
                             }
                         ]
-                        onChosen: val => Services.ConfigService.configs.appearence.matugen.type = val
+                        onChosen: val => Services.ConfigService.configs.appearance.matugen.type = val
                     }
 
                     TextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_sans", "Fuente principal (sans)")
-                        value: Services.ConfigService.configs.appearence.fontSans
-                        onEdited: text => Services.ConfigService.configs.appearence.fontSans = text
+                        value: Services.ConfigService.configs.appearance.fontSans
+                        onEdited: text => Services.ConfigService.configs.appearance.fontSans = text
                     }
                     TextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_mono", "Fuente monoespaciada")
-                        value: Services.ConfigService.configs.appearence.monospace
-                        onEdited: text => Services.ConfigService.configs.appearence.monospace = text
+                        value: Services.ConfigService.configs.appearance.monospace
+                        onEdited: text => Services.ConfigService.configs.appearance.monospace = text
                     }
                     TextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_reading", "Fuente de lectura")
-                        value: Services.ConfigService.configs.appearence.reading
-                        onEdited: text => Services.ConfigService.configs.appearence.reading = text
+                        value: Services.ConfigService.configs.appearance.reading
+                        onEdited: text => Services.ConfigService.configs.appearance.reading = text
                     }
                     TextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_expressive", "Fuente expresiva")
-                        value: Services.ConfigService.configs.appearence.expressive
-                        onEdited: text => Services.ConfigService.configs.appearence.expressive = text
+                        value: Services.ConfigService.configs.appearance.expressive
+                        onEdited: text => Services.ConfigService.configs.appearance.expressive = text
                     }
                 }
 
@@ -488,7 +488,14 @@ Item {
                         iconName: "thermostat"
                         value: root.toSlider(Services.ConfigService.configs.nightLight.temperature, 1000, 6500)
                         valueText: Services.ConfigService.configs.nightLight.temperature + " K"
-                        onMoved: val => Services.ConfigService.configs.nightLight.temperature = root.fromSlider(val, 1000, 6500)
+                        onMoved: val => {
+                            const k = root.fromSlider(val, 1000, 6500);
+                            Services.ConfigService.configs.nightLight.temperature = k;
+                            // Solo aplica en vivo si el filtro está encendido;
+                            // apagado solo guarda preferencia (se aplica al activar).
+                            if (!Services.Hyprsunset.identity)
+                                Services.Hyprsunset.setTemperature(k);
+                        }
                     }
 
                     ControlSlider {
@@ -497,7 +504,13 @@ Item {
                         iconName: "exposure"
                         value: root.toSlider(Services.ConfigService.configs.nightLight.gamma, 0, 100)
                         valueText: Services.ConfigService.configs.nightLight.gamma + "%"
-                        onMoved: val => Services.ConfigService.configs.nightLight.gamma = root.fromSlider(val, 0, 100)
+                        onMoved: val => {
+                            const g = root.fromSlider(val, 0, 100);
+                            Services.ConfigService.configs.nightLight.gamma = g;
+                            // Igual que temperatura: apagado solo guarda.
+                            if (!Services.Hyprsunset.identity)
+                                Services.Hyprsunset.setGamma(g);
+                        }
                     }
                 }
                 Item {

@@ -1,8 +1,7 @@
 // --- WeatherContent ---
 // Muestra el clima actual (icono, temperatura, sensación térmica, ciudad,
-// humedad) y una fila con la previsión de los próximos días, leyendo
-// directamente de WeatherService. Pensado para encajar en un
-// Wrapper/Background exterior que le dé el fondo y el radio MD3.
+// mínima/máxima de hoy y rejilla de detalles) y una fila con la previsión
+// de los próximos días, leyendo directamente de WeatherService.
 import qs.Primitives
 import qs.Core
 import qs.Core.Services
@@ -13,10 +12,24 @@ import QtQuick.Layouts
 Item {
     id: root
 
+    function aqiLabel(level) {
+        if (level >= 6)
+            return I18nService.getTranslation("weather.aqi_extremely_poor", "Pésima");
+        if (level === 5)
+            return I18nService.getTranslation("weather.aqi_very_poor", "Muy mala");
+        if (level === 4)
+            return I18nService.getTranslation("weather.aqi_poor", "Mala");
+        if (level === 3)
+            return I18nService.getTranslation("weather.aqi_moderate", "Moderada");
+        if (level === 2)
+            return I18nService.getTranslation("weather.aqi_fair", "Aceptable");
+        if (level === 1)
+            return I18nService.getTranslation("weather.aqi_good", "Buena");
+        return "--";
+    }
+
     implicitHeight: mainColumn.implicitHeight + mainColumn.anchors.margins * 2
-    implicitWidth: mainColumn.implicitWidth + mainColumn.anchors.margins * 2
-    // Devuelve el nombre de ligadura de Material Symbols según el
-    // weatherCode de wttr.in (WorldWeatherOnline codes).
+    implicitWidth: Math.max(mainColumn.implicitWidth + mainColumn.anchors.margins * 2, 320)
 
     ColumnLayout {
         id: mainColumn
@@ -26,8 +39,6 @@ Item {
         spacing: 10
 
         // --- Clima actual ---
-        // Reemplaza el bloque dentro de RowLayout (el icono y ColumnLayout) por este:
-
         RowLayout {
             id: currentRow
             Layout.fillWidth: true
@@ -35,16 +46,14 @@ Item {
             spacing: 12
             Layout.alignment: Qt.AlignVCenter
 
-            // Icono con tamaño fijo para que no cambie con el texto
             Item {
                 Layout.preferredWidth: 56
                 Layout.preferredHeight: 56
-
                 Layout.alignment: Qt.AlignVCenter
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    icon: Icons.getWeatherIcon(WeatherService.data.wCode)
+                    icon: Icons.getWeatherIcon(WeatherService.data.wCode, WeatherService.data.isDay)
                     font.pixelSize: 46
                     color: Appearance.md3.primary
                 }
@@ -83,10 +92,12 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // Mínima / máxima de hoy (humedad y viento solo en la rejilla)
                 StyledText {
-                    text: I18nService.getTranslation("weather.humidity_wind", "Humedad %1 · Viento %2").arg(WeatherService.data.humidity).arg(WeatherService.data.wind)
-                    color: Appearance.md3.on_surface_variant
+                    text: I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(WeatherService.data.tempMax).arg(WeatherService.data.tempMin)
+                    color: Appearance.md3.on_surface
                     font.pixelSize: 12
+                    font.weight: Font.Medium
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
@@ -100,6 +111,278 @@ Item {
                 }
             }
         }
+
+        // --- Avisos MeteoAlarm (solo si los hay) ---
+        WeatherAlerts {
+            Layout.fillWidth: true
+        }
+
+        // --- Detalles de hoy ---
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Appearance.md3.outline_variant
+        }
+
+        GridLayout {
+            id: detailsGrid
+            Layout.fillWidth: true
+            columns: 3
+            rowSpacing: 8
+            columnSpacing: 8
+
+            // Cada celda: icono + columna(valor + etiqueta)
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "air"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.wind + " " + WeatherService.data.windDir
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.wind", "Viento")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "water_drop"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.humidity
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.humidity", "Humedad")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "compress"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.press
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.pressure", "Presión")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "visibility"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.visib
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.visibility", "Visibilidad")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "rainy"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.precip
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.precipitation", "Precipitación")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "umbrella"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.precipProb
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.precipitation_probability", "Prob. lluvia")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "light_mode"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: String(WeatherService.data.uv)
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.uv_index", "Índice UV")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "wb_twilight"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.sunrise
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.sunrise", "Amanecer")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "bedtime"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.sunset
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.sunset", "Atardecer")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                MaterialIcon {
+                    icon: "eco"
+                    size: 20
+                    color: Appearance.md3.primary
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Layout.fillWidth: true
+                    StyledText {
+                        text: WeatherService.data.aqi >= 0 ? WeatherService.data.aqi + " · " + root.aqiLabel(WeatherService.data.aqiLevel) : "--"
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18nService.getTranslation("weather.aqi_title", "Calidad del aire")
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: 10
+                    }
+                }
+            }
+        }
+
         // Separador sutil entre el clima actual y la previsión
         Rectangle {
             visible: forecastRow.visible
@@ -109,13 +392,12 @@ Item {
         }
 
         // --- Previsión próximos días ---
-        // --- Previsión próximos días (reemplazar el RowLayout forecastRow existente) ---
         RowLayout {
             id: forecastRow
 
             visible: WeatherService.data.forecast.length > 0
             Layout.fillWidth: true
-            spacing: 10                       // disminuido para compactar sin perder separación
+            spacing: 10
             Layout.alignment: Qt.AlignHCenter
 
             Repeater {
@@ -123,7 +405,7 @@ Item {
 
                 delegate: ColumnLayout {
                     required property var modelData
-                    Layout.preferredWidth: 68     // celdas uniformes, mejor alineación
+                    Layout.preferredWidth: 68
                     Layout.minimumWidth: 56
                     Layout.alignment: Qt.AlignHCenter
 
@@ -160,6 +442,14 @@ Item {
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: 13
                         }
+                    }
+
+                    StyledText {
+                        visible: modelData.precipProb > 0
+                        text: modelData.precipProb + "%"
+                        color: Appearance.md3.tertiary
+                        font.pixelSize: 11
+                        Layout.alignment: Qt.AlignHCenter
                     }
                 }
             }

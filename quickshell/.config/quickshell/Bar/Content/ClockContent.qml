@@ -21,7 +21,7 @@ Item {
     StyledText {
         id: clockText
        
-        font.family: Services.ConfigService.configs.appearence.fontSans
+        font.family: Services.ConfigService.configs.appearance.fontSans
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
 

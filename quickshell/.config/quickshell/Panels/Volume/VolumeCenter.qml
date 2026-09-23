@@ -47,6 +47,10 @@ PanelWindow {
     PopupBackground {
         id: bg
 
+        // Accessible en el contenido (Item), no en la PanelWindow.
+        Accessible.role: Accessible.Dialog
+        Accessible.name: I18nService.getTranslation("panel.volume", "Volumen")
+
         anchors.fill: parent
     }
 

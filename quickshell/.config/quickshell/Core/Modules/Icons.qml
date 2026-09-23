@@ -29,11 +29,23 @@ Singleton {
         return Array.isArray(icon) ? icon[Number(isDay)] : icon;
     }
 
+    // Memoización por appId: DesktopEntries.heuristicLookup + iconPath en
+    // cada re-evaluación del delegado era el coste dominante del switcher.
+    property var _appIconCache: ({})
+
     function getAppIcon(name: string, fallback: string): string {
+        const key = (name || "") + "|" + (fallback || "");
+        const hit = root._appIconCache[key];
+        if (hit !== undefined)
+            return hit;
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
-        if (fallback !== undefined)
-            return Quickshell.iconPath(icon, fallback);
-        return Quickshell.iconPath(icon);
+        const resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(icon);
+        // Capado blando: si alguna vez hay cientos de appIds distintos, se
+        // reinicia en vez de crecer sin cota.
+        if (Object.keys(root._appIconCache).length > 400)
+            root._appIconCache = ({});
+        root._appIconCache[key] = resolved;
+        return resolved;
     }
 
     function getBluetoothDeviceMaterialSymbol(systemIconName: string): string {

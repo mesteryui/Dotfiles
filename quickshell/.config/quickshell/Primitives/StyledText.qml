@@ -13,7 +13,7 @@ Text {
 
     font {
         hintingPreference: Font.PreferDefaultHinting
-        family: ConfigService.configs.appearence.fontSans
+        family: ConfigService.configs.appearance.fontSans
         pixelSize: Appearance.font.pixelSize.small
         variableAxes: shouldUseNumberFont ? ({}) : Appearance.font.variableAxes.main
     }

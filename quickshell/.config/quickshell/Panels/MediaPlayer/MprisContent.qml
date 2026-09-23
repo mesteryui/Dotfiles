@@ -136,7 +136,7 @@ Item {
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: Services.I18nService.getTranslation("media.no_media", "Nada reproduciendo")
+                    text: Services.I18nService.getTranslation("media.empty", "Nada reproduciendo")
                     font.pixelSize: Appearance.font.pixelSize.normal
                     font.weight: Font.DemiBold
                     font.family: Appearance.font.sans
@@ -208,8 +208,12 @@ Item {
                     anchors.fill: parent
                     source: root.artURL
                     fillMode: Image.PreserveAspectCrop
-                    cache: false
+                    // La URL cambia por pista (caché por URL, sin
+                    // staleness) y se decodifica acotada a la caja 76px.
+                    cache: true
                     asynchronous: true
+                    sourceSize.width: 152
+                    sourceSize.height: 152
                     visible: root.hasArt && status === Image.Ready
                     opacity: visible ? 1.0 : 0.0
 
@@ -283,7 +287,7 @@ Item {
                 // Título de la pista
                 StyledText {
                     Layout.fillWidth: true
-                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.no_media", "Nada reproduciendo")
+                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.empty", "Nada reproduciendo")
                     font.pixelSize: Appearance.font.pixelSize.large
                     font.weight: Font.DemiBold
                     font.family: Appearance.font.sans
@@ -337,6 +341,13 @@ Item {
 
                 readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.currentPosition / totalLength)) : 0.0
 
+                // Ratio bajo el dedo mientras se arrastra (-1 si no).
+                property real dragRatio: -1
+
+                // Lo que se pinta: en arrastre sigue al dedo (como end-4),
+                // si no al progreso real.
+                readonly property real displayRatio: progressArea.pressed && dragRatio >= 0 ? dragRatio : progressRatio
+
                 // Pista base (Capsule track)
                 Rectangle {
                     id: progressTrackBg
@@ -354,9 +365,10 @@ Item {
                         }
                     }
 
-                    // Pista activa (Fill)
+                    // Pista activa (Fill) con stop-indicator M3 Expressive:
+                    // gap de 4px antes del resto (desaparece al 100%).
                     Rectangle {
-                        width: Math.max(parent.height, progressTrackBg.width * progressContainer.progressRatio)
+                        width: Math.max(parent.height, progressTrackBg.width * progressContainer.displayRatio - (progressContainer.displayRatio >= 0.999 ? 0 : 4))
                         height: parent.height
                         radius: parent.radius
                         color: Appearance.md3.primary
@@ -376,20 +388,57 @@ Item {
                     }
                 }
 
-                // Handle / Thumb M3 Expressive — morph a "cookie" al presionar
+                // Burbuja de tiempo al arrastrar (estilo end-4).
+                Rectangle {
+                    id: seekBubble
+
+                    visible: progressArea.pressed && progressContainer.dragRatio >= 0
+                    width: bubbleText.implicitWidth + 20
+                    height: 26
+                    radius: Appearance.shape.full
+                    color: Appearance.md3.primary_container
+                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.displayRatio - width / 2))
+                    y: -30
+
+                    StyledText {
+                        id: bubbleText
+
+                        anchors.centerIn: parent
+                        text: root.formatTime(progressContainer.dragRatio * progressContainer.totalLength)
+                        font.pixelSize: Appearance.font.pixelSize.smallest
+                        font.family: Appearance.font.mono
+                        color: Appearance.md3.on_primary_container
+                    }
+                }
+
+                // Thumb M3 Expressive — en reposo solo pista (slider small);
+                // al hover aparece el círculo y al arrastrar morfea a cookie.
                 MaterialShape {
                     id: progressThumb
 
-                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.progressRatio - width / 2))
+                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.displayRatio - width / 2))
                     anchors.verticalCenter: parent.verticalCenter
-                    width: progressArea.pressed ? 8 : (progressArea.containsMouse ? 7 : 5)
-                    height: progressArea.pressed ? 20 : (progressArea.containsMouse ? 16 : 12)
+                    width: progressArea.pressed ? 18 : 14
+                    height: width
                     shape: progressArea.pressed ? MaterialShape.Cookie4Sided : MaterialShape.Circle
                     color: Appearance.md3.primary
                     strokeColor: Appearance.md3.surface_container_lowest
                     strokeWidth: 1.5
                     animationDuration: 250
+                    opacity: (progressArea.containsMouse || progressArea.pressed) ? 1 : 0
+                    scale: (progressArea.containsMouse || progressArea.pressed) ? 1 : 0.5
 
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
                     Behavior on x {
                         enabled: !progressArea.pressed
 
@@ -398,12 +447,6 @@ Item {
                         }
                     }
                     Behavior on width {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                    Behavior on height {
                         NumberAnimation {
                             duration: 120
                             easing.type: Easing.OutCubic
@@ -426,9 +469,19 @@ Item {
                         root.seekRequested(targetPos);
                     }
 
+                    onPressed: mouse => {
+                        progressContainer.dragRatio = Math.max(0.0, Math.min(1.0, mouse.x / width));
+                        updateSeek(mouse.x);
+                    }
+                    onPressedChanged: {
+                        if (!pressed)
+                            progressContainer.dragRatio = -1;
+                    }
                     onPositionChanged: mouse => {
-                        if (pressed)
+                        if (pressed) {
+                            progressContainer.dragRatio = Math.max(0.0, Math.min(1.0, mouse.x / width));
                             updateSeek(mouse.x);
+                        }
                     }
                     onClicked: mouse => updateSeek(mouse.x)
                 }

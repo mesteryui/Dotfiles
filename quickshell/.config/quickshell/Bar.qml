@@ -28,10 +28,13 @@ Variants {
 
             property int barHeight: Services.ConfigService.configs.bar.height
 
-            // Configuramos cuánto queremos que mida la lágrima
+            // Espacio físico extra solo en flotante para dibujar la
+            // lágrima sin que se recorte. Sin flotar no se reserva nada.
             property real teardropLength: 30
 
-            property real teardropWidth: 35
+            // Margen exterior en modo flotante / laterales del contenido.
+            readonly property int floatingMargin: 3
+            readonly property int contentMargin: 6
 
             WlrLayershell.layer: WlrLayer.Top
             // La zona exclusiva sigue siendo SOLO el alto de la barra (no molesta a otras apps)
@@ -46,16 +49,18 @@ Variants {
                 left: true
             }
             margins {
-                top: root.isFloating ? 5 : 0
-                bottom: root.isFloating ? 5 : 0
-                left: root.isFloating ? 3 : 0
-                right: root.isFloating ? 3 : 0
+                top: root.isFloating ? root.floatingMargin : 0
+                bottom: root.isFloating ? root.floatingMargin : 0
+                left: root.isFloating ? root.floatingMargin : 0
+                right: root.isFloating ? root.floatingMargin : 0
             }
 
-            implicitWidth: content.width
-
-            // ¡CLAVE! Damos espacio físico extra en la ventana para dibujar la lágrima sin que se recorte.
-            implicitHeight: barHeight + teardropLength
+            // Sin implicitWidth: la ventana ya ocupa todo el ancho por los
+            // anchors left/right (antes `content.width` cerraba un binding loop
+            // con MainBar, anclado a su vez al padre).
+            // ¡CLAVE! Espacio físico extra solo en flotante para dibujar la
+            // lágrima sin que se recorte. Sin flotar no se reserva nada.
+            implicitHeight: barHeight + (root.isFloating ? teardropLength : 0)
 
             color: "transparent"
 
@@ -65,8 +70,8 @@ Variants {
 
                 anchors.left: parent.left
                 anchors.right: parent.right
-                // Lo anclamos según si está arriba o abajo
-                y: root.isTop ? 0 : root.teardropLength
+                anchors.top: root.isTop ? parent.top : undefined
+                anchors.bottom: !root.isTop ? parent.bottom : undefined
                 height: root.barHeight
                 color: Appearance.md3.surface
                 radius: root.isFloating ? Appearance.shape.full : 0
@@ -78,9 +83,10 @@ Variants {
 
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.leftMargin: 6
-                anchors.rightMargin: 6
-                y: root.isTop ? 0 : root.teardropLength
+                anchors.leftMargin: root.contentMargin
+                anchors.rightMargin: root.contentMargin
+                anchors.top: root.isTop ? parent.top : undefined
+                anchors.bottom: !root.isTop ? parent.bottom : undefined
                 height: root.barHeight
             }
         }

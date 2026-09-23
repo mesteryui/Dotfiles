@@ -6,11 +6,11 @@ Scope {
     id: root
 
     // NotificationCenter es PanelWindow pesado pero pasa oculto casi siempre:
-    // se difiere. Los popups por pantalla se quedan directos (instantáneos).
-    Loader {
-        active: NotificationService.centerOpen
-        asynchronous: true
-        sourceComponent: centerComp
+    // LazyLoader lo incuba en background y lo cachea (su visible ya va
+    // atado a centerOpen). Los popups por pantalla se quedan directos.
+    LazyLoader {
+        loading: NotificationService.centerOpen
+        component: centerComp
     }
 
     Component {

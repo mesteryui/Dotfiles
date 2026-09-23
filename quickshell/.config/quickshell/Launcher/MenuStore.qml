@@ -1,9 +1,9 @@
-// --- CustomMenuService = UnifiedMenuStore (Singleton) ---
+// --- MenuStore = UnifiedMenuStore (Singleton) ---
 // SISTEMA ÚNICO de menús personalizados (todo lo que NO es Archivos,
 // Aplicaciones, Calculadora, Web, Emojis, Clipboard).
 //
 // Todo menú —interno o tuyo, estático o dinámico— usa el componente base
-// Launcher/CustomMenu.qml (módulo qs.Launcher) como raíz:
+// Launcher/MenuDefinition.qml (módulo qs.Launcher) como raíz:
 //   sectionId, titleFallback, titleKey, iconName, parentId, entries,
 //   helpers, refresh() + fábricas shell()/ipc()/submenu()/entry()
 // La base es genérica (no conoce ningún menú concreto); la lógica de cada
@@ -12,10 +12,10 @@
 // refresh() reasignando el array entero, con sus Process/Timer en `helpers`.
 //
 // Dónde vive cada uno:
-//   Launcher/CustomMenu.qml           → componente base (no es un menú)
+//   Launcher/MenuDefinition.qml           → componente base (no es un menú)
 //   MenuProviders/System/*.qml        → internos (cargan primero)
 //   MenuProviders/*.qml               → tuyos (+ el generador new-menu.sh)
-// Todos importan `qs.Launcher` para ver CustomMenu.
+// Todos importan `qs.Launcher` para ver MenuDefinition.
 //
 // Añadir un menú = soltar un archivo en MenuProviders/ (se aplica al
 // abrir el launcher, que comprueba cambios en disco). Quitarlo =
@@ -40,12 +40,14 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Core.Modules
+import "../Core/Log.js" as Log
 
 Singleton {
     id: root
 
-    readonly property string systemDir: Quickshell.env("HOME") + "/.config/quickshell/Launcher/MenuProviders/System"
-    readonly property string providersDir: Quickshell.env("HOME") + "/.config/quickshell/Launcher/MenuProviders"
+    readonly property string systemDir: Directories.config + "/quickshell/Launcher/MenuProviders/System"
+    readonly property string providersDir: Directories.config + "/quickshell/Launcher/MenuProviders"
 
     // Internos primero (ganan en colisiones), luego los tuyos.
     // Se reasigna entero al descubrir.
@@ -58,6 +60,10 @@ Singleton {
     property int revision: 0
     // Nº de reloads (rompe la caché de Qt.createComponent en loadOne).
     property int loadEpoch: 0
+    // Último descubrimiento con errores: visible vía IPC (`reloadMenus`
+    // incluye "errors=N") en vez de solo consola.
+    property int loadErrors: 0
+    property string lastError: ""
 
     // true si el sectionId lo aporta un menú interno (MenuProviders/System/).
     function isSystemSection(sectionId) {
@@ -135,7 +141,7 @@ Singleton {
             "for d in '" + root.systemDir + "' '" + root.providersDir + "'; do " +
             "for f in \"$d\"/*.qml; do [ -f \"$f\" ] || continue; " +
             "stat -c '%n|%Y|%s' \"$f\"; done; done; " +
-            "stat -c '%n|%Y|%s' '" + root.providersDir + "/../CustomMenu.qml' " +
+            "stat -c '%n|%Y|%s' '" + root.providersDir + "/../MenuDefinition.qml' " +
             "2>/dev/null | sort"]
         stdout: SplitParser {
             onRead: data => {
@@ -204,12 +210,14 @@ Singleton {
         const url = base + name + (root.loadEpoch > 0 ? "?epoch=" + root.loadEpoch : "");
         const comp = Qt.createComponent(Qt.resolvedUrl(url));
         if (comp.status !== Component.Ready) {
-            console.warn("CustomMenuService: no se pudo cargar " + base + name + ": " + comp.errorString());
+            root.lastError = base + name + ": " + comp.errorString();
+            Log.warn("MenuStore: no se pudo cargar " + root.lastError);
             return null;
         }
         const obj = comp.createObject(root, {});
         if (!obj || !obj.sectionId) {
-            console.warn("CustomMenuService: " + base + name + " no expone sectionId, se ignora");
+            root.lastError = base + name + " no expone sectionId, se ignora";
+            Log.warn("MenuStore: " + root.lastError);
             if (obj)
                 obj.destroy();
             return null;
@@ -221,18 +229,19 @@ Singleton {
         const sys = [];
         const usr = [];
         const seen = {};
-        let loadErrors = 0;
+        let errors = 0;
         for (let i = 0; i < foundFiles.length; i++) {
             const raw = foundFiles[i];
             const tag = raw.slice(0, 1);
             const name = raw.slice(2);
             const obj = loadOne(tag, name);
             if (!obj) {
-                loadErrors += 1;
+                errors += 1;
                 continue;
             }
             if (seen[obj.sectionId]) {
-                console.warn("CustomMenuService: sectionId duplicado '" + obj.sectionId + "' en " + name + ", se ignora (manda el primero)");
+                root.lastError = "sectionId duplicado '" + obj.sectionId + "' en " + name + ", se ignora (manda el primero)";
+                Log.warn("MenuStore: " + root.lastError);
                 obj.destroy();
                 continue;
             }
@@ -246,8 +255,9 @@ Singleton {
         // había menús, se destruyen los nuevos a medias y se conservan los
         // viejos (mejor menú viejo que menú roto). En el arranque se usa
         // lo que haya, como antes.
-        if (loadErrors > 0 && root.loadEpoch > 0 && root.providers.length > 0) {
-            console.warn("CustomMenuService: " + loadErrors + " provider(s) con error, se conservan los menús actuales");
+        root.loadErrors = errors;
+        if (errors > 0 && root.loadEpoch > 0 && root.providers.length > 0) {
+            Log.warn("MenuStore: " + errors + " provider(s) con error, se conservan los menús actuales");
             for (let d = 0; d < sys.length; d++)
                 sys[d].destroy();
             for (let e = 0; e < usr.length; e++)
@@ -258,7 +268,7 @@ Singleton {
         // los viejos (p. ej. error transitorio del ls): mejor menú viejo
         // que ningún menú.
         if (sys.length + usr.length === 0 && root.providers.length > 0) {
-            console.warn("CustomMenuService: redescubrimiento vacío, se conservan los providers actuales");
+            Log.warn("MenuStore: redescubrimiento vacío, se conservan los providers actuales");
             return;
         }
         // Limpia providers anteriores (recarga) antes de reasignar.
@@ -269,6 +279,8 @@ Singleton {
         // Internos primero: en colisiones con dinámicos manda el interno
         // (ver SystemMenuRegistry.sections()).
         root.providers = sys.concat(usr);
+        if (errors === 0)
+            root.lastError = "";
         // Invalida los bindings que leen menús (ver SystemMenuRegistry).
         root.revision += 1;
         // Los dinámicos propios regeneran sus entries con la nueva instancia.

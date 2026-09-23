@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.Core.Services as Services
+import qs.Core
 import qs.Primitives
 import QtQuick
 import Quickshell
@@ -14,16 +15,41 @@ Item {
     implicitWidth: 32
     implicitHeight: 32
 
+    // El menú vive mientras está visible, no mientras se pulsa: en un
+    // clic rápido `pressed` ya cayó cuando `onClicked` pide el item.
+    property bool menuOpen: false
+
     function showMenu()
     {
+        itemContainer.menuOpen = true;
         const w = loader.item
         if (w) w.visible = !w.visible
+    }
+
+    Connections {
+        target: loader
+
+        // Clic rapidísimo: el item aún no existía al pedirlo; al
+        // llegar se muestra (la intención era abrir: parte oculto).
+        function onItemChanged() {
+            const w = loader.item;
+            if (w && itemContainer.menuOpen && !w.visible)
+                w.visible = true;
+        }
+    }
+
+    Connections {
+        target: loader.item
+
+        function onDismissed() {
+            itemContainer.menuOpen = false;
+        }
     }
 
     LazyLoader {
         id: loader
 
-        loading: mouseManagement.pressed
+        loading: mouseManagement.pressed || itemContainer.menuOpen
         component: TrayMenu {
             id: trayMenu
 
@@ -42,12 +68,22 @@ Item {
 
         IconImage {
             source: itemContainer.modelData?.icon ?? ""
-            
+
             // Centrado absoluto con márgenes limpios
             anchors.centerIn: parent
             width: parent.width - 8  // Equivalente a margins: 4 por cada lado
             height: parent.height - 8
             visible: source !== ""
+        }
+
+        // Sin icono: inicial del título en vez de caja vacía.
+        StyledText {
+            anchors.centerIn: parent
+            visible: (itemContainer.modelData?.icon ?? "") === ""
+            text: String(itemContainer.modelData?.title ?? "?").trim().charAt(0).toUpperCase() || "?"
+            font.pixelSize: 16
+            font.weight: Font.Bold
+            color: Appearance.md3.on_surface_variant
         }
 
         // El efecto de escala se aplica al contenido visual,

@@ -404,7 +404,7 @@ PanelWindow {
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: I18nService.getTranslation("notifications.empty", "")
+                    text: I18nService.getTranslation("notifications.empty_title", "")
                     color: Appearance.md3.on_surface
                     font.family: Appearance.font.sans
                     font.variableAxes: Appearance.font.variableAxes.title
@@ -415,7 +415,7 @@ PanelWindow {
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: I18nService.getTranslation("notifications.empty_hint", "Las nuevas notificaciones aparecerán aquí")
+                    text: I18nService.getTranslation("notifications.empty_subtitle", "Las nuevas notificaciones aparecerán aquí")
                     color: Appearance.md3.on_surface_variant
                     font.family: Appearance.font.sans
                     font.pixelSize: Appearance.font.pixelSize.smaller

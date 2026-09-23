@@ -14,9 +14,9 @@ Analogía de restaurante:
 * **MenuModes.js** = la carta dividida en secciones (menús).
 * **SystemMenuRegistry.qml** = el jefe de cocina que junta todas las recetas.
 * **MenuProviders/System/*.qml** = recetas internas (estáticas o dinámicas,
-  todas heredan `CustomMenu`, igual que las tuyas).
+  todas heredan `MenuDefinition`, igual que las tuyas).
 * **MenuProviders/*.qml (tus archivos)** = TUS menús. Todo unificado bajo `MenuProviders/`.
-* **CustomMenuService.qml (UnifiedMenuStore) + `CustomMenu`** = SISTEMA ÚNICO: aquí viven
+* **MenuStore.qml (UnifiedMenuStore) + `MenuDefinition`** = SISTEMA ÚNICO: aquí viven
   **todos los menús personalizados** (todo lo que NO es Archivos, Aplicaciones,
   Calculadora, Web, Emojis, Clipboard), sean internos o tuyos, estáticos o dinámicos.
 * **MenuProviders/new-menu.sh** = generador: `new-menu.sh MiMenu "Mi menú"` crea el archivo por ti.
@@ -32,20 +32,32 @@ Todo vive en:
 
 ```
 ~/.config/quickshell/Launcher/
-├── AppLauncher.qml          # ventana + lógica + interfaz
-├── MenuModes.js             # qué menús existen y con qué letra se activan
-├── SystemMenuRegistry.qml   # fachada única: solo lee CustomMenuService
-├── CustomMenu.qml           # componente base (herédalo, no lo copies)
-├── CustomMenuService.qml    # descubre todos los menús automáticamente
+├── AppLauncher.qml          # ventana + estado + dispatch + interfaz
+├── LauncherPreview.qml      # orquesta el preview lateral (estado + debounce)
+├── MenuDefinition.qml       # componente base (herédalo, no lo copies)
+├── MenuStore.qml            # descubre todos los menús automáticamente
+├── SystemMenuRegistry.qml   # fachada única: solo lee MenuStore
 ├── FilePreviewService.qml   # miniaturas de archivos
-├── EmojiService.qml        # servicio del selector de emojis (ver §9)
+├── EmojiService.qml         # servicio del selector de emojis (ver §9)
 ├── EmojiCustom.js           # TUYOS (prioridad máxima, edita este)
+├── Base/                    # lógica sin estado ni UI
+│   ├── MenuModes.js         # qué menús existen y con qué letra se activan
+│   ├── ItemKinds.js         # predicados sobre items (clip/imagen/texto…)
+│   ├── LauncherApps.js      # orden y dedup de .desktop
+│   └── ShellUtils.js        # shellEscape/fileUrl (única implementación)
+├── Modes/                   # un modo = su lógica (qalc, fd…)
+│   ├── LauncherCalc.qml     # calculadora vía qalc
+│   ├── LauncherFileSearch.qml # búsqueda con fd + snapshot
+│   └── FileMenu.js          # mapeo/orden del modo archivos
+├── UI/                      # componentes visuales reutilizables
+│   ├── ResultList.qml       # lista + navegación + flash de borde
+│   └── PreviewPanel.qml     # panel lateral de preview
 ├── scripts/emoji-dump.py    # programa: genera el catálogo en runtime
 │                            # (librería `emoji` + stdlib `unicodedata`)
 ├── MenuProviders/           # SISTEMA ÚNICO (todo aquí dentro)
 │   ├── new-menu.sh          # generador: ./new-menu.sh MiMenu "Mi menú"
-│   ├── System/              # 10 internos (7 estáticos + 3 dinámicos, heredan CustomMenu)
-│   └── MiMenu.qml           # tus menús (heredan CustomMenu)
+│   ├── System/              # 10 internos (7 estáticos + 3 dinámicos, heredan MenuDefinition)
+│   └── MiMenu.qml           # tus menús (heredan MenuDefinition)
 ```
 (No hay nada más: el antiguo `SystemMenu/*.js` se eliminó; la fuente de
 verdad son los `MenuProviders/*.qml`. Si algún doc viejo lo menciona,
@@ -63,7 +75,7 @@ Si nunca programaste en QML/JS, quédate con esto:
 | `JS` (`.js`) | Lógica pura: listas, textos, funciones. Sin ventana. |
 | `property` | Una variable guardada en la ventana. Ej: `property string query` = "lo que has escrito sin el prefijo". Si cambia, todo lo que depende de ella se recalcula solo. |
 | `function` | Una receta: le das ingredientes, te devuelve algo o hace algo. |
-| `Singleton` | Un objeto único en todo el programa. `CustomMenuService` hay uno solo, todos le preguntan a él. |
+| `Singleton` | Un objeto único en todo el programa. `MenuStore` hay uno solo, todos le preguntan a él. |
 | `import` | "Necesito usar código de otro archivo". |
 | `Process` + `SplitParser` | "Ejecuta un comando de terminal y lee su salida línea a línea". Así el launcher habla con `fd`, `qalc`, `fastfetch`, `ffmpeg`, etc. |
 | `ListModel` | Una lista visible para QML. Peligro: si la cambias 100 veces seguidas, la interfaz se vuelve loca (binding loops). Por eso el código usa "snapshots" (fotos fijas de la lista). |
@@ -160,7 +172,7 @@ Cada resultado lleva un `kind`. Según eso:
   emoji la copia la hace `EmojiService.copy()` (que además registra el uso
   en Recientes).
 * `clip` → `ClipboardService.copyEntry(cid, isImage)`.
-* `file` → `xdg-open <ruta>`.
+* `file` → comprueba que existe y `xdg-open <ruta>`; si desapareció o no se puede abrir, notificación.
 * `web` → `xdg-open <url>`.
 
 Todo lo largo se lanza con `Quickshell.execDetached` (desacoplado): el launcher se puede cerrar sin matar la app abierta.
@@ -227,14 +239,14 @@ Es un `Singleton`. No pinta nada, solo **responde preguntas**: "¿qué secciones
 
 Vía única (el display no distingue nada):
 
-* **Providers unificados** vía `CustomMenuService.sectionInfos()`: `MenuProviders/System/*.qml`
+* **Providers unificados** vía `MenuStore.sectionInfos()`: `MenuProviders/System/*.qml`
   (internos, cargan primero) + tus `MenuProviders/*.qml` (ver §6). Estáticos y dinámicos
   llegan igual: los dinámicos regeneran `entries` en `refresh()`. Si tu `sectionId` choca
   con uno interno, **gana el interno** y sale aviso en consola.
 
 (No existe una vía clásica `.js`: los antiguos `SystemMenu/*.js` se
 eliminaron, y el antiguo `SystemMenuService` también: los dinámicos
-`powerprofiles/fastfetch/animations` hoy son providers `CustomMenu` en
+`powerprofiles/fastfetch/animations` hoy son providers `MenuDefinition` en
 `MenuProviders/System/`. Todo menú es un provider.)
 
 Funciones importantes:
@@ -244,7 +256,7 @@ Funciones importantes:
 * `staticEntries(id)` → `entries` crudas del provider tal cual (estático o dinámico).
 * `sectionResultItems(id)` → **vía única para navegar**: items de esa sección.
 * `systemSearchPool()` → **vía única para buscar**: todo aplanado con `cat` = nombre de sección.
-* `refreshSection(id)` / `refreshAll()` → reenvían a `CustomMenuService` (no-op en estáticos).
+* `refreshSection(id)` / `refreshAll()` → reenvían a `MenuStore` (no-op en estáticos).
 * `toResultItem(entry, label)` → traduce `entry` semántica a item pintable (`previewPath` se convierte en `imagePath`).
 * `shellOf(entry)` → `qs ipc call X` si `kind=="ipc"`, el `shellCommand` si `kind=="shell"`, `""` si `section`/`power`.
 
@@ -254,7 +266,7 @@ Funciones importantes:
 
 ## 5. `MenuProviders/System/*.qml` — las secciones internas (estáticas + dinámicas)
 
-Son providers con el componente base (`Launcher/CustomMenu.qml`, misma API que los tuyos):
+Son providers con el componente base (`Launcher/MenuDefinition.qml`, misma API que los tuyos):
 `sectionId/titleFallback/titleKey/iconName/parentId/entries/refresh()`.
 
 Cada entrada se escribe con las fábricas del componente:
@@ -273,7 +285,7 @@ shell("shot-region", "Capturar región", "hyprshot region", "crop",
   No hay más fábricas a propósito: la base es genérica y todo lo específico
   (energía, fastfetch, animaciones…) vive en su propio archivo.
 
-Contenido actual (7 estáticos + 3 dinámicos, todos `CustomMenu`):
+Contenido actual (7 estáticos + 3 dinámicos, todos `MenuDefinition`):
 
 Estáticos (`entries` fijas):
 
@@ -310,26 +322,26 @@ Para editar uno: toca el `.qml` y se aplica al abrir el launcher (comprueba camb
 
 Hay **una sola forma**: providers (ver §5 para el formato de entradas).
 
-### 6.1. Arquitectura: `CustomMenuService.qml` + `CustomMenu.qml`
+### 6.1. Arquitectura: `MenuStore.qml` + `MenuDefinition.qml`
 
-* `Launcher/CustomMenu.qml` es el **componente base genérico** (módulo `qs.Launcher`).
+* `Launcher/MenuDefinition.qml` es el **componente base genérico** (módulo `qs.Launcher`).
   No es un menú ni sabe nada de ninguno: solo el contrato
   (`sectionId/titleFallback/titleKey/iconName/parentId/entries/helpers/refresh()`)
   + fábricas `shell()/ipc()/submenu()/entry()`. Toda la lógica vive en cada archivo.
-* `CustomMenuService.qml` es un detective: al arrancar ejecuta un `sh` que lista `MenuProviders/System/*.qml` + `MenuProviders/*.qml`, los carga con `Qt.createComponent`, los instancia y guarda la lista en `providers` (internos primero). Al abrir el launcher se firman los ficheros y se recarga solo si cambiaron (sin proceso periódico).
+* `MenuStore.qml` es un detective: al arrancar ejecuta un `sh` que lista `MenuProviders/System/*.qml` + `MenuProviders/*.qml`, los carga con `Qt.createComponent`, los instancia y guarda la lista en `providers` (internos primero). Al abrir el launcher se firman los ficheros y se recarga solo si cambiaron (sin proceso periódico).
 * Reglas: si el archivo no carga → aviso y se salta. Si no expone `sectionId` → se ignora. Si el `sectionId` choca con uno interno → gana el interno.
 * `sectionInfos()` / `entriesOf(id)` / `providerFor(id)` exponen tus menús al Registry.
 * `refreshSection(id)` / `refreshAll()` llaman a tu `refresh()` (en menús fijos es vacío, no pasa nada).
 
 > Resultado: **añadir un menú = soltar un archivo (se aplica al abrir el launcher). Quitarlo = borrarlo.** Sin tocar Registry ni servicios. `qs ipc call launcher reloadMenus` fuerza la recarga inmediata.
 
-### 6.2. El contrato: tu archivo es un `CustomMenu`
+### 6.2. El contrato: tu archivo es un `MenuDefinition`
 
 Ejecuta `MenuProviders/new-menu.sh MiMenu "Mi menú"` (o escribe el archivo a mano en `MenuProviders/` con `import qs.Launcher`):
 
 ```qml
 import qs.Launcher
-CustomMenu {
+MenuDefinition {
   sectionId: "mimenu"             // ÚNICO, sin espacios. Ej: "notas", "trabajo"
   titleFallback: "Mi menú"        // Nombre visible
   titleKey: ""                    // "" = usa el fallback (recomendado para empezar)
@@ -369,7 +381,7 @@ Crea `Launcher/MenuProviders/Proyectos.qml`:
 
 ```qml
 import qs.Launcher
-CustomMenu {
+MenuDefinition {
   sectionId: "proyectos"
   titleFallback: "Proyectos"
   iconName: "folder"
@@ -394,7 +406,7 @@ submenu("ver-cliente", "Cliente X", "submenú", "arrow_forward", "cliente-x")
 ```qml
 // en ClienteX.qml:
 import qs.Launcher
-CustomMenu {
+MenuDefinition {
   sectionId: "cliente-x"
   titleFallback: "Cliente X"
   ...
@@ -427,8 +439,8 @@ Objetivo: listar tus scripts `~/.local/bin/mis-*` como botones.
 import qs.Launcher
 import Quickshell
 import Quickshell.Io
-import "../ShellUtils.js" as ShellUtils
-CustomMenu {
+import "../../Base/ShellUtils.js" as ShellUtils
+MenuDefinition {
   id: root
   sectionId: "scripts"
   titleFallback: "Mis scripts"
@@ -479,7 +491,7 @@ CustomMenu {
 
 1. **`sectionId` duplicado o con espacios** → usa minúsculas-guiones (`"mis-notas"`). Si choca con `main/screenshot/configure/...`, se ignora el tuyo.
 2. **Icono roto (círculo vacío)** → `iconName` debe existir en Material Symbols (`folder`, `terminal`, `palette`, `menu`...). Prueba con `menu` si dudas.
-3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `CustomMenu.qml`? Abre de nuevo el launcher (comprueba cambios en disco) o fuerza con `qs ipc call launcher reloadMenus`. Mira la consola: `CustomMenuService: ...` te dice qué falló.
+3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `MenuDefinition.qml`? Abre de nuevo el launcher (comprueba cambios en disco) o fuerza con `qs ipc call launcher reloadMenus`. Mira la consola: `MenuStore: ...` te dice qué falló.
 4. **Comillas rotas en `shellCommand`** → si tu ruta tiene `'`, escápala. Usa comillas dobles fuera y simples dentro, o la función `shEscape` del ejemplo.
 5. **Mutar `entries` con `push`** → no se refresca bien. Siempre `entries = nuevaLista`.
 6. **Badge vivo + `subtitleKey`** → si el subtítulo lleva estado (ej. `● Actual`),
@@ -490,7 +502,7 @@ CustomMenu {
 
 ---
 
-## 7. Menús dinámicos internos — ya son `CustomMenu` (sin servicio aparte)
+## 7. Menús dinámicos internos — ya son `MenuDefinition` (sin servicio aparte)
 
 No hay servicio de "datos vivos": las 3 secciones que cambian solas son providers
 dinámicos en `MenuProviders/System/` (ver §5). Cada uno implementa `refresh()` y
@@ -584,8 +596,8 @@ Abrir `/home` y previsualizar un PDF: modo `files`, `fd` llena `fileSnapshot`, s
 | Cambiar prefijos/modos base | `MenuModes.js` (`defs`) |
 | Cambiar ventana/lista/preview/atajos | `AppLauncher.qml` |
 | Añadir/editar sección interna | `MenuProviders/System/*.qml` (se aplica al abrir el launcher) |
-| Añadir sección dinámica interna | `MenuProviders/System/NuevoDinamico.qml` (`CustomMenu` + `refresh()`; copia `FastfetchMenu.qml`) |
-| **Crear MI menú (recomendado)** | **`./new-menu.sh X "Título"` o `CustomMenu { }` a mano (se aplica al abrir)** |
+| Añadir sección dinámica interna | `MenuProviders/System/NuevoDinamico.qml` (`MenuDefinition` + `refresh()`; copia `FastfetchMenu.qml`) |
+| **Crear MI menú (recomendado)** | **`./new-menu.sh X "Título"` o `MenuDefinition { }` a mano (se aplica al abrir)** |
 | Miniaturas audio/video/pdf/texto | `FilePreviewService.qml` |
 | Más emojis / símbolos | `EmojiCustom.js` (tuyos, manda sobre lo generado) |
 | Cómo se genera el catálogo emoji | `scripts/emoji-dump.py --all` (runtime, sin .js de datos) |
@@ -597,4 +609,4 @@ Tras crear/editar/borrar un `MenuProviders/*.qml` no hay que hacer nada: se apli
 
 ---
 
-*Fin. Si solo te quedas con una frase: **para un menú propio, escribe un `CustomMenu { }` con `sectionId` único y `entries` con `shell()/ipc()/submenu()`: se aplica al abrir el launcher.***
+*Fin. Si solo te quedas con una frase: **para un menú propio, escribe un `MenuDefinition { }` con `sectionId` único y `entries` con `shell()/ipc()/submenu()`: se aplica al abrir el launcher.***

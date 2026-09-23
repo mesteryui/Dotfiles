@@ -30,12 +30,17 @@ import Quickshell.Io
  *
  * Re-parses automatically whenever Hyprland reloads its config.
  */
+import "../Log.js" as Log
+
 Singleton {
     id: root
 
     property var keybinds: []
     property var keybindCategories: []
     property var groupedKeybinds: ({})
+    // true si la última lectura falló (hyprctl ausente o JSON roto).
+    // La cheatsheet lo distingue del "vacío real".
+    property bool failed: false
 
     /// Preferred display order for known categories.
     /// Debe coincidir con los prefijos "Categoría: ..." de la config de Hyprland.
@@ -231,15 +236,27 @@ Singleton {
         running: true
         command: ["hyprctl", "binds", "-j"]
 
+        onRunningChanged: {
+            if (running)
+                root.failed = false;
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     root.keybinds = JSON.parse(text);
                     root.rebuildGroups();
                 } catch (e) {
-                    console.error("[HyprlandKeybinds] Error parsing keybinds:", e);
+                    Log.error("[HyprlandKeybinds] Error parsing keybinds:", e);
+                    root.failed = true;
                 }
             }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            // hyprctl ausente o error: sin datos NUNCA es "vacío real".
+            if (exitCode !== 0 && root.keybinds.length === 0)
+                root.failed = true;
         }
     }
 }

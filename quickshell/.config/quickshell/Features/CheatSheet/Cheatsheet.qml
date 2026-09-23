@@ -54,9 +54,9 @@ PanelWindow {
 
     onActiveChanged: {
         if (active) {
-            searchField.text = "";
-            sheet.activeBindIndex = 0;
-            Qt.callLater(() => searchField.forceActiveFocus());
+            // El contenido es lazy: puede no existir aún en la primera
+            // apertura (onLoaded del Loader lo resetea al completarse).
+            sheetLoader.item?.resetOnOpen();
         } else {
             hideTimer.restart();
         }
@@ -107,9 +107,27 @@ PanelWindow {
         }
     }
 
-    // --- Content ---
-    Item {
-        id: sheet
+    // --- Content (lazy) ---
+    // La hoja es pesada (Repeaters + filtrado) y pasa oculta casi siempre:
+    // se crea al abrir y se destruye al terminar el fade-out.
+    Loader {
+        id: sheetLoader
+
+        anchors.fill: parent
+        active: root.active || hideTimer.running
+        asynchronous: true
+        sourceComponent: sheetComp
+        onLoaded: {
+            if (root.active)
+                item.resetOnOpen();
+        }
+    }
+
+    Component {
+        id: sheetComp
+
+        Item {
+            id: sheet
 
         anchors.fill: parent
         opacity: root.active ? 1 : 0
@@ -241,6 +259,14 @@ PanelWindow {
 
         function scrollBy(delta) {
             sheet.scrollTo(flick.contentY + delta);
+        }
+
+        // Reseteo al abrir (llamado desde onActiveChanged del root y
+        // desde onLoaded del Loader en la primera apertura).
+        function resetOnOpen() {
+            searchField.text = "";
+            sheet.activeBindIndex = 0;
+            Qt.callLater(() => searchField.forceActiveFocus());
         }
 
         // --- Item-by-item keyboard navigation ---
@@ -428,7 +454,7 @@ PanelWindow {
 
                     background: null
                     color: Appearance.md3.on_surface
-                    placeholderText: Services.I18nService.getTranslation("cheatsheet.search", "Buscar atajos de teclado…")
+                    placeholderText: Services.I18nService.getTranslation("cheatsheet.search_placeholder", "Buscar atajos de teclado…")
                     placeholderTextColor: Appearance.md3.on_surface_variant
                     selectedTextColor: Appearance.md3.on_secondary_container
                     selectionColor: Appearance.md3.secondary_container
@@ -617,15 +643,15 @@ PanelWindow {
 
                         MaterialIcon {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            iconName: searchField.text.length > 0 ? "search_off" : "keyboard"
+                            iconName: searchField.text.length > 0 ? "search_off" : (Services.HyprlandKeybinds.failed ? "error" : "keyboard")
                             size: 52
-                            color: Appearance.md3.on_surface_variant
+                            color: Services.HyprlandKeybinds.failed && searchField.text.length === 0 ? Appearance.md3.error : Appearance.md3.on_surface_variant
                             opacity: 0.55
                         }
 
                         StyledText {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatsheet.no_match", "Ningún atajo coincide con") + " \u201c" + searchField.text + "\u201d" : Services.I18nService.getTranslation("cheatsheet.no_binds", "No se encontraron atajos documentados")
+                            text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatsheet.empty_no_match", "Ningún atajo coincide con") + " \u201c" + searchField.text + "\u201d" : (Services.HyprlandKeybinds.failed ? Services.I18nService.getTranslation("cheatsheet.empty_error", "No se pudieron leer los atajos (¿hyprctl disponible?)") : Services.I18nService.getTranslation("cheatsheet.empty_no_binds", "No se encontraron atajos documentados"))
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: Appearance.font.pixelSize.normal
                         }
@@ -721,6 +747,7 @@ PanelWindow {
                 heights[minIdx] += estHeight + 20;
             }
             return cols;
+        }
         }
     }
 }

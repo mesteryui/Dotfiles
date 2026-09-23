@@ -1,8 +1,8 @@
-// --- CustomMenu: base genérica de TODO menú personalizado ---
+// --- MenuDefinition: base genérica de TODO menú personalizado ---
 // Úsalo como raíz de tu provider. Vive en Launcher/ (módulo qs.Launcher),
 // así que TODO menú lo importa igual:
 //   import qs.Launcher
-//   CustomMenu {
+//   MenuDefinition {
 //     ...
 //   }
 //
@@ -20,7 +20,7 @@
 //
 // Mínimo (MenuProviders/MiMenu.qml):
 //   import qs.Launcher
-//   CustomMenu {
+//   MenuDefinition {
 //     sectionId: "mimenu"          // único, sin espacios
 //     titleFallback: "Mi menú"
 //     entries: [
@@ -48,6 +48,7 @@
 // Reasignación entera de `entries` al terminar, nunca push parcial.
 
 import QtQuick
+import "../Core/Log.js" as Log
 
 QtObject {
     id: root
@@ -75,7 +76,7 @@ QtObject {
 
     Component.onCompleted: {
         if (root.sectionId === "")
-            console.warn("CustomMenu: sectionId vacío, el menú se ignorará");
+            Log.warn("MenuDefinition: sectionId vacío, el menú se ignorará");
     }
 
     function entry(entryId, title, sub, icon, action, opts) {

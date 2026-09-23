@@ -1,5 +1,5 @@
 #!/bin/sh
-# new-menu.sh — crea un menú personalizado sobre el componente CustomMenu.
+# new-menu.sh — crea un menú personalizado sobre el componente MenuDefinition.
 # Uso: new-menu.sh MiMenu "Mi menú" [parentId] [icono]
 # Crea MenuProviders/MiMenu.qml. Se aplica al abrir el launcher.
 # Los 6 modos fijos (Archivos, Aplicaciones, Calculadora, Web, Emojis,
@@ -42,12 +42,12 @@ TITLE_ESC="$(esc "$TITLE")"
 PARENT_ESC="$(esc "$PARENT")"
 ICON_ESC="$(esc "$ICON")"
 cat > "$DEST" <<EOF
-// Menú personalizado sobre CustomMenu (ver Launcher/CustomMenu.qml).
+// Menú personalizado sobre MenuDefinition (ver Launcher/MenuDefinition.qml).
 // Se aplica al abrir el launcher (comprueba cambios en disco).
 
 import qs.Launcher
 
-CustomMenu {
+MenuDefinition {
     sectionId: "$SEC_ESC"
     titleFallback: "$TITLE_ESC"
     iconName: "$ICON_ESC"

@@ -21,6 +21,8 @@ FocusScope {
 
     // ── Dos etapas (estilo GNOME/Android) ─────────────────────────
     // false = pantalla dormida (solo reloj). true = panel de auth visible.
+    // La etapa de contraseña solo existe cuando isAwake=true: PAM arranca
+    // al despertar y se aborta al volver a dormir (ver onIsAwakeChanged).
     property bool isAwake: false
     property string _pendingKeyText: ""
 
@@ -118,18 +120,45 @@ FocusScope {
         }
     }
 
-    // Cualquier tecla despierta la pantalla; si es imprimible se inyecta en el campo
+    // Cualquier tecla de escritura despierta la pantalla y su texto se
+    // inyecta en el campo. Los modificadores puros, Bloq Mayús y Escape
+    // dormido NO despiertan (coherente con el hint "desliza o pulsa tecla
+    // para escribir"). Despierto, Escape con campo vacío vuelve a dormir.
     Keys.onPressed: event => {
         if (!root.isAwake) {
-            root.isAwake = true;
-            if (event.text.length > 0 && event.text.charCodeAt(0) >= 32) {
-                root._pendingKeyText = event.text;
+            if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
+                return;
+            switch (event.key) {
+            case Qt.Key_Shift:
+            case Qt.Key_Control:
+            case Qt.Key_Alt:
+            case Qt.Key_Meta:
+            case Qt.Key_AltGr:
+            case Qt.Key_CapsLock:
+            case Qt.Key_NumLock:
+            case Qt.Key_ScrollLock:
+            case Qt.Key_Escape:
+                return;
             }
+            const isPrintable = event.text.length > 0 && event.text.charCodeAt(0) >= 32;
+            const isEditKey = event.key === Qt.Key_Backspace || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space || event.key === Qt.Key_Tab;
+            if (!isPrintable && !isEditKey)
+                return;
+            root.isAwake = true;
+            if (isPrintable)
+                root._pendingKeyText += event.text;
             event.accepted = true;
+        } else {
+            if (event.key === Qt.Key_Escape && !root.isAuthenticating && content.passwordField.text.length === 0) {
+                root.isAwake = false;
+                event.accepted = true;
+            }
         }
     }
 
-    // Al despertar, dar foco al campo e inyectar el carácter pendiente
+    // Al despertar, arranca PAM (huella + contraseña) y da foco al campo;
+    // al dormir, aborta PAM y limpia el campo para que la contraseña solo
+    // viva mientras la etapa de auth está visible.
     onIsAwakeChanged: {
         if (root.isAwake) {
             // Arranca la sesión PAM al entrar al diálogo de auth (huella + contraseña).
@@ -137,7 +166,18 @@ FocusScope {
             // start() es no-op si ya hay sesión activa.
             if (root.isPrimary)
                 AuthService.start();
+            if (root.isPrimary)
+                KeyboardThings.refreshCapsLock();
             wakeTimer.start();
+        } else {
+            root._pendingKeyText = "";
+            root.authFailed = false;
+            root.promptText = "";
+            root.isAuthenticating = false;
+            if (root.isPrimary)
+                AuthService.abort();
+            if (content && content.passwordField)
+                content.passwordField.text = "";
         }
     }
 
@@ -171,8 +211,9 @@ FocusScope {
             clearTimer.restart();
             // La transacción PAM ya terminó (completed(!Success)) — hay que
             // arrancar una nueva para poder reintentar, con huella o con
-            // contraseña.
-            AuthService.start();
+            // contraseña. Solo la primaria la rearranca (singleton compartido).
+            if (root.isPrimary)
+                AuthService.start();
         }
 
         function onPromptMessage(message) {

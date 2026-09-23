@@ -9,8 +9,8 @@ Singleton {
     id: root
 
     readonly property string currentWallpaper: Persistent.persistence.currentWallpaper
-    readonly property string matugenMode: ConfigService.configs.appearence.darkMode ? "dark" : "light"
-    readonly property string matugenType: ConfigService.configs.appearence.matugen.type
+    readonly property string matugenMode: ConfigService.configs.appearance.darkMode ? "dark" : "light"
+    readonly property string matugenType: ConfigService.configs.appearance.matugen.type
     property Process proc: Process {}
 
     Connections {
@@ -26,6 +26,13 @@ Singleton {
 
     function applyTheme(wallpaperPath: string) {
         root.updateMatugenColors(root.currentWallpaper);
+    }
+
+    // Punto de entrada explícito para shell.qml: aplica el tema actual al
+    // arrancar (no-op si aún no hay wallpaper persistido).
+    function init() {
+        if (root.currentWallpaper !== "")
+            root.updateMatugenColors(root.currentWallpaper);
     }
 
     function updateMatugenColors(wallpaperPath: string) {

@@ -14,7 +14,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "ShellUtils.js" as ShellUtils
+import "Base/ShellUtils.js" as ShellUtils
 
 Singleton {
     id: root
@@ -29,7 +29,7 @@ Singleton {
     signal ready(string path, string image)
     signal textReady(string path, string text)
 
-    // Escape común (ver ShellUtils.js, única implementación en Launcher).
+    // Escape común (ver Base/ShellUtils.js, única implementación en Launcher).
 
     function trimSnippet() {
         return "; d='" + root.cacheDir + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -t \"$d\" | tail -n +61 | (cd \"$d\" && xargs -r rm -f); fi";

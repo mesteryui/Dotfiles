@@ -8,6 +8,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
+import M3Shapes
 
 // --- NotificationToastCard ---
 // Tarjeta de toast de notificación en estilo Material You (Material 3 Expressive).
@@ -101,15 +102,33 @@ Item {
                 Layout.alignment: Qt.AlignTop
 
                 // ── Imagen / Icono Destacado (Grande a la izquierda) ──
+                // Contenedor expresivo, mismo lenguaje que la tarjeta de
+                // historial: Cookie4Sided normal, Boom en crítica.
                 Item {
                     Layout.preferredWidth: 46
                     Layout.preferredHeight: 46
                     Layout.alignment: Qt.AlignTop
 
-                    Rectangle {
+                    // Contenedor expresivo con forma por urgencia:
+                    // baja = Circle, normal = Cookie4Sided, crítica = Boom.
+                    // Mismo lenguaje que el historial (cookie) + la alerta.
+                    MaterialShape {
+                        id: toastIconBg
+
                         anchors.fill: parent
-                        radius: Appearance.shape.small
+                        shape: root.isCritical ? MaterialShape.Boom : (root.notification.urgency === NotificationUrgency.Low ? MaterialShape.Circle : MaterialShape.Cookie4Sided)
+                        animationDuration: 300
                         color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
+
+                        // Respiración en críticas: el ojo va a lo urgente.
+                        // Solo vive mientras el toast está visible.
+                        SequentialAnimation on scale {
+                            loops: Animation.Infinite
+                            running: root.isCritical
+
+                            NumberAnimation { from: 1; to: 1.08; duration: 800; easing.type: Easing.InOutSine }
+                            NumberAnimation { from: 1.08; to: 1; duration: 800; easing.type: Easing.InOutSine }
+                        }
 
                         MaterialIcon {
                             anchors.centerIn: parent

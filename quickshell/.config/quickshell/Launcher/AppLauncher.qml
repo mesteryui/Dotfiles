@@ -2,7 +2,7 @@
 // Menú único con FuzzySearch en todo:
 //   modos por prefijo:
 //     (nada) todo: apps + calc + sistema + atajo web
-//     >  sistema (menús personalizados: secciones CustomMenu de
+//     >  sistema (menús personalizados: secciones MenuDefinition de
 //        MenuProviders/System/ + MenuProviders/*.qml, estáticos o
 //        dinámicos vía refresh())
 //     /  archivos (fd en $HOME)
@@ -19,15 +19,20 @@ import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Primitives
 import qs.Shared.Background
-import "MenuModes.js" as MenuModes
+import "Base/MenuModes.js" as MenuModes
+import "Base/LauncherApps.js" as LauncherApps
+import "Modes/FileMenu.js" as FileMenu
+import "Modes"
+import "UI"
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
+import M3Shapes
 
 PanelWindow {
     id: launcher
@@ -96,9 +101,9 @@ PanelWindow {
         // `qs ipc call launcher reloadMenus` -> "menus=S+U rev=N [...]".
         // Re-escanea MenuProviders/, recrea los providers (con la última
         // versión de cada fichero) y refresca los dinámicos. La UI se
-        // actualiza sola vía CustomMenuService.revision.
+        // actualiza sola vía MenuStore.revision.
         function reloadMenus(): string {
-            return SystemMenuRegistry.reloadCustomMenus();
+            return SystemMenuRegistry.reloadMenus();
         }
         // Toggle por menú: si ya está abierto en ese menú, cierra; si no, abre.
         // Al cambiar, el campo muestra el carácter del modo, igual que al
@@ -136,13 +141,13 @@ PanelWindow {
 
     function modeLabel(id) {
         switch (id) {
-        case "todo": return tr("launcher.tab_todo", "Todo");
+        case "todo": return tr("launcher.tab_all", "Todo");
         case "system": return tr("launcher.tab_system", "Sistema");
         case "files": return tr("launcher.tab_files", "Archivos");
         case "web": return tr("launcher.tab_web", "Web");
         case "emoji": return tr("launcher.tab_emoji", "Emojis");
         case "calc": return tr("launcher.tab_calc", "Calc");
-        default: return tr("launcher.tab_clip", "Clipboard");
+        default: return tr("launcher.tab_clipboard", "Clipboard");
         }
     }
 
@@ -156,6 +161,31 @@ PanelWindow {
 
     function prefixOf(modeId) {
         return MenuModes.prefixOf(modeId);
+    }
+
+    // Forma-identidad por modo (hero + badges de chips).
+    function modeShape(modeId) {
+        switch (modeId) {
+        case "system": return MaterialShape.Cookie6Sided;
+        case "files": return MaterialShape.Bun;
+        case "web": return MaterialShape.Oval;
+        case "emoji": return MaterialShape.Flower;
+        case "calc": return MaterialShape.Diamond;
+        case "clip": return MaterialShape.Clover4Leaf;
+        default: return MaterialShape.Circle;
+        }
+    }
+
+    function modeIcon(modeId) {
+        switch (modeId) {
+        case "system": return "settings";
+        case "files": return "folder";
+        case "web": return "public";
+        case "emoji": return "mood";
+        case "calc": return "calculate";
+        case "clip": return "content_paste";
+        default: return "apps";
+        }
     }
 
     // Prefijo tecleado (tiene prioridad: los caracteres siempre cambian de menú)
@@ -189,26 +219,28 @@ PanelWindow {
         if (launcherVisible) {
             menuSection = forcedMode === "system" ? menuSection : "main";
             searchField.text = launcher.prefixOf(forcedMode);
-            fileResults.clear();
-            fileSnapshot = [];
-            previewOk = false;
+            fileSearch.snapshot = [];
+            preview.reset();
             // Cada apertura empieza en orden canónico (no congelado).
             launcher.frozenIds = [];
             // La selección vuelve al principio en cada apertura.
-            resultList.currentIndex = 0;
-            resultList.positionViewAtBeginning();
+            resultList.resetView();
+            // Cada apertura empieza escribiendo, no navegando.
+            launcher.navResults = false;
             if (forcedMode === "clip" || forcedMode === "")
                 Services.ClipboardService.refresh();
             // Modelos live del menú de sistema (búsqueda global + badges "Actual",
             // más menús propios; no-op si aún no se descubrieron).
             SystemMenuRegistry.refreshAll();
+            // Generador de emojis en background (no-op tras el primero):
+            // el arranque del shell ya no espera/spawnea python.
+            EmojiService.ensureLib();
             searchField.forceActiveFocus();
         } else {
             forcedMode = "";
             // Sin selecciones a medias al cerrar: el diferido no debe pintar
             // nada de una sesión ya cerrada.
-            previewDebounce.stop();
-            previewPendingIndex = -1;
+            preview.reset();
         }
     }
 
@@ -221,45 +253,12 @@ PanelWindow {
         searchField.forceActiveFocus();
     }
 
-    // Mueve la selección con cycle: del último vuelve al primero y viceversa.
-    // Al dar la vuelta se avisa discreto: línea fina en el borde hacia
-    // donde se saltó (arriba = al primero, abajo = al último).
-    property bool wrapFlash: false
-    property int wrapDir: 0
-
-    Timer {
-        id: wrapTimer
-
-        interval: 220
-        onTriggered: launcher.wrapFlash = false
-    }
-
-    function moveSelection(delta) {
-        const n = resultList.count;
-        if (n === 0)
-            return;
-        let i = resultList.currentIndex + delta;
-        if (i < 0 || i >= n) {
-            launcher.wrapDir = i < 0 ? -1 : 1;
-            launcher.wrapFlash = true;
-            wrapTimer.restart();
-        }
-        if (i < 0)
-            i = n - 1;
-        else if (i >= n)
-            i = 0;
-        resultList.currentIndex = i;
-        resultList.positionViewAtIndex(i, ListView.Contain);
-    }
+    // Mueve la selección: vive en ResultList (con el flash de borde).
 
     // Al entrar a modo clipboard refresca historial
     onActiveModeChanged: {
         if (launcherVisible && activeMode === "clip")
             Services.ClipboardService.refresh();
-        if (activeMode === "files")
-            fileDebounce.restart();
-        if (launcherVisible && activeMode === "calc")
-            calcDebounce.restart();
     }
 
     // ---------- helpers ----------
@@ -278,11 +277,33 @@ PanelWindow {
         Quickshell.execDetached(["sh", "-c", shell]);
     }
 
+    // Apertura de ficheros/carpetas con comprobación + aviso.
+    // Lógica en FileMenu.js (openCommand); aquí solo textos y lanzamiento.
+    function openPath(path) {
+        launcher.runShell(FileMenu.openCommand(path, tr("launcher.tab_files", "Archivos"), tr("launcher.file_missing", "El archivo ya no existe") + ": " + path, tr("launcher.file_open_failed", "No se pudo abrir") + ": " + path));
+    }
+
+    // Estado de navegación: false = escribiendo en el campo (las
+    // flechas ←/→ mueven el cursor), true = navegando por los
+    // resultados (las flechas mueven la selección). Lo pone a true
+    // cualquier tecla de navegación y lo quita el escribir texto.
+    property bool navResults: false
+
+    // Estado vacío con retardo (ver onCountChanged de ResultList).
+    property bool showEmpty: false
+
+    Timer {
+        id: emptyTimer
+
+        interval: 150
+        onTriggered: launcher.showEmpty = true
+    }
+
     function activateCurrent() {
-        const item = resultList.currentItem;
-        if (!item || !item.modelData)
+        const item = resultList.currentData;
+        if (!item)
             return;
-        activateItem(item.modelData);
+        activateItem(item);
     }
 
     function activateItem(it) {
@@ -315,7 +336,7 @@ PanelWindow {
             Services.ClipboardService.copyEntry(it.cid, it.isImage);
             break;
         case "file":
-            launcher.runCmd(["xdg-open", it.path]);
+            launcher.openPath(it.path);
             break;
         case "calc":
             Services.ClipboardService.copyText(it.result);
@@ -327,59 +348,12 @@ PanelWindow {
         launcher.launcherVisible = false;
     }
 
-    // ---------- calculadora vía libqalculate (qalc) ----------
-    // El cálculo lo hace qalc (-t = salida escueta); aquí solo se decide
-    // cuándo pedirlo y se muestra el resultado. Sin shell: argv directo.
-    property string calcResult: ""
-    property string calcForQuery: ""
-    property bool calcBusy: false
+    // ---------- calculadora (estado + qalc en LauncherCalc) ----------
+    LauncherCalc {
+        id: calcState
 
-    // ¿Parece cálculo? Debe llevar dígito y solo caracteres plausibles
-    // (números, operadores, unidades, funciones, monedas). El modo calc es
-    // explícito (=), así que lo raro lo interpreta qalc como sabe.
-    function looksLikeCalc(q) {
-        const t = q.trim();
-        if (t === "" || !/[0-9]/.test(t))
-            return false;
-        return /^[\w\s+\-*/%^().,!°√π€$£¥×÷−·'":;<>|&=²³?¡¿-]+$/.test(t);
-    }
-
-    Timer {
-        id: calcDebounce
-        interval: 250
-        onTriggered: {
-            if (launcher.activeMode !== "calc" || !launcher.launcherVisible)
-                return;
-            const q = launcher.query;
-            if (!launcher.looksLikeCalc(q)) {
-                launcher.calcResult = "";
-                launcher.calcForQuery = q;
-                return;
-            }
-            // Coma decimal → punto + locale C: igual que antes, punto decimal.
-            const expr = q.trim().replace(/,/g, ".");
-            launcher.calcBusy = true;
-            calcAcc = "";
-            calcProc.command = ["env", "LC_ALL=C", "qalc", "-t", expr];
-            calcProc.running = true;
-        }
-    }
-
-    property string calcAcc: ""
-
-    Process {
-        id: calcProc
-        stdout: SplitParser {
-            onRead: data => {
-                calcAcc += data + "\n";
-            }
-        }
-        onExited: code => {
-            launcher.calcBusy = false;
-            const r = calcAcc.trim();
-            launcher.calcResult = code === 0 ? r : "";
-            launcher.calcForQuery = launcher.query;
-        }
+        query: launcher.query
+        active: launcher.launcherVisible && launcher.activeMode === "calc"
     }
 
     function isUrl(q) {
@@ -389,10 +363,13 @@ PanelWindow {
     }
 
     // ---------- resultados ----------
-    property ListModel fileResults: ListModel {}
-    // Snapshot de archivos: fileResults se llena por streaming (fd) y leer
-    // el ListModel en vivo desde `results` disparaba binding loops.
-    property var fileSnapshot: []
+    // Búsqueda de archivos (fd + snapshot en LauncherFileSearch).
+    LauncherFileSearch {
+        id: fileSearch
+
+        query: launcher.query
+        active: launcher.launcherVisible && launcher.activeMode === "files"
+    }
 
     property var results: {
         // lang: reevaluar al cambiar el idioma (los items llevan textos traducidos)
@@ -441,8 +418,7 @@ PanelWindow {
     function togglePinCurrent() {
         if (launcher.activeMode !== "todo" || !Persistent.ready)
             return;
-        const cur = resultList.currentItem;
-        const d = cur ? cur.modelData : null;
+        const d = resultList.currentData;
         if (!d || typeof d.execute !== "function" || !d.id)
             return;
         const pins = launcher.pinnedIds().slice();
@@ -456,10 +432,6 @@ PanelWindow {
             launcher.frozenIds = [];
         }
         Persistent.persistence.pinnedApps = pins;
-    }
-
-    function alphaSort(list) {
-        return [...list].sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
     }
 
     // Filtrado estricto por niveles para mostrar lo mínimo:
@@ -477,87 +449,16 @@ PanelWindow {
                 contains.push(apps[i]);
         }
         if (starts.length > 0)
-            return launcher.alphaSort(starts);
+            return LauncherApps.alphaSort(starts);
         if (contains.length > 0)
-            return launcher.alphaSort(contains);
+            return LauncherApps.alphaSort(contains);
         return Services.FuzzySearch.filterItemsMulti(q, apps, e => [e.name, e.comment || "", e.id || ""]).slice(0, 15);
-    }
-
-    function pinFirst(pool, pins) {
-        if (pins.length === 0)
-            return pool;
-        const byId = {};
-        for (let i = 0; i < pool.length; i++)
-            byId[pool[i].id] = pool[i];
-        const head = [];
-        for (let k = 0; k < pins.length; k++)
-            if (byId[pins[k]])
-                head.push(byId[pins[k]]);
-        const tail = [];
-        for (let j = 0; j < pool.length; j++)
-            if (pins.indexOf(pool[j].id) < 0)
-                tail.push(pool[j]);
-        // Fijadas también en alfabético: la lista siempre empieza ordenada.
-        return launcher.alphaSort(head).concat(tail);
     }
 
     // Orden visual congelado al desfijar: la app se queda donde está y
     // la lista no salta hasta que se haga una búsqueda, se cambie de
     // modo, se reabra o se fije otra. Guarda IDs en orden visible.
     property var frozenIds: []
-
-    // Deduplica .desktop duplicados (ej. "Aplicaciones web" sale dos veces:
-    // webapp-manager.desktop y kde4/webapp-manager.desktop, mismo Exec y
-    // mismo nombre). Quickshell filtra Hidden/NoDisplay pero no
-    // OnlyShowIn/NotShowIn, así que ambas variantes llegan aquí.
-    // Clave = línea de comando normalizada (+ nombre como desempate);
-    // ante choque gana la canónica (id sin "kde4", más corto).
-    function appDedupKey(e) {
-        let cmd = "";
-        if (e && e.command && typeof e.command.length === "number" && e.command.length > 0) {
-            const parts = [];
-            for (let i = 0; i < e.command.length; i++)
-                parts.push(String(e.command[i]));
-            cmd = parts.join(" ").trim().toLowerCase();
-        } else if (e && e.execString) {
-            cmd = String(e.execString).trim().toLowerCase();
-        }
-        const nm = String((e && e.name) || "").trim().toLowerCase();
-        if (cmd !== "")
-            return "c:" + cmd + "|n:" + nm;
-        return "n:" + nm + "|id:" + String((e && e.id) || "");
-    }
-
-    function preferApp(a, b) {
-        // true = quedarse con b en vez de a.
-        const aid = String(a.id || "");
-        const bid = String(b.id || "");
-        const aKde = aid.toLowerCase().indexOf("kde4") >= 0;
-        const bKde = bid.toLowerCase().indexOf("kde4") >= 0;
-        if (aKde !== bKde)
-            return bKde === false;
-        if (bid.length !== aid.length)
-            return bid.length < aid.length;
-        return false;
-    }
-
-    function uniqueApps(list) {
-        const seen = {};
-        const out = [];
-        for (let i = 0; i < list.length; i++) {
-            const e = list[i];
-            if (!e || e.noDisplay === true)
-                continue;
-            const k = launcher.appDedupKey(e);
-            if (seen[k] === undefined) {
-                seen[k] = out.length;
-                out.push(e);
-            } else if (launcher.preferApp(out[seen[k]], e)) {
-                out[seen[k]] = e;
-            }
-        }
-        return out;
-    }
 
     // ---------- aplicaciones (modo todo) ----------
     // Fuente única y viva: DesktopEntries -> fijadas primero -> filtro.
@@ -569,7 +470,7 @@ PanelWindow {
         id: appModel
 
         values: {
-            const base = launcher.uniqueApps([...DesktopEntries.applications.values]);
+            const base = LauncherApps.uniqueApps([...DesktopEntries.applications.values]);
             const pins = launcher.pinnedIds();
             const q = launcher.query;
             if (q === "" && launcher.frozenIds.length > 0) {
@@ -588,10 +489,10 @@ PanelWindow {
                 for (let n = 0; n < base.length; n++)
                     if (frozen.indexOf(base[n].id) < 0)
                         fresh.push(base[n]);
-                return out.concat(launcher.alphaSort(fresh));
+                return out.concat(LauncherApps.alphaSort(fresh));
             }
-            const pool = q === "" ? launcher.alphaSort(base) : launcher.todoFilter(q, base);
-            return launcher.pinFirst(pool, pins);
+            const pool = q === "" ? LauncherApps.alphaSort(base) : launcher.todoFilter(q, base);
+            return LauncherApps.pinFirst(pool, pins);
         }
     }
 
@@ -604,8 +505,8 @@ PanelWindow {
         if (info.parentId !== "") {
             const parent = SystemMenuRegistry.sectionInfo(info.parentId);
             out.push({
-                kind: "menuback", title: tr("launcher.back_pre", "Atrás · ") + parent.title,
-                sub: tr("launcher.back_sub", "Volver a la sección anterior"), iconName: "arrow_back",
+                kind: "menuback", title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
+                sub: tr("launcher.back_subtitle", "Volver a la sección anterior"), iconName: "arrow_back",
                 appIcon: "", ch: "", imagePath: "", cat: "",
                 shell: "", isSubmenu: false, section: info.parentId
             });
@@ -641,7 +542,7 @@ PanelWindow {
     function emojiResults(q) {
         const rev = EmojiService.revision;
         void rev;
-        const cat = tr("launcher.cat_emoji", "Emoji");
+        const cat = tr("launcher.category_emoji", "Emoji");
         // Sin tope: el buscador permite todos los emojis.
         return EmojiService.queryItems(q, cat);
     }
@@ -671,20 +572,19 @@ PanelWindow {
     function toggleFavCurrent() {
         if (launcher.activeMode !== "emoji")
             return;
-        const cur = resultList.currentItem;
-        const d = cur ? cur.modelData : null;
+        const d = resultList.currentData;
         if (d && d.ch)
             EmojiService.toggleFavorite(d.ch);
     }
 
     function clipResults(q) {
-        const cat = tr("launcher.cat_clip", "Portapapeles");
+        const cat = tr("launcher.category_clipboard", "Portapapeles");
         const out = [];
         const snap = Services.ClipboardService.snapshot;
         for (let i = 0; i < snap.length; i++) {
             const e = snap[i];
             out.push({ kind: "clip", title: e.text.length > 90 ? e.text.slice(0, 90) + "…" : e.text,
-                       sub: e.isImage ? tr("launcher.clip_image_s", "Imagen · Enter copia · preview →") : tr("launcher.clip_text_s", "Texto · Enter copia · Supr borra"),
+                       sub: e.isImage ? tr("launcher.clip_image_subtitle", "Imagen · Enter copia · preview →") : tr("launcher.clip_text_subtitle", "Texto · Enter copia · Supr borra"),
                        iconName: e.isImage ? "image" : "content_paste", appIcon: "", ch: "",
                        imagePath: "", cat: cat, cid: e.cid, isImage: e.isImage, fullText: e.text });
         }
@@ -693,307 +593,66 @@ PanelWindow {
         return Services.FuzzySearch.filterItems(q, out, it => it.title);
     }
 
-    function fileMedia(path, isDir) {
-        if (isDir)
-            return "other";
-        if (/\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(path))
-            return "image";
-        if (/\.(mp3|flac|m4a|aac|ogg|opus|wav|wma|aiff|ape)$/i.test(path))
-            return "audio";
-        if (/\.(mp4|m4v|mkv|webm|mov|avi|3gp|ts|mts|flv)$/i.test(path))
-            return "video";
-        if (/\.pdf$/i.test(path))
-            return "pdf";
-        if (/\.(txt|md|markdown|json|jsonc|qml|js|ts|py|sh|lua|rs|toml|yaml|yml|ini|conf|cfg|log|csv|css|html|xml|vim|fish|c|h|cpp|hpp|go|java|nix|rasi|desktop)$/i.test(path))
-            return "text";
-        return "other";
-    }
-
+    // Resultados de archivos: mapeo (FileMenu) + fuzzy. El orden base
+    // ya viene ordenado del snapshot (ver LauncherFileSearch).
     function fileResultsList(q) {
-        const cat = tr("launcher.cat_file", "Archivo");
-        const out = [];
-        for (let i = 0; i < fileSnapshot.length; i++) {
-            const e = fileSnapshot[i];
-            const media = fileMedia(e.path, e.isDir);
-            let icon = "description";
-            if (media === "image")
-                icon = "image";
-            else if (media === "audio")
-                icon = "audio_file";
-            else if (media === "video")
-                icon = "video_file";
-            else if (media === "pdf")
-                icon = "picture_as_pdf";
-            else if (media === "text")
-                icon = "article";
-            else if (e.isDir)
-                icon = "folder";
-            out.push({ kind: "file", title: e.name, sub: e.path,
-                       iconName: icon,
-                       appIcon: "", ch: "", imagePath: media === "image" ? ("file://" + e.path) : "",
-                       cat: cat, path: e.path, media: media });
-        }
+        const cat = tr("launcher.category_file", "Archivo");
+        const out = FileMenu.mapSnapshot(fileSearch.snapshot, cat);
         if (q === "")
             return out;
         const matches = Services.FuzzySearch.filterItemsMulti(q, out, it => [it.title, it.sub]);
-        // El nombre manda: lo que empieza por lo tecleado va primero y el
-        // resto mantiene su orden difuso.
-        const queryLower = q.toLowerCase();
-        const nameFirst = [];
-        const nameRest = [];
-        for (let i = 0; i < matches.length; i++) {
-            const itemTitle = (matches[i].title || "").toLowerCase();
-            if (itemTitle.indexOf(queryLower) === 0)
-                nameFirst.push(matches[i]);
-            else
-                nameRest.push(matches[i]);
-        }
-        return nameFirst.concat(nameRest);
+        return FileMenu.nameFirst(matches, q);
     }
 
     function calcResults(q) {
-        const cat = tr("launcher.cat_calc", "Calc");
+        const cat = tr("launcher.category_calc", "Calc");
         // Solo vale el resultado pedido para este query (si tecleas rápido,
         // el anterior en vuelo se ignora al mostrar).
-        const fresh = launcher.calcForQuery === q ? launcher.calcResult : "";
+        const fresh = calcState.forQuery === q ? calcState.result : "";
         if (fresh === "") {
-            if (launcher.calcBusy)
-                return [{ kind: "calc", title: tr("launcher.calc_busy_t", "Calculando…"), sub: "qalc", iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
-            return [{ kind: "calc", title: tr("launcher.calc_empty_t", "Escribe una operación"), sub: tr("launcher.calc_empty_s", "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
+            if (calcState.busy)
+                return [{ kind: "calc", title: tr("launcher.calc_busy_title", "Calculando…"), sub: "qalc", iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
+            return [{ kind: "calc", title: tr("launcher.calc_empty_title", "Escribe una operación"), sub: tr("launcher.calc_empty_subtitle", "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
         }
-        return [{ kind: "calc", title: q.trim() + " = " + fresh, sub: tr("launcher.calc_copy", "Enter copia el resultado"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: fresh }];
+        return [{ kind: "calc", title: q.trim() + " = " + fresh, sub: tr("launcher.calc_copy_hint", "Enter copia el resultado"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: fresh }];
     }
 
     function webResults(q) {
-        const cat = tr("launcher.cat_web", "Web");
+        const cat = tr("launcher.category_web", "Web");
         if (q === "")
-            return [{ kind: "web", title: tr("launcher.web_empty_t", "Escribe para buscar"), sub: tr("launcher.web_empty_s", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat, url: "" }];
+            return [{ kind: "web", title: tr("launcher.web_empty_title", "Escribe para buscar"), sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat, url: "" }];
         const out = [];
         if (launcher.isUrl(q)) {
             const url = (q.startsWith("http") ? q : "https://" + q);
-            out.push({ kind: "web", title: "Abrir " + url, sub: tr("launcher.web_open_s", "Abrir URL en navegador"), iconName: "open_in_new", appIcon: "", ch: "", imagePath: "", cat: cat, url: url });
+            out.push({ kind: "web", title: "Abrir " + url, sub: tr("launcher.web_open_subtitle", "Abrir URL en navegador"), iconName: "open_in_new", appIcon: "", ch: "", imagePath: "", cat: cat, url: url });
         }
-        out.push({ kind: "web", title: tr("launcher.web_search_pre", "Buscar “") + q + tr("launcher.web_search_post", "”"), sub: tr("launcher.web_empty_s", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat,
+        out.push({ kind: "web", title: tr("launcher.web_search_prefix", "Buscar “") + q + tr("launcher.web_search_suffix", "”"), sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat,
                    url: "https://duckduckgo.com/?q=" + encodeURIComponent(q) + "&ia=web" });
         return out;
     }
 
-    // ---------- búsqueda de archivos con fd ----------
-    // Recursiva por todo $HOME hasta llegar a los archivos (--max-results
-    // corta en cuanto se llena: el escaneo es instantáneo aunque el home
-    // sea enorme). --fixed-strings para que lo tecleado se busque literal
-    // (los puntos y símbolos son texto, no regex).
-    readonly property var fileExcludes: [
-        ".git", ".cache", ".local", ".var", ".cargo", ".npm", ".bun",
-        ".gradle", ".pub-cache", ".dart-tool", ".mozilla", ".floorp",
-        ".thunderbird", ".wine", ".steam", ".stremio-server", ".bitmonero",
-        ".vscode-oss", ".vscode-oss-shared", ".renpy", ".vm-space", ".java",
-        "node_modules", "__pycache__", ".venv"
-    ]
+    // (Búsqueda de archivos y calculadora: debounce + procesos viven en
+    // LauncherFileSearch / LauncherCalc y se auto-disparan por
+    // query/active. Aquí no queda nada que reiniciar a mano.)
 
-    function fdCommand(home, query) {
-        const cmd = ["fd", "--type", "f"];
-        for (let i = 0; i < fileExcludes.length; i++)
-            cmd.push("--exclude", fileExcludes[i]);
-        if (query === "") {
-            // Sin query: solo visibles (los directorios útiles de la home)
-            // en recursivo. Sin patrón `fd` tomaría $HOME como patrón y no
-            // devolvería nada, así que se usa match-all ".".
-            cmd.push("--max-results", "200", ".", home);
-        } else {
-            // Con query: todo incluido ocultos, en literal.
-            cmd.push("--hidden", "--fixed-strings", "--max-results", "100", query, home);
-        }
-        return cmd;
+    // ---------- preview lateral (estado + debounce en LauncherPreview) ----------
+    LauncherPreview {
+        id: preview
+
+        activeMode: launcher.activeMode
+        currentIndex: resultList.currentIndex
+        currentItem: resultList.currentData
     }
 
-    Timer {
-        id: fileDebounce
-        interval: 250
-        onTriggered: {
-            if (launcher.activeMode !== "files" || !launcher.launcherVisible)
-                return;
-            fileProc.command = launcher.fdCommand(Quickshell.env("HOME"), launcher.query);
-            fileProc.running = true;
-        }
-    }
-
-    Process {
-        id: fileProc
-        stdout: SplitParser {
-            onRead: data => {
-                const line = data.trim();
-                if (line === "" || fileResults.count >= 200)
-                    return;
-                const name = line.split("/").pop();
-                fileResults.append({ path: line, name: name, isDir: line.endsWith("/") });
-            }
-        }
-        onRunningChanged: {
-            if (running)
-                fileResults.clear();
-        }
-        onExited: {
-            const out = [];
-            for (let i = 0; i < fileResults.count; i++) {
-                const e = fileResults.get(i);
-                out.push({ path: e.path, name: e.name, isDir: e.isDir });
-            }
-            fileSnapshot = out;
-        }
-    }
-
-    onQueryChanged: {
-        if (!launcherVisible)
-            return;
-        if (activeMode === "files")
-            fileDebounce.restart();
-        else if (activeMode === "calc")
-            calcDebounce.restart();
-    }
-
-    // ---------- preview de imagen del clipboard ----------
-    property string previewCid: ""
-    property bool previewOk: false
-    property string previewPath: ""
-    property string previewFile: ""
-    property string previewText: ""
-    // Texto completo del item de clipboard seleccionado (vía decode;
-    // `cliphist list` solo trae la primera línea truncada).
-    property string clipTextCid: ""
-    property string clipText: ""
-
-    Connections {
-        target: Services.ClipboardService
-        function onPreviewReady(cid) {
-            if (cid === launcher.previewCid)
-                launcher.previewOk = true;
-        }
-        function onTextReady(cid) {
-            if (cid === launcher.clipTextCid)
-                launcher.clipText = Services.ClipboardService.textContent;
-        }
-    }
-
-    Connections {
-        target: FilePreviewService
-        function onReady(path, image) {
-            if (path === launcher.previewFile && image !== "") {
-                launcher.previewPath = image;
-                launcher.previewOk = true;
-            }
-        }
-        function onTextReady(path, text) {
-            if (path === launcher.previewFile)
-                launcher.previewText = text;
-        }
-    }
-
-    // ¿El item tiene preview con imagen diferida (clipboard / audio / video / pdf)?
-    function hasLivePreview(cur) {
-        if (!cur)
-            return false;
-        if (cur.kind === "clip" && cur.isImage)
-            return true;
-        if (cur.kind === "file" && (cur.media === "audio" || cur.media === "video" || cur.media === "pdf"))
-            return true;
-        return false;
-    }
-
-    // ¿El item previsualiza texto (ficheros de texto)?
-    function hasTextPreview(cur) {
-        return cur && cur.kind === "file" && cur.media === "text";
-    }
-
-    // ¿Es un texto del portapapeles? Tiene preview propia de texto completo
-    // (sin icono grande ni título duplicado: el cuerpo ya es el texto).
-    function isClipText(cur) {
-        return cur && cur.kind === "clip" && !cur.isImage;
-    }
-
-    // Preview diferido: al moverse rápido por la lista (↑/↓, hover, filtrado)
-    // solo se genera el del item donde se asienta la selección (~120 ms).
-    // Lo barato (limpiar al caer en un item sin preview) es inmediato para
-    // no retrasar el panel. Ver FilePreviewService (además mata lo obsoleto).
-    property int previewPendingIndex: -1
-
-    function schedulePreview() {
-        const item = resultList.currentItem ? resultList.currentItem.modelData : null;
-        if (!MenuModes.supportsPreview(launcher.activeMode) || !MenuModes.needsPreview(launcher.activeMode, item)) {
-            previewDebounce.stop();
-            previewPendingIndex = -1;
-            updatePreview(item);
-            return;
-        }
-        previewPendingIndex = resultList.currentIndex;
-        previewDebounce.restart();
-    }
-
-    Timer {
-        id: previewDebounce
-
-        interval: 120
-        onTriggered: {
-            // Solo si la selección sigue donde estaba al programar: si se
-            // movió, ya hay otra llamada en camino y esta queda obsoleta.
-            // Se lee el item fresco (el objeto puede haberse reconstruido).
-            if (launcher.previewPendingIndex === resultList.currentIndex)
-                launcher.updatePreview(resultList.currentItem ? resultList.currentItem.modelData : null);
-            launcher.previewPendingIndex = -1;
-        }
-    }
-
-    function updatePreview(item) {        // Preview solo donde es imprescindible (ver MenuModes.js):
-        // clip siempre, files/system solo si el item trae imagen o texto.
-        // En el resto de menús no se pide ni se muestra nada.
-        if (!MenuModes.supportsPreview(launcher.activeMode) || !MenuModes.needsPreview(launcher.activeMode, item)) {
-            previewOk = false;
-            previewCid = "";
-            previewPath = "";
-            previewFile = "";
-            previewText = "";
-            clipTextCid = "";
-            clipText = "";
-            return;
-        }
-        // Ya visible para este mismo item: no recargar (evita parpadeo).
-        if (item && previewOk) {
-            if ((item.kind === "clip" && item.isImage && item.cid === previewCid)
-                || (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media === "pdf") && item.path === previewFile))
-                return;
-        }
-        if (item && item.kind === "file" && item.media === "text" && item.path === previewFile && previewText !== "")
-            return;
-        previewOk = false;
-        previewCid = "";
-        previewPath = "";
-        previewFile = "";
-        previewText = "";
-        clipTextCid = "";
-        clipText = "";
-        if (!item)
-            return;
-        if (item.kind === "clip" && item.isImage) {
-            previewCid = item.cid;
-            previewPath = Services.ClipboardService.previewImage(item.cid);
-        } else if (launcher.isClipText(item)) {
-            // Texto completo vía decode (con fallback a la línea del listado
-            // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto
-            // hay algo que enseñar.
-            clipTextCid = item.cid;
-            clipText = Services.ClipboardService.requestText(item.cid);
-        } else if (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media === "pdf")) {
-            previewFile = item.path;
-            FilePreviewService.request(item.path, item.media);
-        } else if (item.kind === "file" && item.media === "text") {
-            previewFile = item.path;
-            FilePreviewService.requestText(item.path);
-        }
-    }
+    // Predicados de items en Base/ItemKinds.js (los usa PreviewPanel).
 
     // ---------- UI ----------
     SurfaceBackground {
         id: background
+
+        // Accessible en el contenido (Item), no en la PanelWindow.
+        Accessible.role: Accessible.Dialog
+        Accessible.name: tr("launcher.placeholder_all", "Buscar aplicaciones…")
 
         // Menú por defecto más estrecho; ancho completo solo con preview.
         width: previewPanel.hasPreview ? 900 : 600
@@ -1016,27 +675,56 @@ PanelWindow {
             anchors.margins: 16
             spacing: 10
 
-            MaterialTextField {
-                id: searchField
-
+            RowLayout {
                 Layout.fillWidth: true
+                spacing: 10
+
+                // Hero expresivo: morfea con el modo activo.
+                Item {
+                    Layout.preferredWidth: 44
+                    Layout.preferredHeight: 44
+
+                    MaterialShape {
+                        anchors.fill: parent
+                        shape: launcher.modeShape(launcher.activeMode)
+                        animationDuration: 350
+                        color: Appearance.md3.primary_container
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            icon: launcher.modeIcon(launcher.activeMode)
+                            size: Appearance.font.pixelSize.large
+                            color: Appearance.md3.on_primary_container
+                        }
+                    }
+                }
+
+                MaterialTextField {
+                    id: searchField
+
+                    Layout.fillWidth: true
+                    // TextField ya expone rol EditableText; el nombre sigue
+                    // al placeholder del modo activo.
+                    Accessible.name: searchField.placeholderText
                 selectedTextColor: Appearance.md3.on_primary
                 selectionColor: Appearance.md3.primary
                 focus: true
                 placeholderText: {
                     switch (launcher.activeMode) {
-                    case "system": return tr("launcher.ph_system", "Sistema… (> para este modo)");
-                    case "files": return tr("launcher.ph_files", "Archivos en $HOME…");
-                    case "web": return tr("launcher.ph_web", "Buscar en DuckDuckGo…");
-                    case "emoji": return tr("launcher.ph_emoji", "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
-                    case "calc": return tr("launcher.ph_calc", "Calculadora… ej: 45*1.21");
-                    case "clip": return tr("launcher.ph_clip", "Portapapeles (cliphist)…");
-                    default: return tr("launcher.ph_todo", "Buscar aplicaciones…");
+                    case "system": return tr("launcher.placeholder_system", "Sistema… (> para este modo)");
+                    case "files": return tr("launcher.placeholder_files", "Archivos en $HOME…");
+                    case "web": return tr("launcher.placeholder_web", "Buscar en DuckDuckGo…");
+                    case "emoji": return tr("launcher.placeholder_emoji", "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
+                    case "calc": return tr("launcher.placeholder_calc", "Calculadora… ej: 45*1.21");
+                    case "clip": return tr("launcher.placeholder_clipboard", "Portapapeles (cliphist)…");
+                    default: return tr("launcher.placeholder_all", "Buscar aplicaciones…");
                     }
                 }
 
                 // Sin carácter de menú → volver al menú por defecto.
                 onTextChanged: {
+                    // Escribir vuelve a modo texto (flechas al cursor).
+                    launcher.navResults = false;
                     if (launcher.forcedMode !== "" && !text.startsWith(launcher.prefixOf(launcher.forcedMode)))
                         launcher.forcedMode = "";
                 }
@@ -1058,14 +746,43 @@ PanelWindow {
                         return;
                     }
                     if (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N)) {
-                        launcher.moveSelection(1);
+                        // En cuadrícula: abajo (una fila); en lista: siguiente.
+                        launcher.navResults = true;
+                        if (resultList.isGrid)
+                            resultList.moveGrid(0, 1);
+                        else
+                            resultList.moveSelection(1);
                         event.accepted = true;
                         return;
                     }
                     if (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P)) {
-                        launcher.moveSelection(-1);
+                        // En cuadrícula: arriba (una fila); en lista: anterior.
+                        launcher.navResults = true;
+                        if (resultList.isGrid)
+                            resultList.moveGrid(0, -1);
+                        else
+                            resultList.moveSelection(-1);
                         event.accepted = true;
                         return;
+                    }
+                    if (ctrl && event.key === Qt.Key_F) {
+                        // En cuadrícula: derecha. En lista se deja pasar
+                        // al campo (mover cursor).
+                        if (resultList.isGrid) {
+                            launcher.navResults = true;
+                            resultList.moveGrid(1, 0);
+                            event.accepted = true;
+                            return;
+                        }
+                    }
+                    if (ctrl && event.key === Qt.Key_B) {
+                        // En cuadrícula: izquierda. En lista, al campo.
+                        if (resultList.isGrid) {
+                            launcher.navResults = true;
+                            resultList.moveGrid(-1, 0);
+                            event.accepted = true;
+                            return;
+                        }
                     }
                     switch (event.key) {
                     case Qt.Key_Escape:
@@ -1073,12 +790,38 @@ PanelWindow {
                         launcher.launcherVisible = false;
                         event.accepted = true;
                         break;
+                    case Qt.Key_Left:
+                        // Navegando: siempre a resultados. Escribiendo: solo
+                        // al borde izquierdo; si no, el campo mueve el cursor.
+                        // En lista, siempre al campo.
+                        if (resultList.isGrid && (launcher.navResults || (searchField.cursorPosition === 0 && searchField.selectedText === ""))) {
+                            launcher.navResults = true;
+                            resultList.moveGrid(-1, 0);
+                            event.accepted = true;
+                        }
+                        break;
+                    case Qt.Key_Right:
+                        // Simétrico al borde derecho.
+                        if (resultList.isGrid && (launcher.navResults || (searchField.cursorPosition >= searchField.length && searchField.selectedText === ""))) {
+                            launcher.navResults = true;
+                            resultList.moveGrid(1, 0);
+                            event.accepted = true;
+                        }
+                        break;
                     case Qt.Key_Down:
-                        launcher.moveSelection(1);
+                        launcher.navResults = true;
+                        if (resultList.isGrid)
+                            resultList.moveGrid(0, 1);
+                        else
+                            resultList.moveSelection(1);
                         event.accepted = true;
                         break;
                     case Qt.Key_Up:
-                        launcher.moveSelection(-1);
+                        launcher.navResults = true;
+                        if (resultList.isGrid)
+                            resultList.moveGrid(0, -1);
+                        else
+                            resultList.moveSelection(-1);
                         event.accepted = true;
                         break;
                     case Qt.Key_Tab:
@@ -1098,9 +841,9 @@ PanelWindow {
                         break;
                     case Qt.Key_Delete:
                         if (launcher.activeMode === "clip") {
-                            const cur = resultList.currentItem;
-                            if (cur && cur.modelData)
-                                Services.ClipboardService.deleteEntry(cur.modelData.cid);
+                            const d = resultList.currentData;
+                            if (d && d.cid)
+                                Services.ClipboardService.deleteEntry(d.cid);
                             event.accepted = true;
                         }
                         break;
@@ -1111,6 +854,7 @@ PanelWindow {
                         break;
                     }
                 }
+            }
             }
 
             // Pestañas de modo (equivale a los prefijos).
@@ -1150,30 +894,60 @@ PanelWindow {
 
                         model: launcher.modes
                         delegate: Rectangle {
+                            id: chipRect
+
                             required property var modelData
                             required property int index
 
                             property bool isActive: launcher.activeMode === modelData.modeId
 
                             // Ancho según contenido: sin aplastamiento.
-                            width: Math.max(64, chipText.implicitWidth + 26)
+                            width: Math.max(64, chipRow.implicitWidth + 26)
                             height: 30
                             radius: 15
                             color: isActive ? Appearance.md3.secondary_container : "transparent"
                             border.width: isActive ? 0 : 1
                             border.color: Appearance.md3.outline_variant
 
-                            StyledText {
-                                id: chipText
+                            Row {
+                                id: chipRow
 
                                 anchors.centerIn: parent
-                                width: Math.min(implicitWidth, parent.width - 14)
-                                horizontalAlignment: Text.AlignHCenter
-                                elide: Text.ElideRight
-                                // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
-                                text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " : "") + launcher.modeLabel(modelData.modeId)
-                                font.pixelSize: 12
-                                color: parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                                spacing: 6
+
+                                // Badge expresivo con la forma-identidad del modo.
+                                Item {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    implicitWidth: 22
+                                    implicitHeight: 22
+
+                                    MaterialShape {
+                                        anchors.fill: parent
+                                        shape: launcher.modeShape(modelData.modeId)
+                                        animationDuration: 300
+                                        color: chipRect.isActive ? Appearance.md3.primary : Appearance.md3.surface_container_highest
+
+                                        MaterialIcon {
+                                            anchors.centerIn: parent
+                                            icon: launcher.modeIcon(modelData.modeId)
+                                            size: 13
+                                            color: chipRect.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+                                        }
+                                    }
+                                }
+
+                                StyledText {
+                                    id: chipText
+
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Math.min(implicitWidth, parent.parent.width - 50)
+                                    horizontalAlignment: Text.AlignHCenter
+                                    elide: Text.ElideRight
+                                    // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
+                                    text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " : "") + launcher.modeLabel(modelData.modeId)
+                                    font.pixelSize: 12
+                                    color: chipRect.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                                }
                             }
 
                             MouseArea {
@@ -1326,187 +1100,26 @@ PanelWindow {
                     Layout.fillHeight: true
                     Layout.preferredWidth: 460
 
-                    ListView {
+                    ResultList {
                         id: resultList
 
                         anchors.fill: parent
-                        clip: true
-                        spacing: 4
-                        // Delegados ya instanciados fuera de vista (~4 por lado):
-                        // scroll rápido sin crear/destruir en cada frame.
-                        cacheBuffer: 224
-                        currentIndex: count > 0 ? 0 : -1
-                        highlightMoveDuration: 100
-                        keyNavigationEnabled: false
                         // Modo todo: ScriptModel vivo de DesktopEntries.
                         // Resto de modos: array plano de `results`.
-                        model: launcher.activeMode === "todo" ? appModel : launcher.results
-
+                        listModel: launcher.activeMode === "todo" ? appModel : launcher.results
+                        activeMode: launcher.activeMode
+                        isPinnedFn: appId => launcher.isPinned(appId)
+                        onActivated: item => launcher.activateItem(item)
+                        onHighlighted: preview.schedule()
                         onCountChanged: {
-                            // Tras un Supr la lista se reconstruye y el índice
-                            // puede quedar fuera de rango (ej. borras la última):
-                            // se recorta para no quedarse sin selección.
-                            if (count > 0) {
-                                if (currentIndex < 0 || currentIndex >= count)
-                                    currentIndex = Math.min(Math.max(0, currentIndex), count - 1);
-                                if (currentIndex === -1)
-                                    currentIndex = 0;
-                            }
-                            // El reseteo del modelo no siempre emite currentIndexChanged
-                            // (el índice puede conservar el valor) y el currentItem aún
-                            // puede ser nulo: diferir para que existan los delegados.
-                            // Pasa por el diferido (solo genera al asentarse).
-                            Qt.callLater(() => launcher.schedulePreview());
-                        }
-                        onCurrentIndexChanged: launcher.schedulePreview()
-
-                        delegate: Rectangle {
-                            id: entryDelegate
-
-                            required property var modelData
-                            required property int index
-
-                            // En modo todo el modelData es el DesktopEntry crudo
-                            // (viene de appModel); en el resto, el wrapper
-                            // {kind,title,sub,iconName,appIcon,ch,...} de results.
-                            readonly property bool isRawApp: {
-                                const d = entryDelegate.modelData;
-                                return launcher.activeMode === "todo" && d && typeof d.execute === "function";
-                            }
-                            readonly property string dispTitle: isRawApp ? (modelData.name || "") : (modelData.title || "")
-                            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : ((modelData.cat ? modelData.cat + " · " : "") + (modelData.sub || ""))
-                            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon || "")
-                            readonly property string dispIconName: modelData.iconName || "circle"
-                            readonly property string dispCh: modelData.ch || ""
-                            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && launcher.isPinned(modelData.id)
-
-                            width: resultList.width
-                            height: 56
-                            radius: 16
-                            color: "transparent"
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                spacing: 12
-
-                                // Icono según tipo
-                                Item {
-                                    Layout.preferredWidth: 32
-                                    Layout.preferredHeight: 32
-
-                                    AppIcon {
-                                        anchors.fill: parent
-                                        source: entryDelegate.dispAppIcon
-                                        fallback: "image-missing"
-                                        visible: entryDelegate.dispAppIcon !== ""
-                                    }
-                                    MaterialIcon {
-                                        anchors.centerIn: parent
-                                        iconName: entryDelegate.dispIconName
-                                        size: 24
-                                        color: Appearance.md3.primary
-                                        visible: entryDelegate.dispAppIcon === "" && entryDelegate.dispCh === ""
-                                    }
-                                    StyledText {
-                                        anchors.centerIn: parent
-                                        text: entryDelegate.dispCh
-                                        font.pixelSize: 24
-                                        visible: entryDelegate.dispCh !== ""
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 0
-
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: entryDelegate.dispTitle
-                                        font.pixelSize: 14
-                                        color: Appearance.md3.on_surface
-                                        elide: Text.ElideRight
-                                    }
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: entryDelegate.dispSub
-                                        font.pixelSize: 12
-                                        color: Appearance.md3.on_surface_variant
-                                        elide: Text.ElideRight
-                                        visible: text.length > 0
-                                    }
-                                }
-
-                                // Chincheta de app fijada (Alt+P)
-                                MaterialIcon {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    iconName: "push_pin"
-                                    size: 18
-                                    color: Appearance.md3.primary
-                                    visible: entryDelegate.dispPinned
-                                }
-                            }
-
-                            Rectangle {
-                                id: stateLayer
-                                anchors.fill: parent
-                                radius: parent.radius
-                                property bool hovered: false
-                                property bool pressed: false
-                                color: Appearance.md3.on_surface
-                                opacity: pressed ? 0.12 : (hovered || entryDelegate.ListView.isCurrentItem) ? 0.08 : 0
-                                Behavior on opacity {
-                                    NumberAnimation {
-                                        duration: 100
-                                    }
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onEntered: {
-                                    stateLayer.hovered = true;
-                                    resultList.currentIndex = entryDelegate.index;
-                                }
-                                onExited: stateLayer.hovered = false
-                                onPressed: stateLayer.pressed = true
-                                onReleased: stateLayer.pressed = false
-                                onClicked: launcher.activateItem(entryDelegate.modelData)
-                            }
-                        }
-                    }
-
-                    // Líneas de borde al dar la vuelta a la lista (wrap).
-                    // Sin MouseArea: no interceptan clics, solo se ven.
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        height: 3
-                        radius: 2
-                        color: Appearance.md3.primary
-                        opacity: (launcher.wrapFlash && launcher.wrapDir > 0) ? 0.55 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 150
-                            }
-                        }
-                    }
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        height: 3
-                        radius: 2
-                        color: Appearance.md3.primary
-                        opacity: (launcher.wrapFlash && launcher.wrapDir < 0) ? 0.55 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 150
+                            // Estado vacío con retardo: los reseteos en caliente
+                            // pasan por count 0 un instante; solo es vacío real
+                            // si se mantiene.
+                            if (resultList.count === 0)
+                                emptyTimer.restart();
+                            else {
+                                emptyTimer.stop();
+                                launcher.showEmpty = false;
                             }
                         }
                     }
@@ -1515,7 +1128,7 @@ PanelWindow {
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: 12
-                        visible: resultList.count === 0
+                        visible: resultList.count === 0 && launcher.showEmpty
 
                         IconImage {
                             Layout.alignment: Qt.AlignHCenter
@@ -1528,10 +1141,12 @@ PanelWindow {
                             Layout.alignment: Qt.AlignHCenter
                             text: {
                                 if (launcher.activeMode === "clip")
-                                    return Services.ClipboardService.error !== "" ? Services.ClipboardService.error : launcher.tr("launcher.empty_clipboard", "Portapapeles vacío");
+                                    return Services.ClipboardService.error !== "" ? Services.ClipboardService.error : launcher.tr("launcher.clipboard_empty", "Portapapeles vacío");
+                                if (launcher.activeMode === "files" && fileSearch.failed)
+                                    return launcher.tr("launcher.files_fd_missing", "Búsqueda no disponible (¿fd instalado?)");
                                 if (launcher.activeMode === "todo" && launcher.query === "" && launcher.appCount === 0)
                                     return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
-                                return launcher.tr("launcher.empty_noresults", "Sin resultados");
+                                return launcher.tr("launcher.empty_no_results", "Sin resultados");
                             }
                             font.pixelSize: 14
                             color: Appearance.md3.on_surface_variant
@@ -1539,169 +1154,24 @@ PanelWindow {
                     }
                 }
 
-                // ---- preview lateral: solo donde es imprescindible ----
-                // clip (texto completo/imagen), files image/text/audio/video,
-                // system con imagePath (fastfetch).
-                // En el resto de menús se oculta y la lista ocupa todo el ancho.
-                Rectangle {
+                // ---- preview lateral (ver PreviewPanel) ----
+                PreviewPanel {
                     id: previewPanel
 
-                    property var cur: resultList.currentItem ? resultList.currentItem.modelData : null
-                    property bool hasPreview: MenuModes.needsPreview(launcher.activeMode, cur)
-
-                    visible: hasPreview
-                    Layout.preferredWidth: hasPreview ? 380 : 0
-                    Layout.fillHeight: true
-                    radius: 20
-                    color: Appearance.md3.surface_container_low
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 10
-
-                        property var cur: previewPanel.cur
-
-                        // Imagen: archivos de imagen, carátulas/thumbs multimedia o clipboard
-                        Image {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 340
-                            Layout.preferredHeight: 300
-                            fillMode: Image.PreserveAspectFit
-                            asynchronous: true
-                            cache: false
-                            // Decodificar acotado: más rápido y menos memoria.
-                            sourceSize.width: 680
-                            sourceSize.height: 600
-                            visible: parent.cur && ((parent.cur.imagePath || "") !== "" || (launcher.hasLivePreview(parent.cur) && launcher.previewOk))
-                            source: {
-                                if (!parent.cur)
-                                    return "";
-                                if ((parent.cur.imagePath || "") !== "")
-                                    return parent.cur.imagePath;
-                                if (launcher.previewOk)
-                                    return "file://" + launcher.previewPath;
-                                return "";
-                            }
-                        }
-
-                        // Icono / emoji grande cuando no hay imagen ni texto
-                        // (en clip-texto se oculta: el cuerpo ya es el texto).
-                        Item {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 96
-                            Layout.preferredHeight: 96
-                            visible: parent.cur && ((parent.cur.imagePath || "") === "") && !(launcher.hasLivePreview(parent.cur) && launcher.previewOk) && !(launcher.hasTextPreview(parent.cur) && launcher.previewText !== "") && !launcher.isClipText(parent.cur)
-
-                            AppIcon {
-                                anchors.fill: parent
-                                source: parent.parent.cur ? (parent.parent.cur.appIcon || "") : ""
-                                fallback: "image-missing"
-                                visible: parent.parent.cur && ((parent.parent.cur.appIcon || "") !== "")
-                            }
-                            MaterialIcon {
-                                anchors.centerIn: parent
-                                iconName: parent.parent.cur ? (parent.parent.cur.iconName || "circle") : "circle"
-                                size: 56
-                                color: Appearance.md3.primary
-                                visible: parent.parent.cur && ((parent.parent.cur.appIcon || "") === "") && ((parent.parent.cur.ch || "") === "")
-                            }
-                            StyledText {
-                                anchors.centerIn: parent
-                                text: parent.parent.cur ? (parent.parent.cur.ch || "") : ""
-                                font.pixelSize: 56
-                                visible: parent.parent.cur && ((parent.parent.cur.ch || "") !== "")
-                            }
-                        }
-
-                        StyledText {
-                            Layout.fillWidth: true
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.Wrap
-                            maximumLineCount: 3
-                            elide: Text.ElideRight
-                            // En clip-texto no hay cabecera: el cuerpo ya muestra
-                            // el texto completo (evita verlo dos veces).
-                            visible: !(parent.cur && launcher.isClipText(parent.cur))
-                            text: parent.cur ? (parent.cur.title || "") : ""
-                            font.pixelSize: 14
-                            color: Appearance.md3.on_surface
-                        }
-                        // Texto del fichero (ficheros de texto): bloque monoespaciado con scroll
-                        Flickable {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 280
-                            visible: launcher.hasTextPreview(parent.cur) && launcher.previewText !== ""
-                            contentWidth: width
-                            contentHeight: previewDoc.implicitHeight
-                            clip: true
-                            boundsBehavior: Flickable.StopAtBounds
-
-                            Text {
-                                id: previewDoc
-
-                                width: parent.width
-                                wrapMode: Text.Wrap
-                                textFormat: Text.PlainText
-                                text: {
-                                    if (launcher.previewText === "QSTEXT_TOO_BIG")
-                                        return launcher.tr("launcher.file_text_big", "Archivo demasiado grande para previsualizar");
-                                    return launcher.previewText;
-                                }
-                                font.family: Appearance.font.mono
-                                font.pixelSize: 11
-                                color: Appearance.md3.on_surface_variant
-                            }
-                        }
-                        StyledText {
-                            Layout.fillWidth: true
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.Wrap
-                            maximumLineCount: 6
-                            elide: Text.ElideRight
-                            // En clip-texto el cuerpo ya es el texto: sin pie duplicado.
-                            visible: !(parent.cur && launcher.isClipText(parent.cur))
-                            text: {
-                                if (!parent.cur)
-                                    return "";
-                                if (parent.cur.kind === "clip" && !parent.cur.isImage)
-                                    return parent.cur.fullText || parent.cur.title;
-                                return parent.cur.sub || "";
-                            }
-                            font.pixelSize: 12
-                            color: Appearance.md3.on_surface_variant
-                        }
-                        // Texto del portapapeles (clip texto): bloque con scroll que
-                        // ocupa todo el alto libre. Muestra el decode completo en
-                        // cuanto llega; mientras tanto, la línea del listado.
-                        Flickable {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            visible: launcher.isClipText(parent.cur)
-                            contentWidth: width
-                            contentHeight: clipDoc.implicitHeight
-                            clip: true
-                            boundsBehavior: Flickable.StopAtBounds
-
-                            Text {
-                                id: clipDoc
-
-                                width: parent.width
-                                wrapMode: Text.Wrap
-                                textFormat: Text.PlainText
-                                text: launcher.clipText !== "" ? launcher.clipText : (parent.cur ? (parent.cur.fullText || parent.cur.title) : "")
-                                font.pixelSize: 13
-                                color: Appearance.md3.on_surface
-                            }
-                        }
-                    }
+                    activeMode: launcher.activeMode
+                    cur: resultList.currentData
+                    previewOk: preview.previewOk
+                    previewPath: preview.previewPath
+                    previewText: preview.previewText
+                    clipText: preview.clipText
+                    fileTooLargeText: tr("launcher.file_too_large", "Archivo demasiado grande para previsualizar")
                 }
             }
 
             // Barra de ayuda
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
-                text: tr("launcher.footer", "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
+                text: tr("launcher.footer_hint", "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
                 font.pixelSize: 11
                 color: Appearance.md3.on_surface_variant
                 opacity: 0.8

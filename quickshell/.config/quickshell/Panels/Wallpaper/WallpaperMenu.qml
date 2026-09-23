@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import qs.Core.Modules
 import qs.Shared.Background
 import qs.Panels.Wallpaper.Content
 import QtQuick
@@ -12,7 +13,8 @@ Scope {
     id: root
 
     readonly property int animDuration: 220
-    property var focusedScreen: (Hyprland.focusedMonitor && Hyprland.focusedMonitor.name) ? (Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor.name) ?? null) : null
+    // Fuente única del monitor enfocado (con fallback a la primera pantalla).
+    property var focusedScreen: Screens.focusedScreen
     property bool showing: false
     property bool _isAnimatingOut: false
 

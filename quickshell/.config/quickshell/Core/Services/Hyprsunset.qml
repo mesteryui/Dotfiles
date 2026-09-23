@@ -38,6 +38,8 @@ import Quickshell.Io
 //   conectar + drift cada 30 s). Los comandos mutadores mandados sin conexión
 //   no se pierden: se guardan en _offlineJournal y se reproducen en orden al
 //   conectar, antes del sync.
+import "../Log.js" as Log
+
 Singleton {
     id: root
 
@@ -97,7 +99,7 @@ Singleton {
             }
             if (!root._offlineWarned) {
                 root._offlineWarned = true;
-                console.warn("[Hyprsunset] socket no conectado, comando guardado para al conectar:", cmd);
+                Log.warn("[Hyprsunset] socket no conectado, comando guardado para al conectar:", cmd);
             }
             return;
         }
@@ -167,7 +169,7 @@ Singleton {
             // Un aviso por episodio: si el daemon no existe, no spamea.
             if (!root._offlineWarned) {
                 root._offlineWarned = true;
-                console.warn("[Hyprsunset] error de socket:", err);
+                Log.warn("[Hyprsunset] error de socket:", err);
             }
             socket.connected = false;
         }
@@ -369,23 +371,29 @@ Singleton {
     }
 
     // --- Activación / desactivación / toggle coherentes con hyprsunset ---
-    // "activate" = identity false (prende el filtro con el Kelvin/gamma que
-    // el daemon ya tenga aplicado o el último conocido, NO un valor fijo
-    // hardcodeado). "deactivate" = identity true (matriz identidad, sin
+    // "activate" = encender el filtro con la temperatura/gamma guardadas en
+    // ConfigService. "deactivate" = identity true (matriz identidad, sin
     // filtro). Esto es exactamente la semántica de `identity` en hyprsunset.
+    function configTemperature() {
+        const t = ConfigService.configs.nightLight.temperature;
+        return (isFinite(t) ? Math.max(1000, Math.min(20000, Math.round(t))) : 3000);
+    }
+
+    function configGamma() {
+        const g = ConfigService.configs.nightLight.gamma;
+        return (isFinite(g) ? Math.max(0, g) : 100);
+    }
+
     function activate(kelvin) {
         if (kelvin !== undefined) {
             setTemperature(kelvin); // ya deja identity=false
             return;
         }
-        identity = false;
-        // el "set" NO lleva key -> su reply ("ok") se ignora sin tocar
-        // `identity`; los "get" que siguen sí llevan key y confirman los
-        // valores reales que quedaron aplicados en el daemon (la temperatura
-        // también: pudo cambiar externamente con el filtro apagado).
-        send("identity false");
-        send("identity get", "identity");
-        send("temperature", "temperature");
+        const g = configGamma();
+        if (g !== root.gammaPct)
+            setGamma(g);
+        setTemperature(configTemperature());
+        return;
     }
 
     function deactivate() {
@@ -399,6 +407,31 @@ Singleton {
             deactivate();
         else
             activate();
+    }
+
+    // --- Sincronización desde ConfigService (ajustes / config.json) ---
+    // Con el filtro apagado (identity) solo se guarda la preferencia y se
+    // aplica al activar. Con el filtro encendido aplica en vivo al daemon.
+    // No se empuja nada al conectar a propósito: `temperature <K>` enciende
+    // el filtro (identity=false), y no queremos encenderlo solo por arrancar.
+    Connections {
+        target: ConfigService.configs.nightLight
+
+        function onTemperatureChanged() {
+            if (root.identity)
+                return;
+            const t = ConfigService.configs.nightLight.temperature;
+            if (isFinite(t) && Math.round(t) !== root.temperature)
+                root.setTemperature(t);
+        }
+
+        function onGammaChanged() {
+            if (root.identity)
+                return;
+            const g = ConfigService.configs.nightLight.gamma;
+            if (isFinite(g) && g !== root.gammaPct)
+                root.setGamma(g);
+        }
     }
 
     // Recarga el perfil activo desde la config de hyprsunset (hyprsunset.conf)
