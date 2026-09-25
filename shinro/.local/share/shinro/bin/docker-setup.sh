@@ -1,5 +1,5 @@
 #!/bin/bash
-source lib.sh
+source ./lib.sh
 gum confirm "¿Deseas instalar docker?"
 
 if [ $? -eq 0 ]; then

@@ -1,5 +1,5 @@
 {
-    "appearence": {
+    "appearance": {
         "darkMode": true,
         "expressive": "Google Sans Flex",
         "fontSans": "Google Sans Flex",
@@ -10,31 +10,31 @@
         "reading": "Google Sans Flex"
     },
     "bar": {
-        "barType": "full_hug",
+        "barType": "partial_hug",
         "floating": true,
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"
     },
-    "language": "es_ES",
+    "language": "auto",
     "lockscreen": {
-        "blurLevel": 1.47,
+        "blurLevel": 1.29,
         "useWallpaper": true
     },
     "nightLight": {
-        "gamma": 79,
-        "temperature": 3498
+        "gamma": 100,
+        "temperature": 3631
     },
     "notifications": {
         "timeout": 10
     },
     "updates": {
         "command": "shelly -U",
-        "countTime": 9
+        "countTime": 20
     },
     "weather": {
-        "autoLocation": true,
-        "city": "Vigo",
-        "reloadTime": 4
+        "autoLocation": false,
+        "city": "Vigo,ES",
+        "reloadTime": 6
     }
 }
