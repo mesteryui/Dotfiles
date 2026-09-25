@@ -157,7 +157,10 @@ Item {
                 focus: true
 
                 pixelAligned: true
-                cacheBuffer: 1200
+                // Buffer de carrusel: ~2-3 tarjetas por lado (antes 1200).
+                // Suficiente para el scroll animado (300ms) sin retener
+                // de más; si notas recarga al hacer flick rápido, subir.
+                cacheBuffer: 800
                 snapMode: ListView.SnapToItem
                 highlightMoveDuration: 300
                 highlightFollowsCurrentItem: true

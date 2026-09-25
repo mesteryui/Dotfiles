@@ -87,12 +87,25 @@ function mapSnapshot(snapshot, cat) {
 }
 
 // El nombre manda: lo que empieza por lo tecleado va primero.
+// Comparación normalizada (minúsculas + sin acentos) para que
+// "config" también anteponga "Configuración".
+function normLower(s) {
+    let t = String(s || "").toLowerCase();
+    try {
+        if (t.normalize)
+            t = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    } catch (e) {}
+    return t.replace(/[áàäâ]/g, "a").replace(/[éèëê]/g, "e")
+            .replace(/[íìïî]/g, "i").replace(/[óòöô]/g, "o")
+            .replace(/[úùüû]/g, "u").replace(/ñ/g, "n").replace(/ç/g, "c");
+}
+
 function nameFirst(matches, q) {
-    const queryLower = String(q).toLowerCase();
+    const queryLower = normLower(q);
     const first = [];
     const rest = [];
     for (let i = 0; i < matches.length; i++) {
-        const t = String(matches[i].title || "").toLowerCase();
+        const t = normLower(matches[i].title || "");
         if (t.indexOf(queryLower) === 0)
             first.push(matches[i]);
         else

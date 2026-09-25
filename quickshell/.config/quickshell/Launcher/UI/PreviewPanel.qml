@@ -21,6 +21,12 @@ Rectangle {
     property string previewPath: ""
     property string previewText: ""
     property string clipText: ""
+    // Error del preview actual (decode de imagen imposible, etc.).
+    // "": sin error (comportamiento de siempre).
+    property string previewError: ""
+    // Metadatos del tema de audio actual ("artista — título\nálbum · 3:24").
+    // "": sin metadatos.
+    property string metaText: ""
     property string fileTooLargeText: "Archivo demasiado grande para previsualizar"
 
     readonly property bool hasPreview: MenuModes.needsPreview(root.activeMode, root.cur)
@@ -146,6 +152,33 @@ Rectangle {
             }
             font.pixelSize: 12
             color: Appearance.md3.on_surface_variant
+        }
+        // Metadatos del tema (audio): artista/título y álbum/duración
+        // bajo el título, en mono para alinear duraciones.
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            maximumLineCount: 3
+            elide: Text.ElideRight
+            visible: root.metaText !== "" && root.cur && root.cur.kind === "file" && root.cur.media === "audio"
+            text: root.metaText
+            font.family: Appearance.font.mono
+            font.pixelSize: 11
+            color: Appearance.md3.on_surface_variant
+        }
+        // Fallo del preview de imagen (clip): en vez de hueco en blanco,
+        // aviso explícito con el icono grande de arriba.
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            maximumLineCount: 4
+            elide: Text.ElideRight
+            visible: root.previewError !== "" && root.cur && root.cur.kind === "clip" && root.cur.isImage
+            text: root.previewError
+            font.pixelSize: 12
+            color: Appearance.md3.error
         }
         // Texto del portapapeles (clip texto): bloque con scroll que
         // ocupa todo el alto libre. Muestra el decode completo en

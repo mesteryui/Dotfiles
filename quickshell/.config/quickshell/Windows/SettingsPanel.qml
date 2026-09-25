@@ -8,86 +8,98 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-FloatingWindow {
-    id: root
+// Scope ligero: el IPC vive aquí para responder antes de cargar.
+// La FloatingWindow solo se instancia al abrir (ahorro en arranque).
+Scope {
+    id: scope
 
-    color: "transparent"
+    property bool shown: false
 
-    implicitWidth: 460
-    implicitHeight: 720
-    title: "ShinroShell Settings"
-    visible: false
-
-    onClosed: root.visible = false
-
-    // ── IPC ──────────────────────────────────────────────────────────
+    // ── IPC ─────────────────────────────────────────────────────────
     // qs ipc call ui.settings toggle
     IpcHandler {
         target: "ui.settings"
 
         function toggle() {
-            root.visible = !root.visible;
+            scope.shown = !scope.shown;
         }
 
         function open() {
-            root.visible = true;
+            scope.shown = true;
         }
 
         function close() {
-            root.visible = false;
+            scope.shown = false;
         }
     }
 
-    // ── Ciclo de vida ────────────────────────────────────────────────
-    HyprlandFocusGrab {
-        windows: [root]
-        active: root.visible
-        onCleared: Qt.callLater(() => root.visible = false)
-    }
+    LazyLoader {
+        loading: scope.shown
 
-    // ── Background & Sombra Tonal M3 Expressive ─────────────────────
-    MultiEffect {
-        source: bg
-        anchors.fill: bg
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.20
-        shadowBlur: 0.8
-        shadowVerticalOffset: 4
-        shadowHorizontalOffset: 2
-        z: -1
-    }
+        component: FloatingWindow {
+            id: root
 
-    PopupBackground {
-        id: bg
+            color: "transparent"
 
-        // Accessible en el contenido (Item), no en la FloatingWindow.
-        Accessible.role: Accessible.Dialog
-        Accessible.name: I18nService.getTranslation("settings.title", "Ajustes")
+            implicitWidth: 460
+            implicitHeight: 720
+            title: "ShinroShell Settings"
+            visible: scope.shown
 
-        anchors.fill: parent
-        surfaceRadius: 0
-        baseColor: Appearance.md3.surface
-        showBorder: false
-    }
+            onClosed: scope.shown = false
 
-    // ── Content (lazy) ─────────────────────────────────────────
-    // SettingsPanelContent es pesado y el panel pasa el 99% del tiempo
-    // oculto: se difiere sin cambiar IPC ni comportamiento.
-    Loader {
-        id: contentLoader
+            // ── Ciclo de vida ──────────────────────────────────────────────
+            HyprlandFocusGrab {
+                windows: [root]
+                active: scope.shown
+                onCleared: Qt.callLater(() => scope.shown = false)
+            }
 
-        anchors.fill: bg
-        active: root.visible
-        asynchronous: true
-        sourceComponent: settingsComp
-    }
+            // ── Background & Sombra Tonal M3 Expressive ─────────────────────
+            MultiEffect {
+                source: bg
+                anchors.fill: bg
+                shadowEnabled: true
+                shadowColor: Appearance.md3.shadow
+                shadowOpacity: 0.20
+                shadowBlur: 0.8
+                shadowVerticalOffset: 4
+                shadowHorizontalOffset: 2
+                z: -1
+            }
 
-    Component {
-        id: settingsComp
+            PopupBackground {
+                id: bg
 
-        SettingsPanelContent {
-            anchors.fill: parent
+                // Accessible en el contenido (Item), no en la FloatingWindow.
+                Accessible.role: Accessible.Dialog
+                Accessible.name: I18nService.getTranslation("settings.title", "Ajustes")
+
+                anchors.fill: parent
+                surfaceRadius: 0
+                baseColor: Appearance.md3.surface
+                showBorder: false
+            }
+
+            // ── Content (lazy) ────────────────────────────────────────
+            // SettingsPanelContent es pesado y el panel pasa el 99% del tiempo
+            // oculto: se difiere sin cambiar IPC ni comportamiento.
+            Loader {
+                id: contentLoader
+
+                anchors.fill: bg
+                active: root.visible
+                asynchronous: true
+                sourceComponent: settingsComp
+            }
+
+            Component {
+                id: settingsComp
+
+                SettingsPanelContent {
+                    anchors.fill: parent
+                }
+            }
         }
     }
 }

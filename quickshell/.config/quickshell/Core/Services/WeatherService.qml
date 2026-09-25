@@ -93,7 +93,14 @@ Singleton {
             root._gpsSessionFallback = false;
     }
 
-    onGpsActiveChanged: root._syncPositionSource()
+    onGpsActiveChanged: {
+        root._syncPositionSource();
+        // Al salir de GPS el Timer se reactiva pero esperaría un ciclo
+        // entero: si el parte está caducado, pedirlo ya (sin cambiar
+        // el intervalo ni el comportamiento en GPS).
+        if (!root.gpsActive && Date.now() - root.lastFetchTimestamp >= root.fetchInterval)
+            root.getData();
+    }
 
     onCityChanged: {
         root.location.valid = false;
@@ -119,13 +126,17 @@ Singleton {
                 return;
             root._gpsRunning = true;
             Log.info("[WeatherService] Iniciando servicio GPS.");
-            positionSource.start();
+            if (!positionSource.active)
+                positionSource.start();
         } else {
-            // Parar a ciegas spamea "geoclue2: Already stopped" en el log.
-            if (!root._gpsRunning)
+            // Parar a ciegas spamea "geoclue2: Already stopped" en el log:
+            // solo se para si realmente está activo (el flag local puede
+            // desincronizarse si la fuente se detuvo sola por error).
+            if (!root._gpsRunning && !positionSource.active)
                 return;
             root._gpsRunning = false;
-            positionSource.stop();
+            if (positionSource.active)
+                positionSource.stop();
         }
     }
 
@@ -621,6 +632,12 @@ Singleton {
             root.errorMessage = "Sin conexión";
             return;
         }
+        // Elegante y sin cambiar comportamiento visible: si ya hay una
+        // petición de ubicación/pronóstico en vuelo (Timer + GPS pueden
+        // coincidir), no abortarla para relanzarla igual; deja terminarla.
+        // _request ya aborta la anterior, así que esto solo ahorra tráfico.
+        if (root._forecastXhr !== null || root._geocodeXhr !== null || root._reverseXhr !== null)
+            return;
 
         if (root.gpsActive && root.location.valid) {
             // Etiqueta ya resuelta: directa; si no, geocodificación inversa.
@@ -704,12 +721,22 @@ Singleton {
         }
     }
 
-    // Timer seguro y nativo para polling asíncrono
+    // Timer seguro y nativo para polling asíncrono.
+    // Mismo comportamiento de siempre; solo se rearma al cambiar el
+    // intervalo de config (antes seguía con el ciclo viejo hasta el
+    // siguiente disparo) y no pisa peticiones en vuelo (ver getData).
     Timer {
+        id: pollTimer
+
         running: !root.gpsActive
         repeat: true
         interval: root.fetchInterval
         triggeredOnStart: false
         onTriggered: root.getData()
+    }
+
+    onFetchIntervalChanged: {
+        if (!root.gpsActive)
+            pollTimer.restart();
     }
 }

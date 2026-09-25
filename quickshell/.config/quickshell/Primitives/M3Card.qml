@@ -38,10 +38,11 @@ Item {
         }
     }
 
-    // Sombra tonal M3
+    // Sombra tonal M3 (gateada: sin pass offscreen si está desactivada)
     MultiEffect {
         anchors.fill: _bg
         source: _bg
+        visible: root.shadowEnabled
         shadowEnabled: root.shadowEnabled
         shadowColor: Appearance.md3.shadow
         shadowOpacity: 0.08

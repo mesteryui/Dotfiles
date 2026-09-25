@@ -48,11 +48,12 @@ Singleton {
 
     /**
      * Igual que filter(), pero matchea contra varios campos por item y se
-     * queda con el mejor score entre ellos. Pensado para casos como keybinds,
-     * donde querés que la búsqueda encuentre tanto por combinación de teclas
-     * como por descripción.
+     * queda con el mejor score ponderado entre ellos. Pensado para casos
+     * como keybinds o apps, donde querés que la búsqueda encuentre tanto
+     * por nombre como por descripción.
      *
-     * @param getTexts function(item) -> string[]
+     * @param getTexts function(item) -> array de string | {text, weight} | [text, weight].
+     *   string pesa 1 (compat). Ejemplo apps: nombre 1, comentario 0.5, id 0.3.
      */
     function filterMulti(query, items, getTexts) {
         return FuzzyMatch.filterFuzzyMulti(query, items, getTexts);

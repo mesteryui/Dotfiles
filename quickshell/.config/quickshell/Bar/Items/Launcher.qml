@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.Primitives
 import qs.Core
+import qs.Core.Services
 import QtQuick
 import Quickshell
 
@@ -26,7 +27,7 @@ BarItem {
         id: content
 
         anchors.centerIn: parent
-        icon: "cachyos-symbolic"
+        icon: DistroService.icon
         implicitSize: Appearance.font.pixelSize.hugeass
         color: Appearance.md3.primary
     }

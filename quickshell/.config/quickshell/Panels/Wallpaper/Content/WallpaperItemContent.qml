@@ -52,7 +52,10 @@ Item {
                 source: Qt.resolvedUrl(root.filePath)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                cache: true
+                // Thumbs locales: sin caché global para que el Loader al
+                // destruir libere los pixmaps. Recarga rápida desde disco
+                // con placeholder + fade ya existentes (sin parpadeo extra).
+                cache: false
                 sourceSize.width: root.imageWidth
                 sourceSize.height: root.imageHeight
                 opacity: status === Image.Ready ? 1 : 0

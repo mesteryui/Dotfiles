@@ -142,7 +142,7 @@ Scope {
                 }
             }
 
-            Component.onCompleted: selectActiveWindow()
+            Component.onCompleted: Qt.callLater(selectActiveWindow)
 
             // Con OnDemand nadie tiene el foco de teclado hasta que alguien lo pide
             // explícitamente. windowList.focus = true solo lo marca como candidato
@@ -150,7 +150,10 @@ Scope {
             // ventana cuando se abre.
             onVisibleChanged: {
                 if (root.visible) {
-                    selectActiveWindow();
+                    // Diferido: el modelo se acaba de (re)asociar al abrir y
+                    // positionViewAtIndex en el mismo tick reentra en el
+                    // DelegateModel a medio resetear (SIGSEGV en setModel).
+                    Qt.callLater(selectActiveWindow);
                     windowList.forceActiveFocus();
                 }
             }
@@ -179,7 +182,12 @@ Scope {
                 property bool canGoLeft: contentX > 1
                 property bool canGoRight: contentX + width < contentWidth - 1
 
-                model: root.realToplevels
+                // Modelo nulo con el switcher cerrado: la ventana se cachea
+                // entre aperturas y los toplevels cambian constantemente en
+                // background; con la vista suscrita, cada open/close de
+                // ventana disparaba setModel sobre una vista oculta -> el
+                // mismo SIGSEGV que ya vimos con el launcher por IPC.
+                model: scope.shown ? root.realToplevels : null
 
                 // Accessible va en un Item, no en la PanelWindow (ventana):
                 // Qt avisa "must be attached to an object deriving from

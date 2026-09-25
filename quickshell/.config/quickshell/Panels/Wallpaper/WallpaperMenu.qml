@@ -41,8 +41,16 @@ Scope {
         }
     }
 
-    PanelWindow {
-        id: wallpaperMenu
+    // LazyLoader externo: la PanelWindow (surface Wayland + background +
+    // animaciones) solo existe mientras se muestra o se anima la salida.
+    // Mismo patrón que Cheatsheet (hideTimer): sin esto la ventana vivía
+    // siempre aunque visible=false. El contenido sigue siendo Loader
+    // lazy+async interno. Servicios singleton intactos.
+    LazyLoader {
+        loading: root.showing || root._isAnimatingOut
+
+        component: PanelWindow {
+            id: wallpaperMenu
 
         implicitWidth: 1120
         implicitHeight: 330 // +52 respecto al original: fila de búsqueda + spacing
@@ -178,6 +186,7 @@ Scope {
                     onHideRequested: root.showing = false
                 }
             }
+        }
         }
     }
 }

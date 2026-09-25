@@ -49,6 +49,45 @@ Singleton {
     property bool pendingRefresh: false
 
     signal previewReady(string cid)
+    // El decode falló (entrada expirada, binario corrupto...): sin esta
+    // señal el preview se quedaría esperando eternamente en blanco y
+    // reintentando el decode en cada highlight. El display muestra
+    // fallback y no lo reintenta en la sesión.
+    signal previewFailed(string cid)
+
+    // Cola de prefetch (baja prioridad): cids vecinos al actual. Se
+    // reemplaza en cada highlight y solo corre en idle: la petición real
+    // (previewImage/pendingPreviewId) siempre pasa delante.
+    property var prefetchQueue: []
+
+    function prefetchNeighbors(cids) {
+        const out = [];
+        for (let i = 0; i < cids.length && out.length < 6; i++) {
+            const id = String(cids[i]).trim();
+            if (!isValidId(id) || id === root.previewId || id === root.pendingPreviewId)
+                continue;
+            if (out.indexOf(id) < 0)
+                out.push(id);
+        }
+        root.prefetchQueue = out;
+        root._pumpPreview();
+    }
+
+    function clearPrefetch() {
+        root.prefetchQueue = [];
+    }
+
+    function _pumpPreview() {
+        // OJO: el Process se referencia por su id directo (previewProc):
+        // los id NO son propiedades (root.previewProc es undefined y
+        // lanzaba TypeError, abortando update() antes de pedir nada).
+        if (previewProc.running || root.pendingPreviewId !== "")
+            return;
+        if (root.prefetchQueue.length === 0)
+            return;
+        root.startPreview(root.prefetchQueue[0]);
+        root.prefetchQueue = root.prefetchQueue.slice(1);
+    }
 
     function shEscape(s) {
         // Copia local a propósito: Core no debe depender del módulo
@@ -283,15 +322,22 @@ Singleton {
     Process {
         id: previewProc
         onExited: (code, status) => {
+            const finishedId = root.previewId;
             if (code === 0)
-                root.previewReady(root.previewId);
-            else
-                Log.warn("ClipboardService: preview falló id=" + root.previewId);
-            // Navegación rápida: atiende el último preview pendiente.
+                root.previewReady(finishedId);
+            else {
+                Log.warn("ClipboardService: preview falló id=" + finishedId);
+                root.previewFailed(finishedId);
+            }
+            // Navegación rápida: atiende el último preview pendiente. Solo
+            // si no hay pendiente corre el prefetch (nunca le quita el
+            // turno a lo real).
             if (root.pendingPreviewId !== "") {
                 const nid = root.pendingPreviewId;
                 root.pendingPreviewId = "";
                 root.startPreview(nid);
+            } else {
+                root._pumpPreview();
             }
         }
     }

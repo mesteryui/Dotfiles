@@ -62,6 +62,32 @@ function uniqueApps(list) {
     return out;
 }
 
+// Foto plana de un DesktopEntry para guardar en modelos QML.
+// Los DesktopEntry son QObjects vivos de Quickshell: si se guardan tal
+// cual en un ScriptModel y los .desktop se reescanean en background, el
+// objeto puede destruirse mientras el DelegateModel lo lee
+// (QMetaProperty::read sobre objeto muerto -> SIGSEGV en setModel al
+// teclear). El snapshot solo copia strings/arrays; la ejecución se
+// resuelve contra el entry vivo por id en el momento de activar.
+function snapshotEntry(e) {
+    let cmd = [];
+    if (e && e.command && typeof e.command.length === "number") {
+        for (let i = 0; i < e.command.length; i++)
+            cmd.push(String(e.command[i]));
+    }
+    return {
+        isDesktopApp: true,
+        id: String((e && e.id) || ""),
+        name: String((e && e.name) || ""),
+        comment: String((e && e.comment) || ""),
+        icon: String((e && e.icon) || ""),
+        command: cmd,
+        workingDirectory: String((e && e.workingDirectory) || ""),
+        runInTerminal: (e && e.runInTerminal) === true,
+        execString: String((e && e.execString) || "")
+    };
+}
+
 function pinFirst(pool, pins) {
     if (pins.length === 0)
         return pool;

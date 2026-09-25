@@ -31,34 +31,11 @@ Singleton {
         }
     }
 
-    // Al pulsar Bloq Mayús, el estado del kernel tarda un
-    // instante en reflejarse antes de que hyprctl lo reporte.
-    // Se hace una consulta rápida y otra de confirmación algo
-    // más tarde, por si la primera llega antes de que el driver
-    // haya terminado de actualizar el estado real.
-    Timer {
-        id: debounce
-
-        interval: 60
-        onTriggered: {
-            if (!keyStateProc.running)
-                keyStateProc.running = true;
-        }
-    }
-
-    Timer {
-        id: confirmDebounce
-
-        interval: 220
-        onTriggered: {
-            if (!keyStateProc.running)
-                keyStateProc.running = true;
-        }
-    }
-
+    // Event-driven: solo se consulta hyprctl al pulsar el atajo o al
+    // arrancar. Sin polling ni timers: basta una lectura por pulsación.
     function refreshCapsLock() {
-        debounce.restart();
-        confirmDebounce.restart();
+        if (!keyStateProc.running)
+            keyStateProc.running = true;
     }
 
     // Una sola llamada a `hyprctl -j devices` por refresco: del mismo JSON

@@ -30,30 +30,255 @@ Item {
 
     readonly property int count: root.isGrid ? grid.count : view.count
     readonly property int currentIndex: root.isGrid ? grid.currentIndex : view.currentIndex
+    // Item actual resuelto POR ÍNDICE desde el modelo, no desde el
+    // delegado (view.currentItem): tras un swap de modelo los delegados
+    // aún no existen cuando se emite el highlight y currentItem es null
+    // -> el preview no se pedía nunca y nada lo reintentaba. Por índice
+    // siempre es válido en cuanto el modelo está aplicado. `count` como
+    // dependencia cubre los updates internos sin cambio de identidad
+    // (ScriptModel del modo todo).
     readonly property var currentData: {
-        const item = root.isGrid ? grid.currentItem : view.currentItem;
-        return item ? item.modelData : null;
+        const c = root.count;
+        void c;
+        return root.itemAt(root.currentIndex);
+    }
+
+    // Array plano subyacente (vía única para itemAt/_indexOfKey/
+    // neighborItems). OJO: NO se lee de view.model/grid.model: cuando el
+    // origen es un array JS, la vista lo envuelve en un modelo interno
+    // (Array.isArray falla y no hay .values) y todo resolvía a null.
+    // El binding listModel crudo sí conserva los arrays reales.
+    // OJO2: en modo todo el modelo es un ScriptModel cuyo `values` es
+    // list<var> (array-like: tiene length e índice pero Array.isArray
+    // es false y puede no traer .map). Por eso se normaliza a Array JS
+    // real: sin esto itemAt() devolvía null en modo todo y Enter no
+    // ejecutaba nada (el click sí, porque el delegate pasa modelData).
+    function _asArray(v) {
+        if (!v)
+            return null;
+        if (Array.isArray(v))
+            return v;
+        if (typeof v.length === "number") {
+            const out = [];
+            for (let i = 0; i < v.length; i++)
+                out.push(v[i]);
+            return out;
+        }
+        return null;
+    }
+
+    function _rawArray() {
+        const m = root.listModel;
+        if (Array.isArray(m))
+            return m;
+        if (m && m.values !== undefined) {
+            const arr = root._asArray(m.values);
+            if (arr)
+                return arr;
+        }
+        return root._asArray(m);
+    }
+
+    function itemAt(idx) {
+        const arr = root._rawArray();
+        if (!arr || idx < 0 || idx >= arr.length)
+            return null;
+        return arr[idx] || null;
     }
 
     signal activated(var item)
     signal highlighted(var item)
 
-    // Selección al principio (apertura).
-    function resetView() {
-        if (root.isGrid) {
-            grid.currentIndex = 0;
-            grid.positionViewAtBeginning();
-        } else {
-            view.currentIndex = 0;
-            view.positionViewAtBeginning();
+    // Generación del filtro (la pone AppLauncher): distingue "nueva
+    // búsqueda" (query/modo/sección => ir arriba) de "refresco de datos"
+    // (snapshot de fd, Supr en clip, rescan .desktop => conservar
+    // selección y scroll).
+    property int filterEpoch: 0
+    property int _seenEpoch: -1
+
+    // Marca de la última navegación por teclado: el hover del ratón no
+    // debe robar la selección justo después (jitter del puntero).
+    property double _lastKeyNav: 0
+
+    // Clave estable del item para conservar la selección entre swaps de
+    // modelo: al estrechar el filtro, el item sigue seleccionado si aún
+    // está en la lista (comportamiento rofi/walker). Por modo porque cada
+    // menú identifica sus items de forma distinta.
+    function _keyOf(item) {
+        if (!item)
+            return "";
+        switch (root.activeMode) {
+        case "todo": return "app:" + (item.id || "");
+        case "clip": return "clip:" + (item.cid || "");
+        case "files": return "file:" + (item.path || "");
+        case "emoji": return "emoji:" + (item.ch || "");
+        case "system": return "sys:" + (item.section || "") + "|" + (item.title || "") + "|" + (item.shell || "");
+        default: return "t:" + (item.title || "");
         }
     }
 
-    // Al cambiar de vista (lista <-> cuadrícula), recoloca el scroll
-    // para no heredar huecos de la otra vista.
+    function _indexOfKey(key) {
+        if (key === "")
+            return -1;
+        const arr = root._rawArray();
+        if (!arr)
+            return -1;
+        for (let i = 0; i < arr.length; i++)
+            if (root._keyOf(arr[i]) === key)
+                return i;
+        return -1;
+    }
+
+    // Vecinos del item actual (±2) para prefetch de previews: al moverse,
+    // el siguiente highlight suele ser caché y se siente instantáneo.
+    // OJO: se indexa sobre el array crudo (ver _rawArray), no sobre el
+    // modelo de la vista, y se recorta al conteo visible por si el modelo
+    // aún no se aplicó del todo.
+    function neighborItems() {
+        const arr = root._rawArray();
+        if (!arr || arr.length === 0)
+            return [];
+        const v = root.isGrid ? grid : view;
+        const len = Math.min(arr.length, v.count > 0 ? v.count : arr.length);
+        if (len === 0)
+            return [];
+        const cur = Math.min(Math.max(0, v.currentIndex), len - 1);
+        const out = [];
+        for (let d = -2; d <= 2; d++) {
+            if (d === 0)
+                continue;
+            const i = cur + d;
+            if (i >= 0 && i < len)
+                out.push(arr[i]);
+        }
+        return out;
+    }
+
+    // Última clave válida de selección (ver _keyOf): sobrevive a los
+    // huecos con modelo null para restaurar al aterrizar el nuevo.
+    property string _lastKey: ""
+
+    // Anota la selección actual como clave. Solo con item válido: durante
+    // la demolición (currentData null) se conserva la anterior.
+    function _noteIndex() {
+        const cur = root.currentData;
+        if (cur)
+            root._lastKey = root._keyOf(cur);
+    }
+
+    // Asienta vista tras un cambio de modelo o de conteo. Vía única para
+    // no duplicar políticas entre _requestApply y onCountChanged (los
+    // updates internos del ScriptModel en modo todo no pasan por apply).
+    function _settle() {
+        const v = root.isGrid ? grid : view;
+        const isFilter = root.filterEpoch !== root._seenEpoch;
+        root._seenEpoch = root.filterEpoch;
+        if (v.count === 0) {
+            v.currentIndex = -1;
+            return;
+        }
+        if (isFilter) {
+            // Nueva búsqueda/modo/sección: el item conservado sigue
+            // mandando si existe; si no, arriba del todo.
+            const idx = root._indexOfKey(root._lastKey);
+            v.currentIndex = idx >= 0 ? idx : 0;
+            v.positionViewAtBeginning();
+        } else {
+            // Refresco de datos (snapshot fd, Supr en clip, rescan):
+            // conservar sitio; recortar solo si quedó fuera de rango y
+            // asegurar visible sin saltos.
+            const idx = root._indexOfKey(root._lastKey);
+            if (idx >= 0)
+                v.currentIndex = idx;
+            else if (v.currentIndex < 0)
+                v.currentIndex = 0;
+            else if (v.currentIndex >= v.count)
+                v.currentIndex = v.count - 1;
+            v.positionViewAtIndex(v.currentIndex, root.isGrid ? GridView.Contain : ListView.Contain);
+        }
+        root._noteIndex();
+    }
+
+    // Aplicación diferida del modelo (anti-SIGSEGV).
+    // Cada tecla/cambio de modo reevalúa `listModel` con una identidad
+    // nueva (ScriptModel vs array fresco). Bindear `view.model` directo a
+    // eso llamaba a QQuickItemView::setModel de forma síncrona en mitad de
+    // notificaciones del DelegateModel en curso -> SIGSEGV leyendo
+    // delegados a medio construir/destruir (10 coredumps con el mismo
+    // stack, tb. con items 100% planos del modo sistema). Por eso el swap
+    // es diferido y en dos pasos: primero null (el modelo viejo se
+    // desengancha limpio) y en el siguiente tick el nuevo. El contador de
+    // generación descarta pasadas obsoletas si llegan varios cambios
+    // seguidos (tecleo rápido).
+    property int _modelGen: 0
+
+    function _requestApply() {
+        const gen = ++root._modelGen;
+        Qt.callLater(() => {
+            if (gen !== root._modelGen)
+                return;
+            const m = root.listModel;
+            const wantView = root.isGrid ? null : m;
+            const wantGrid = root.isGrid ? m : null;
+            if (view.model === wantView && grid.model === wantGrid)
+                return;
+            // La selección a conservar vive en _lastKey (ver _noteIndex):
+            // sobrevive a los huecos con modelo null.
+            view.model = null;
+            grid.model = null;
+            Qt.callLater(() => {
+                if (gen !== root._modelGen)
+                    return;
+                if (root.isGrid)
+                    grid.model = root.listModel;
+                else
+                    view.model = root.listModel;
+                // Índice+scroll en otro tick más: tocarlos en el mismo tick
+                // del setModel reentra en el DelegateModel (SIGSEGV).
+                // _settle() centraliza la política (ver arriba).
+                Qt.callLater(() => {
+                    if (gen !== root._modelGen)
+                        return;
+                    root._settle();
+                });
+            });
+        });
+    }
+
+    onListModelChanged: root._requestApply()
+
+    Component.onCompleted: root._requestApply()
+
+    // Selección al principio (apertura). Diferido un frame: onOpened lo
+    // llama en el mismo tick en que cambian debouncedQuery/activeMode
+    // (setModel en curso); tocar currentIndex/scroll de forma síncrona
+    // ahí reentra en el DelegateModel a medio resetear y tira el shell
+    // (SIGSEGV en QQuickItemView::setModel). Con callLater el modelo ya
+    // está estable cuando se recoloca la vista.
+    function resetView() {
+        Qt.callLater(() => {
+            // Apertura: sin herencia de la sesión anterior.
+            root._lastKey = "";
+            if (root.isGrid) {
+                grid.currentIndex = 0;
+                grid.positionViewAtBeginning();
+            } else {
+                view.currentIndex = 0;
+                view.positionViewAtBeginning();
+            }
+        });
+    }
+
+    // Al cambiar de vista (lista <-> cuadrícula), aplica el modelo a la
+    // vista que toca y recoloca el scroll para no heredar huecos de la
+    // otra vista. Diferido por el mismo motivo que resetView: el swap de
+    // modelos aún está en curso.
     onIsGridChanged: {
-        view.positionViewAtBeginning();
-        grid.positionViewAtBeginning();
+        root._requestApply();
+        Qt.callLater(() => {
+            view.positionViewAtBeginning();
+            grid.positionViewAtBeginning();
+        });
     }
 
     // Mueve la selección con cycle: del último vuelve al primero y viceversa.
@@ -74,6 +299,7 @@ Item {
         const n = v.count;
         if (n === 0)
             return;
+        root._lastKeyNav = Date.now();
         let i = v.currentIndex + delta;
         if (i < 0 || i >= n) {
             root.wrapDir = i < 0 ? -1 : 1;
@@ -88,14 +314,28 @@ Item {
         v.positionViewAtIndex(i, root.isGrid ? GridView.Contain : ListView.Contain);
     }
 
-    // Movimiento 2D para la cuadrícula (flechas). En lista equivale
-    // a lineal (dy como delta) por seguridad.
+    // Movimiento 2D para la cuadrícula con clamp por filas/columnas:
+    // el vertical no da la vuelta a toda la lista (se queda en la primera
+    // o última fila) y la última fila corta recorta la columna. En lista
+    // equivale a lineal (dy como delta) por seguridad.
     function moveGrid(dx, dy) {
         if (!root.isGrid) {
             root.moveSelection(dx + dy);
             return;
         }
-        root.moveSelection(dx + dy * root.gridColumns);
+        const n = grid.count;
+        if (n === 0)
+            return;
+        root._lastKeyNav = Date.now();
+        const cols = Math.max(1, root.gridColumns);
+        const cur = Math.min(Math.max(0, grid.currentIndex), n - 1);
+        const maxRow = Math.floor((n - 1) / cols);
+        const newRow = Math.min(maxRow, Math.max(0, Math.floor(cur / cols) + dy));
+        const rowLen = (newRow === maxRow) ? (n - newRow * cols) : cols;
+        const newCol = Math.min(rowLen - 1, Math.max(0, (cur % cols) + dx));
+        const i = newRow * cols + newCol;
+        grid.currentIndex = i;
+        grid.positionViewAtIndex(i, GridView.Contain);
     }
 
     ListView {
@@ -107,32 +347,41 @@ Item {
         spacing: 4
         // Delegados ya instanciados fuera de vista (~4 por lado):
         // scroll rápido sin crear/destruir en cada frame.
+        // Sin reciclaje de delegados (reuseItems): con swaps de modelo por
+        // cada tecla, el pool reciclado se leía a medio resetear
+        // (SIGSEGV en setModel). Las listas son cortas y el filtrado ya va
+        // con debounce: crear/destruir es despreciable aquí.
         cacheBuffer: 224
-        currentIndex: count > 0 ? 0 : -1
+        reuseItems: false
+        // Sin binding currentIndex<-count: escribir currentIndex de forma
+        // síncrona durante el reset del DelegateModel (setModel en curso
+        // por cada tecla) reentra en QtQmlModels y tira el shell con
+        // SIGSEGV en QQuickItemView::setModel. El índice se gestiona solo
+        // vía callLater (onCountChanged / resetView).
+        currentIndex: -1
         highlightMoveDuration: 100
         keyNavigationEnabled: false
-        model: root.listModel
+        // Sin binding de modelo: lo aplica _requestApply() diferido y en
+        // dos pasos (ver arriba). Un binding directo re-evaluaba setModel
+        // síncrono por cada tecla/cambio de modo -> SIGSEGV.
 
         onCountChanged: {
-            // El modelo se resetea en caliente (apps, menús, emojis...):
-            // volver arriba para no dejar huecos de scroll con el
-            // contenido nuevo (era el "espacio vacío" al recargar).
-            view.positionViewAtBeginning();
-            // Tras un Supr la lista se reconstruye y el índice puede
-            // quedar fuera de rango (ej. borras la última): se recorta
-            // para no quedarse sin selección.
-            if (count > 0) {
-                if (currentIndex < 0 || currentIndex >= count)
-                    currentIndex = Math.min(Math.max(0, currentIndex), count - 1);
-                if (currentIndex === -1)
-                    currentIndex = 0;
-            }
-            // El reseteo del modelo no siempre emite currentIndexChanged
-            // (el índice puede conservar el valor) y el currentItem aún
-            // puede ser nulo: diferir para que existan los delegados.
-            Qt.callLater(() => root.highlighted(root.currentData));
+            // Todo diferido: este handler corre en mitad del reset del
+            // modelo; mutar currentIndex/scroll aquí mismo reentra en
+            // QtQmlModels. _settle() aplica la política única (nueva
+            // búsqueda => arriba/restaurar; refresco => conservar sitio).
+            Qt.callLater(() => {
+                root._settle();
+                // El reseteo del modelo no siempre emite currentIndexChanged
+                // (el índice puede conservar el valor) y el currentItem aún
+                // puede ser nulo: diferir para que existan los delegados.
+                root.highlighted(root.currentData);
+            });
         }
-        onCurrentIndexChanged: root.highlighted(root.currentData)
+        onCurrentIndexChanged: {
+            root._noteIndex();
+            root.highlighted(root.currentData);
+        }
 
         delegate: Rectangle {
             id: entryDelegate
@@ -140,12 +389,12 @@ Item {
             required property var modelData
             required property int index
 
-            // En modo todo el modelData es el DesktopEntry crudo
+            // En modo todo el modelData es el snapshot plano de la app
             // (viene de appModel); en el resto, el wrapper
             // {kind,title,sub,iconName,appIcon,ch,...} de results.
             readonly property bool isRawApp: {
                 const d = entryDelegate.modelData;
-                return root.activeMode === "todo" && d && typeof d.execute === "function";
+                return root.activeMode === "todo" && d && d.isDesktopApp === true;
             }
             readonly property string dispTitle: isRawApp ? (modelData.name || "") : (modelData.title || "")
             readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : ((modelData.cat ? modelData.cat + " · " : "") + (modelData.sub || ""))
@@ -242,7 +491,11 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onEntered: {
                     stateLayer.hovered = true;
-                    view.currentIndex = entryDelegate.index;
+                    // El puntero no roba la selección al teclado: tras
+                    // navegar con teclas se ignora el hover unos ms
+                    // (jitter del ratón al teclear/moverse).
+                    if (Date.now() - root._lastKeyNav > 300)
+                        view.currentIndex = entryDelegate.index;
                 }
                 onExited: stateLayer.hovered = false
                 onPressed: stateLayer.pressed = true
@@ -260,26 +513,29 @@ Item {
         clip: true
         cellWidth: 56
         cellHeight: 56
-        // Igual que la lista: delegados ya instanciados fuera de vista.
+        // Igual que la lista: sin reciclaje (ver comentario en view).
         cacheBuffer: 224
-        currentIndex: count > 0 ? 0 : -1
+        reuseItems: false
+        // Igual que la lista: sin binding currentIndex<-count (reentrancia
+        // en el DelegateModel durante setModel -> SIGSEGV). Gestión
+        // imperativa diferida en onCountChanged / resetView.
+        currentIndex: -1
         highlightMoveDuration: 100
         keyNavigationEnabled: false
-        model: root.listModel
+        // Sin binding de modelo: lo aplica _requestApply() (ver arriba).
 
         onCountChanged: {
-            // Igual que la lista: volver arriba ante reseteos en
-            // caliente y recortar el índice si quedó fuera de rango.
-            grid.positionViewAtBeginning();
-            if (count > 0) {
-                if (currentIndex < 0 || currentIndex >= count)
-                    currentIndex = Math.min(Math.max(0, currentIndex), count - 1);
-                if (currentIndex === -1)
-                    currentIndex = 0;
-            }
-            Qt.callLater(() => root.highlighted(root.currentData));
+            // Igual que la lista: asentar diferido con la política única
+            // (ver _settle) en vez de ir arriba siempre.
+            Qt.callLater(() => {
+                root._settle();
+                root.highlighted(root.currentData);
+            });
         }
-        onCurrentIndexChanged: root.highlighted(root.currentData)
+        onCurrentIndexChanged: {
+            root._noteIndex();
+            root.highlighted(root.currentData);
+        }
 
         delegate: Rectangle {
             id: gridDelegate
@@ -368,7 +624,9 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onEntered: {
                     gridStateLayer.hovered = true;
-                    grid.currentIndex = gridDelegate.index;
+                    // Igual que la lista: el hover no roba al teclado.
+                    if (Date.now() - root._lastKeyNav > 300)
+                        grid.currentIndex = gridDelegate.index;
                 }
                 onExited: gridStateLayer.hovered = false
                 onPressed: gridStateLayer.pressed = true
