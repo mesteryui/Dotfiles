@@ -3,17 +3,17 @@ helper.load_plugin_conf("hyprbars", function (p)
     hl.config({
         ["plugin.hyprbars"] = {
             enabled = false,
-            bar_height = 20,
+            bar_height = 25,
             on_double_click = "hyprctl dispatch 'hl.dsp.window.fullscreen()'",
             bar_text_font = "Google Sans Flex",
-            bar_text_size = 12,
+            bar_text_size = 17,
         }
     })
 
     p.add_button({
         bg_color = Colors.error,
         fg_color = Colors.on_error,
-        size = 13,
+        size = 17,
         icon = "X",
         action = "hyprctl dispatch 'hl.dsp.window.close()'",
     })
@@ -21,32 +21,38 @@ helper.load_plugin_conf("hyprbars", function (p)
     p.add_button({
         bg_color = Colors.primary_fixed,
         fg_color = Colors.on_primary_fixed,
-        size = 13,
-        icon = "_",
-        action = "hyprctl dispatch 'hl.dsp.window.fullscreen()'",
+        size = 17,
+        icon = "[]",
+        action = [[hyprctl dispatch 'hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })']],
     })
 end)
 helper.load_plugin_conf("dynamic_cursors", function()
     hl.config({
         ["plugin.dynamic_cursors"] = {
             enabled = true,
-            mode = "tilt",
+            mode = "stretch",
+            threshold = 1,
             hyprcursor = {
-                nearest = true,
+                nearest = 1,
                 enabled = true,
                 resolution = -1,
                 fallback = "clientside",
             },
+            stretch = {
+              limit = 3000,
+              activation = "quadratic",
+              window = 100,
+            },
             shake = {
                 enabled = true,
                 --nearest = true,
-                threshold = 6.0,
+                threshold = 4.0,
                 base = 4.0,
                 speed = 4.0,
                 influence = 0.0,
                 limit = 0.0,
                 timeout = 2000,
-                effects = true,
+                effects = false,
                 ipc = false,
             },
             tilt = {

@@ -18,7 +18,7 @@ Item {
 
     Behavior on width {
         NumberAnimation {
-            duration: 200
+            duration: Appearance.motion.short4
             easing.type: Easing.OutCubic
         }
     }
@@ -26,7 +26,7 @@ Item {
     scale: mouseArea.pressed ? 0.85 : 1.0
     Behavior on scale {
         NumberAnimation {
-            duration: 100
+            duration: Appearance.motion.short2
             easing.type: Easing.OutQuad
         }
     }
@@ -35,11 +35,11 @@ Item {
 
         anchors.fill: parent
         color: root.isActive ? Appearance.md3.primary : Appearance.md3.secondary_container
-        radius: 30
+        radius: Appearance.shape.verylarge
 
         Behavior on color {
             ColorAnimation {
-                duration: 200
+                duration: Appearance.motion.short4
             }
         }
     }

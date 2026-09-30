@@ -30,39 +30,48 @@ BarPopupWindow {
 
     property real currentPosition: 0
 
+    // Posición optimista post-seek: el player aplica el seek de forma
+    // asíncrona, así que durante ~1s tras pedirlo la posición que manda es
+    // la pedida (evita el "salto atrás"). Se libera antes si lo reportado
+    // alcanza lo pedido (tolerancia 1s), o al expirar el periodo.
+    property real seekTarget: -1
+    property double seekTargetUntil: 0
+
     // Posición vía MprisService.position (timer único centralizado):
     // este popup se apunta al hacerse visible y se desapunta al
-    // ocultarse/destruirse. La confirmación post-seek sigue siendo un
-    // one-shot por gesto (barato y dirigido).
+    // ocultarse/destruirse.
     Connections {
         target: MprisService
         function onPositionChanged() {
-            if (!mprisContent.sliderDragging)
-                root.currentPosition = MprisService.position;
-        }
-    }
-
-    Timer {
-        id: seekConfirmTimer
-
-        interval: 200
-        repeat: false
-        onTriggered: {
-            if (!mprisContent.sliderDragging) {
-                const p = MprisService.activePlayer;
-                if (!p)
+            if (mprisContent.sliderDragging)
+                return;
+            if (root.seekTarget >= 0) {
+                if (Date.now() < root.seekTargetUntil) {
+                    // El player ya llegó (o pasó): adoptar y liberar.
+                    if (MprisService.position >= root.seekTarget - 1.0) {
+                        root.seekTarget = -1;
+                        root.currentPosition = MprisService.position;
+                    }
+                    // Si no, mantener la optimista: ignorar el valor rancio.
                     return;
-                try {
-                    root.currentPosition = p.position;
-                } catch (e) {
-                    Log.warn("[Mpris] seek confirm read failed:", e);
                 }
+                root.seekTarget = -1;
             }
+            root.currentPosition = MprisService.position;
+        }
+
+        // Cambio de pista: el seek pendiente (si lo había) ya no vale y la
+        // posición optimista heredada mentiría contra la nueva duración.
+        function onTrackChanged() {
+            root.seekTarget = -1;
+            root.currentPosition = 0;
         }
     }
 
     onVisibleChanged: {
         MprisService.positionClients += visible ? 1 : -1;
+        // Al abrir/cerrar se invalida cualquier seek pendiente.
+        root.seekTarget = -1;
         if (visible) {
             const p = MprisService.activePlayer;
             if (!p) {
@@ -108,8 +117,11 @@ BarPopupWindow {
                 Log.warn("[Mpris] seek failed:", e);
                 // opcional: MprisService.setActivePlayer(null);
             }
+            // Fijar la optimista de inmediato: la barra y los tiempos ya
+            // muestran el destino sin esperar al D-Bus (ver grace arriba).
             root.currentPosition = newPosition;
-            seekConfirmTimer.start();
+            root.seekTarget = newPosition;
+            root.seekTargetUntil = Date.now() + 1000;
         }
         artURL: root.finalArt
     }

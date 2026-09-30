@@ -53,8 +53,9 @@ function fdCommand(home, query) {
         // Sin patrón `fd` tomaría $HOME como patrón y no devolvería nada.
         cmd.push("--max-results", "200", ".", home);
     } else {
-        // Con query: todo incluido ocultos, en literal.
-        cmd.push("--hidden", "--fixed-strings", "--max-results", "100", query, home);
+        // Con query: todo incluido ocultos, en literal. El "--" evita que
+        // una query como "-e" se interprete como flag (flag injection).
+        cmd.push("--hidden", "--fixed-strings", "--max-results", "100", "--", query, home);
     }
     return cmd;
 }

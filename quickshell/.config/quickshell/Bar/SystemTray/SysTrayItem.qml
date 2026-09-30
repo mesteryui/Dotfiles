@@ -40,6 +40,7 @@ Item {
 
     Connections {
         target: loader.item
+        ignoreUnknownSignals: true
 
         function onDismissed() {
             itemContainer.menuOpen = false;
@@ -71,7 +72,7 @@ Item {
 
             // Centrado absoluto con márgenes limpios
             anchors.centerIn: parent
-            width: parent.width - 8  // Equivalente a margins: 4 por cada lado
+            width: parent.width - 8  // Equivalente a margins: Appearance.spacing.xs por cada lado
             height: parent.height - 8
             visible: source !== ""
         }
@@ -92,7 +93,7 @@ Item {
 
         Behavior on scale {
         NumberAnimation {
-            duration: 100
+            duration: Appearance.motion.short2
             easing.type: Easing.OutQuad
         }
     }

@@ -60,7 +60,7 @@ Item {
     StyledText {
         anchors.centerIn: parent
         text: Math.round(root.value * 100) + "%"
-        font.pixelSize: Appearance.font.pixelSize.smallest
+        font.pixelSize: Appearance.typeScale.labelSmall
         font.weight: Font.Bold
         color: Appearance.md3.primary
     }

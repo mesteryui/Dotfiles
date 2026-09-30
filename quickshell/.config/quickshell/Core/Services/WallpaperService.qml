@@ -15,8 +15,11 @@ Singleton {
     property string wallpaperDir: Directories.pictures + "/Wallpapers"
 
     signal changed(newWallpaper: string)
+    // Último error legible para la UI ("", extension, no existe, timeout...).
+    property string error: ""
+    property bool failed: false
 
-    readonly property list<string> extensions: [ // TODO: add videos
+    readonly property list<string> extensions: [
         "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
 
     FolderListModel {
@@ -42,6 +45,7 @@ Singleton {
         id: applyProcess
 
         onExited: code => {
+            watchdog.stop();
             // Muerte provocada para superseder (cambio rápido de fondo):
             // retoma lo último pedido en vez de persistir lo viejo.
             if (root._queued !== null) {
@@ -57,11 +61,15 @@ Singleton {
             if (done === "")
                 return;
             if (code === 0) {
-              if (notify) {
-                 Persistent.persistence.currentWallpaper = done;
-                 root.changed(done);
-               }
+                root.failed = false;
+                root.error = "";
+                if (notify) {
+                    Persistent.persistence.currentWallpaper = done;
+                    root.changed(done);
+                }
             } else {
+                root.failed = true;
+                root.error = code === 127 ? "awww no instalado" : "awww falló (" + code + ")";
                 Log.warn("[Wallpaper] awww falló (" + code + "): " + done);
             }
         }
@@ -72,18 +80,52 @@ Singleton {
         root._apply(fullPath, true);
     }
 
+    Timer {
+        id: watchdog
+
+        interval: 20000
+        onTriggered: {
+            if (applyProcess.running) {
+                root.failed = true;
+                root.error = "timeout aplicando fondo";
+                Log.warn("[Wallpaper] timeout aplicando: " + root._pendingWallpaper);
+                applyProcess.running = false;
+            }
+        }
+    }
+
+    function validImage(path: string): bool {
+        if (!path)
+            return false;
+        const lower = String(path).toLowerCase();
+        for (let i = 0; i < root.extensions.length; i++) {
+            if (lower.endsWith("." + root.extensions[i]))
+                return true;
+        }
+        return false;
+    }
+
     function _apply(file: string, notify: bool) {
         if (file === "")
             return;
+        if (!root.validImage(file)) {
+            root.failed = true;
+            root.error = "formato no soportado";
+            Log.warn("[Wallpaper] formato no soportado: " + file);
+            return;
+        }
         if (applyProcess.running) {
             root._queued = { file: file, notify: notify };
             applyProcess.running = false;
             return;
         }
+        root.failed = false;
+        root.error = "";
         root._pendingWallpaper = file;
         root._pendingNotify = notify ?? true;
         applyProcess.command = ["awww", "img", file, "--transition-type", "center"];
         applyProcess.running = true;
+        watchdog.restart();
     }
 
     // IPC: qs ipc call wallpaper set /ruta/absoluta/imagen.png

@@ -21,7 +21,7 @@ TextField {
 
     font {
         family: Appearance.font.sans
-        pixelSize: Appearance?.font.pixelSize.small ?? 15
+        pixelSize: Appearance?.typeScale.titleSmall ?? 15
         hintingPreference: Font.PreferFullHinting
         variableAxes: Appearance.font.variableAxes.main
     }

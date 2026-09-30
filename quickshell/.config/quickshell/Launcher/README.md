@@ -32,8 +32,11 @@ persistente (pins en `Persistent`, recientes/favoritos de emoji en
 
 ## Piezas y quién hace qué
 
-* `AppLauncher.qml` — ventana, IPC, modos, dispatch de `results`,
-  activación y toda la UI (search, chips, breadcrumbs, lista, footer).
+* `AppLauncher.qml` — ventana, IPC, modos, dispatch de `results` y
+  activación. La UI vive en `UI/LauncherSearchBar.qml` (campo + atajos,
+  expone `field`; `controller`/`scopeObj`/`resultView`) y
+  `UI/LauncherModeBar.qml` (chips, grupos emoji, breadcrumb; escribe el
+  campo vía `pickTodo`/`pickSystem`/`pickMode`).
 * `LauncherPreview.qml` — orquesta el preview (clip siempre;
   files/system solo con imagen o texto). `UI/PreviewPanel.qml` solo pinta.
 * `MenuStore.qml` — **descubre** menús: escanea `MenuProviders/`,
@@ -46,8 +49,10 @@ persistente (pins en `Persistent`, recientes/favoritos de emoji en
   `ItemKinds.js` (predicados `isClipText…`), `LauncherApps.js`
   (orden/dedup .desktop), `ShellUtils.js` (`shellEscape`/`fileUrl`,
   única implementación salvo la copia documentada en `Modes/FileMenu.js`).
-* `UI/` — `ResultList.qml`, `PreviewPanel.qml`. No conocen modos
-  ni servicios (salvo `ItemKinds`/`MenuModes` para el preview).
+* `UI/` — `ResultList.qml`, `PreviewPanel.qml`, `LauncherSearchBar.qml`,
+  `LauncherModeBar.qml`. No conocen modos ni servicios (salvo
+  `ItemKinds`/`MenuModes` para el preview); ven el launcher solo vía
+  `controller`/`scopeObj`.
 * `Modes/` — un modo = su lógica con `query/active` de entrada y
   `snapshot`/`result` de salida (ver `LauncherCalc` como ejemplo mínimo).
 

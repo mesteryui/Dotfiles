@@ -6,7 +6,7 @@ import Quickshell
 
 BarPopupWindow {
     id: root
-    
+
     implicitWidth: content.implicitWidth + 20
     implicitHeight: content.implicitHeight + 10
 
@@ -14,7 +14,7 @@ BarPopupWindow {
     PopupBackground {
         anchors.fill: parent
     }
-    
+
     WeatherPopupContent {
         id: content
 

@@ -46,4 +46,21 @@ Singleton {
         const signal = root.currentNetwork?.signalStrength;
         return Icons.getNetworkIcon(Math.floor(signal * 100));
     }
+
+    // Hay internet real: Full/Limited según NM. Sin backend o sin
+    // chequeo disponible, se cae al estado del dispositivo.
+    readonly property bool hasInternet: {
+        if (Networking.backend === NetworkBackendType.None)
+            return root.currentDevice?.state === ConnectionState.Connected;
+        if (!Networking.canCheckConnectivity)
+            return root.currentDevice?.state === ConnectionState.Connected;
+        return Networking.connectivity === NetworkConnectivity.Full || Networking.connectivity === NetworkConnectivity.Limited;
+    }
+
+    Component.onCompleted: {
+        if (Networking.canCheckConnectivity) {
+            Networking.connectivityCheckEnabled = true;
+            Networking.checkConnectivity();
+        }
+    }
 }

@@ -22,6 +22,7 @@ hl.window_rule({
     no_focus = true,
 })
 
+hl.window_rule({ match = { float = true, xwayland = false }, center = true })
 -- Ignorar eventos de maximizado solicitados por las aplicaciones
 hl.window_rule({
     name  = "suppress-maximize-events",

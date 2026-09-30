@@ -20,6 +20,7 @@ import qs.Core.Services as Services
 import qs.Primitives
 import qs.Shared.Background
 import "Base/MenuModes.js" as MenuModes
+import "Base/CalcCache.js" as CalcCache
 import "Base/LauncherApps.js" as LauncherApps
 import "Modes/FileMenu.js" as FileMenu
 import "Modes"
@@ -212,7 +213,7 @@ Scope {
 
             // Prefijo tecleado (tiene prioridad: los caracteres siempre cambian de menú)
             function typedMode() {
-                return MenuModes.modeForPrefix(searchField.text);
+                return MenuModes.modeForPrefix(searchBar.field.text);
             }
 
             // Modo activo: prefijo tecleado manda; si no, modo forzado por IPC.
@@ -228,7 +229,7 @@ Scope {
             // Query sin prefijo (inmediata: decide modo + alimenta calc/files,
             // que ya tienen su propio debounce interno).
             property string query: {
-                const t = searchField.text;
+                const t = searchBar.field.text;
                 const m = launcher.activeMode;
                 if (m !== "todo") {
                     const p = launcher.prefixOf(m);
@@ -272,7 +273,7 @@ Scope {
             // onLauncherVisibleChanged no se dispara por venir ya visible).
             function onOpened(): void {
                 scope.menuSection = scope.forcedMode === "system" ? scope.menuSection : "main";
-                searchField.text = launcher.prefixOf(scope.forcedMode);
+                searchBar.field.text = launcher.prefixOf(scope.forcedMode);
                 // Sincroniza el filtro debounced en apertura (sin esperar 90 ms).
                 filterDebounce.stop();
                 launcher.debouncedQuery = launcher.query;
@@ -294,7 +295,7 @@ Scope {
                 // Generador de emojis en background (no-op tras el primero):
                 // el arranque del shell ya no espera/spawnea python.
                 EmojiService.ensureLib();
-                searchField.forceActiveFocus();
+                searchBar.field.forceActiveFocus();
             }
 
             function onClosed(): void {
@@ -322,8 +323,8 @@ Scope {
                 scope.shown = true;
                 // Al abrir ya lo pone onOpened; si seguía abierto hay que ponerlo
                 // aquí (si no, el prefijo viejo seguiría mandando sobre el modo).
-                searchField.text = launcher.prefixOf(scope.forcedMode);
-                searchField.forceActiveFocus();
+                searchBar.field.text = launcher.prefixOf(scope.forcedMode);
+                searchBar.field.forceActiveFocus();
             }
 
             // Sincronía scope<->item: el estado vive en el scope; el item
@@ -375,15 +376,24 @@ Scope {
                 }
             }
 
+            // Helpers para LauncherSearchBar/ModeBar (UI/ no importa
+            // SystemMenuRegistry): trail para el breadcrumb y padre para Backspace.
+            function systemTrail() {
+                return SystemMenuRegistry.trail(scope.menuSection);
+            }
+            function systemParentSection() {
+                return SystemMenuRegistry.sectionInfo(scope.menuSection).parentId;
+            }
+
             // Entrar a una sección (click, breadcrumb, IPC): refresca si es dinámica
             // (interna o propia; no-op en el resto).
             function goSection(id) {
                 scope.menuSection = id;
-                searchField.text = ">";
+                searchBar.field.text = ">";
                 // Nueva sección = nuevo listado: ir arriba (ver filterEpoch).
                 launcher.filterEpoch++;
                 SystemMenuRegistry.refreshSection(id);
-                searchField.forceActiveFocus();
+                searchBar.field.forceActiveFocus();
             }
 
             // Mueve la selección: vive en ResultList (con el flash de borde).
@@ -774,15 +784,15 @@ Scope {
             // Chips de categoría: alternan el filtro `g:<id>` manteniendo el resto
             // del query. Equivale a teclear `. g:smileys ...` a mano.
             function toggleEmojiGroup(id) {
-                const full = searchField.text;
+                const full = searchBar.field.text;
                 const body = full.startsWith(".") ? full.slice(1) : full;
                 const m = body.toLowerCase().match(/(?:group|g):([a-záéíóú]+)/);
                 let rest = body.replace(/(?:group|g):[a-záéíóú]+/gi, "").trim();
                 if (m && EmojiService.normGroup(m[1]) === id)
-                    searchField.text = rest === "" ? "." : ". " + rest;
+                    searchBar.field.text = rest === "" ? "." : ". " + rest;
                 else
-                    searchField.text = ". g:" + id + (rest !== "" ? " " + rest : "");
-                searchField.forceActiveFocus();
+                    searchBar.field.text = ". g:" + id + (rest !== "" ? " " + rest : "");
+                searchBar.field.forceActiveFocus();
             }
 
             // Favorito sobre la selección (solo modo emoji).
@@ -830,12 +840,21 @@ Scope {
                 // Solo vale el resultado pedido para este query (si tecleas rápido,
                 // el anterior en vuelo se ignora al mostrar).
                 const fresh = calcState.forQuery === q ? calcState.result : "";
-                if (fresh === "") {
-                    if (calcState.busy)
-                        return [{ kind: "calc", title: tr("launcher.calc_busy_title", "Calculando…"), sub: "qalc", iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
-                    return [{ kind: "calc", title: tr("launcher.calc_empty_title", "Escribe una operación"), sub: tr("launcher.calc_empty_subtitle", "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
-                }
-                return [{ kind: "calc", title: q.trim() + " = " + fresh, sub: tr("launcher.calc_copy_hint", "Enter copia el resultado"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: fresh }];
+                if (fresh !== "")
+                    return CalcCache.set(q, [{ kind: "calc", title: q.trim() + " = " + fresh, sub: tr("launcher.calc_copy_hint", "Enter copia el resultado"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: fresh }]);
+                // Sin resultado fresco y query pendiente de evaluar: aguantar
+                // lo anterior (misma identidad de array = listModel no cambia
+                // = ni swap ni parpadeo) en vez de flashear el placeholder por
+                // tecla. Solo dentro del linaje de tecleo; si no, placeholder.
+                // (El caché vive en Base/CalcCache.js, estado JS no reactivo:
+                // en props QML el binding `results` lo leería y escribiría a
+                // la vez y QML detectaría binding loop.)
+                const cached = CalcCache.get(q);
+                if (cached)
+                    return cached;
+                if ((q || "").trim() !== "" && calcState.busy)
+                    return [{ kind: "calc", title: tr("launcher.calc_busy_title", "Calculando…"), sub: "qalc", iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
+                return [{ kind: "calc", title: tr("launcher.calc_empty_title", "Escribe una operación"), sub: tr("launcher.calc_empty_subtitle", "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
             }
 
             function webResults(q) {
@@ -880,12 +899,12 @@ Scope {
                 height: 640
                 Behavior on width {
                     NumberAnimation {
-                        duration: 150
+                        duration: Appearance.motion.short3
                     }
                 }
                 anchors.centerIn: parent
                 color: Appearance.md3.surface
-                radius: 28
+                radius: Appearance.shape.verylarge
 
                 MouseArea {
                     anchors.fill: parent
@@ -893,420 +912,35 @@ Scope {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
+                    anchors.margins: Appearance.spacing.l
                     spacing: 10
 
-                    RowLayout {
+                    LauncherSearchBar {
+                        id: searchBar
                         Layout.fillWidth: true
-                        spacing: 10
-
-                        // Hero expresivo: morfea con el modo activo.
-                        Item {
-                            Layout.preferredWidth: 44
-                            Layout.preferredHeight: 44
-
-                            MaterialShape {
-                                anchors.fill: parent
-                                shape: launcher.modeShape(launcher.activeMode)
-                                animationDuration: 350
-                                color: Appearance.md3.primary_container
-
-                                MaterialIcon {
-                                    anchors.centerIn: parent
-                                    icon: launcher.modeIcon(launcher.activeMode)
-                                    size: Appearance.font.pixelSize.large
-                                    color: Appearance.md3.on_primary_container
-                                }
-                            }
-                        }
-
-                        MaterialTextField {
-                            id: searchField
-
-                            Layout.fillWidth: true
-                            // TextField ya expone rol EditableText; el nombre sigue
-                            // al placeholder del modo activo.
-                            Accessible.name: searchField.placeholderText
-                        selectedTextColor: Appearance.md3.on_primary
-                        selectionColor: Appearance.md3.primary
-                        focus: true
-                        placeholderText: {
-                            switch (launcher.activeMode) {
-                            case "system": return tr("launcher.placeholder_system", "Sistema… (> para este modo)");
-                            case "files": return tr("launcher.placeholder_files", "Archivos en $HOME…");
-                            case "web": return tr("launcher.placeholder_web", "Buscar en DuckDuckGo…");
-                            case "emoji": return tr("launcher.placeholder_emoji", "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
-                            case "calc": return tr("launcher.placeholder_calc", "Calculadora… ej: 45*1.21");
-                            case "clip": return tr("launcher.placeholder_clipboard", "Portapapeles (cliphist)…");
-                            default: return tr("launcher.placeholder_all", "Buscar aplicaciones…");
-                            }
-                        }
-
-                        // Sin carácter de menú → volver al menú por defecto.
-                        onTextChanged: {
-                            // Escribir vuelve a modo texto (flechas al cursor).
-                            launcher.navResults = false;
-                            if (scope.forcedMode !== "" && !text.startsWith(launcher.prefixOf(scope.forcedMode)))
-                                scope.forcedMode = "";
-                        }
-
-                        Keys.onPressed: event => {
-                            const ctrl = event.modifiers & Qt.ControlModifier;
-                            const shift = event.modifiers & Qt.ShiftModifier;
-                            if (ctrl && shift && event.key === Qt.Key_P) {
-                                // Fija/quita la app seleccionada (solo modo todo).
-                                // Va antes del Ctrl+P de navegación: lleva Shift.
-                                launcher.togglePinCurrent();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (ctrl && shift && event.key === Qt.Key_F) {
-                                // Marca/desmarca el emoji seleccionado como favorito.
-                                launcher.toggleFavCurrent();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N)) {
-                                // En cuadrícula: abajo (una fila); en lista: siguiente.
-                                launcher.navResults = true;
-                                if (resultList.isGrid)
-                                    resultList.moveGrid(0, 1);
-                                else
-                                    resultList.moveSelection(1);
-                                event.accepted = true;
-                                return;
-                            }
-                            if (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P)) {
-                                // En cuadrícula: arriba (una fila); en lista: anterior.
-                                launcher.navResults = true;
-                                if (resultList.isGrid)
-                                    resultList.moveGrid(0, -1);
-                                else
-                                    resultList.moveSelection(-1);
-                                event.accepted = true;
-                                return;
-                            }
-                            if (ctrl && event.key === Qt.Key_F) {
-                                // En cuadrícula: derecha. En lista se deja pasar
-                                // al campo (mover cursor).
-                                if (resultList.isGrid) {
-                                    launcher.navResults = true;
-                                    resultList.moveGrid(1, 0);
-                                    event.accepted = true;
-                                    return;
-                                }
-                            }
-                            if (ctrl && event.key === Qt.Key_B) {
-                                // En cuadrícula: izquierda. En lista, al campo.
-                                if (resultList.isGrid) {
-                                    launcher.navResults = true;
-                                    resultList.moveGrid(-1, 0);
-                                    event.accepted = true;
-                                    return;
-                                }
-                            }
-                            switch (event.key) {
-                            case Qt.Key_Escape:
-                                // ESC sale del menú directamente.
-                                scope.shown = false;
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Left:
-                                // Navegando: siempre a resultados. Escribiendo: solo
-                                // al borde izquierdo; si no, el campo mueve el cursor.
-                                // En lista, siempre al campo.
-                                if (resultList.isGrid && (launcher.navResults || (searchField.cursorPosition === 0 && searchField.selectedText === ""))) {
-                                    launcher.navResults = true;
-                                    resultList.moveGrid(-1, 0);
-                                    event.accepted = true;
-                                }
-                                break;
-                            case Qt.Key_Right:
-                                // Simétrico al borde derecho.
-                                if (resultList.isGrid && (launcher.navResults || (searchField.cursorPosition >= searchField.length && searchField.selectedText === ""))) {
-                                    launcher.navResults = true;
-                                    resultList.moveGrid(1, 0);
-                                    event.accepted = true;
-                                }
-                                break;
-                            case Qt.Key_Down:
-                                launcher.navResults = true;
-                                if (resultList.isGrid)
-                                    resultList.moveGrid(0, 1);
-                                else
-                                    resultList.moveSelection(1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Up:
-                                launcher.navResults = true;
-                                if (resultList.isGrid)
-                                    resultList.moveGrid(0, -1);
-                                else
-                                    resultList.moveSelection(-1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Tab:
-                                // Rota de modo
-                                cycleMode(event.modifiers & Qt.ShiftModifier ? -1 : 1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Backspace:
-                                // En modo sistema con query vacía: subir de sección.
-                                if (launcher.activeMode === "system" && launcher.query === "") {
-                                    const parent = SystemMenuRegistry.sectionInfo(scope.menuSection).parentId;
-                                    if (parent !== "") {
-                                        launcher.goSection(parent);
-                                        event.accepted = true;
-                                    }
-                                }
-                                break;
-                            case Qt.Key_Delete:
-                                if (launcher.activeMode === "clip") {
-                                    const d = resultList.itemAt(resultList.currentIndex);
-                                    if (d && d.cid)
-                                        Services.ClipboardService.deleteEntry(d.cid);
-                                    event.accepted = true;
-                                }
-                                break;
-                            case Qt.Key_Return:
-                            case Qt.Key_Enter:
-                                launcher.activateCurrent();
-                                event.accepted = true;
-                                break;
-                            }
-                        }
-                    }
+                        controller: launcher
+                        scopeObj: scope
+                        resultView: resultList
                     }
 
-                    // Pestañas de modo (equivale a los prefijos).
-                    // Fila con scroll horizontal: los chips conservan su ancho natural
-                    // y no se aplastan cuando el menú está estrecho (600px).
-                    Flickable {
-                        id: modeScroller
-
+                    LauncherModeBar {
+                        id: modeBar
                         Layout.fillWidth: true
-                        height: 32
-                        contentWidth: modeRow.implicitWidth
-                        contentHeight: 32
-                        clip: true
-                        flickableDirection: Flickable.HorizontalFlick
-                        boundsBehavior: Flickable.StopAtBounds
-                        interactive: contentWidth > width
-
-                        // Rueda vertical -> desplazamiento horizontal.
-                        WheelHandler {
-                            orientation: Qt.Vertical
-                            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                            onWheel: event => {
-                                const d = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y;
-                                const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
-                                modeScroller.contentX = Math.min(maxX, Math.max(0, modeScroller.contentX - d));
-                            }
+                        controller: launcher
+                        onPickTodo: {
+                            scope.forcedMode = "";
+                            searchBar.field.text = "";
+                            searchBar.field.forceActiveFocus();
                         }
-
-                        Row {
-                            id: modeRow
-
-                            spacing: 6
-                            height: 32
-
-                            Repeater {
-                                id: modeRepeater
-
-                                model: launcher.modes
-                                delegate: Rectangle {
-                                    id: chipRect
-
-                                    required property var modelData
-                                    required property int index
-
-                                    property bool isActive: launcher.activeMode === modelData.modeId
-
-                                    // Ancho según contenido: sin aplastamiento.
-                                    width: Math.max(64, chipRow.implicitWidth + 26)
-                                    height: 30
-                                    radius: 15
-                                    color: isActive ? Appearance.md3.secondary_container : "transparent"
-                                    border.width: isActive ? 0 : 1
-                                    border.color: Appearance.md3.outline_variant
-
-                                    Row {
-                                        id: chipRow
-
-                                        anchors.centerIn: parent
-                                        spacing: 6
-
-                                        // Badge expresivo con la forma-identidad del modo.
-                                        Item {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            implicitWidth: 22
-                                            implicitHeight: 22
-
-                                            MaterialShape {
-                                                anchors.fill: parent
-                                                shape: launcher.modeShape(modelData.modeId)
-                                                animationDuration: 300
-                                                color: chipRect.isActive ? Appearance.md3.primary : Appearance.md3.surface_container_highest
-
-                                                MaterialIcon {
-                                                    anchors.centerIn: parent
-                                                    icon: launcher.modeIcon(modelData.modeId)
-                                                    size: 13
-                                                    color: chipRect.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
-                                                }
-                                            }
-                                        }
-
-                                        StyledText {
-                                            id: chipText
-
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: Math.min(implicitWidth, parent.parent.width - 50)
-                                            horizontalAlignment: Text.AlignHCenter
-                                            elide: Text.ElideRight
-                                            // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
-                                            text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " : "") + launcher.modeLabel(modelData.modeId)
-                                            font.pixelSize: 12
-                                            color: chipRect.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            if (modelData.modeId === "todo") {
-                                                scope.forcedMode = "";
-                                                searchField.text = "";
-                                            } else if (modelData.modeId === "system") {
-                                                scope.forcedMode = "";
-                                                launcher.goSection("main");
-                                            } else {
-                                                scope.forcedMode = "";
-                                                searchField.text = modelData.selectorChar;
-                                            }
-                                            searchField.forceActiveFocus();
-                                        }
-                                    }
-                                }
-                            }
+                        onPickSystem: {
+                            scope.forcedMode = "";
+                            launcher.goSection("main");
+                            searchBar.field.forceActiveFocus();
                         }
-
-                        // Mantiene visible el chip activo al cambiar de modo.
-                        Connections {
-                            target: launcher
-                            function onActiveModeChanged() {
-                                Qt.callLater(() => {
-                                    let x = 0;
-                                    for (let i = 0; i < modeRepeater.count; i++) {
-                                        const item = modeRepeater.itemAt(i);
-                                        if (launcher.modes[i].modeId === launcher.activeMode) {
-                                            const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
-                                            if (x < modeScroller.contentX)
-                                                modeScroller.contentX = x;
-                                            else if (x + (item ? item.width : 0) > modeScroller.contentX + modeScroller.width)
-                                                modeScroller.contentX = Math.min(maxX, Math.max(0, x + (item ? item.width : 0) - modeScroller.width));
-                                            break;
-                                        }
-                                        x += (item ? item.width : 0) + modeRow.spacing;
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-                    // Chips de categoría del selector de emojis (grupos + Recientes
-                    // + Favoritos del EmojiService). Clic = alternar `g:<id>`.
-                    // Flow adaptable: cada chip mide según su contenido y el
-                    // conjunto salta de línea solo; la altura la decide el
-                    // contenido (sin alto fijo ni scroll).
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 6
-                        visible: launcher.activeMode === "emoji"
-
-                        Repeater {
-                            model: launcher.emojiGroups
-                            delegate: Rectangle {
-                                required property var modelData
-                                required property int index
-
-                                property bool isActive: launcher.emojiActiveGroup() === modelData.id
-
-                                width: Math.max(56, groupChipText.implicitWidth + 30)
-                                height: 26
-                                radius: 13
-                                color: isActive ? Appearance.md3.secondary_container : "transparent"
-                                border.width: isActive ? 0 : 1
-                                border.color: Appearance.md3.outline_variant
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: 4
-
-                                    MaterialIcon {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        iconName: modelData.icon || "circle"
-                                        size: 14
-                                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                                    }
-                                    StyledText {
-                                        id: groupChipText
-
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        // Sin conteo: chips compactos de una fila.
-                                        text: modelData.label
-                                        font.pixelSize: 12
-                                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                                    }
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: launcher.toggleEmojiGroup(modelData.id)
-                                }
-                            }
-                        }
-                    }
-
-                    // Miga de pan del menú de sistema (navegación estilo Omarchy)
-                    Row {
-                        Layout.fillWidth: true
-                        spacing: 4
-                        visible: launcher.activeMode === "system"
-
-                        Repeater {
-                            id: crumbRepeater
-
-                            model: SystemMenuRegistry.trail(scope.menuSection)
-
-                            delegate: Rectangle {
-                                required property var modelData
-                                required property int index
-
-                                property bool isLast: index === crumbRepeater.count - 1
-
-                                height: 26
-                                width: crumbLabel.implicitWidth + 22
-                                radius: 13
-                                color: isLast ? Appearance.md3.primary_container : "transparent"
-
-                                StyledText {
-                                    id: crumbLabel
-
-                                    anchors.centerIn: parent
-                                    text: (index > 0 ? "› " : "") + modelData.title
-                                    font.pixelSize: 12
-                                    color: parent.isLast ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: launcher.goSection(modelData.sectionId)
-                                }
-                            }
+                        onPickMode: selectorChar => {
+                            scope.forcedMode = "";
+                            searchBar.field.text = selectorChar;
+                            searchBar.field.forceActiveFocus();
                         }
                     }
 
@@ -1363,7 +997,7 @@ Scope {
                             // Estado vacío / cargando
                             ColumnLayout {
                                 anchors.centerIn: parent
-                                spacing: 12
+                                spacing: Appearance.spacing.m
                                 visible: resultList.count === 0 && launcher.showEmpty
 
                                 IconImage {
@@ -1384,8 +1018,17 @@ Scope {
                                             return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
                                         return launcher.tr("launcher.empty_no_results", "Sin resultados");
                                     }
-                                    font.pixelSize: 14
+                                    font.pixelSize: Appearance.typeScale.titleSmall
                                     color: Appearance.md3.on_surface_variant
+                                }
+
+                                // Acción M3 (spec empty-states): reintentar fd.
+                                AnimatedTextButton {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    visible: launcher.activeMode === "files" && fileSearch.failed
+                                    text: launcher.tr("launcher.files_retry", "Reintentar")
+                                    isFilled: true
+                                    onClicked: fileSearch.refresh()
                                 }
                             }
                         }
@@ -1410,28 +1053,14 @@ Scope {
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: tr("launcher.footer_hint", "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                         opacity: 0.8
                     }
                 }
             }
 
-            function cycleMode(dir) {
-                const order = launcher.modes.map(m => m.modeId);
-                let i = order.indexOf(launcher.activeMode);
-                i = (i + dir + order.length) % order.length;
-                if (order[i] === "system") {
-                    scope.forcedMode = "";
-                    launcher.goSection("main");
-                    return;
-                }
-                const p = launcher.prefixOf(order[i]);
-                scope.forcedMode = "";
-                searchField.text = p;
-                if (order[i] === "clip")
-                    Services.ClipboardService.refresh();
-            }
+
         }
     }
 }

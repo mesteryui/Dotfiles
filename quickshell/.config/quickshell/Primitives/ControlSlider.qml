@@ -44,7 +44,7 @@ RowLayout {
         root.moved(v);
     }
 
-    spacing: 12
+    spacing: Appearance.spacing.m
     activeFocusOnTab: true
 
     // ── Teclado ────────────────────────────────────────────────
@@ -93,7 +93,7 @@ RowLayout {
 
         Behavior on color {
             ColorAnimation {
-                duration: 150
+                duration: Appearance.motion.short3
             }
         }
 
@@ -122,24 +122,18 @@ RowLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: 24
 
-        // Pista base (Capsule track)
+        // Pista base (spec M3 sliders: track 16dp, esquinas 50%,
+        // active primary / inactive surface-container-highest).
         Rectangle {
             id: trackBg
 
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
-            height: trackArea.pressed ? 14 : 12
+            height: 16
             radius: height / 2
             color: Appearance.md3.surface_container_highest
             border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
             border.color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : "transparent"
-
-            Behavior on height {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
-                }
-            }
 
             // Pista activa (Fill)
             Rectangle {
@@ -155,9 +149,19 @@ RowLayout {
                 }
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: Appearance.motion.short3
                     }
                 }
+            }
+
+            // Stop indicator M3 (4dp al final del track).
+            Rectangle {
+                width: 4
+                height: 4
+                radius: width / 2
+                color: root.accentColor
+                anchors.verticalCenter: parent.verticalCenter
+                x: trackBg.width - width
             }
         }
 
@@ -193,8 +197,32 @@ RowLayout {
             }
             Behavior on color {
                 ColorAnimation {
-                    duration: 150
+                    duration: Appearance.motion.short3
                 }
+            }
+        }
+
+        // Etiqueta de valor M3 (value indicator): burbuja sobre el thumb
+        // solo mientras se arrastra.
+        Rectangle {
+            id: valueBubble
+
+            visible: trackArea.pressed
+            width: bubbleLabel.implicitWidth + 20
+            height: 26
+            radius: Appearance.shape.full
+            color: Appearance.md3.primary_container
+            x: Math.max(0, Math.min(sliderTrackContainer.width - width, thumb.x + thumb.width / 2 - width / 2))
+            y: -30
+
+            StyledText {
+                id: bubbleLabel
+
+                anchors.centerIn: parent
+                text: root.valueText
+                font.pixelSize: Appearance.typeScale.labelSmall
+                font.family: Appearance.font.mono
+                color: Appearance.md3.on_primary_container
             }
         }
 
@@ -237,7 +265,7 @@ RowLayout {
     StyledText {
         visible: root.showValue
         text: root.valueText
-        font.pixelSize: Appearance.font.pixelSize.smaller
+        font.pixelSize: Appearance.typeScale.labelMedium
         font.family: Appearance.font.sans
         color: Appearance.md3.on_surface_variant
         horizontalAlignment: Text.AlignRight

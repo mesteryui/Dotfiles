@@ -31,6 +31,6 @@ MenuDefinition {
         submenu("setup", "Setup", "Docker, Python", "construction", "setup",
             { titleKey: "sysmenu.setup_title", subtitleKey: "sysmenu.setup_subtitle" }),
         ipc("power", "Power / Sesión", "power_menu", "power_settings_new", "ui.powermenu togglePowerMenu",
-            { titleKey: "sysmenu.power_title", subtitleKey: "sysmenu.power_subtitle" }) 
+            { titleKey: "sysmenu.power_title", subtitleKey: "sysmenu.power_subtitle" })
     ]
 }

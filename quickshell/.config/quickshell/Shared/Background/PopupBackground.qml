@@ -17,7 +17,7 @@ Rectangle {
     // Fundido suave al cambiar de tema (matugen): evita el corte duro
     // de colors.json. La primera carga funde desde transparente.
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: Appearance.motion.short3 }
     }
 
     // Borde encima de todo el contenido clippeado

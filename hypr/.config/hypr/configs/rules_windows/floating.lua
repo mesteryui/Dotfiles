@@ -11,6 +11,8 @@ local floatApps = {
     { class = "^(mpv|io.github.diegopvlk.Cine)$" },
     { title = "^(Winetricks.*|Protontricks.*)$" },
     { title = "^(Acerca.*|Watering)$" },
+    { class = "com.saivert.pwvucontrol" },
+    { class = "^(dev.tensaku.Tensaku|tensaku)"}
 }
 
 for _, m in ipairs(floatApps) do
@@ -23,7 +25,11 @@ hl.window_rule({
     center = true,
     size = { 900, 500 },
 })
-
+hl.window_rule({
+  match = { title = "ShinroShell Settings"},
+  float = true,
+  size = { 731,630 }
+})
 -- Dimensiones específicas para galculator
 hl.window_rule({
     match = { class = "^(galculator)$" },

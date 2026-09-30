@@ -86,6 +86,7 @@ Singleton {
     }
     component Appearance: JsonObject {
         property bool darkMode: true
+        property bool reduceMotion: false
         property string fontSans: "Google Sans Flex"
         property string monospace: "JetBrains Mono Nerd Font"
         property string reading: "Google Sans Flex"
@@ -96,8 +97,10 @@ Singleton {
         property string position: "top"
         property int height: 36
         property string workspaceButtonType: "numbers"
-        property bool floating: true
-        property string barType: "floating" // Floating, full_hug, partial_hug, no_floating
+        // Modos: "floating" (píldora flotante con márgenes), "full_hug" (adherida
+        // con esquinas de pantalla redondeadas), "partial_hug" (adherida con
+        // esquinas solo en el lado de la barra), "no_floating" (adherida cuadrada).
+        property string barType: "floating"
     }
     component Notifications: JsonObject {
         property int timeout: 5

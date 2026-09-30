@@ -21,12 +21,55 @@ QtObject {
     // true si el último escaneo fd falló (p. ej. fd no instalado):
     // el estado vacío lo explica en vez de mostrar "Sin resultados".
     property bool failed: false
+    // Motivo legible: "home" | "missing" | "timeout" | "error" | "".
+    property string failReason: ""
+    // Generación: ignora onExited de procesos matados por refresh().
+    property int _gen: 0
+    property int _runGen: -1
+    property Timer watchdog: Timer {
+        interval: 15000
+        onTriggered: {
+            if (fileProc.running) {
+                root.failed = true;
+                root.failReason = "timeout";
+                fileProc.running = false;
+            }
+        }
+    }
 
     property ListModel buffer: ListModel {}
 
     function refresh() {
-        fileProc.command = FileMenu.fdCommand(Quickshell.env("HOME"), root.query);
+        const home = Quickshell.env("HOME");
+        if (!home) {
+            root.failed = true;
+            root.failReason = "home";
+            root.snapshot = [];
+            return;
+        }
+        root._gen++;
+        const g = root._gen;
+        // Aborta el escaneo anterior: sin esto el stdout de dos queries
+        // se mezclaba en el mismo buffer (onRunningChanged no refireaba).
+        if (fileProc.running)
+            fileProc.running = false;
+        Qt.callLater(() => root._startGen(g));
+    }
+
+    function _startGen(g) {
+        if (g !== root._gen)
+            return;
+        const home = Quickshell.env("HOME");
+        if (!home) {
+            root.failed = true;
+            root.failReason = "home";
+            root.snapshot = [];
+            return;
+        }
+        root._runGen = g;
+        fileProc.command = FileMenu.fdCommand(home, root.query);
         fileProc.running = true;
+        root.watchdog.restart();
     }
 
     onQueryChanged: {
@@ -65,10 +108,23 @@ QtObject {
             if (running) {
                 root.buffer.clear();
                 root.failed = false;
+                root.failReason = "";
             }
         }
         onExited: code => {
+            root.watchdog.stop();
+            // Salida de un proceso ya superado por otro refresh: ignorar.
+            if (root._runGen !== root._gen)
+                return;
+            root._runGen = -1;
+            if (code === 127) {
+                root.failed = true;
+                root.failReason = "missing";
+                root.snapshot = [];
+                return;
+            }
             root.failed = code !== 0;
+            root.failReason = code !== 0 ? "error" : "";
             const out = [];
             for (let i = 0; i < root.buffer.count; i++) {
                 const e = root.buffer.get(i);

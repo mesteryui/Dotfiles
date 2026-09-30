@@ -26,6 +26,7 @@ Scope {
             root.show = !root.show;
         }
     }
+
     Timer {
         id: animatingTimer
 
@@ -87,17 +88,18 @@ Scope {
                 root.show = visible
             }
 
-            // Fondo oscuro semitransparente que cubre toda la ventana
+            // Scrim M3 (spec diálogos): velo scrim al 32%.
             Rectangle {
                 anchors.fill: parent
-                color: Qt.alpha(Appearance.md3.surface, 0.6)
+                color: Qt.alpha(Appearance.md3.scrim, 0.32)
 
                 opacity: root.show ? 1 : 0
 
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 180
-                        easing.type: Easing.OutQuad
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: Appearance.motion.emphasized
                     }
                 }
             }
@@ -108,21 +110,22 @@ Scope {
                 width: powerButtonsLayout.implicitWidth + 48
                 height: powerButtonsLayout.implicitHeight + 48
                 color: Appearance.md3.surface
-                radius: 28
+                radius: Appearance.shape.verylarge
 
                 scale: root.show ? 1 : 0.94
                 opacity: root.show ? 1 : 0
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: 200
+                        duration: Appearance.motion.short4
                         easing.type: Easing.OutBack
                     }
                 }
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 200
-                        easing.type: Easing.OutQuad
+                        duration: Appearance.motion.short4
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: Appearance.motion.emphasized
                     }
                 }
 
@@ -205,11 +208,10 @@ Scope {
                 }
             }
         }
-    }
 
     // El morph al resaltar lo gestiona GenericButton (reposo Circle,
     // resaltado con forma-identidad); aquí solo se fija la identidad
     // de cada acción vía buttonShape.
     component PowerButton: GenericButton {
     }
-}
+}}

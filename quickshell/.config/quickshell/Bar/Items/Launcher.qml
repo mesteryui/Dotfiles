@@ -16,7 +16,7 @@ BarItem {
 
     Behavior on scale {
         NumberAnimation {
-            duration: 100
+            duration: Appearance.motion.short2
             easing.type: Easing.OutQuad
         }
     }

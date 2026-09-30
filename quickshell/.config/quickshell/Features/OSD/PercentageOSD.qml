@@ -48,7 +48,7 @@ BaseOSD {
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: 12
+        spacing: Appearance.spacing.m
         width: parent.width - 40
 
         // Icono directo, sin contenedor (las props de forma se conservan

@@ -35,7 +35,7 @@ Item {
         id: mainColumn
 
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: Appearance.spacing.m
         spacing: 10
 
         // --- Clima actual ---
@@ -43,7 +43,7 @@ Item {
             id: currentRow
             Layout.fillWidth: true
 
-            spacing: 12
+            spacing: Appearance.spacing.m
             Layout.alignment: Qt.AlignVCenter
 
             Item {
@@ -60,12 +60,12 @@ Item {
             }
 
             ColumnLayout {
-                spacing: 4
+                spacing: Appearance.spacing.xs
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
 
                 RowLayout {
-                    spacing: 8
+                    spacing: Appearance.spacing.s
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
 
@@ -134,7 +134,7 @@ Item {
             // Cada celda: icono + columna(valor + etiqueta)
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "air"
                     size: 20
@@ -159,7 +159,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "water_drop"
                     size: 20
@@ -184,7 +184,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "compress"
                     size: 20
@@ -209,7 +209,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "visibility"
                     size: 20
@@ -234,7 +234,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "rainy"
                     size: 20
@@ -259,7 +259,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "umbrella"
                     size: 20
@@ -284,7 +284,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "light_mode"
                     size: 20
@@ -309,7 +309,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "wb_twilight"
                     size: 20
@@ -334,7 +334,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "bedtime"
                     size: 20
@@ -359,7 +359,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
                 MaterialIcon {
                     icon: "eco"
                     size: 20

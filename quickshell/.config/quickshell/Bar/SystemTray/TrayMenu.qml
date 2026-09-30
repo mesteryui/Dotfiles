@@ -33,7 +33,8 @@ PopupWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 12
+        // Spec M3 menus: contenedor extraSmall (4dp).
+        radius: Appearance.shape.extraSmall
         color: Appearance.md3.surface
         border.color: Appearance.md3.outline
         border.width: 1
@@ -51,7 +52,7 @@ PopupWindow {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: 8
+                margins: Appearance.spacing.s
             }
 
             spacing: 2
@@ -74,7 +75,7 @@ PopupWindow {
                         height: 1
                         visible: itemDelegate.modelData?.isSeparator ?? false
                         color: Appearance.md3.outline_variant
-                        opacity: 0.5
+                        opacity: 1.0
                     }
 
                     // Item normal
@@ -83,12 +84,12 @@ PopupWindow {
 
                         anchors.fill: parent
                         visible: !(itemDelegate.modelData?.isSeparator ?? false)
-                        radius: 8
+                        radius: Appearance.shape.verysmall
                         color: itemMouse.containsMouse ? Appearance.md3.primary : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 100
+                                duration: Appearance.motion.short2
                             }
                         }
 
@@ -100,7 +101,7 @@ PopupWindow {
                                 leftMargin: 12
                                 rightMargin: 12
                             }
-                            spacing: 8
+                            spacing: Appearance.spacing.s
 
                             // Icono (si tiene)
                             Image {
@@ -125,7 +126,7 @@ PopupWindow {
 
                                 Behavior on color {
                                     ColorAnimation {
-                                        duration: 100
+                                        duration: Appearance.motion.short2
                                     }
                                 }
                             }
@@ -135,7 +136,7 @@ PopupWindow {
                                 visible: itemDelegate.modelData?.hasChildren ?? false
                                 text: "chevron_right"
                                 color: Appearance.md3.on_surface_variant
-                                font.pixelSize: Appearance.font.pixelSize.normal
+                                font.pixelSize: Appearance.typeScale.bodyLarge
                             }
 
                             // Checkbox / radio

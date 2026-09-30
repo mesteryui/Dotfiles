@@ -8,8 +8,8 @@ hl.config({
         allow_tearing = false,
         no_focus_fallback = true,
         col = {
-            active_border = { colors = {Colors.primary, Colors.tertiary}, angle = 45 },
-            inactive_border = { colors = {Colors.on_secondary, Colors.surface_container}, angle = 45 },
+            active_border = { colors = {Colors.primary}, angle = 45 },
+            inactive_border = { colors = {Colors.surface_container}, angle = 45 },
         },
         resize_on_border = true,
         resize_corner = 3,
@@ -22,15 +22,16 @@ hl.config({
         hide_on_key_press = true,
         no_hardware_cursors = true,
         enable_hyprcursor = true,
-        no_warps = true,
+        no_warps = false,
+        persistent_warps = false,
+        warp_on_change_workspace = 1,
         inactive_timeout = 7
     },
     render = {
         direct_scanout = 0,
     },
     xwayland = {
-        enabled = true,
-        force_zero_scaling = false,
+        force_zero_scaling = true,
     },
 })
 
@@ -39,8 +40,8 @@ hl.config({
         col = {
             border_active = { colors = {Colors.primary, Colors.tertiary}, angle = 45 },
             border_inactive = { colors = {Colors.on_secondary, Colors.surface_container}, angle = 45 },
-            border_locked_active = 1,
-            border_locked_inactive = 1,
+            --border_locked_active = 1,
+            --border_locked_inactive = 1,
         },
         groupbar = {
             font_size = 12,
@@ -68,27 +69,20 @@ hl.config({
 hl.config({
     decoration = {
         rounding = 18,
-        rounding_power = 2.5,
+        rounding_power = 2,
         active_opacity = 1.0,
         inactive_opacity = 0.95,
         dim_inactive = false,
         blur = {
             enabled = true,
             size = 10,
-            passes = 3,
-            noise = 0.05,
-            contrast = 0.9,
-            brightness = 0.96,
-            vibrancy = 0.6,
-            vibrancy_darkness = 0.6,
-            popups = false,
-            popups_ignorealpha = 0.6,
-            ignore_opacity = true,
-            input_methods = true,
-            input_methods_ignorealpha = 0.8,
-            new_optimizations = true,
+            passes = 2,
+            noise = 0,
+            contrast = 2,
+            brightness = 0.8,
+            vibrancy = 0.35,
+            vibrancy_darkness = 0.35,
             special = false,
-            xray = false,
         },
         shadow = {
             enabled = true,
@@ -107,14 +101,9 @@ hl.config({
     },
     dwindle = {
        -- pseudotile = true,
+        smart_resizing = true,
         force_split = 2,
         preserve_split = true,
         --special_scale_factor = 0.8,
-    },
-    scrolling = {
-        fullscreen_on_one_column = true,
-        focus_fit_method = 1,
-        column_width = 0.985,
-        follow_focus = true,
     },
 })

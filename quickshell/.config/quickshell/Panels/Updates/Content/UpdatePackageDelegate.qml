@@ -23,7 +23,7 @@ Item {
             leftMargin: 8
             rightMargin: 8
         }
-        radius: 8
+        radius: Appearance.shape.verysmall
         color: "transparent"
 
         Rectangle {
@@ -34,7 +34,7 @@ Item {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 150
+                    duration: Appearance.motion.short3
                 }
             }
         }
@@ -47,7 +47,7 @@ Item {
             leftMargin: 16
             rightMargin: 16
         }
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         StyledText {
             Layout.fillWidth: true

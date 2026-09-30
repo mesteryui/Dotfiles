@@ -33,7 +33,7 @@ Item {
     signal seekRequested(real newPosition)
 
     // El Wrapper lo consulta en sus Timers y Connections
-    readonly property bool sliderDragging: progressArea.pressed
+    readonly property bool sliderDragging: seekBar.dragging
 
     readonly property var player: Services.MprisService.activePlayer
 
@@ -47,20 +47,7 @@ Item {
     implicitHeight: mainColumn.implicitHeight + 32
 
     // ── Helpers ───────────────────────────────────────────────
-    function formatTime(seconds: real): string {
-        if (!seconds || seconds <= 0 || isNaN(seconds))
-            return "0:00";
-        const totalSec = Math.floor(seconds);
-        const h = Math.floor(totalSec / 3600);
-        const m = Math.floor((totalSec % 3600) / 60);
-        const s = totalSec % 60;
-
-        if (h > 0) {
-            return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
-        }
-        return m + ":" + String(s).padStart(2, "0");
-    }
-
+    // (El formateo mm:ss del slider vive en Primitives/MprisSeekBar.)
     function toggleShuffle() {
         if (!Services.MprisService.shuffleSupported)
             return;
@@ -97,7 +84,7 @@ Item {
             top: parent.top
             left: parent.left
             right: parent.right
-            margins: 16
+            margins: Appearance.spacing.l
         }
 
         spacing: 14
@@ -111,14 +98,14 @@ Item {
             Layout.preferredHeight: 160
 
             visible: !root.hasPlayer
-            spacing: 12
+            spacing: Appearance.spacing.m
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: 64
                 Layout.preferredHeight: 64
-                radius: 32
+                radius: Appearance.shape.full
                 color: Appearance.md3.surface_container_highest
 
                 MaterialIcon {
@@ -137,7 +124,7 @@ Item {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: Services.I18nService.getTranslation("media.empty", "Nada reproduciendo")
-                    font.pixelSize: Appearance.font.pixelSize.normal
+                    font.pixelSize: Appearance.typeScale.bodyLarge
                     font.weight: Font.DemiBold
                     font.family: Appearance.font.sans
                     color: Appearance.md3.on_surface
@@ -146,7 +133,7 @@ Item {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: "Inicia la reproducción en cualquier aplicación"
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     font.family: Appearance.font.sans
                     color: Appearance.md3.on_surface_variant
                 }
@@ -171,17 +158,6 @@ Item {
 
                 readonly property int artShape: MaterialShape.Cookie12Sided
 
-                // Sombra tonal para dar profundidad Material You (sigue la silueta)
-                MultiEffect {
-                    anchors.fill: artShapeBg
-                    source: artShapeBg
-                    shadowEnabled: true
-                    shadowColor: Appearance.md3.shadow
-                    shadowOpacity: 0.18
-                    shadowBlur: 0.5
-                    shadowVerticalOffset: 2
-                }
-
                 // Placeholder / Fondo — MaterialShape con morph automático
                 MaterialShape {
                     id: artShapeBg
@@ -199,6 +175,38 @@ Item {
                         color: Appearance.md3.on_primary_container
                         visible: !artImage.visible || artImage.status !== Image.Ready
                     }
+                }
+
+                // Sombra tonal para dar profundidad Material You (sigue la silueta).
+                // source se asigna en onCompleted para evitar warning
+                // "ShaderEffect: 'source' does not have a matching property"
+                MultiEffect {
+                    id: artShadow
+                    anchors.fill: artShapeBg
+                    shadowEnabled: true
+                    shadowColor: Appearance.md3.shadow
+                    shadowOpacity: Appearance.elevation3.opacity
+                    shadowBlur: Appearance.elevation3.blur
+                    shadowVerticalOffset: Appearance.elevation3.offsetY
+                    z: -1
+                    Component.onCompleted: artShadow.source = artShapeBg
+                }
+
+                // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
+                // Declarada ANTES de artImage para que maskSource nunca apunte
+                // a un item sin textura en el primer frame (warning
+                // "ShaderEffect: 'source' does not have a matching property").
+                // layer.enabled es obligatorio aquí: sin él, un item con visible:false
+                // no genera textura y la máscara queda en blanco (imagen invisible).
+                MaterialShape {
+                    id: artMaskShape
+
+                    anchors.fill: parent
+                    shape: artContainer.artShape
+                    color: "white"
+                    animationDuration: 500
+                    visible: false
+                    layer.enabled: true
                 }
 
                 // Imagen recortada a la silueta expresiva vía máscara
@@ -219,31 +227,20 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 200
+                            duration: Appearance.motion.short4
                         }
                     }
 
                     // No necesita MouseArea/hover → layer.enabled aquí es seguro
                     layer.enabled: true
 
+                    // maskSource se asigna en onCompleted (mismo patrón que las
+                    // sombras): evita el warning del primer frame.
                     layer.effect: MultiEffect {
+                        id: artMaskEffect
                         maskEnabled: true
-                        maskSource: artMaskShape
+                        Component.onCompleted: artMaskEffect.maskSource = artMaskShape
                     }
-                }
-
-                // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
-                // layer.enabled es obligatorio aquí: sin él, un item con visible:false
-                // no genera textura y la máscara queda en blanco (imagen invisible).
-                MaterialShape {
-                    id: artMaskShape
-
-                    anchors.fill: artImage
-                    shape: artContainer.artShape
-                    color: "white"
-                    animationDuration: 500
-                    visible: false
-                    layer.enabled: true
                 }
             }
 
@@ -300,7 +297,7 @@ Item {
                 StyledText {
                     Layout.fillWidth: true
                     text: root.player?.trackArtist || root.player?.trackAlbumArtist || ""
-                    font.pixelSize: Appearance.font.pixelSize.smallie
+                    font.pixelSize: Appearance.typeScale.bodyMedium
                     font.family: Appearance.font.sans
                     color: Appearance.md3.on_surface_variant
                     elide: Text.ElideRight
@@ -312,7 +309,7 @@ Item {
                 StyledText {
                     Layout.fillWidth: true
                     text: root.player?.trackAlbum || ""
-                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
                     color: Qt.alpha(Appearance.md3.on_surface_variant, 0.75)
                     elide: Text.ElideRight
@@ -327,193 +324,19 @@ Item {
         // ════════════════════════════════════════════════════════
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: Appearance.spacing.xs
             visible: root.hasPlayer
 
-            // Pista interactiva de cápsula
-            Item {
-                id: progressContainer
+            // Seekbar unificado (Primitives/MprisSeekBar): mismo gesto y
+            // estados que la tarjeta del lockscreen.
+            MprisSeekBar {
+                id: seekBar
+
                 Layout.fillWidth: true
-
-                implicitHeight: 20
-
-                readonly property real totalLength: root.player?.length ?? 0
-
-                readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.currentPosition / totalLength)) : 0.0
-
-                // Ratio bajo el dedo mientras se arrastra (-1 si no).
-                property real dragRatio: -1
-
-                // Lo que se pinta: en arrastre sigue al dedo (como end-4),
-                // si no al progreso real.
-                readonly property real displayRatio: progressArea.pressed && dragRatio >= 0 ? dragRatio : progressRatio
-
-                // Pista base (Capsule track)
-                Rectangle {
-                    id: progressTrackBg
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width
-                    height: progressArea.pressed ? 10 : (progressArea.containsMouse ? 8 : 6)
-                    radius: height / 2
-                    color: Appearance.md3.surface_container_highest
-
-                    Behavior on height {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    // Pista activa (Fill) con stop-indicator M3 Expressive:
-                    // gap de 4px antes del resto (desaparece al 100%).
-                    Rectangle {
-                        width: Math.max(parent.height, progressTrackBg.width * progressContainer.displayRatio - (progressContainer.displayRatio >= 0.999 ? 0 : 4))
-                        height: parent.height
-                        radius: parent.radius
-                        color: Appearance.md3.primary
-
-                        Behavior on width {
-                            enabled: !progressArea.pressed
-
-                            NumberAnimation {
-                                duration: 80
-                            }
-                        }
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                    }
-                }
-
-                // Burbuja de tiempo al arrastrar (estilo end-4).
-                Rectangle {
-                    id: seekBubble
-
-                    visible: progressArea.pressed && progressContainer.dragRatio >= 0
-                    width: bubbleText.implicitWidth + 20
-                    height: 26
-                    radius: Appearance.shape.full
-                    color: Appearance.md3.primary_container
-                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.displayRatio - width / 2))
-                    y: -30
-
-                    StyledText {
-                        id: bubbleText
-
-                        anchors.centerIn: parent
-                        text: root.formatTime(progressContainer.dragRatio * progressContainer.totalLength)
-                        font.pixelSize: Appearance.font.pixelSize.smallest
-                        font.family: Appearance.font.mono
-                        color: Appearance.md3.on_primary_container
-                    }
-                }
-
-                // Thumb M3 Expressive — en reposo solo pista (slider small);
-                // al hover aparece el círculo y al arrastrar morfea a cookie.
-                MaterialShape {
-                    id: progressThumb
-
-                    x: Math.max(0, Math.min(progressContainer.width - width, progressContainer.width * progressContainer.displayRatio - width / 2))
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: progressArea.pressed ? 18 : 14
-                    height: width
-                    shape: progressArea.pressed ? MaterialShape.Cookie4Sided : MaterialShape.Circle
-                    color: Appearance.md3.primary
-                    strokeColor: Appearance.md3.surface_container_lowest
-                    strokeWidth: 1.5
-                    animationDuration: 250
-                    opacity: (progressArea.containsMouse || progressArea.pressed) ? 1 : 0
-                    scale: (progressArea.containsMouse || progressArea.pressed) ? 1 : 0.5
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                        }
-                    }
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                    Behavior on x {
-                        enabled: !progressArea.pressed
-
-                        NumberAnimation {
-                            duration: 80
-                        }
-                    }
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: progressArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: (root.player?.canSeek || root.player?.canControl) ? Qt.PointingHandCursor : Qt.ArrowCursor
-
-                    function updateSeek(mouseX: real) {
-                        if (!(root.player?.canSeek || root.player?.canControl))
-                            return;
-                        const ratio = Math.max(0.0, Math.min(1.0, mouseX / width));
-                        const targetPos = ratio * (root.player?.length ?? 0);
-                        root.seekRequested(targetPos);
-                    }
-
-                    onPressed: mouse => {
-                        progressContainer.dragRatio = Math.max(0.0, Math.min(1.0, mouse.x / width));
-                        updateSeek(mouse.x);
-                    }
-                    onPressedChanged: {
-                        if (!pressed)
-                            progressContainer.dragRatio = -1;
-                    }
-                    onPositionChanged: mouse => {
-                        if (pressed) {
-                            progressContainer.dragRatio = Math.max(0.0, Math.min(1.0, mouse.x / width));
-                            updateSeek(mouse.x);
-                        }
-                    }
-                    onClicked: mouse => updateSeek(mouse.x)
-                }
-            }
-
-            // Tiempos
-            RowLayout {
-                Layout.fillWidth: true
-
-                StyledText {
-                    text: root.formatTime(root.currentPosition)
-                    font.pixelSize: Appearance.font.pixelSize.smallest
-                    font.family: Appearance.font.mono
-                    font.features: ({
-                            "tnum": 1
-                        })
-                    color: Appearance.md3.on_surface_variant
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                StyledText {
-                    text: root.formatTime(root.player?.length ?? 0)
-                    font.pixelSize: Appearance.font.pixelSize.smallest
-                    font.family: Appearance.font.mono
-                    font.features: ({
-                            "tnum": 1
-                        })
-                    color: Appearance.md3.on_surface_variant
-                }
+                position: root.currentPosition
+                length: root.player?.length ?? 0
+                canSeek: (root.player?.canSeek || root.player?.canControl) ?? false
+                onSeekRequested: newPosition => root.seekRequested(newPosition)
             }
         }
 
@@ -564,22 +387,16 @@ Item {
             Item {
                 id: playPauseHero
 
-                implicitWidth: 58
-                implicitHeight: 58
+                // Spec M3 FAB medium: 56dp.
+                implicitWidth: 56
+                implicitHeight: 56
+
+                Accessible.role: Accessible.Button
+                Accessible.name: playPauseHero.playing ? Services.I18nService.getTranslation("media.pause", "Pausar") : Services.I18nService.getTranslation("media.play", "Reproducir")
 
                 readonly property bool playing: Services.MprisService.isPlaying
 
                 readonly property int heroShape: playing ? MaterialShape.Cookie7Sided : MaterialShape.Circle
-
-                MultiEffect {
-                    anchors.fill: heroBg
-                    source: heroBg
-                    shadowEnabled: true
-                    shadowColor: Appearance.md3.shadow
-                    shadowOpacity: 0.18
-                    shadowBlur: 0.5
-                    shadowVerticalOffset: 2
-                }
 
                 MaterialShape {
                     id: heroBg
@@ -590,6 +407,20 @@ Item {
                     animationDuration: 450
                 }
 
+                // Sombra: source se asigna en onCompleted para evitar warning
+                // "ShaderEffect: 'source' does not have a matching property"
+                MultiEffect {
+                    id: heroShadow
+                    anchors.fill: heroBg
+                    shadowEnabled: true
+                    shadowColor: Appearance.md3.shadow
+                    shadowOpacity: Appearance.elevation3.opacity
+                    shadowBlur: Appearance.elevation3.blur
+                    shadowVerticalOffset: Appearance.elevation3.offsetY
+                    z: -1
+                    Component.onCompleted: heroShadow.source = heroBg
+                }
+
                 // Capa de estado (hover/press) — misma silueta que el fondo
                 MaterialShape {
                     id: heroStateLayer
@@ -598,11 +429,11 @@ Item {
                     shape: playPauseHero.heroShape
                     color: Appearance.md3.on_primary
                     animationDuration: 450
-                    opacity: heroMouse.pressed ? 0.12 : (heroMouse.containsMouse ? 0.08 : 0)
+                    opacity: heroMouse.pressed ? Appearance.state.pressed : (heroMouse.containsMouse ? Appearance.state.hovered : 0)
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 100
+                            duration: Appearance.motion.short2
                         }
                     }
                 }
@@ -693,7 +524,7 @@ Item {
                 Row {
                     id: chipsRow
 
-                    spacing: 8
+                    spacing: Appearance.spacing.s
 
                     Repeater {
                         model: Services.MprisService.players
@@ -705,6 +536,10 @@ Item {
                             property MprisPlayer playerObj: modelData
 
                             readonly property bool isActive: Services.MprisService.activePlayer === playerObj
+
+                            Accessible.role: Accessible.RadioButton
+                            Accessible.checked: chipItem.isActive
+                            Accessible.name: chipItem.playerObj.identity ?? chipItem.playerObj.dbusName
 
                             implicitWidth: chipBg.implicitWidth
                             implicitHeight: 34
@@ -727,21 +562,16 @@ Item {
 
                                 Behavior on color {
                                     ColorAnimation {
-                                        duration: 150
+                                        duration: Appearance.motion.short3
                                     }
                                 }
 
-                                Rectangle {
+                                M3StateLayer {
                                     anchors.fill: parent
                                     radius: parent.radius
-                                    color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
-                                    opacity: chipMouse.pressed ? 0.12 : (chipMouse.containsMouse ? 0.08 : 0)
-
-                                    Behavior on opacity {
-                                        NumberAnimation {
-                                            duration: 100
-                                        }
-                                    }
+                                    tint: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                                    hovered: chipMouse.containsMouse
+                                    pressed: chipMouse.pressed
                                 }
 
                                 RowLayout {
@@ -759,13 +589,13 @@ Item {
                                     StyledText {
                                         text: chipItem.playerObj.identity ?? chipItem.playerObj.dbusName
                                         font.family: Appearance.font.sans
-                                        font.pixelSize: Appearance.font.pixelSize.smaller
+                                        font.pixelSize: Appearance.typeScale.labelMedium
                                         font.weight: chipItem.isActive ? Font.Medium : Font.Normal
                                         color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
 
                                         Behavior on color {
                                             ColorAnimation {
-                                                duration: 150
+                                                duration: Appearance.motion.short3
                                             }
                                         }
                                     }

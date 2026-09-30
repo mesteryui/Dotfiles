@@ -1,5 +1,6 @@
 import qs.Shared.Background
 import qs.Primitives
+import qs.Core
 import qs.Core.Services
 import QtQuick
 import QtQuick.Layouts
@@ -21,8 +22,8 @@ BaseOSD {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
+        anchors.margins: Appearance.spacing.l
+        spacing: Appearance.spacing.m
 
         // Contenedor expresivo con forma por estado.
         Item {

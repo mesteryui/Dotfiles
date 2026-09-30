@@ -4,43 +4,50 @@ import QtQuick
 
 Rectangle {
     id: root
-    
+
     property string text: ""
     property bool isFilled: false
-    
+
     property color baseColor: isFilled ? Appearance.md3.primary : "transparent"
     property color textColor: isFilled ? Appearance.md3.on_primary : Appearance.md3.primary
     property color overlayColor: isFilled ? Appearance.md3.on_primary : Appearance.md3.on_surface
-    
-    // Customization props
-    property int buttonHeight: 36
+
+    // Customization props (spec M3 buttons: altura 40dp, radio full).
+    property int buttonHeight: 40
     property int fontSize: 14
     property int fontWeight: Font.Normal
-    property int paddingHorizontal: 32
+    property int paddingHorizontal: 24
 
     signal clicked()
 
     implicitWidth: textLabel.implicitWidth + paddingHorizontal
     implicitHeight: buttonHeight
-    radius: 9999 // full shape token
+    // Spec M3E buttons: la forma morfea al pulsar (full → squircle).
+    radius: mouseArea.pressed ? Appearance.shape.small : Appearance.shape.full
+
+    Behavior on radius {
+        NumberAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
     color: root.baseColor
-    opacity: enabled ? 1.0 : 0.5
-    
+    opacity: enabled ? 1.0 : Appearance.state.disabled
+
     // Added scaling effect like the MPRIS buttons and Action chips
     scale: mouseArea.pressed ? 0.94 : (mouseArea.containsMouse ? 1.04 : 1.0)
 
     Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
-    Behavior on color { ColorAnimation { duration: 150 } }
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+    Behavior on opacity { NumberAnimation { duration: Appearance.motion.short3 } }
 
     Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: root.overlayColor
-        opacity: mouseArea.pressed ? 0.12 : (mouseArea.containsMouse ? 0.08 : 0)
+        opacity: mouseArea.pressed ? Appearance.state.pressed : (mouseArea.containsMouse ? Appearance.state.hovered : 0)
 
-        Behavior on opacity { NumberAnimation { duration: 100 } }
+        Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
     }
 
     StyledText {

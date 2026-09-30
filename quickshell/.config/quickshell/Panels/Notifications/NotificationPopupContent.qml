@@ -22,7 +22,7 @@ ColumnLayout {
     // ── Cabecera ──────────────────────────────────────────────
     RowLayout {
         Layout.fillWidth: true
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         StyledText {
             Layout.fillWidth: true
@@ -47,7 +47,7 @@ ColumnLayout {
                 anchors.centerIn: parent
                 text: root.count
                 color: Appearance.md3.on_primary_container
-                font.pixelSize: Appearance.font.pixelSize.smaller
+                font.pixelSize: Appearance.typeScale.labelMedium
                 font.bold: true
             }
         }
@@ -58,7 +58,7 @@ ColumnLayout {
 
             implicitWidth: 36
             implicitHeight: 36
-            radius: 18
+            radius: Appearance.shape.full
             color: Services.NotificationService.dnd ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
 
             Accessible.role: Accessible.Button
@@ -102,13 +102,13 @@ ColumnLayout {
 
                 MaterialIcon {
                     icon: "delete_sweep"
-                    size: Appearance.font.pixelSize.normal
+                    size: Appearance.typeScale.bodyLarge
                     color: Appearance.md3.on_secondary_container
                 }
 
                 StyledText {
                     text: Services.I18nService.getTranslation("notifications.clear_all", "Limpiar todo")
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     font.bold: true
                     color: Appearance.md3.on_secondary_container
                 }
@@ -140,7 +140,7 @@ ColumnLayout {
         Layout.preferredHeight: Math.min(contentHeight, 340)
         visible: root.count > 0
         clip: true
-        spacing: 8
+        spacing: Appearance.spacing.s
         boundsBehavior: Flickable.StopAtBounds
         model: Services.NotificationService.history
 
@@ -158,7 +158,7 @@ ColumnLayout {
         Layout.topMargin: 12
         Layout.bottomMargin: 12
         visible: root.count === 0
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         MaterialIcon {
             Layout.alignment: Qt.AlignHCenter
@@ -171,7 +171,7 @@ ColumnLayout {
             Layout.alignment: Qt.AlignHCenter
             text: Services.I18nService.getTranslation("notifications.empty_subtitle", "Sin notificaciones")
             color: Appearance.md3.on_surface_variant
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: Appearance.typeScale.labelMedium
             horizontalAlignment: Text.AlignHCenter
         }
     }

@@ -56,10 +56,11 @@
     "web_search_suffix": "”",
     "file_missing": "The file no longer exists",
     "file_open_failed": "Could not open",
-    "files_fd_missing": "Search unavailable (is fd installed?)"
+    "files_fd_missing": "Search unavailable (is fd installed?)",
+    "files_retry": "Retry"
   },
   "lockscreen": {
-    "caps_lock": "Bloq Mayus Activated",
+    "caps_lock": "Caps Lock Activated",
     "fingerprint": "Place your finger on the reader",
     "greeting_afternoon": "Good afternoon",
     "greeting_morning": "Good morning",
@@ -68,10 +69,13 @@
     "notifications_unread": "unread",
     "password": "Password...",
     "release_to_unlock": "Release to unlock",
-    "wake_hint": "Swipe up or press a key"
+    "wake_hint": "Swipe up or press a key",
+    "sleep": "Sleep"
   },
   "media": {
-    "empty": "No media playing"
+    "empty": "No media playing",
+    "play": "Play",
+    "pause": "Pause"
   },
   "notifications": {
     "clear_all": "Clear all",
@@ -123,7 +127,11 @@
     "bluetooth_available": "Available",
     "bluetooth_pin_hint": "For PIN use the manager",
     "controls": "Control center",
-    "volume": "Volume"
+    "volume": "Volume",
+    "temp": "temperature",
+    "temp_normal": "Normal",
+    "temp_warm": "Warm",
+    "temp_hot": "Hot"
   },
   "polkit": {
     "accept": "Accept",
@@ -161,6 +169,7 @@
       "appearance": {
         "color_scheme": "Color scheme (matugen)",
         "dark_mode": "Dark mode",
+        "reduce_motion": "Reduce motion",
         "font_expressive": "Expressive font",
         "font_mono": "Monospace font",
         "font_reading": "Reading font",

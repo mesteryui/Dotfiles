@@ -33,7 +33,7 @@ hl.layer_rule({
 hl.layer_rule({
   name = "wallpaper-menu",
   match = {namespace = "quickshell:wallpaper-menu"},
-  animation = "fade"
+  no_anim = true
 })
 hl.layer_rule({
     name = "osd-visuals",

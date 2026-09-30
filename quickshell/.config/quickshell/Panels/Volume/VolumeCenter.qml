@@ -65,8 +65,10 @@ Scope {
                 anchors.fill: parent
             }
 
+            // Sombra: source se asigna en onCompleted para evitar warning
+            // "ShaderEffect: 'source' does not have a matching property" del primer frame.
             MultiEffect {
-                source: bg
+                id: panelShadow
                 anchors.fill: bg
                 shadowEnabled: true
                 shadowColor: Appearance.md3.shadow
@@ -74,8 +76,9 @@ Scope {
                 shadowVerticalOffset: 6
                 shadowHorizontalOffset: 0
                 blurMax: 32
-                shadowOpacity: 0.18
+                shadowOpacity: Appearance.elevation2.opacity
                 z: -1
+                Component.onCompleted: panelShadow.source = bg
             }
 
             // Síncrono a propósito: el contenido mide según datos vivos (número
@@ -88,7 +91,7 @@ Scope {
 
                 anchors {
                     fill: parent
-                    margins: 12
+                    margins: Appearance.spacing.m
                 }
                 active: root.visible
                 sourceComponent: volumeComp

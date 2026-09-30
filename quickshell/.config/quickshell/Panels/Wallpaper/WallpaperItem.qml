@@ -28,13 +28,13 @@ Item {
 
     Behavior on scale {
         NumberAnimation {
-            duration: 250
+            duration: Appearance.motion.medium1
             easing.type: Easing.OutCubic
         }
     }
     Behavior on opacity {
         NumberAnimation {
-            duration: 250
+            duration: Appearance.motion.medium1
             easing.type: Easing.OutCubic
         }
     }

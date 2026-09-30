@@ -58,7 +58,7 @@ Item {
 
         anchors.centerIn: parent
         width: 380
-        radius: 28 // extraLarge shape token
+        radius: Appearance.shape.verylarge
         color: Appearance.md3.surface_container_high
 
         implicitHeight: contentColumn.implicitHeight + 48
@@ -73,13 +73,13 @@ Item {
 
         Behavior on opacity {
             OpacityAnimator {
-                duration: 150
+                duration: Appearance.motion.short3
                 easing.type: Easing.OutCubic
             }
         }
         Behavior on scale {
             ScaleAnimator {
-                duration: 150
+                duration: Appearance.motion.short3
                 easing.type: Easing.OutCubic
             }
         }
@@ -135,17 +135,17 @@ Item {
 
             anchors.centerIn: parent
             width: parent.width - 48
-            spacing: 16
+            spacing: Appearance.spacing.l
 
             MaterialIcon {
                 Layout.alignment: Qt.AlignHCenter
-                size: 26
+                size: 28
                 icon: overlay.authError ? "error" : "security"
                 color: overlay.authError ? Appearance.md3.error : Appearance.md3.secondary
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: Appearance.motion.short3
                     }
                 }
             }
@@ -210,7 +210,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: 8
-                spacing: 8
+                spacing: Appearance.spacing.s
 
                 Item {
                     Layout.fillWidth: true

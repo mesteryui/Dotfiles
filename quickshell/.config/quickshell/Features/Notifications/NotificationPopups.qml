@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -29,7 +30,7 @@ PanelWindow {
         id: column
 
         width: parent.width
-        spacing: 12
+        spacing: Appearance.spacing.m
 
         Repeater {
             model: root.trackedNotifications

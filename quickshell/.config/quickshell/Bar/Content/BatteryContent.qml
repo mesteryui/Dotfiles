@@ -31,7 +31,7 @@ Item {
             text: Services.BatteryService.percentage + "%"
             color: Appearance.md3.on_surface
             // Ancho preferido para que el layout sea estable al cambiar el texto
-            Layout.preferredWidth: 35 
+            Layout.preferredWidth: 35
             Layout.alignment: Qt.AlignVCenter
             horizontalAlignment: Text.AlignLeft
         }

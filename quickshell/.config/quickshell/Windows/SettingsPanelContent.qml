@@ -12,218 +12,6 @@ Item {
 
     property int currentTab: 0
 
-    // ── Componentes locales base corregidos ─────────────────────────
-    component SectionCard: M3Card {
-        id: card
-
-        property string title: ""
-        default property alias rows: inner.data
-
-        Layout.fillWidth: true
-        padding: 16
-        radius: Appearance.shape.large
-        color: Appearance.md3.surface_container_high
-
-        content: ColumnLayout {
-            id: inner
-
-            width: parent.width
-            spacing: 14
-
-            StyledText {
-                text: card.title
-                font.pixelSize: Appearance.font.pixelSize.large
-                font.weight: Font.Medium
-                font.variableAxes: Appearance.font.variableAxes.title
-                color: Appearance.md3.primary
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-            }
-        }
-    }
-
-    component FieldLabel: StyledText {
-        font.pixelSize: Appearance.font.pixelSize.small
-        color: Appearance.md3.on_surface_variant
-        Layout.fillWidth: true
-        elide: Text.ElideRight
-    }
-
-    component TextRow: ColumnLayout {
-        id: textRow
-
-        property string label: ""
-        property string value: ""
-
-        signal edited(string text)
-
-        Layout.fillWidth: true
-        spacing: 4
-
-        FieldLabel {
-            text: textRow.label
-        }
-        MaterialTextField {
-            Layout.fillWidth: true
-            text: textRow.value
-            onEditingFinished: textRow.edited(text)
-        }
-    }
-
-    component ChoiceRow: ColumnLayout {
-        id: choiceRow
-
-        property string label: ""
-        property string value: ""
-        property var choicesModel: []
-
-        signal chosen(string value)
-
-        Layout.fillWidth: true
-        spacing: 6
-
-        FieldLabel {
-            text: choiceRow.label
-        }
-
-        Flow {
-            id: flowWrap
-            Layout.fillWidth: true
-
-            spacing: 8
-
-            Repeater {
-                model: choiceRow.choicesModel
-                delegate: Rectangle {
-                    id: chip
-
-                    required property var modelData
-                    readonly property bool selected: modelData.value === choiceRow.value
-
-                    implicitWidth: chipLabel.implicitWidth + 24
-                    implicitHeight: 32
-                    radius: Appearance.shape.full
-                    color: chip.selected ? Appearance.md3.primary_container : Appearance.md3.surface_container_highest
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: chipArea.pressed ? 0.12 : (chipArea.containsMouse ? 0.08 : 0.0)
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-
-                    StyledText {
-                        id: chipLabel
-
-                        anchors.centerIn: parent
-                        text: chip.modelData.text
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: chip.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
-                    }
-
-                    MouseArea {
-                        id: chipArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: choiceRow.chosen(chip.modelData.value)
-                    }
-                }
-            }
-        }
-    }
-
-    component SidebarTab: Rectangle {
-        id: tabBtn
-
-        property string iconName: ""
-        property string title: ""
-        property string description: ""
-        property bool selected: false
-
-        signal clicked
-
-        Layout.fillWidth: true
-        implicitHeight: 60
-        radius: Appearance.shape.large
-        color: selected ? Appearance.md3.secondary_container : "transparent"
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 150
-            }
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius: parent.radius
-            color: Appearance.md3.on_surface
-            opacity: tabArea.pressed ? 0.12 : (tabArea.containsMouse && !tabBtn.selected ? 0.08 : 0.0)
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 100
-                }
-            }
-        }
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 12
-
-            StyledText {
-                text: tabBtn.iconName
-                font.family: "Material Symbols Rounded"
-                font.pixelSize: 22
-                color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 1
-
-                StyledText {
-                    text: tabBtn.title
-                    font.pixelSize: Appearance.font.pixelSize.normal
-                    font.weight: Font.Medium
-                    color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                }
-                StyledText {
-                    text: tabBtn.description
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                }
-            }
-        }
-
-        MouseArea {
-            id: tabArea
-
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: tabBtn.clicked()
-        }
-    }
-
     function toSlider(val, min, max) {
         return Math.max(0, Math.min(1, (val - min) / (max - min)));
     }
@@ -236,8 +24,8 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 16
+        anchors.margins: Appearance.spacing.l
+        spacing: Appearance.spacing.l
 
         // 1. BARRA LATERAL IZQUIERDA (Ancho compacto y proporcionado)
         ColumnLayout {
@@ -259,28 +47,28 @@ Item {
                 elide: Text.ElideRight
             }
 
-            SidebarTab {
+            SettingsSidebarTab {
                 iconName: "palette"
                 title: Services.I18nService.getTranslation("settings.tabs.interface.title", "Interfaz")
                 description: Services.I18nService.getTranslation("settings.tabs.interface.description", "Apariencia")
                 selected: root.currentTab === 0
                 onClicked: root.currentTab = 0
             }
-            SidebarTab {
+            SettingsSidebarTab {
                 iconName: "display_settings"
                 title: Services.I18nService.getTranslation("settings.tabs.screen.title", "Pantalla")
                 description: Services.I18nService.getTranslation("settings.tabs.screen.description", "Bloqueo y luz")
                 selected: root.currentTab === 1
                 onClicked: root.currentTab = 1
             }
-            SidebarTab {
+            SettingsSidebarTab {
                 iconName: "partly_cloudy_day"
                 title: Services.I18nService.getTranslation("settings.tabs.environment.title", "Entorno")
                 description: Services.I18nService.getTranslation("settings.tabs.environment.description", "Clima y avisos")
                 selected: root.currentTab === 2
                 onClicked: root.currentTab = 2
             }
-            SidebarTab {
+            SettingsSidebarTab {
                 iconName: "settings"
                 title: Services.I18nService.getTranslation("settings.tabs.system.title", "Sistema")
                 description: Services.I18nService.getTranslation("settings.tabs.system.description", "Idioma y updates")
@@ -303,19 +91,28 @@ Item {
 
             // ── PESTAÑA 0: INTERFAZ ──
             TabFlickable {
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.interface.appearance.title", "Apariencia")
 
-                    ControlToggle {
+                    SettingsSwitchRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.dark_mode", "Modo oscuro")
                         stateText: Services.ConfigService.configs.appearance.darkMode ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
                         iconName: "dark_mode"
-                        active: Services.ConfigService.configs.appearance.darkMode
+                        checked: Services.ConfigService.configs.appearance.darkMode
                         onToggled: Services.ConfigService.configs.appearance.darkMode = !Services.ConfigService.configs.appearance.darkMode
                     }
 
-                    ChoiceRow {
+                    SettingsSwitchRow {
+                        label: Services.I18nService.getTranslation("settings.interface.appearance.reduce_motion", "Reducir movimiento")
+                        stateText: Services.ConfigService.configs.appearance.reduceMotion ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        iconName: "motion_photos_off"
+                        checked: Services.ConfigService.configs.appearance.reduceMotion
+                        onToggled: Services.ConfigService.configs.appearance.reduceMotion = !Services.ConfigService.configs.appearance.reduceMotion
+                    }
+
+                    SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
+                        iconName: "palette"
                         value: Services.ConfigService.configs.appearance.matugen.type
                         choicesModel: [
                             {
@@ -358,33 +155,34 @@ Item {
                         onChosen: val => Services.ConfigService.configs.appearance.matugen.type = val
                     }
 
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_sans", "Fuente principal (sans)")
                         value: Services.ConfigService.configs.appearance.fontSans
                         onEdited: text => Services.ConfigService.configs.appearance.fontSans = text
                     }
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_mono", "Fuente monoespaciada")
                         value: Services.ConfigService.configs.appearance.monospace
                         onEdited: text => Services.ConfigService.configs.appearance.monospace = text
                     }
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_reading", "Fuente de lectura")
                         value: Services.ConfigService.configs.appearance.reading
                         onEdited: text => Services.ConfigService.configs.appearance.reading = text
                     }
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.font_expressive", "Fuente expresiva")
                         value: Services.ConfigService.configs.appearance.expressive
                         onEdited: text => Services.ConfigService.configs.appearance.expressive = text
                     }
                 }
 
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.interface.bar.title", "Barra")
 
-                    ChoiceRow {
+                    SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.position", "Posición")
+                        iconName: "swap_vert"
                         value: Services.ConfigService.configs.bar.position
                         choicesModel: [
                             {
@@ -408,8 +206,9 @@ Item {
                         onMoved: val => Services.ConfigService.configs.bar.height = root.fromSlider(val, 24, 64)
                     }
 
-                    ChoiceRow {
+                    SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.workspace_style", "Estilo de espacios de trabajo")
+                        iconName: "tag"
                         value: Services.ConfigService.configs.bar.workspaceButtonType
                         choicesModel: [
                             {
@@ -427,8 +226,9 @@ Item {
                         ]
                         onChosen: val => Services.ConfigService.configs.bar.workspaceButtonType = val
                     }
-                    ChoiceRow {
+                    SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.type", "Tipo de barra")
+                        iconName: "web_asset"
                         value: Services.ConfigService.configs.bar.barType
                         choicesModel: [
                             {
@@ -458,14 +258,14 @@ Item {
 
             // ── PESTAÑA 1: PANTALLA ──
             TabFlickable {
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.screen.lockscreen.title", "Pantalla de bloqueo")
 
-                    ControlToggle {
+                    SettingsSwitchRow {
                         label: Services.I18nService.getTranslation("settings.screen.lockscreen.use_wallpaper", "Usar fondo de pantalla")
                         stateText: Services.ConfigService.configs.lockscreen.useWallpaper ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
                         iconName: "wallpaper"
-                        active: Services.ConfigService.configs.lockscreen.useWallpaper
+                        checked: Services.ConfigService.configs.lockscreen.useWallpaper
                         onToggled: Services.ConfigService.configs.lockscreen.useWallpaper = !Services.ConfigService.configs.lockscreen.useWallpaper
                     }
 
@@ -479,7 +279,7 @@ Item {
                     }
                 }
 
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.screen.night_light.title", "Luz nocturna")
 
                     ControlSlider {
@@ -520,18 +320,18 @@ Item {
 
             // ── PESTAÑA 2: ENTORNO ──
             TabFlickable {
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.environment.weather.title", "Clima")
 
-                    ControlToggle {
+                    SettingsSwitchRow {
                         label: Services.I18nService.getTranslation("settings.environment.weather.auto_location", "Ubicación automática")
                         stateText: Services.ConfigService.configs.weather.autoLocation ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
                         iconName: "my_location"
-                        active: Services.ConfigService.configs.weather.autoLocation
+                        checked: Services.ConfigService.configs.weather.autoLocation
                         onToggled: Services.ConfigService.configs.weather.autoLocation = !Services.ConfigService.configs.weather.autoLocation
                     }
 
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.environment.weather.city", "Ciudad")
                         value: Services.ConfigService.configs.weather.city
                         onEdited: text => Services.ConfigService.configs.weather.city = text
@@ -549,7 +349,7 @@ Item {
                     }
                 }
 
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.environment.notifications.title", "Notificaciones")
 
                     ControlSlider {
@@ -568,11 +368,12 @@ Item {
 
             // ── PESTAÑA 3: SISTEMA ──
             TabFlickable {
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.system.language.title", "Idioma")
 
-                    ChoiceRow {
+                    SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.system.language.selection", "Seleccion de idiomas")
+                        iconName: "translate"
                         value: Services.ConfigService.configs.language
                         choicesModel: [
                             {
@@ -596,7 +397,7 @@ Item {
                     }
                 }
 
-                SectionCard {
+                SettingsSectionCard {
                     title: Services.I18nService.getTranslation("settings.system.updates.title", "Actualizaciones")
 
                     ControlSlider {
@@ -608,7 +409,7 @@ Item {
                         onMoved: val => Services.ConfigService.configs.updates.countTime = root.fromSlider(val, 5, 180)
                     }
 
-                    TextRow {
+                    SettingsTextRow {
                         label: Services.I18nService.getTranslation("settings.system.updates.command", "Comando")
                         value: Services.ConfigService.configs.updates.command
                         onEdited: text => Services.ConfigService.configs.updates.command = text

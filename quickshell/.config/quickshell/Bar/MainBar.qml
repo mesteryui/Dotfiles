@@ -1,4 +1,5 @@
 import qs.Bar.Items
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
 
@@ -11,7 +12,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             Launcher {}
             Workspaces {}
@@ -24,7 +25,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignCenter | Qt.AlignVCenter
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             Weather {}
             MprisPlayer {}
@@ -38,7 +39,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             SysTray {}
             Network {}

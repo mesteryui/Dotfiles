@@ -1,0 +1,104 @@
+{
+  // layouts/micro.jsonc — tema compacto: 13 líneas, lo esencial, <20ms.
+  // Sin grupos ni barras; keys de solo-icono y formatos recortados
+  // (kernel sin prefijo "Linux", CPU sin frecuencia, disco sin fs).
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "kitty-direct",
+    "source": "~/.config/fastfetch/assets/pngwingScaled.com.png",
+    "padding": {
+      "left": 0,
+      "top": 0,
+      "right": 3
+    },
+    "width": 30,
+    "height": 12
+  },
+  "display": {
+    "separator": " ",
+    "color": {
+      "keys": "#EBDBB2",
+      "title": "#FABD2F",
+      "output": "#FBF1C7",
+      "separator": "#928374"
+    }
+  },
+  "modules": [
+    {
+      "type": "title",
+      "format": "{6}{7}{8}"
+    },
+    "separator",
+    {
+      "type": "os",
+      "key": "",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "kernel",
+      "key": "",
+      "keyColor": "yellow",
+      "format": "{2}"
+    },
+    {
+      "type": "uptime",
+      "key": "󰅐",
+      "keyColor": "green"
+    },
+    {
+      "type": "packages",
+      "key": "󰏖",
+      "keyColor": "green"
+    },
+    {
+      "type": "shell",
+      "key": "",
+      "keyColor": "blue"
+    },
+    {
+      "type": "wm",
+      "key": "",
+      "keyColor": "blue"
+    },
+    {
+      "type": "terminal",
+      "key": "",
+      "keyColor": "magenta"
+    },
+    {
+      "type": "display",
+      "key": "󰍹",
+      "keyColor": "blue",
+      "compactType": "original-with-refresh-rate"
+    },
+    {
+      "type": "cpu",
+      "key": "󰍛",
+      "keyColor": "red",
+      "format": "{1} ({3})",
+      "showPeCoreCount": true
+    },
+    {
+      "type": "memory",
+      "key": "",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "disk",
+      "key": "󰉉",
+      "keyColor": "cyan",
+      "folders": "/",
+      "format": "{size-used} / {size-total} ({size-percentage})"
+    },
+    {
+      "type": "battery",
+      "key": "󰁹",
+      "keyColor": "green"
+    },
+    {
+      "type": "colors",
+      "paddingLeft": 0,
+      "symbol": "circle"
+    }
+  ]
+}

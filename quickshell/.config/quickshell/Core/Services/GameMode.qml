@@ -59,4 +59,16 @@ Singleton {
             Log.info("[GameMode] Modo Juego DESACTIVADO: Configuración habitual restaurada.");
         }
     }
+
+    // Manejo de errores del proceso hyprctl
+    Connections {
+        target: proc
+        ignoreUnknownSignals: true
+
+        function onExited(exitCode) {
+            if (exitCode !== 0) {
+                Log.warn("[GameMode] hyprctl falló con código:", exitCode);
+            }
+        }
+    }
 }

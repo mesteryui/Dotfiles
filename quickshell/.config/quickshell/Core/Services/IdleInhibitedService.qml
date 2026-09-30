@@ -14,7 +14,7 @@ Singleton {
     }
 
     PersistentProperties {
-        id: props 
+        id: props
 
         property bool inhibited
 
@@ -51,7 +51,7 @@ Singleton {
                 item: null
             }
         }
-        
+
         enabled: props.inhibited
     }
 }

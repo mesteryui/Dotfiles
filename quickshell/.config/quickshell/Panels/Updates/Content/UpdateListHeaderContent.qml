@@ -12,7 +12,7 @@ Item {
         anchors {
             left: parent.left
             bottom: parent.bottom
-            margins: 16
+            margins: Appearance.spacing.l
             bottomMargin: 12
         }
         spacing: 10
@@ -53,7 +53,7 @@ Item {
         anchors {
             right: parent.right
             bottom: parent.bottom
-            margins: 12
+            margins: Appearance.spacing.m
         }
         iconName: "refresh"
         iconSize: 18

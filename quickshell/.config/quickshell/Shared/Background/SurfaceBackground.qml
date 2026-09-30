@@ -42,9 +42,9 @@ Rectangle {
 
     // ── Animaciones ──────────────────────────────────────────────────────────
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: Appearance.motion.short3 }
     }
     Behavior on border.width {
-        NumberAnimation { duration: 100 }
+        NumberAnimation { duration: Appearance.motion.short2 }
     }
 }

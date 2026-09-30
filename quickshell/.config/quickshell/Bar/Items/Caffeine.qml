@@ -31,14 +31,14 @@ BarItem {
 
         contentItem: StyledText {
             text: tooltip.text
-            color: Appearance.md3.on_surface
+            color: Appearance.md3.inverse_on_surface
             font.pixelSize: 12
             wrapMode: Text.NoWrap
         }
 
         background: Rectangle {
-            color: Appearance.md3.surface
-            radius: Appearance.shape.normal
+            color: Appearance.md3.inverse_surface
+            radius: Appearance.shape.extraSmall
         }
 
         padding: 8

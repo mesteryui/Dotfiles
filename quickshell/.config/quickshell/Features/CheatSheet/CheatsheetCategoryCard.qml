@@ -21,6 +21,9 @@ import QtQuick.Layouts
 Item {
     id: root
 
+    Accessible.role: Accessible.Grouping
+    Accessible.name: category
+
     required property string category
     required property var binds // array of { mods, keyLabel, label, repeat, searchText }
     /// Global flat-list index of the first bind in this card.
@@ -77,7 +80,7 @@ Item {
                 rightMargin: root.cardPadding
             }
 
-            spacing: 4
+            spacing: Appearance.spacing.xs
 
             // Título de categoría con StyledText de Primitives
             StyledText {
@@ -85,7 +88,7 @@ Item {
                 Layout.bottomMargin: 6
                 text: root.category
                 color: Appearance.md3.primary
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.typeScale.titleSmall
                 font.variableAxes: ({
                         "wght": 650,
                         "wdth": 100

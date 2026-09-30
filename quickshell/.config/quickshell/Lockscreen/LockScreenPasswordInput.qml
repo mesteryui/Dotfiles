@@ -65,7 +65,7 @@ Item {
 
     Timer {
         interval: 900
-        running: root.isPrimary && root.isFingerprintActive && !root.authFailed
+        running: root.isPrimary && root.isFingerprintActive && !root.authFailed && !Appearance.reduceMotion
         repeat: true
         onTriggered: root.breathShape = root.breathShape === MaterialShape.Cookie4Sided ? MaterialShape.Puffy : MaterialShape.Cookie4Sided
     }
@@ -148,12 +148,12 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: 200
+                duration: Appearance.motion.short4
             }
         }
         Behavior on border.color {
             ColorAnimation {
-                duration: 200
+                duration: Appearance.motion.short4
             }
         }
 
@@ -177,7 +177,7 @@ Item {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 200
+                        duration: Appearance.motion.short4
                     }
                 }
 
@@ -186,12 +186,12 @@ Item {
 
                     anchors.centerIn: parent
                     icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
-                    size: 22
+                    size: 24
                     color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive || password.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
 
                     Behavior on color {
                         ColorAnimation {
-                            duration: 200
+                            duration: Appearance.motion.short4
                         }
                     }
                 }
@@ -214,7 +214,7 @@ Item {
                 focus: true
                 enabled: !root.isAuthenticating
                 font.family: Appearance.font.sans
-                font.pixelSize: Appearance.font.pixelSize.small ? Appearance.font.pixelSize.small : 15
+                font.pixelSize: Appearance.typeScale.titleSmall ? Appearance.typeScale.titleSmall : 15
 
                 onAccepted: {
                     if (text.length > 0 && !root.isAuthenticating) {
@@ -236,7 +236,7 @@ Item {
             MaterialIcon {
                 visible: root.isAuthenticating
                 icon: "progress_activity"
-                size: Appearance.font.pixelSize.normal
+                size: Appearance.typeScale.bodyLarge
                 color: Appearance.md3.primary
 
                 RotationAnimator on rotation {
@@ -252,21 +252,22 @@ Item {
             MaterialIcon {
                 visible: KeyboardThings.capsLockOn
                 icon: "keyboard_capslock"
-                size: Appearance.font.pixelSize.normal
+                size: Appearance.typeScale.bodyLarge
                 color: Appearance.md3.tertiary
             }
 
-            // Botón mostrar/ocultar contraseña en círculo tonal
-            Rectangle {
+            // Botón mostrar/ocultar contraseña en círculo tonal (MaterialShape).
+            MaterialShape {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
-                radius: width / 2
+                shape: MaterialShape.Circle
                 color: passwordMouse.containsMouse ? root.withAlpha(Appearance.md3.primary, 0.16) : "transparent"
+                animationDuration: 150
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: Appearance.motion.short3
                     }
                 }
 
@@ -288,15 +289,17 @@ Item {
         }
     }
 
-    // Elevación MD3
+    // Elevación MD3: source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property"
     MultiEffect {
+        id: passwordShadow
         anchors.fill: passwordBg
-        source: passwordBg
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowOpacity: 0.18
         shadowBlur: 0.8
         shadowVerticalOffset: 2
         shadowHorizontalOffset: 0
+        Component.onCompleted: passwordShadow.source = passwordBg
     }
 }

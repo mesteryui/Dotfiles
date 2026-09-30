@@ -21,4 +21,10 @@ Kirigami.Icon {
     color: Appearance.md3.on_surface
     isMask: true
     animated: true
+
+    Component.onCompleted: {
+        if (icon === "") {
+            console.warn("[FluentIcon] Required property 'icon' is empty");
+        }
+    }
 }

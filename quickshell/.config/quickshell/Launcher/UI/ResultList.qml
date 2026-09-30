@@ -154,6 +154,10 @@ Item {
         return out;
     }
 
+    // Última clave mostrada en el preview: si tras un swap sigue el mismo
+    // item (típico tecleando con un solo resultado), no se reconstruye.
+    property string _shownKey: ""
+
     // Última clave válida de selección (ver _keyOf): sobrevive a los
     // huecos con modelo null para restaurar al aterrizar el nuevo.
     property string _lastKey: ""
@@ -169,19 +173,21 @@ Item {
     // Asienta vista tras un cambio de modelo o de conteo. Vía única para
     // no duplicar políticas entre _requestApply y onCountChanged (los
     // updates internos del ScriptModel en modo todo no pasan por apply).
+    // Nueva búsqueda => primer item; refresco => conservar sitio.
     function _settle() {
         const v = root.isGrid ? grid : view;
         const isFilter = root.filterEpoch !== root._seenEpoch;
         root._seenEpoch = root.filterEpoch;
         if (v.count === 0) {
             v.currentIndex = -1;
+            root._swapping = false;
+            root._shownKey = "";
+            root.highlighted(root.currentData);
             return;
         }
         if (isFilter) {
-            // Nueva búsqueda/modo/sección: el item conservado sigue
-            // mandando si existe; si no, arriba del todo.
-            const idx = root._indexOfKey(root._lastKey);
-            v.currentIndex = idx >= 0 ? idx : 0;
+            // Nueva búsqueda/modo/sección: siempre al primer item.
+            v.currentIndex = 0;
             v.positionViewAtBeginning();
         } else {
             // Refresco de datos (snapshot fd, Supr en clip, rescan):
@@ -197,7 +203,23 @@ Item {
             v.positionViewAtIndex(v.currentIndex, root.isGrid ? GridView.Contain : ListView.Contain);
         }
         root._noteIndex();
+        root._swapping = false;
+        // Preview único por asentamiento: durante el swap los pasos
+        // intermedios (índice -1, delegados a medio crear) no lo tocan, y si
+        // sigue el mismo item (teclear con un solo resultado) ni se pide.
+        const _cur = root.currentData;
+        const _k = root._keyOf(_cur);
+        if (_k !== root._shownKey || !isFilter) {
+            root._shownKey = _k;
+            root.highlighted(_cur);
+        }
     }
+
+    // Durante el swap de modelo por tecla (ver _requestApply) los
+    // delegados se destruyen/recrean y el índice pasa por -1: con este
+    // flag los velos no animan (snap) y el preview se actualiza una sola
+    // vez al asentar, en vez de parpadear por cada paso intermedio.
+    property bool _swapping: false
 
     // Aplicación diferida del modelo (anti-SIGSEGV).
     // Cada tecla/cambio de modo reevalúa `listModel` con una identidad
@@ -214,14 +236,39 @@ Item {
 
     function _requestApply() {
         const gen = ++root._modelGen;
+        root._swapping = true;
         Qt.callLater(() => {
             if (gen !== root._modelGen)
                 return;
             const m = root.listModel;
             const wantView = root.isGrid ? null : m;
             const wantGrid = root.isGrid ? m : null;
-            if (view.model === wantView && grid.model === wantGrid)
+            if (view.model === wantView && grid.model === wantGrid) {
+                root._swapping = false;
                 return;
+            }
+            // Atajo anti-parpadeo: si el filtro deja un único resultado y es
+            // el mismo item ya visible (teclear con un solo match), no se toca
+            // el modelo: ni se destruye el delegado ni cambia la selección ni
+            // se pide el preview. Solo en cambios de filtro (en refrescos de
+            // datos los flags del item pueden haber cambiado y el swap sigue).
+            // No hay setModel en curso aquí, así que tocar el índice es seguro.
+            if (root.filterEpoch !== root._seenEpoch) {
+                const arr = root._rawArray();
+                const v = root.isGrid ? grid : view;
+                const shown = v.currentItem;
+                if (arr && arr.length === 1 && v.count === 1 && shown) {
+                    const k = root._keyOf(arr[0]);
+                    if (k !== "" && k === root._keyOf(shown.modelData)) {
+                        root._seenEpoch = root.filterEpoch;
+                        root._lastKey = k;
+                        if (v.currentIndex !== 0)
+                            v.currentIndex = 0;
+                        root._swapping = false;
+                        return;
+                    }
+                }
+            }
             // La selección a conservar vive en _lastKey (ver _noteIndex):
             // sobrevive a los huecos con modelo null.
             view.model = null;
@@ -266,6 +313,10 @@ Item {
                 view.currentIndex = 0;
                 view.positionViewAtBeginning();
             }
+            // Preview dirigido por datos (no necesita delegados): si hay un
+            // swap en curso, _settle lo confirmará o corregirá sin parpadeo.
+            root._shownKey = root._keyOf(root.currentData);
+            root.highlighted(root.currentData);
         });
     }
 
@@ -344,7 +395,7 @@ Item {
         anchors.fill: parent
         visible: !root.isGrid
         clip: true
-        spacing: 4
+        spacing: Appearance.spacing.xs
         // Delegados ya instanciados fuera de vista (~4 por lado):
         // scroll rápido sin crear/destruir en cada frame.
         // Sin reciclaje de delegados (reuseItems): con swaps de modelo por
@@ -374,13 +425,14 @@ Item {
                 root._settle();
                 // El reseteo del modelo no siempre emite currentIndexChanged
                 // (el índice puede conservar el valor) y el currentItem aún
-                // puede ser nulo: diferir para que existan los delegados.
-                root.highlighted(root.currentData);
+                // puede ser nulo: el preview único lo emite _settle al final
+                // (ver _swapping), no cada paso intermedio.
             });
         }
         onCurrentIndexChanged: {
             root._noteIndex();
-            root.highlighted(root.currentData);
+            if (!root._swapping)
+                root.highlighted(root.currentData);
         }
 
         delegate: Rectangle {
@@ -403,15 +455,24 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(modelData.id)
 
+            // Selección efectiva: con un solo resultado, pinta seleccionado
+            // desde el primer frame (el índice 0 llega un tick después del
+            // swap y si no la fila parpadea sin/con selección por tecla).
+            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1 && root._swapping)
+
+            Accessible.role: Accessible.ListItem
+            Accessible.name: entryDelegate.dispTitle
+            Accessible.description: entryDelegate.dispSub
+
             width: view.width
             height: 56
-            radius: 16
+            radius: Appearance.shape.normal
             color: "transparent"
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 8
-                spacing: 12
+                anchors.margins: Appearance.spacing.s
+                spacing: Appearance.spacing.m
 
                 // Icono según tipo
                 Item {
@@ -428,13 +489,14 @@ Item {
                         anchors.centerIn: parent
                         iconName: entryDelegate.dispIconName
                         size: 24
-                        color: Appearance.md3.primary
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
                         visible: entryDelegate.dispAppIcon === "" && entryDelegate.dispCh === ""
                     }
                     StyledText {
                         anchors.centerIn: parent
                         text: entryDelegate.dispCh
                         font.pixelSize: 24
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                         visible: entryDelegate.dispCh !== ""
                     }
                 }
@@ -447,14 +509,14 @@ Item {
                         Layout.fillWidth: true
                         text: entryDelegate.dispTitle
                         font.pixelSize: 14
-                        color: Appearance.md3.on_surface
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                         elide: Text.ElideRight
                     }
                     StyledText {
                         Layout.fillWidth: true
                         text: entryDelegate.dispSub
                         font.pixelSize: 12
-                        color: Appearance.md3.on_surface_variant
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                         visible: text.length > 0
                     }
@@ -464,25 +526,26 @@ Item {
                 MaterialIcon {
                     Layout.alignment: Qt.AlignVCenter
                     iconName: "push_pin"
-                    size: 18
-                    color: Appearance.md3.primary
+                    size: 20
+                    color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
                     visible: entryDelegate.dispPinned
                 }
             }
 
-            Rectangle {
+            M3StateLayer {
                 id: stateLayer
                 anchors.fill: parent
                 radius: parent.radius
-                property bool hovered: false
-                property bool pressed: false
-                color: Appearance.md3.on_surface
-                opacity: pressed ? 0.12 : (hovered || entryDelegate.ListView.isCurrentItem) ? 0.08 : 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 100
-                    }
-                }
+                tint: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                animate: !root._swapping
+            }
+
+            // Seleccionado por teclado (M3 list selected-state): fill tonal,
+            // distinto del velo de hover para no confundir ratón y teclado.
+            M3SelectionFill {
+                anchors.fill: parent
+                radius: parent.radius
+                selected: entryDelegate.effSelected
             }
 
             MouseArea {
@@ -529,12 +592,13 @@ Item {
             // (ver _settle) en vez de ir arriba siempre.
             Qt.callLater(() => {
                 root._settle();
-                root.highlighted(root.currentData);
+                // Preview único en _settle (igual que la lista).
             });
         }
         onCurrentIndexChanged: {
             root._noteIndex();
-            root.highlighted(root.currentData);
+            if (!root._swapping)
+                root.highlighted(root.currentData);
         }
 
         delegate: Rectangle {
@@ -548,10 +612,14 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispFav: modelData.isFavorite ?? false
             readonly property bool dispRecent: (modelData.isRecent ?? false) && !gridDelegate.dispFav
+            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1 && root._swapping)
+
+            Accessible.role: Accessible.ListItem
+            Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIconName
 
             width: grid.cellWidth
             height: grid.cellHeight
-            radius: 16
+            radius: Appearance.shape.normal
             color: "transparent"
 
             Item {
@@ -569,13 +637,14 @@ Item {
                     anchors.centerIn: parent
                     iconName: gridDelegate.dispIconName
                     size: 24
-                    color: Appearance.md3.primary
+                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
                     visible: gridDelegate.dispAppIcon === "" && gridDelegate.dispCh === ""
                 }
                 StyledText {
                     anchors.centerIn: parent
                     text: gridDelegate.dispCh
                     font.pixelSize: 26
+                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                     visible: gridDelegate.dispCh !== ""
                 }
             }
@@ -584,10 +653,10 @@ Item {
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: 4
+                anchors.margins: Appearance.spacing.xs
                 iconName: "star"
                 size: 12
-                color: Appearance.md3.primary
+                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
                 visible: gridDelegate.dispFav
             }
 
@@ -596,26 +665,27 @@ Item {
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: 4
+                anchors.margins: Appearance.spacing.xs
                 iconName: "history"
                 size: 12
-                color: Appearance.md3.on_surface_variant
+                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                 visible: gridDelegate.dispRecent
             }
 
-            Rectangle {
+            M3StateLayer {
                 id: gridStateLayer
                 anchors.fill: parent
                 radius: parent.radius
-                property bool hovered: false
-                property bool pressed: false
-                color: Appearance.md3.on_surface
-                opacity: pressed ? 0.12 : (hovered || gridDelegate.GridView.isCurrentItem) ? 0.08 : 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 100
-                    }
-                }
+                tint: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                animate: !root._swapping
+            }
+
+            // Seleccionado por teclado: fill tonal (igual que la lista,
+            // con el mismo arreglo anti-parpadeo de un solo resultado).
+            M3SelectionFill {
+                anchors.fill: parent
+                radius: parent.radius
+                selected: gridDelegate.effSelected
             }
 
             MouseArea {
@@ -643,13 +713,13 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         height: 3
-        radius: 2
+        radius: Appearance.shape.unsharpen
         color: Appearance.md3.primary
         opacity: (root.wrapFlash && root.wrapDir > 0) ? 0.55 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 150
+                duration: Appearance.motion.short3
             }
         }
     }
@@ -658,13 +728,13 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 3
-        radius: 2
+        radius: Appearance.shape.unsharpen
         color: Appearance.md3.primary
         opacity: (root.wrapFlash && root.wrapDir < 0) ? 0.55 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 150
+                duration: Appearance.motion.short3
             }
         }
     }

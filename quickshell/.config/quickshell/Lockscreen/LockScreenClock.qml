@@ -25,7 +25,7 @@ ColumnLayout {
     // visualmente el icono de condición del clima.)
     RowLayout {
         Layout.alignment: Qt.AlignHCenter
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         StyledText {
             id: dateText
@@ -33,7 +33,7 @@ ColumnLayout {
 
             color: Appearance.md3.on_surface_variant
             opacity: 0.95
-            font.pixelSize: root.compact ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large
+            font.pixelSize: root.compact ? Appearance.typeScale.titleSmall : Appearance.font.pixelSize.large
             font.variableAxes: Appearance.font.variableAxes.title
             font.family: Appearance.font.sans
 
@@ -44,7 +44,7 @@ ColumnLayout {
         // Oculto hasta que el servicio tenga datos reales.
         RowLayout {
             Layout.alignment: Qt.AlignVCenter
-            spacing: 4
+            spacing: Appearance.spacing.xs
             visible: WeatherService.data.temp !== "--°C"
 
             MaterialIcon {
@@ -59,7 +59,7 @@ ColumnLayout {
                 text: WeatherService.data.temp
                 color: Appearance.md3.on_surface_variant
                 opacity: 0.95
-                font.pixelSize: root.compact ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large
+                font.pixelSize: root.compact ? Appearance.typeScale.titleSmall : Appearance.font.pixelSize.large
                 font.variableAxes: Appearance.font.variableAxes.title
                 font.family: Appearance.font.sans
             }
@@ -76,6 +76,10 @@ ColumnLayout {
         font.variableAxes: Appearance.font.variableAxes.title
         font.family: Appearance.font.expressive
         font.weight: root.compact ? Font.DemiBold : Font.Bold
+        // Números tabulares: el ancho no salta al cambiar de minuto.
+        font.features: ({
+                "tnum": 1
+            })
         lineHeight: 1.0
 
         text: clock.date.toLocaleTimeString(I18nService.locale, "hh:mm")

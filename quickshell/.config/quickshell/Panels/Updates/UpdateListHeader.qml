@@ -10,7 +10,7 @@ Item {
     // ── Background ───────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
-        radius: 20
+        radius: Appearance.shape.card
         color: Qt.alpha(Appearance.md3.primary_container, 0.6)
     }
 

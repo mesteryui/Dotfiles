@@ -37,7 +37,7 @@ Item {
         anchors.centerIn: parent
         text: root.label
         color: Appearance.md3.on_surface
-        font.pixelSize: Appearance.font.pixelSize.smaller
+        font.pixelSize: Appearance.typeScale.labelMedium
         font.variableAxes: ({ "wght": 550, "wdth": 100 })
     }
 }

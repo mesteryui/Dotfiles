@@ -34,12 +34,12 @@ Rectangle {
     visible: hasPreview
     Layout.preferredWidth: hasPreview ? 380 : 0
     Layout.fillHeight: true
-    radius: 20
+    radius: Appearance.shape.card
     color: Appearance.md3.surface_container_low
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: Appearance.spacing.m
         spacing: 10
 
         // Imagen: archivos de imagen, carátulas/thumbs multimedia o clipboard

@@ -34,6 +34,7 @@ Scope {
     }
 
     LazyLoader {
+        id: settingsLoader
         loading: scope.shown
 
         component: FloatingWindow {
@@ -55,19 +56,6 @@ Scope {
                 onCleared: Qt.callLater(() => scope.shown = false)
             }
 
-            // ── Background & Sombra Tonal M3 Expressive ─────────────────────
-            MultiEffect {
-                source: bg
-                anchors.fill: bg
-                shadowEnabled: true
-                shadowColor: Appearance.md3.shadow
-                shadowOpacity: 0.20
-                shadowBlur: 0.8
-                shadowVerticalOffset: 4
-                shadowHorizontalOffset: 2
-                z: -1
-            }
-
             PopupBackground {
                 id: bg
 
@@ -76,9 +64,25 @@ Scope {
                 Accessible.name: I18nService.getTranslation("settings.title", "Ajustes")
 
                 anchors.fill: parent
-                surfaceRadius: 0
+                // Spec M3 basic-dialog: 28dp (verylarge).
+                surfaceRadius: Appearance.shape.verylarge
                 baseColor: Appearance.md3.surface
                 showBorder: false
+            }
+
+            // ── Sombra: source se asigna en onCompleted para evitar warning
+            // "ShaderEffect: 'source' does not have a matching property" ──
+            MultiEffect {
+                id: panelShadow
+                anchors.fill: bg
+                shadowEnabled: true
+                shadowColor: Appearance.md3.shadow
+                shadowOpacity: Appearance.elevation4.opacity
+                shadowBlur: Appearance.elevation4.blur
+                shadowVerticalOffset: Appearance.elevation4.offsetY
+                shadowHorizontalOffset: 2
+                z: -1
+                Component.onCompleted: panelShadow.source = bg
             }
 
             // ── Content (lazy) ────────────────────────────────────────

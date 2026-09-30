@@ -27,6 +27,12 @@ Singleton {
                 root.splashPhrase = text.trim();
             }
         }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0) {
+                Log.warn("[RandomPhrases] hyprctl splash falló:", exitCode);
+            }
+        }
     }
 
     function obtainPhrase() {

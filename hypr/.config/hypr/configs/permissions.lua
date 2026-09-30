@@ -4,12 +4,11 @@
 hl.permission({ binary = "/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", type = "screencopy", mode = "allow" })
 hl.permission({ binary = ".*hyprexpo\\.so$", type = "plugin", mode = "allow" })
 hl.permission({ binary = ".*dynamic-cursors\\.so$", type = "plugin", mode = "allow" })
-hl.permission({ binary = ".*hyprlock.*$", type = "screencopy", mode = "allow" })
 hl.permission({ binary = "/usr/bin/hyprpicker", type = "screencopy", mode = "allow" })
 hl.permission({ binary = ".*quickshell.*$", type = "screencopy", mode = "allow" })
 hl.permission({ binary = "/usr/bin/hyprland-preview-share-picker", type = "screencopy", mode = "allow" })
 hl.permission({ binary = ".*hyprbars\\.so$", type = "plugin", mode = "allow" })
-hl.permission({ binary = "/usr/bin/grim", type = "plugin", mode = "allow"})
+hl.permission({ binary = "/usr/bin/grim", type = "plugin", mode = "allow" })
 
 -- Dispositivos de Entrada / Teclado
 hl.permission({ binary = "asus_numpad", type = "keyboard", mode = "allow" })

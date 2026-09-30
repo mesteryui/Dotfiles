@@ -40,19 +40,9 @@ Item {
         onTriggered: root.notification.expire()
     }
 
-    // ── Sombra de Elevación Material 3 ─────────────────────────
-    MultiEffect {
-        source: card
-        anchors.fill: card
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: root.isCritical ? 0.25 : 0.16
-        shadowBlur: 0.6
-        shadowVerticalOffset: 2
-        shadowHorizontalOffset: 0
-    }
-
     // ── Tarjeta M3 Expressive Container ───────────────────────
+    // Patrón notificación (surface, como las notificaciones Android),
+    // no snackbar: el snackbar inverso es para mensajes de 1 línea.
     Rectangle {
         id: card
 
@@ -60,7 +50,8 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         implicitHeight: cardLayout.implicitHeight + 24
-        radius: Appearance.shape.normal
+        // Spec M3 cards: 12dp.
+        radius: Appearance.shape.small
         color: root.isCritical ? Appearance.md3.error_container : Appearance.md3.surface
 
         border.width: 1
@@ -68,13 +59,13 @@ Item {
 
         Behavior on implicitHeight {
             NumberAnimation {
-                duration: 150
+                duration: Appearance.motion.short3
                 easing.type: Easing.OutCubic
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: 150
+                duration: Appearance.motion.short3
             }
         }
 
@@ -88,17 +79,17 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: 12
+                margins: Appearance.spacing.m
             }
 
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             // ════════════════════════════════════════════════════
             // SECCIÓN PRINCIPAL: IMAGEN A LA IZQUIERDA + CONTENIDO
             // ════════════════════════════════════════════════════
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: Appearance.spacing.m
                 Layout.alignment: Qt.AlignTop
 
                 // ── Imagen / Icono Destacado (Grande a la izquierda) ──
@@ -143,7 +134,7 @@ Item {
                         id: notifIcon
 
                         anchors.fill: parent
-                        anchors.margins: 4
+                        anchors.margins: Appearance.spacing.xs
                         source: {
                             const img = root.notification.image;
                             if (img && img !== "")
@@ -171,7 +162,7 @@ Item {
                             text: root.notification.appName || "Sistema"
                             color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
-                            font.pixelSize: Appearance.font.pixelSize.smallest
+                            font.pixelSize: Appearance.typeScale.labelSmall
                             font.weight: Font.Medium
                             elide: Text.ElideRight
                             Layout.maximumWidth: 180
@@ -313,12 +304,12 @@ Item {
 
                     Behavior on border.width {
                         NumberAnimation {
-                            duration: 100
+                            duration: Appearance.motion.short2
                         }
                     }
                     Behavior on border.color {
                         ColorAnimation {
-                            duration: 150
+                            duration: Appearance.motion.short3
                         }
                     }
 
@@ -370,5 +361,21 @@ Item {
                 }
             }
         }
+    }
+
+    // ── Sombra de Elevación Material 3 ──
+    // source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property"
+    MultiEffect {
+        id: cardShadow
+        anchors.fill: card
+        shadowEnabled: true
+        shadowColor: Appearance.md3.shadow
+        shadowOpacity: root.isCritical ? 0.25 : 0.16
+        shadowBlur: 0.6
+        shadowVerticalOffset: 2
+        shadowHorizontalOffset: 0
+        z: -1
+        Component.onCompleted: cardShadow.source = card
     }
 }

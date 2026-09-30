@@ -12,7 +12,7 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
 
-    spacing: 8
+    spacing: Appearance.spacing.s
     visible: Services.WeatherService.data.alertLevel >= 2
 
     function levelColor() {
@@ -41,7 +41,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: 34
-        radius: 17
+        radius: Appearance.shape.normal
         color: Qt.alpha(root.levelColor(), 0.16)
         border.width: 1
         border.color: Qt.alpha(root.levelColor(), 0.5)
@@ -50,18 +50,18 @@ ColumnLayout {
             anchors.fill: parent
             anchors.leftMargin: 12
             anchors.rightMargin: 8
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             MaterialIcon {
                 icon: "warning"
-                size: 18
+                size: 20
                 color: root.levelColor()
             }
 
             StyledText {
                 Layout.fillWidth: true
                 text: root.levelLabel() + (Services.WeatherService.data.alertCount > 1 ? " · " + Services.WeatherService.data.alertCount : "")
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.typeScale.titleSmall
                 font.weight: Font.Medium
                 color: Appearance.md3.on_surface
                 elide: Text.ElideRight
@@ -89,7 +89,7 @@ ColumnLayout {
 
         StyledText {
             text: Services.I18nService.getTranslation("weather.alerts_title", "Avisos meteorológicos")
-            font.pixelSize: Appearance.font.pixelSize.small
+            font.pixelSize: Appearance.typeScale.titleSmall
             font.weight: Font.Bold
             color: Appearance.md3.on_surface
         }
@@ -106,7 +106,7 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     text: modelData.event
-                    font.pixelSize: Appearance.font.pixelSize.small
+                    font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.on_surface
                     wrapMode: Text.WordWrap
@@ -115,7 +115,7 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     text: modelData.area + " · " + Services.I18nService.getTranslation("weather.alert_from", "desde %1").arg(root.shortDateTime(modelData.onset)) + " " + Services.I18nService.getTranslation("weather.alert_until", "hasta %1").arg(root.shortDateTime(modelData.expires))
-                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     color: Appearance.md3.on_surface_variant
                     wrapMode: Text.WordWrap
                 }
@@ -124,7 +124,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     visible: (modelData.description ?? "") !== ""
                     text: modelData.description
-                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     color: Appearance.md3.on_surface_variant
                     wrapMode: Text.WordWrap
                     maximumLineCount: 4

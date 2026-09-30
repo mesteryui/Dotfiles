@@ -94,7 +94,7 @@ Singleton {
         stdout: SplitParser {
             // Este delimitador agrupa todo el ciclo en un solo callback
             splitMarker: "===END===\n"
-            
+
             onRead: data => {
                 const chunks = data.split("---SEP---\n")
                 if (chunks.length >= 5) {

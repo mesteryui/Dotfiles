@@ -1,3 +1,4 @@
+import qs.Core
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.SystemTray
@@ -5,7 +6,7 @@ import Quickshell.Services.SystemTray
 Row {
     id: root
 
-    spacing: 4
+    spacing: Appearance.spacing.xs
 
     property alias items: rep.model
 

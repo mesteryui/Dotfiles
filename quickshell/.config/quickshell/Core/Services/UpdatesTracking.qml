@@ -12,8 +12,35 @@ Singleton {
     property bool checking: false
     property bool updating: false
     property bool failed: false
+    // Evita repetir el chequeo inicial (timer + al recuperar la red).
+    property bool startupCheckDone: false
 
     property ListModel packagesToUpdate: ListModel {}
+
+    function tryStartupCheck() {
+        if (root.startupCheckDone)
+            return;
+        if (!NetworkService?.hasInternet)
+            return;
+        // Solo inicial y sin colisionar: si ya hay un chequeo o una
+        // actualización en curso, se da por cumplido y no se duplica.
+        if (countUpdates.running || root.checking || root.updating) {
+            root.startupCheckDone = true;
+            startupTimer.stop();
+            return;
+        }
+        root.startupCheckDone = true;
+        startupTimer.stop();
+        countUpdates.running = true;
+    }
+
+    function checkNow() {
+        countUpdates.running = true;
+    }
+
+    function update() {
+        updateProcess.running = true;
+    }
 
     PersistentProperties {
         id: persistent
@@ -21,7 +48,7 @@ Singleton {
         reloadableId: "updatePersistence"
 
         property int updateCount: 0
-        
+
     }
 
     Timer {
@@ -31,13 +58,44 @@ Singleton {
         interval: Math.max(1, ConfigService.configs.updates.countTime) * 60000
         running: true
         repeat: true
-        onTriggered: countUpdates.running = true
+        // Sin internet no hay nada que comprobar: evita marcar failed
+        // en cada ciclo cuando la red está caída. Tampoco pisa un
+        // chequeo o actualización ya en curso.
+        onTriggered: {
+            if (!(NetworkService?.hasInternet ?? true))
+                return;
+            if (countUpdates.running || root.checking || root.updating)
+                return;
+            countUpdates.running = true;
+        }
+    }
+
+    // Chequeo único al arrancar si hay internet: un solo disparo
+    // diferido (60s, fuera del pico de inicialización) para no pisar el
+    // arranque, más un reintento al recuperar la red solo si el inicial
+    // no llegó a ejecutarse.
+    Timer {
+        id: startupTimer
+
+        interval: 60000
+        running: true
+        repeat: false
+        onTriggered: root.tryStartupCheck()
     }
 
     Connections {
         target: ConfigService.configs.updates
         function onCountTimeChanged() {
             pollTimer.restart();
+        }
+    }
+
+    Connections {
+        target: NetworkService
+
+        function onHasInternetChanged() {
+            if (!root.startupCheckDone)
+                root.tryStartupCheck();
         }
     }
 
@@ -95,16 +153,11 @@ Singleton {
         }
 
         onExited: (exitCode, exitStatus) => {
-            countUpdates.running = true;
+            if (!countUpdates.running)
+                countUpdates.running = true;
         }
     }
-    function checkNow() {
-        countUpdates.running = true;
-    }
 
-    function update() {
-        updateProcess.running = true;
-    }
     IpcHandler {
         target: "update"
 

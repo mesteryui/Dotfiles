@@ -17,6 +17,9 @@ import QtQuick.Layouts
 Item {
     id: root
 
+    Accessible.role: Accessible.ListItem
+    Accessible.name: (bind.mods.length > 0 ? bind.mods.join(" + ") + " + " : "") + bind.keyLabel + ": " + bind.label
+
     required property var bind
     /// Set to true by the parent when this row is the keyboard-focused item.
     property bool highlighted: false
@@ -58,7 +61,7 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 100
+                duration: Appearance.motion.short2
             }
         }
     }
@@ -86,7 +89,7 @@ Item {
         Row {
             id: keyRow
 
-            spacing: 4
+            spacing: Appearance.spacing.xs
             Layout.alignment: Qt.AlignVCenter
 
             Repeater {
@@ -94,7 +97,7 @@ Item {
                 delegate: Row {
                     required property string modelData
 
-                    spacing: 4
+                    spacing: Appearance.spacing.xs
 
                     CheatsheetKeyChip {
                         label: modelData
@@ -103,7 +106,7 @@ Item {
                     StyledText {
                         text: "+"
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -120,7 +123,7 @@ Item {
             Layout.alignment: Qt.AlignVCenter
             text: root.bind.label
             color: Appearance.md3.on_surface_variant
-            font.pixelSize: Appearance.font.pixelSize.smallie
+            font.pixelSize: Appearance.typeScale.bodyMedium
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignRight
         }

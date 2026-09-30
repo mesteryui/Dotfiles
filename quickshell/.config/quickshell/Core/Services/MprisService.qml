@@ -33,7 +33,7 @@ Singleton {
 	readonly property bool hasActivePlasmaIntegration: Mpris.players.values.some(
 		p => p?.dbusName?.startsWith('org.mpris.MediaPlayer2.plasma-browser-integration')
 	)
-	
+
 	function isRealPlayer(player) {
 		if (!player || !player.dbusName) return false;
         return (
@@ -90,8 +90,13 @@ Singleton {
 
 	Connections {
 		target: root.activePlayer
+		ignoreUnknownSignals: true
 
 		function onPostTrackChanged() {
+			// Nueva pista: la posición heredada de la anterior dividida por la
+			// nueva duración pintaba la barra llena en falso y tiempos
+			// incoherentes hasta el siguiente tick. Reset inmediato.
+			root.position = 0;
 			root.updateTrack();
 		}
 

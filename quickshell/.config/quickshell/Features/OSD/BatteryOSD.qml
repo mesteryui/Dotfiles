@@ -53,6 +53,7 @@ IconTextOSD {
 
     Connections {
         target: Services.BatteryService.displayDevice
+        ignoreUnknownSignals: true
 
         function onPercentageChanged(): void {
             if (!batteryOSD.ready)

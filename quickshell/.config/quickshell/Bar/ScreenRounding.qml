@@ -14,7 +14,12 @@ Variants {
     // Propiedad visual puente: dictamina el estado actual
     readonly property string activeBarType: GameMode.enabled ? "no_floating" : ConfigService.configs.bar.barType
 
-    // Ahora derivan del estado puente, respetando el Modo Juego
+    // Contrato de 4 modos (compartido con Bar.qml, sin cambios visuales):
+    // "floating" = píldora flotante (Bar.qml pone márgenes/radio; aquí no se dibuja
+    // borde de pantalla). "full_hug" = adherida con esquinas/líneas siempre.
+    // "partial_hug" = esquinas solo en el lado de la barra. "no_floating" = nada.
+    // NOTA: isFloating aquí significa full_hug (nombre histórico), distinto del
+    // isFloating de Bar.qml que significa "floating".
     readonly property bool isFloating: activeBarType === "full_hug"
     readonly property bool isPartial: activeBarType === "partial_hug"
 

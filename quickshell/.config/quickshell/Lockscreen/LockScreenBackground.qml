@@ -71,7 +71,11 @@ Item {
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: true
-            sourceSize.width: 1920
+            // Decodificar a la pantalla (no a 1920 fijo): en 1080p ahorra
+            // ~3x memoria de textura y en 4K no pierde nitidez. Con guarda
+            // nula: targetScreen se inyecta tras crear el item.
+            sourceSize.width: root.targetScreen ? root.targetScreen.width : 1920
+            sourceSize.height: root.targetScreen ? root.targetScreen.height : 1080
         }
     }
 

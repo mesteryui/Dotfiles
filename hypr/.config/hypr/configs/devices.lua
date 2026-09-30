@@ -15,8 +15,8 @@ hl.config({
             clickfinger_behavior = true,
             tap_and_drag = true,
             natural_scroll = true,
-            scroll_factor = 1
+            scroll_factor = 0.8
         },
-       -- accel_profile = "flat",
+      --  accel_profile = "flat",
       },
   })

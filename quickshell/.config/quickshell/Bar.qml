@@ -22,15 +22,17 @@ Variants {
 
             readonly property var barType: Services.GameMode.enabled ? "no_floating" : Services.ConfigService.configs.bar.barType
 
+            // Contrato de 4 modos (compartido con Bar/ScreenRounding.qml, sin cambios visuales):
+            // "floating" = píldora flotante (márgenes + radio). "full_hug"/"partial_hug"/
+            // "no_floating" = barra adherida (este fichero no reserva márgenes); el
+            // redondeo de pantalla lo dibuja ScreenRounding.
             readonly property bool isFloating: barType === "floating"
+            readonly property bool isFullHug: barType === "full_hug"
+            readonly property bool isPartial: barType === "partial_hug"
 
             readonly property bool isTop: Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == ""
 
             property int barHeight: Services.ConfigService.configs.bar.height
-
-            // Espacio físico extra solo en flotante para dibujar la
-            // lágrima sin que se recorte. Sin flotar no se reserva nada.
-            property real teardropLength: 30
 
             // Margen exterior en modo flotante / laterales del contenido.
             readonly property int floatingMargin: 3
@@ -58,9 +60,7 @@ Variants {
             // Sin implicitWidth: la ventana ya ocupa todo el ancho por los
             // anchors left/right (antes `content.width` cerraba un binding loop
             // con MainBar, anclado a su vez al padre).
-            // ¡CLAVE! Espacio físico extra solo en flotante para dibujar la
-            // lágrima sin que se recorte. Sin flotar no se reserva nada.
-            implicitHeight: barHeight + (root.isFloating ? teardropLength : 0)
+            implicitHeight: barHeight
 
             color: "transparent"
 

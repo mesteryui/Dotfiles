@@ -54,17 +54,8 @@ PanelWindow {
 
     // Sombra difusa detrás del panel en vez de un borde duro — elevación
     // suave al estilo GNOME/libadwaita sobre una superficie tonal MD3.
-    MultiEffect {
-        source: panelBg
-        anchors.fill: panelBg
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.22
-        shadowBlur: 0.9
-        shadowVerticalOffset: 3
-        shadowHorizontalOffset: 0
-    }
-
+    // (Declarada después de panelBg para evitar el warning "ShaderEffect:
+    // 'source' does not have a matching property"; z:-1 la mantiene detrás.)
     Shortcut {
         sequence: "d"
         enabled: root.visible && (root.historyModel ? root.historyModel.count : 0) > 0
@@ -98,12 +89,12 @@ PanelWindow {
             id: centerCol
 
             anchors.fill: parent
-            anchors.margins: 16
-            spacing: 12
+            anchors.margins: Appearance.spacing.l
+            spacing: Appearance.spacing.m
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Appearance.spacing.s
 
                 StyledText {
                     Layout.fillWidth: true
@@ -114,23 +105,23 @@ PanelWindow {
                     font.pixelSize: Appearance.font.pixelSize.larger
                 }
 
-                // --- Contador: insignia tonal en forma de píldora ---
+                // --- Contador: badge M3 (error + on-error) en pastilla ---
                 Rectangle {
                     visible: (root.historyModel ? root.historyModel.count : 0) > 0
                     implicitWidth: countLabel.implicitWidth + 16
                     implicitHeight: 26
                     radius: Appearance.shape.full
-                    color: Appearance.md3.primary_container
+                    color: Appearance.md3.error
 
                     StyledText {
                         id: countLabel
 
                         anchors.centerIn: parent
                         text: root.historyModel ? root.historyModel.count : 0
-                        color: Appearance.md3.on_primary_container
+                        color: Appearance.md3.on_error
                         font.family: Appearance.font.sans
                         font.variableAxes: Appearance.font.variableAxes.numbers
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.bold: true
                     }
                 }
@@ -186,7 +177,7 @@ PanelWindow {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 150
+                                duration: Appearance.motion.short3
                             }
                         }
                     }
@@ -202,7 +193,7 @@ PanelWindow {
 
                         Behavior on opacity {
                             NumberAnimation {
-                                duration: 100
+                                duration: Appearance.motion.short2
                             }
                         }
                     }
@@ -217,7 +208,7 @@ PanelWindow {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 150
+                                duration: Appearance.motion.short3
                             }
                         }
                     }
@@ -259,7 +250,7 @@ PanelWindow {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 150
+                                duration: Appearance.motion.short3
                             }
                         }
 
@@ -271,7 +262,7 @@ PanelWindow {
 
                             Behavior on opacity {
                                 NumberAnimation {
-                                    duration: 100
+                                    duration: Appearance.motion.short2
                                 }
                             }
                         }
@@ -284,14 +275,14 @@ PanelWindow {
 
                             MaterialIcon {
                                 text: "delete_sweep"
-                                size: Appearance.font.pixelSize.normal
+                                size: Appearance.typeScale.bodyLarge
                                 color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
                             }
 
                             StyledText {
                                 text: I18nService.getTranslation("notifications.clear_all", "Limpiar todo")
                                 font.family: Appearance.font.sans
-                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                font.pixelSize: Appearance.typeScale.labelMedium
                                 font.bold: true
                                 color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
                             }
@@ -311,12 +302,11 @@ PanelWindow {
                 }
             }
 
-            // Separador fino bajo la cabecera — división de secciones tipo GNOME
+            // Separador fino bajo la cabecera (spec dividers: pleno).
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: Appearance.md3.outline_variant
-                opacity: 0.5
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
             }
 
@@ -329,7 +319,7 @@ PanelWindow {
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 clip: true
                 focus: true
-                spacing: 12
+                spacing: Appearance.spacing.m
                 keyNavigationWraps: true
                 highlightMoveDuration: 100
                 boundsBehavior: Flickable.StopAtBounds
@@ -353,7 +343,7 @@ PanelWindow {
                 Layout.bottomMargin: 24
                 Layout.alignment: Qt.AlignHCenter
                 visible: (root.historyModel ? root.historyModel.count : 0) === 0
-                spacing: 8
+                spacing: Appearance.spacing.s
 
                 // Icono del estado vacío: MaterialShape con sombra + respiración
                 // lenta entre Sunny/VerySunny — región cuadrada (100×100), ideal
@@ -364,16 +354,6 @@ PanelWindow {
 
                     implicitWidth: 100
                     implicitHeight: 100
-
-                    MultiEffect {
-                        anchors.fill: emptyStateShape
-                        source: emptyStateShape
-                        shadowEnabled: true
-                        shadowColor: Appearance.md3.shadow
-                        shadowOpacity: 0.15
-                        shadowBlur: 0.5
-                        shadowVerticalOffset: 2
-                    }
 
                     MaterialShape {
                         id: emptyStateShape
@@ -392,13 +372,32 @@ PanelWindow {
                         }
                     }
 
+                    // Sombra: source se asigna en onCompleted para evitar warning
+                    // "ShaderEffect: 'source' does not have a matching property"
+                    MultiEffect {
+                        id: emptyStateShadow
+                        anchors.fill: emptyStateShape
+                        shadowEnabled: true
+                        shadowColor: Appearance.md3.shadow
+                        shadowOpacity: 0.15
+                        shadowBlur: 0.5
+                        shadowVerticalOffset: 2
+                        z: -1
+                        Component.onCompleted: emptyStateShadow.source = emptyStateShape
+                    }
+
                     // Ciclo de respiración — solo corre mientras el estado vacío
-                    // está visible
+                    // está visible (y hay movimiento completo).
                     Timer {
+                        id: emptyBreathTimer
                         interval: 1600
-                        running: (root.historyModel ? root.historyModel.count : 0) === 0
+                        running: (root.historyModel ? root.historyModel.count : 0) === 0 && !Appearance.reduceMotion
                         repeat: true
                         onTriggered: emptyStateShape.shape = emptyStateShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
+                    }
+
+                    Component.onDestruction: {
+                        emptyBreathTimer.stop()
                     }
                 }
 
@@ -418,7 +417,7 @@ PanelWindow {
                     text: I18nService.getTranslation("notifications.empty_subtitle", "Las nuevas notificaciones aparecerán aquí")
                     color: Appearance.md3.on_surface_variant
                     font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -432,9 +431,24 @@ PanelWindow {
                 color: Appearance.md3.on_surface_variant
                 opacity: 0.7
                 font.family: Appearance.font.sans
-                font.pixelSize: Appearance.font.pixelSize.smallest
+                font.pixelSize: Appearance.typeScale.labelSmall
                 horizontalAlignment: Text.AlignHCenter
             }
         }
+    }
+
+    // Sombra: source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property"
+    MultiEffect {
+        id: panelShadow
+        anchors.fill: panelBg
+        shadowEnabled: true
+        shadowColor: Appearance.md3.shadow
+        shadowOpacity: Appearance.elevation5.opacity
+        shadowBlur: Appearance.elevation5.blur
+        shadowVerticalOffset: Appearance.elevation5.offsetY
+        shadowHorizontalOffset: 0
+        z: -1
+        Component.onCompleted: panelShadow.source = panelBg
     }
 }

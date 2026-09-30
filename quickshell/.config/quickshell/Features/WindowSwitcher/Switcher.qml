@@ -46,6 +46,7 @@ Scope {
     // después (reaperturas instantáneas). Como la ventana ya no se
     // destruye al cerrar, su visible va atado a scope.shown.
     LazyLoader {
+        id: switcherLoader
         loading: scope.shown
         component: PanelWindow {
             id: root
@@ -292,13 +293,13 @@ Scope {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 150
+                                duration: Appearance.motion.short3
                             }
                         }
 
                         Column {
                             anchors.centerIn: parent
-                            spacing: 8
+                            spacing: Appearance.spacing.s
                             width: parent.width - 16
 
                             // Contenedor expresivo del icono: morfea al seleccionar
@@ -333,7 +334,7 @@ Scope {
                                     }
 
                                     Behavior on implicitSize {
-                                        NumberAnimation { duration: 150 }
+                                        NumberAnimation { duration: Appearance.motion.short3 }
                                     }
                                 }
                             }
@@ -533,7 +534,7 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     text: (windowList.currentIndex + 1) + " / " + windowList.count
                     color: Appearance.md3.on_surface_variant
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                 }
             }
         }

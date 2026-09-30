@@ -88,12 +88,12 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             StyledText {
                 Layout.fillWidth: true
                 text: root.tr("panel.bluetooth", "Bluetooth")
-                font.pixelSize: Appearance.font.pixelSize.normal
+                font.pixelSize: Appearance.typeScale.bodyLarge
                 font.weight: Font.Medium
                 color: Appearance.md3.on_surface
             }
@@ -101,7 +101,7 @@ Item {
             StyledText {
                 visible: !Services.BluetoothService.available
                 text: root.tr("panel.off", "Desactivado")
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.typeScale.titleSmall
                 color: Appearance.md3.on_surface_variant
             }
         }
@@ -122,19 +122,24 @@ Item {
         Repeater {
             model: root.pairedDevices()
 
-            delegate: Rectangle {
+            delegate: M3ListItem {
                 required property var modelData
                 required property int index
 
+                readonly property bool connected: root.deviceConnected(modelData)
+
                 Layout.fillWidth: true
                 implicitHeight: 52
-                radius: 14
-                color: mouse.containsMouse ? Appearance.md3.secondary_container : Appearance.md3.surface_container_low
+                radius: Appearance.shape.small
+                selected: connected
+                unselectedFill: Appearance.md3.surface_container_low
+                accessibleName: root.deviceName(modelData)
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
+                onClicked: {
+                    if (root.deviceConnected(modelData))
+                        modelData.disconnect();
+                    else
+                        modelData.connect();
                 }
 
                 RowLayout {
@@ -146,7 +151,7 @@ Item {
                     MaterialIcon {
                         icon: Icons.getBluetoothDeviceMaterialSymbol(modelData?.icon ?? "")
                         size: 20
-                        color: root.deviceConnected(modelData) ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+                        color: connected ? Appearance.md3.on_secondary_container : (root.deviceConnected(modelData) ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
                     }
 
                     ColumnLayout {
@@ -156,17 +161,17 @@ Item {
                         StyledText {
                             Layout.fillWidth: true
                             text: root.deviceName(modelData)
-                            font.pixelSize: Appearance.font.pixelSize.small
+                            font.pixelSize: Appearance.typeScale.titleSmall
                             font.weight: Font.Medium
-                            color: Appearance.md3.on_surface
+                            color: connected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                             elide: Text.ElideRight
                         }
 
                         StyledText {
                             Layout.fillWidth: true
                             text: (root.deviceConnected(modelData) ? root.tr("panel.connected", "Conectado") : root.tr("panel.disconnected", "Desconectado")) + (root.batteryPct(modelData) >= 0 ? " · " + root.batteryPct(modelData) + "%" : "")
-                            font.pixelSize: Appearance.font.pixelSize.smallest
-                            color: Appearance.md3.on_surface_variant
+                            font.pixelSize: Appearance.typeScale.labelSmall
+                            color: connected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                             elide: Text.ElideRight
                         }
                     }
@@ -184,20 +189,6 @@ Item {
                         onClicked: modelData.forget()
                     }
                 }
-
-                MouseArea {
-                    id: mouse
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (root.deviceConnected(modelData))
-                            modelData.disconnect();
-                        else
-                            modelData.connect();
-                    }
-                }
             }
         }
 
@@ -207,7 +198,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             visible: Services.BluetoothService.available && root.pairedDevices().length === 0 && root.unpairedDevices().length === 0
             text: root.tr("panel.bluetooth_empty", "Sin dispositivos emparejados")
-            font.pixelSize: Appearance.font.pixelSize.small
+            font.pixelSize: Appearance.typeScale.titleSmall
             color: Appearance.md3.on_surface_variant
             wrapMode: Text.WordWrap
         }
@@ -232,7 +223,7 @@ Item {
             Layout.fillWidth: true
             visible: root.unpairedDevices().length > 0
             text: root.tr("panel.bluetooth_available", "Disponibles")
-            font.pixelSize: Appearance.font.pixelSize.small
+            font.pixelSize: Appearance.typeScale.titleSmall
             font.weight: Font.Medium
             color: Appearance.md3.on_surface
         }
@@ -265,7 +256,7 @@ Item {
 
                         Layout.fillWidth: true
                         implicitHeight: 48
-                        radius: 14
+                        radius: Appearance.shape.small
                         color: Appearance.md3.surface_container_low
 
                         RowLayout {
@@ -283,7 +274,7 @@ Item {
                             StyledText {
                                 Layout.fillWidth: true
                                 text: root.deviceName(modelData)
-                                font.pixelSize: Appearance.font.pixelSize.small
+                                font.pixelSize: Appearance.typeScale.titleSmall
                                 color: Appearance.md3.on_surface
                                 elide: Text.ElideRight
                             }
@@ -305,7 +296,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             visible: root.unpairedDevices().length > 0
             text: root.tr("panel.bluetooth_pin_hint", "Con PIN usa el gestor")
-            font.pixelSize: Appearance.font.pixelSize.smallest
+            font.pixelSize: Appearance.typeScale.labelSmall
             color: Appearance.md3.on_surface_variant
         }
 

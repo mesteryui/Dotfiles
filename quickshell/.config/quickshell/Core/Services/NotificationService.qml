@@ -17,7 +17,7 @@ Singleton {
 
         property bool dnd
 
-        
+
 
         reloadableId: "notifications"
     }

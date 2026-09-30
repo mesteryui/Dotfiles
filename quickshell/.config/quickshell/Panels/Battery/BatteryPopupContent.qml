@@ -122,8 +122,8 @@ Item {
                 id: batteryCardContent
 
                 anchors.fill: parent
-                anchors.margins: 12
-                spacing: 12
+                anchors.margins: Appearance.spacing.m
+                spacing: Appearance.spacing.m
 
                 // Contenedor del Ícono
                 Rectangle {
@@ -135,7 +135,7 @@ Item {
                     MaterialIcon {
                         anchors.centerIn: parent
                         icon: root.batteryIcon()
-                        size: 26
+                        size: 28
                         color: root.charging ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                     }
                 }
@@ -146,7 +146,7 @@ Item {
                     spacing: 2
 
                     RowLayout {
-                        spacing: 8
+                        spacing: Appearance.spacing.s
 
                         StyledText {
                             text: root.hasBattery ? Math.round(root.battery.percentage * 100) + "%" : "N/A"
@@ -162,7 +162,7 @@ Item {
                         StyledText {
                             visible: root.hasBattery && root.battery.energyRate > 0
                             text: (Math.round(root.battery.energyRate * 10) / 10) + " W"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.pixelSize: Appearance.typeScale.labelMedium
                             color: Appearance.md3.on_surface_variant
                             Layout.alignment: Qt.AlignBottom
                             Layout.bottomMargin: 3
@@ -172,7 +172,7 @@ Item {
                     StyledText {
                         Layout.fillWidth: true
                         text: root.batteryStatusText()
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         color: Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                     }
@@ -183,7 +183,7 @@ Item {
         // --- Título para Perfiles ---
         StyledText {
             text: "Perfil de energía"
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
             Layout.leftMargin: 4
@@ -192,7 +192,7 @@ Item {
         // --- Botones de Perfiles de Energía ---
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: Appearance.spacing.s
 
             Repeater {
                 model: root.profiles
@@ -222,7 +222,7 @@ Item {
 
                         Behavior on opacity {
                             NumberAnimation {
-                                duration: 100
+                                duration: Appearance.motion.short2
                             }
                         }
                     }
@@ -230,13 +230,13 @@ Item {
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 6
-                        spacing: 4
+                        spacing: Appearance.spacing.xs
                         Layout.alignment: Qt.AlignCenter
 
                         MaterialIcon {
                             Layout.alignment: Qt.AlignHCenter
                             icon: root.profileIcon(profileButton.modelData)
-                            size: 22
+                            size: 24
                             color: profileButton.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                         }
 
@@ -244,7 +244,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignHCenter
                             text: root.profileLabel(profileButton.modelData)
-                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.pixelSize: Appearance.typeScale.labelMedium
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             maximumLineCount: 1

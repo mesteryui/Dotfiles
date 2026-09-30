@@ -1,3 +1,4 @@
+import qs.Core
 import qs.Core.Modules
 import QtQuick
 import Quickshell
@@ -64,8 +65,9 @@ Scope {
                 OpacityAnimator {
                     id: fadeAnim
 
-                    duration: 150
-                    easing.type: Easing.OutQuad
+                    duration: Appearance.motion.short3
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: Appearance.motion.emphasized
                 }
             }
         }

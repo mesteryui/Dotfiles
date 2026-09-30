@@ -14,19 +14,6 @@ BarPopupWindow {
     implicitWidth: popupContent.implicitWidth + 24
     implicitHeight: popupContent.implicitHeight + 24
 
-    MultiEffect {
-        source: bg
-        anchors.fill: bg
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowBlur: 0.85
-        shadowVerticalOffset: 6
-        shadowHorizontalOffset: 0
-        blurMax: 32
-        shadowOpacity: 0.18
-        z: -1
-    }
-
     // Escape cierra. M/mute se maneja en el foco:
     // bigButton con Enter/Espacio, sliders con M.
     Shortcut {
@@ -45,11 +32,27 @@ BarPopupWindow {
         anchors.fill: parent
     }
 
+    // Sombra: source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
+    MultiEffect {
+        id: panelShadow
+        anchors.fill: bg
+        shadowEnabled: true
+        shadowColor: Appearance.md3.shadow
+        shadowBlur: 0.85
+        shadowVerticalOffset: 6
+        shadowHorizontalOffset: 0
+        blurMax: 32
+        shadowOpacity: Appearance.elevation2.opacity
+        z: -1
+        Component.onCompleted: panelShadow.source = bg
+    }
+
     VolumePopupContent {
         id: popupContent
         anchors {
             fill: parent
-            margins: 12
+            margins: Appearance.spacing.m
         }
     }
 }

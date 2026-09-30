@@ -27,6 +27,10 @@ Rectangle {
 
     signal removeRequested
 
+    Accessible.role: Accessible.ListItem
+    Accessible.name: root.summary
+    Accessible.description: root.body
+
     readonly property bool current: ListView.isCurrentItem ?? false
 
     // Reloj barato para refrescar el "hace X min".
@@ -35,44 +39,41 @@ Rectangle {
     property int relTick: 0
 
     Timer {
+        id: relTimer
         interval: 60000
         running: true
         repeat: true
         onTriggered: root.relTick++
     }
 
+    Component.onDestruction: {
+        relTimer.stop()
+    }
+
     implicitHeight: mainLayout.implicitHeight + 24
-    color: root.current ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
+    color: "transparent"
     radius: Appearance.shape.large
     border.width: root.current ? 2 : 0
     border.color: Appearance.md3.primary
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 150
-        }
+    M3SelectionFill {
+        anchors.fill: parent
+        radius: parent.radius
+        selected: root.current
+        unselectedFill: Appearance.md3.surface_container_high
     }
 
     // State layer de fila completa
-    Rectangle {
+    M3StateLayer {
         id: rowStateLayer
-
         anchors.fill: parent
         radius: parent.radius
-        color: Appearance.md3.on_surface
-        opacity: 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 100
-            }
-        }
+        tint: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+        hovered: rowHover.hovered
     }
 
     HoverHandler {
         id: rowHover
-
-        onHoveredChanged: rowStateLayer.opacity = hovered ? 0.06 : 0
     }
 
     RowLayout {
@@ -81,7 +82,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 12
+        anchors.margins: Appearance.spacing.m
         anchors.rightMargin: 32
         spacing: 10
 
@@ -100,7 +101,7 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: Appearance.motion.short3
                     }
                 }
             }
@@ -130,7 +131,7 @@ Rectangle {
                     visible: root.appName !== ""
                     text: root.appName
                     color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
                     font.bold: true
                     elide: Text.ElideRight
@@ -146,7 +147,7 @@ Rectangle {
                         return root.time;
                     }
                     color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
                     opacity: 0.8
                 }
@@ -160,7 +161,7 @@ Rectangle {
                 font.bold: true
                 font.family: Appearance.font.sans
                 font.variableAxes: Appearance.font.variableAxes.title
-                font.pixelSize: Appearance.font.pixelSize.normal
+                font.pixelSize: Appearance.typeScale.bodyLarge
                 elide: Text.ElideRight
             }
             // Cuerpo
@@ -169,7 +170,7 @@ Rectangle {
                 visible: text !== ""
                 color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                 font.family: Appearance.font.sans
-                font.pixelSize: Appearance.font.pixelSize.smallie
+                font.pixelSize: Appearance.typeScale.bodyMedium
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -183,12 +184,12 @@ Rectangle {
 
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: 8
+        anchors.margins: Appearance.spacing.s
         opacity: (rowHover.hovered || root.current) ? 1 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 100
+                duration: Appearance.motion.short2
             }
         }
 

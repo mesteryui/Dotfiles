@@ -9,7 +9,7 @@ Item {
 
     implicitWidth: clockText.implicitWidth
     implicitHeight: clockText.implicitHeight
-    
+
     SystemClock {
         id: clock
 
@@ -17,16 +17,16 @@ Item {
         // sin cambiar el texto visible.
         precision: SystemClock.Minutes
     }
-    
+
     StyledText {
         id: clockText
-       
+
         font.family: Services.ConfigService.configs.appearance.fontSans
 
         // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
 
         color: Appearance.md3.on_surface
-        font.pixelSize: Appearance.font.pixelSize.small
+        font.pixelSize: Appearance.typeScale.titleSmall
 
 
         // Corrección: Usar el objeto clock.date correctamente en ambas partes

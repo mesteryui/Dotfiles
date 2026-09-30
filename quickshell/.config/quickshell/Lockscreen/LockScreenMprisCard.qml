@@ -18,24 +18,53 @@ Item {
 
     property real mprisPosition: 0
     readonly property real trackLength: (MprisService.activePlayer && MprisService.activePlayer.length) ? MprisService.activePlayer.length : 0
-    readonly property real progress: trackLength > 0 ? Math.min(1, Math.max(0, mprisPosition / trackLength)) : 0
+
+    // Posición optimista post-seek (igual que Panels/MediaPlayer/MprisSubwindow):
+    // el player aplica el seek de forma asíncrona; mientras tanto manda lo pedido.
+    property real seekTarget: -1
+    property double seekTargetUntil: 0
+    readonly property real effectivePosition: root.seekTarget >= 0 ? root.seekTarget : root.mprisPosition
+
+    Timer {
+        interval: 1000
+        running: root.seekTarget >= 0
+        repeat: false
+        onTriggered: root.seekTarget = -1
+    }
+
+    onMprisPositionChanged: {
+        if (root.seekTarget >= 0 && (root.mprisPosition >= root.seekTarget - 1.0 || Date.now() >= root.seekTargetUntil))
+            root.seekTarget = -1;
+    }
+
+    Connections {
+        target: MprisService
+
+        // Cambio de pista: invalida el seek pendiente (igual que el popup).
+        function onTrackChanged() {
+            root.seekTarget = -1;
+        }
+    }
+
+    function requestSeek(newPosition: real) {
+        const p = MprisService.activePlayer;
+        if (!p || !(p.canSeek || p.canControl))
+            return;
+        try {
+            p.position = newPosition;
+        } catch (e) {
+        }
+        root.seekTarget = newPosition;
+        root.seekTargetUntil = Date.now() + 1000;
+    }
 
     Behavior on opacity {
-        NumberAnimation { duration: 200 }
+        NumberAnimation { duration: Appearance.motion.short4 }
     }
 
     function withAlpha(hexColor, alphaValue) {
         var c = Qt.color(hexColor);
         return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
-    function formatTime(seconds) {
-        if (isNaN(seconds) || seconds < 0)
-            return "0:00";
-        const s = Math.floor(seconds);
-        const m = Math.floor(s / 60);
-        const ss = String(s % 60).padStart(2, "0");
-        return `${m}:${ss}`;
     }
 
     Rectangle {
@@ -100,7 +129,7 @@ Item {
                     Layout.fillWidth: true
                     text: (MprisService.activeTrack && MprisService.activeTrack.title) ? MprisService.activeTrack.title : ""
                     color: Appearance.md3.on_surface
-                    font.pixelSize: Appearance.font.pixelSize.small
+                    font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.DemiBold
                     elide: Text.ElideRight
                     maximumLineCount: 1
@@ -109,17 +138,21 @@ Item {
                     Layout.fillWidth: true
                     text: (MprisService.activeTrack && MprisService.activeTrack.artist) ? MprisService.activeTrack.artist : ""
                     color: Appearance.md3.on_surface_variant
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     elide: Text.ElideRight
                     maximumLineCount: 1
                 }
 
-                M3ProgressBar {
+                // Seekbar unificado (Primitives/MprisSeekBar): mismo gesto y
+                // estados que el popup multimedia, con fill ondulado M3E.
+                MprisSeekBar {
                     Layout.fillWidth: true
                     Layout.topMargin: 6
-                    value: root.progress
-                    accentColor: Appearance.md3.primary
-                    implicitHeight: 5
+                    wavy: true
+                    position: root.effectivePosition
+                    length: root.trackLength
+                    canSeek: (MprisService.activePlayer?.canSeek || MprisService.activePlayer?.canControl) ?? false
+                    onSeekRequested: newPosition => root.requestSeek(newPosition)
                 }
 
                 RowLayout {
@@ -144,7 +177,7 @@ Item {
                         MaterialIcon {
                             anchors.centerIn: parent
                             icon: MprisService.isPlaying ? "pause" : "play_arrow"
-                            size: 22
+                            size: 24
                             color: Appearance.md3.on_primary_container
                         }
                         MouseArea {
@@ -160,29 +193,22 @@ Item {
                         enabled: MprisService.canGoNext
                         onClicked: MprisService.next()
                     }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    StyledText {
-                        text: root.formatTime(root.mprisPosition) + " / " + root.formatTime(root.trackLength)
-                        color: Appearance.md3.on_surface_variant
-                        font.pixelSize: Appearance.font.pixelSize.smallest
-                    }
                 }
             }
         }
     }
 
+    // Elevación MD3: source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property"
     MultiEffect {
+        id: mprisShadow
         anchors.fill: mprisBg
-        source: mprisBg
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.20
-        shadowBlur: 0.9
-        shadowVerticalOffset: 3
+        shadowOpacity: Appearance.elevation4.opacity
+        shadowBlur: Appearance.elevation4.blur
+        shadowVerticalOffset: Appearance.elevation4.offsetY
         shadowHorizontalOffset: 0
+        Component.onCompleted: mprisShadow.source = mprisBg
     }
 }

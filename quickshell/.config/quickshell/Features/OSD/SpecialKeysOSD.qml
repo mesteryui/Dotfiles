@@ -74,7 +74,7 @@ BaseOSD {
 
         StyledText {
             font.family: ConfigService.configs.appearance.fontSans
-            font.pixelSize: Appearance.font.pixelSize.title
+            font.pixelSize: Appearance.font.pixelSize.huge
             font.bold: true
             color: Appearance.md3.on_surface
             text: keyOSD.osdText

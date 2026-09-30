@@ -30,8 +30,8 @@ ProgressBar {
             color:  root.accentColor
 
             Behavior on width {
-                NumberAnimation { duration: 150 }
+                NumberAnimation { duration: Appearance.motion.short3 }
             }
         }
-    }   
+    }
 }

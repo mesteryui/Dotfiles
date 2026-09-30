@@ -25,7 +25,7 @@ MaterialShape {
 
     focus: true
 
-    shape: root.highlighted ? root.buttonShape : MaterialShape.Circle
+    shape: btnMouse.pressed ? MaterialShape.Cookie4Sided : (root.highlighted ? root.buttonShape : MaterialShape.Circle)
     animationDuration: 300
     color: highlighted ? accentColor : Appearance.md3.surface_container
     strokeWidth: highlighted ? 2 : 1
@@ -74,7 +74,7 @@ MaterialShape {
             font.pixelSize: 12
             font.weight: root.highlighted ? Font.Bold : Font.Normal
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
         }
     }
 

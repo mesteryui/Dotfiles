@@ -4,13 +4,12 @@
 
 -- Global variables (can be used in required files if needed, but better to pass or define as locals)
 _G.terminal = "uwsm app -- xdg-terminal-exec"
-_G.fileManager = "dolphin"
+_G.fileManager = "thunar"
 --_G.fileManager = terminal.." -e yazi"
 _G.browser = "zen-browser"
 _G.emacs = "emacsclient -c -a 'emacs'"
 _G.Colors = require("colors")
 _G.DefaultMonitor = "eDP-1"
-
 _G.helper = require("configs.some_funcs")
 
 -- Carga de configuraciones de menús/lanzadores
@@ -21,9 +20,8 @@ require("configs.env")
 require("configs.permissions")
 require("configs.plugins")
 
-
 hl.on("hyprland.start", function()
-    hl.exec_cmd("hyprpm reload")
+	hl.exec_cmd("hyprpm reload")
 end)
 
 -- --- HARDWARE & MONITORES ---

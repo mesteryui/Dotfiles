@@ -56,7 +56,8 @@
     "web_search_suffix": "”",
     "file_missing": "El archivo ya no existe",
     "file_open_failed": "No se pudo abrir",
-    "files_fd_missing": "Búsqueda no disponible (¿fd instalado?)"
+    "files_fd_missing": "Búsqueda no disponible (¿fd instalado?)",
+    "files_retry": "Reintentar"
   },
   "lockscreen": {
     "caps_lock": "Bloq Mayús activado",
@@ -68,10 +69,13 @@
     "notifications_unread": "sin leer",
     "password": "Contraseña...",
     "release_to_unlock": "Suelta para desbloquear",
-    "wake_hint": "Desliza hacia arriba o pulsa una tecla"
+    "wake_hint": "Desliza hacia arriba o pulsa una tecla",
+    "sleep": "Dormir"
   },
   "media": {
-    "empty": "Nada reproduciendo"
+    "empty": "Nada reproduciendo",
+    "play": "Reproducir",
+    "pause": "Pausar"
   },
   "notifications": {
     "clear_all": "Limpiar todo",
@@ -123,7 +127,11 @@
     "bluetooth_available": "Disponibles",
     "bluetooth_pin_hint": "Con PIN usa el gestor",
     "controls": "Centro de control",
-    "volume": "Volumen"
+    "volume": "Volumen",
+    "temp": "Temperatura",
+    "temp_normal": "Normal",
+    "temp_warm": "Elevada",
+    "temp_hot": "Alta"
   },
   "polkit": {
     "accept": "Aceptar",
@@ -161,6 +169,7 @@
       "appearance": {
         "color_scheme": "Esquema de color (matugen)",
         "dark_mode": "Modo oscuro",
+        "reduce_motion": "Reducir movimiento",
         "font_expressive": "Fuente expresiva",
         "font_mono": "Fuente monoespaciada",
         "font_reading": "Fuente de lectura",

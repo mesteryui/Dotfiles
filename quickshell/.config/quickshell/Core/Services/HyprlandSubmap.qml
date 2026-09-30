@@ -5,7 +5,7 @@ import Quickshell
 import Quickshell.Hyprland
 
 Singleton {
-    id: root 
+    id: root
 
     property string activeSubmap: ""
 

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.Bar.Content
 import qs.Bar
+import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Calendar
 import QtQuick
@@ -12,12 +13,12 @@ BarItem {
 
     clickable: true
     horizontalPadding: 12
-    
+
     // Scale effect applied to the whole item instead of inner background
     scale: area.pressed ? 0.92 : (area.containsMouse ? 1.05 : 1.0)
 
-    Behavior on scale { 
-        NumberAnimation { duration: 100; easing.type: Easing.OutQuad } 
+    Behavior on scale {
+        NumberAnimation { duration: Appearance.motion.short2; easing.type: Easing.OutQuad }
     }
 
     ClockContent {
@@ -30,7 +31,7 @@ BarItem {
         const w = popupLoader.item
         if (w) w.visible = !w.visible
     }
-    
+
     LazyLoader {
         id: popupLoader
 

@@ -47,7 +47,7 @@ Item {
     // ── UI ────────────────────────────────────────────────────
     ColumnLayout {
         anchors.fill: parent
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         // ── Navegación: anterior / mes+año / siguiente ────────
         RowLayout {
@@ -61,13 +61,13 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 20
+                    radius: Appearance.shape.full
                     color: Appearance.md3.on_surface_variant
                     opacity: prevTap.pressed ? 0.12 : prevHover.hovered ? 0.08 : 0
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 150
+                            duration: Appearance.motion.short3
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -92,13 +92,13 @@ Item {
                 }
             }
 
-            // Título mes + año
+            // Título mes + año (spec date-picker: headline)
             StyledText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: root.currentLocale.standaloneMonthName(root.currentMonth) + " " + root.currentYear
                 font.variableAxes: Appearance.font.variableAxes.title
-                font.pixelSize: 16
+                font.pixelSize: Appearance.font.pixelSize.large
                 color: Appearance.md3.on_surface
             }
 
@@ -109,13 +109,13 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 20
+                    radius: Appearance.shape.full
                     color: Appearance.md3.on_surface_variant
                     opacity: nextTap.pressed ? 0.12 : nextHover.hovered ? 0.08 : 0
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 150
+                            duration: Appearance.motion.short3
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -141,8 +141,8 @@ Item {
             }
         }
 
-        // ── Cabecera de días de la semana ─────────────────────
-        // ── Cabecera de días de la semana ─────────────────────
+        // ── Cabecera de días de la semana (spec date-picker: labelSmall
+        // en on-surface-variant, sin negrita) ─────────────────────
         Row {
             Layout.fillWidth: true
             spacing: 0
@@ -168,20 +168,18 @@ Item {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: parent.modelData
-                        font.bold: true
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         color: Appearance.md3.on_surface_variant
                     }
                 }
             }
         }
 
-        // Divisor
+        // Divisor (spec dividers: 1dp outline-variant pleno).
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: Appearance.md3.outline_variant
-            opacity: 0.5
         }
 
         // ── Grid del calendario ───────────────────────────────
@@ -220,7 +218,7 @@ Item {
 
                     width: 36
                     height: 36
-                    radius: 18
+                    radius: Appearance.shape.full
                     anchors.centerIn: parent
 
                     color: delegateItem.isToday ? Appearance.md3.primary : delegateItem.isSelected ? Appearance.md3.primary_container : "transparent"

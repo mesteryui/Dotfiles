@@ -9,6 +9,7 @@ Scope {
     // LazyLoader lo incuba en background y lo cachea (su visible ya va
     // atado a centerOpen). Los popups por pantalla se quedan directos.
     LazyLoader {
+        id: centerLoader
         loading: NotificationService.centerOpen
         component: centerComp
     }

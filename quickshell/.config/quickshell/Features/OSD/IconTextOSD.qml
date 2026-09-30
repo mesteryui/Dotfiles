@@ -35,7 +35,7 @@ BaseOSD {
         id: contentRow
 
         anchors.centerIn: parent
-        spacing: 8
+        spacing: Appearance.spacing.s
 
         Item {
             Layout.preferredWidth: 34

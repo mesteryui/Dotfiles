@@ -63,11 +63,11 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 28
-            spacing: 12
+            spacing: Appearance.spacing.m
 
             StyledText {
                 text: Services.I18nService?.getTranslation("wallpaper.title", "Fondos de Pantalla") ?? "Fondos de Pantalla"
-                font.pixelSize: Appearance.font.pixelSize.title
+                font.pixelSize: Appearance.font.pixelSize.huge
                 font.weight: Font.Bold
                 font.family: Appearance.font.sans
                 color: Appearance.md3.on_surface
@@ -77,7 +77,7 @@ Item {
             // Contador de elementos, ya refleja el resultado filtrado
             Rectangle {
                 color: Appearance.md3.surface_container_high
-                radius: 12
+                radius: Appearance.shape.small
                 implicitWidth: countText.implicitWidth + 16
                 implicitHeight: 24
 
@@ -102,7 +102,7 @@ Item {
 
                 Rectangle {
                     color: Qt.rgba(1, 1, 1, 0.06)
-                    radius: 6
+                    radius: Appearance.shape.unsharpenmore
                     implicitWidth: hint1.implicitWidth + 12
                     implicitHeight: 22
                     border.color: Qt.rgba(1, 1, 1, 0.1)
@@ -120,7 +120,7 @@ Item {
 
                 Rectangle {
                     color: Qt.rgba(1, 1, 1, 0.06)
-                    radius: 6
+                    radius: Appearance.shape.unsharpenmore
                     implicitWidth: hint2.implicitWidth + 12
                     implicitHeight: 22
                     border.color: Qt.rgba(1, 1, 1, 0.1)
@@ -225,7 +225,7 @@ Item {
                 anchors.centerIn: parent
                 visible: root.filteredWallpapers.length === 0
                 text: Services.I18nService?.getTranslation("wallpaper.no_results", "No se encontraron fondos") ?? "No se encontraron fondos"
-                font.pixelSize: Appearance.font.pixelSize.normal
+                font.pixelSize: Appearance.typeScale.bodyLarge
                 color: Appearance.md3.on_surface_variant
             }
         }

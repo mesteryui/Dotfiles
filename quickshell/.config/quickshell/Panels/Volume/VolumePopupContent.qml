@@ -57,7 +57,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: 16
+        spacing: Appearance.spacing.l
 
         // --- Botón grande de estado / mute ---
         RowLayout {
@@ -102,7 +102,7 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 100
+                            duration: Appearance.motion.short2
                         }
                     }
                 }
@@ -132,7 +132,7 @@ Item {
                 StyledText {
                     Layout.fillWidth: true
                     text: Services.AudioService.deviceLabel(Services.AudioService.sink)
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     color: Appearance.md3.on_surface_variant
                     elide: Text.ElideRight
                 }
@@ -161,7 +161,7 @@ Item {
         // --- Selector de altavoz ---
         StyledText {
             text: "Salida"
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
             Layout.leftMargin: 4
@@ -169,7 +169,7 @@ Item {
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: Appearance.spacing.xs
 
             Repeater {
                 id: sinkRepeater
@@ -186,7 +186,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 40
                     radius: Appearance.shape.small
-                    color: sinkRow.selected ? Appearance.md3.secondary_container : (activeFocus ? Qt.alpha(Appearance.md3.primary, 0.12) : "transparent")
+                    color: sinkRow.selected ? Appearance.md3.secondary_container : "transparent"
                     border.width: activeFocus ? 2 : 0
                     border.color: Appearance.md3.primary
                     activeFocusOnTab: true
@@ -212,19 +212,11 @@ Item {
                             micSlider.forceActiveFocus();
                     }
 
-                    Rectangle {
-                        id: sinkStateLayer
-
+                    M3StateLayer {
                         anchors.fill: parent
                         radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: (sinkRow.activeFocus || sinkMouse.containsMouse) ? 0.08 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
+                        tint: sinkRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        hovered: sinkRow.activeFocus || sinkMouse.containsMouse
                     }
 
                     RowLayout {
@@ -277,7 +269,7 @@ Item {
         // --- Slider de micrófono ---
         StyledText {
             text: "Micrófono"
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
             Layout.leftMargin: 4
@@ -304,7 +296,7 @@ Item {
         // --- Selector de micrófono ---
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: Appearance.spacing.xs
 
             Repeater {
                 id: sourceRepeater
@@ -321,7 +313,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 40
                     radius: Appearance.shape.small
-                    color: sourceRow.selected ? Appearance.md3.secondary_container : (activeFocus ? Qt.alpha(Appearance.md3.primary, 0.12) : "transparent")
+                    color: sourceRow.selected ? Appearance.md3.secondary_container : "transparent"
                     border.width: activeFocus ? 2 : 0
                     border.color: Appearance.md3.primary
                     activeFocusOnTab: true
@@ -347,19 +339,11 @@ Item {
                             bigButton.forceActiveFocus();
                     }
 
-                    Rectangle {
-                        id: sourceStateLayer
-
+                    M3StateLayer {
                         anchors.fill: parent
                         radius: parent.radius
-                        color: Appearance.md3.on_surface
-                        opacity: (sourceRow.activeFocus || sourceMouse.containsMouse) ? 0.08 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
+                        tint: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        hovered: sourceRow.activeFocus || sourceMouse.containsMouse
                     }
 
                     RowLayout {

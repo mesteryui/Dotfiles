@@ -6,12 +6,15 @@ import Quickshell.Widgets
 Item {
     id: root
 
-    property int radius: 18
+    property int radius: Appearance.shape.windowRounding
     property bool isSelected: false
     property bool hovered: false
 
-    property int imageWidth: 560
-    property int imageHeight: 400
+    // Decodificado acotado a ~1.35x del tamaño mostrado (300x220,
+    // 324x238 con la escala de seleccionado): nítido sin desperdiciar
+    // VRAM (antes 560x400, ~37% más por thumb).
+    property int imageWidth: 440
+    property int imageHeight: 320
 
     required property string filePath
 
@@ -41,7 +44,7 @@ Item {
 
             Behavior on border.color {
                 ColorAnimation {
-                    duration: 200
+                    duration: Appearance.motion.short4
                 }
             }
 
@@ -64,15 +67,16 @@ Item {
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: 300
+                        duration: Appearance.motion.medium2
                         easing.type: Easing.OutCubic
                     }
                 }
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 200
-                        easing.type: Easing.OutQuad
+                        duration: Appearance.motion.short4
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: Appearance.motion.emphasized
                     }
                 }
             }
@@ -126,7 +130,7 @@ Item {
                 }
                 width: Math.min(parent.width - 20, fileNameLabel.implicitWidth + 16)
                 height: 24
-                radius: 12
+                radius: Appearance.shape.small
                 color: Qt.rgba(0, 0, 0, 0.45)
                 border.color: Qt.rgba(1, 1, 1, 0.15)
                 border.width: 1

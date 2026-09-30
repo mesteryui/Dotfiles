@@ -7,6 +7,7 @@ import QtPositioning
 import Quickshell
 
 import "../Log.js" as Log
+import "WeatherFormat.js" as WeatherFormat
 
 Singleton {
     id: root
@@ -17,10 +18,12 @@ Singleton {
     readonly property bool configGpsEnabled: ConfigService.configs.weather.autoLocation ?? false
 
     // --- Estados para la Interfaz de Usuario (UI) ---
-    readonly property bool isLoading: root._geocodeXhr !== null || root._forecastXhr !== null || root._reverseXhr !== null
+    readonly property bool isLoading: root._geocodeXhr !== null || root._forecastXhr !== null || root._reverseXhr !== null || root._alertsXhr !== null || root._aqiXhr !== null
     property bool isError: false
     property string errorMessage: ""
     property double lastFetchTimestamp: 0
+    // Reintento con backoff ante errores (15s, 30s, 60s… tope 5min).
+    property int _retryCount: 0
 
     // Override de sesión para GPS
     property bool _gpsSessionFallback: false
@@ -142,24 +145,14 @@ Singleton {
 
     // Limpia nombres del proveedor: quita sufijos tipo " [Galicia]" y
     // espacios sobrantes. Así "Vigo, Galicia [Galicia]" queda "Vigo, Galicia".
+    // (Implementación en WeatherFormat.js, aquí solo el delegue.)
     function cleanPlaceName(s) {
-        if (!s)
-            return "";
-        return String(s).replace(/\s*\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
+        return WeatherFormat.cleanPlaceName(s);
     }
 
     // Construye "Ciudad, Región" sin repetir el mismo nombre dos veces.
     function buildCityLabel(place, region, fallback) {
-        place = root.cleanPlaceName(place);
-        region = root.cleanPlaceName(region);
-        if (place && region) {
-            const p = place.toLowerCase();
-            const r = region.toLowerCase();
-            if (r === p || p.includes(r))
-                return place;
-            return `${place}, ${region}`;
-        }
-        return place || region || fallback;
+        return WeatherFormat.buildCityLabel(place, region, fallback);
     }
 
     // Idioma de 2 letras para las APIs de geocodificación, según el
@@ -176,9 +169,7 @@ Singleton {
     }
 
     function degreesToCompass(deg) {
-        const points = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-        const idx = Math.round(((deg % 360) / 22.5)) % 16;
-        return points[idx < 0 ? idx + 16 : idx];
+        return WeatherFormat.degreesToCompass(deg);
     }
 
     function dayLabel(dateStr, index) {
@@ -191,10 +182,19 @@ Singleton {
     }
 
     function refineData(json) {
+        const daily = json?.daily || {};
+        const hourly = json?.hourly || {};
+        // Respuesta vacía (sin días ni horas): no es éxito. Se conserva
+        // el parte anterior y se marca error en vez de pintar 0°C/0%.
+        if ((daily.time || []).length === 0 || (hourly.time || []).length === 0) {
+            root.isError = true;
+            root.errorMessage = "Datos incompletos";
+            Log.warn("[WeatherService] Forecast: respuesta sin daily/hourly");
+            root._scheduleRetry();
+            return;
+        }
         let temp = {};
         const current = json?.current || {};
-        const hourly = json?.hourly || {};
-        const daily = json?.daily || {};
         const unit = "°C";
 
         temp.wCode = current.weather_code ?? 0;
@@ -302,10 +302,53 @@ Singleton {
         root.isError = false;
         root.errorMessage = "";
         root.lastFetchTimestamp = Date.now();
+        root._retryCount = 0;
+        retryTimer.stop();
         // Los avisos cadencian aparte (30 min): no bloquean el parte.
         root.fetchAlerts(false);
         // El AQI cambia despacio pero pesa poco: con cada parte.
         root.fetchAqi();
+    }
+
+    function _retryDelay() {
+        const step = Math.max(0, Math.min(5, root._retryCount));
+        return Math.min(300000, 15000 * Math.pow(2, step));
+    }
+
+    function _scheduleRetry() {
+        // Solo un reintento pendiente y sin petición en vuelo.
+        if (retryTimer.running)
+            return;
+        if (root._forecastXhr !== null || root._geocodeXhr !== null || root._reverseXhr !== null)
+            return;
+        retryTimer.interval = root._retryDelay();
+        root._retryCount++;
+        retryTimer.restart();
+    }
+
+    Timer {
+        id: retryTimer
+
+        repeat: false
+        onTriggered: {
+            if (root.isError || root.data.lastRefresh === "--:--")
+                root.getData();
+        }
+    }
+
+    // En modo GPS sin fix durante demasiado tiempo el parte quedaría
+    // congelado (PositionSource no emite). Si caduca, reintenta con la
+    // última ubicación conocida en vez de esperar al siguiente fix.
+    Timer {
+        id: gpsStaleTimer
+
+        running: root.gpsActive
+        repeat: true
+        interval: root.fetchInterval
+        onTriggered: {
+            if (root.gpsActive && Date.now() - root.lastFetchTimestamp >= root.fetchInterval)
+                root.getData();
+        }
     }
 
     function _request(xhrPropName, url, label, onSuccess, onFailure) {
@@ -333,10 +376,12 @@ Singleton {
                 root.isError = true;
                 root.errorMessage = "Sin conexión";
                 Log.warn(`[WeatherService] ${label}: sin conexión (reintentando)`);
+                root._scheduleRetry();
             } else {
                 root.isError = true;
                 root.errorMessage = msg;
                 Log.error(`[WeatherService] ${label} falló: ${msg}`);
+                root._scheduleRetry();
             }
         }
 
@@ -449,50 +494,15 @@ Singleton {
 
     // ---- Avisos MeteoAlarm (sin clave, feed JSON por país) ----
     // Slug verificado del feed: feeds-{slug}. Sin slug no hay avisos.
+    // (Implementación en WeatherFormat.js.)
     function _alertsSlug(countryCode) {
-        const map = {
-            ES: "spain",
-            PT: "portugal",
-            FR: "france",
-            DE: "germany",
-            IT: "italy"
-        };
-        return map[(countryCode || "").toUpperCase()] ?? "";
+        return WeatherFormat.alertsSlug(countryCode);
     }
 
     // Tokens para emparejar zonas ("Miño de Pontevedra" casa con
     // "Pontevedra"). Sin geometrías en el feed, el texto manda.
     function _alertTokens(parts) {
-        const stop = {
-            de: 1,
-            la: 1,
-            el: 1,
-            las: 1,
-            los: 1,
-            del: 1,
-            les: 1,
-            y: 1,
-            en: 1,
-            et: 1,
-            the: 1,
-            of: 1,
-            provincia: 1,
-            comunidad: 1,
-            autonoma: 1,
-            ciudad: 1,
-            region: 1,
-            departamento: 1
-        };
-        const out = [];
-        for (let i = 0; i < parts.length; i++) {
-            const words = String(parts[i] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9]+/);
-            for (let j = 0; j < words.length; j++) {
-                const w = words[j];
-                if (w.length >= 4 && !stop[w] && out.indexOf(w) < 0)
-                    out.push(w);
-            }
-        }
-        return out;
+        return WeatherFormat.alertTokens(parts);
     }
 
     function _alertLevelOf(info) {
@@ -591,24 +601,18 @@ Singleton {
         const url = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + root.location.countrySlug;
         root._request("_alertsXhr", url, "Alerts", json => root.parseAlerts(json), msg => {
             Log.warn("[WeatherService] Alerts: " + msg + " (sin avisos)");
+            // Sin avisos fiables: limpiar en vez de dejar caducados fijos.
+            const d = Object.assign({}, root.data);
+            d.alertLevel = 0;
+            d.alertCount = 0;
+            d.alerts = [];
+            root.data = d;
         });
     }
 
     // ---- Calidad del aire (Open-Meteo, sin clave) ----
     function aqiLevelOf(value) {
-        if (value == null || value < 0)
-            return 0;
-        if (value < 20)
-            return 1;
-        if (value < 40)
-            return 2;
-        if (value < 60)
-            return 3;
-        if (value < 80)
-            return 4;
-        if (value < 100)
-            return 5;
-        return 6;
+        return WeatherFormat.aqiLevelOf(value);
     }
 
     function fetchAqi() {
@@ -623,6 +627,10 @@ Singleton {
             root.data = d;
         }, msg => {
             Log.warn("[WeatherService] AirQuality: " + msg + " (sin AQI)");
+            const d = Object.assign({}, root.data);
+            d.aqi = -1;
+            d.aqiLevel = 0;
+            root.data = d;
         });
     }
 
@@ -714,7 +722,9 @@ Singleton {
                     valid: false,
                     lat: 0,
                     lon: 0,
-                    cachedCity: ""
+                    cachedCity: "",
+                    countrySlug: "",
+                    matchTokens: []
                 };
                 root._gpsSessionFallback = true;
             }

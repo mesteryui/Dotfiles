@@ -1,4 +1,5 @@
 import qs.Primitives
+import qs.Core
 import qs.Bar.SystemTray
 import QtQuick
 import QtQuick.Layouts
@@ -8,7 +9,7 @@ RowLayout {
 
     // implicitWidth/Height ahora se calculan solos a partir de los hijos,
     // así que el RowLayout padre en MainBar.qml reserva el espacio real.
-    spacing: 4
+    spacing: Appearance.spacing.xs
     Layout.alignment: Qt.AlignVCenter
 
     MaterialIcon {
@@ -21,7 +22,7 @@ RowLayout {
 
         Behavior on rotation {
             NumberAnimation {
-                duration: 200
+                duration: Appearance.motion.short4
                 easing.type: Easing.OutQuad
             }
         }

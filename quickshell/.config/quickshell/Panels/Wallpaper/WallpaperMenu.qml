@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import qs.Core
 import qs.Core.Modules
 import qs.Shared.Background
 import qs.Panels.Wallpaper.Content
@@ -122,7 +123,8 @@ Scope {
                     target: animatedContainer
                     to: 0.0
                     duration: root.animDuration
-                    easing.type: Easing.OutQuad
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: Appearance.motion.emphasized
                 }
                 ScaleAnimator {
                     target: animatedContainer

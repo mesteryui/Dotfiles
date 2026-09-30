@@ -1,0 +1,170 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "kitty-direct",
+    "source": "~/.config/fastfetch/assets/pngwingScaled.com.png",
+    "padding": {
+      "left": 0,
+      "top": 1,
+      "right": 4
+    },
+    "width": 38,
+    "height": 24
+  },
+  "display": {
+    "separator": " ",
+    "color": {
+      "keys": "#EBDBB2",
+      "title": "#FABD2F",
+      "output": "#FBF1C7",
+      "separator": "#928374"
+    }
+  },
+  "modules": [
+    {
+      "type": "title",
+      "format": "{6}{7}{8}"
+    },
+    {
+      "type": "custom",
+      "format": " {#928374}───────────── Sistema ─────────────{#}"
+    },
+    {
+      "key": "│ {#34} distro  {#keys}│",
+      "type": "os"
+    },
+    {
+      "key": "│ {#35}󰌢 host    {#keys}│",
+      "type": "host"
+    },
+    {
+      "key": "│ {#33} kernel  {#keys}│",
+      "type": "kernel"
+    },
+    {
+      "key": "│ {#36}󰅐 uptime  {#keys}│",
+      "type": "uptime"
+    },
+    {
+      "key": "│ {#32}󰏖 pkgs    {#keys}│",
+      "type": "packages"
+    },
+    {
+      "key": "│ {#34}󰒋 init    {#keys}│",
+      "type": "initsystem"
+    },
+    {
+      "type": "custom",
+      "format": " {#928374}──────────── Escritorio ────────────{#}"
+    },
+    {
+      "key": "│ {#32} shell   {#keys}│",
+      "type": "shell"
+    },
+    {
+      "key": "│ {#33}󰍹 monitor {#keys}│",
+      "type": "display",
+      "compactType": "original-with-refresh-rate"
+    },
+    {
+      "key": "│ {#36}󰇄 desktop {#keys}│",
+      "type": "de"
+    },
+    {
+      "key": "│ {#36} wm      {#keys}│",
+      "type": "wm"
+    },
+    {
+      "key": "│ {#35}󰉼 theme   {#keys}│",
+      "type": "theme"
+    },
+    {
+      "key": "│ {#33}󰀻 icons   {#keys}│",
+      "type": "icons"
+    },
+    {
+      "key": "│ {#34} font    {#keys}│",
+      "type": "font"
+    },
+    {
+      "key": "│ {#35}󰇀 cursor  {#keys}│",
+      "type": "cursor"
+    },
+    {
+      "key": "│ {#31} term    {#keys}│",
+      "type": "terminal"
+    },
+    {
+      "key": "│ {#32} t-font  {#keys}│",
+      "type": "terminalfont"
+    },
+    {
+      "type": "custom",
+      "format": " {#928374}──────────── Hardware ──────────────{#}"
+    },
+    {
+      "key": "│ {#33}󰍛 cpu     {#keys}│",
+      "type": "cpu",
+      "showPeCoreCount": true
+    },
+    {
+      "key": "│ {#31}󰻠 cpu-uso {#keys}│",
+      "type": "cpuUsage"
+    },
+    {
+      "key": "│ {#35}󰢮 gpu     {#keys}│",
+      "type": "gpu"
+    },
+    {
+      "key": "│ {#36} memory  {#keys}│",
+      "type": "memory"
+    },
+    {
+      "key": "│ {#34}󰾵 swap    {#keys}│",
+      "type": "swap"
+    },
+    {
+      "key": "│ {#34}󰉉 disk    {#keys}│",
+      "type": "disk",
+      "folders": "/"
+    },
+    {
+      "key": "│ {#32}󰁹 battery {#keys}│",
+      "type": "battery"
+    },
+    {
+      "key": "│ {#33}󰃠 bright  {#keys}│",
+      "type": "brightness"
+    },
+    {
+      "type": "custom",
+      "format": " {#928374}────────────── Red ─────────────────{#}"
+    },
+    {
+      "key": "│ {#36} wifi    {#keys}│",
+      "type": "wifi"
+    },
+    {
+      "key": "│ {#34}󰩠 localip {#keys}│",
+      "type": "localip"
+    },
+    {
+      "type": "custom",
+      "format": " {#928374}───────────── Carga ────────────────{#}"
+    },
+    {
+      "key": "│ {#33}󰤄 load    {#keys}│",
+      "type": "loadavg"
+    },
+    {
+      "key": "│ {#35}󰨇 procs   {#keys}│",
+      "type": "processes"
+    },
+    "break",
+    {
+      "type": "colors",
+      "paddingLeft": 2,
+      "symbol": "circle"
+    }
+  ]
+}

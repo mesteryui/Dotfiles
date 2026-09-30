@@ -12,7 +12,7 @@ import Quickshell.Hyprland
 
 BarPopupWindow {
     id: root
-    
+
     implicitWidth: 320
     implicitHeight: 400
     grabFocus: true
@@ -36,8 +36,16 @@ BarPopupWindow {
     }
 
     // ── Background ────────────────────────────────────────────
+    PopupBackground {
+        id: bg
+
+        anchors.fill: parent
+    }
+
+    // Sombra: source se asigna en onCompleted para evitar warning
+    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
     MultiEffect {
-        source: bg
+        id: panelShadow
         anchors.fill: bg
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
@@ -45,21 +53,16 @@ BarPopupWindow {
         shadowVerticalOffset: 6
         shadowHorizontalOffset: 0
         blurMax: 32
-        shadowOpacity: 0.18
+        shadowOpacity: Appearance.elevation2.opacity
         z: -1
-    }
-
-    PopupBackground {
-        id: bg
-
-        anchors.fill: parent
+        Component.onCompleted: panelShadow.source = bg
     }
 
     // ── Content ───────────────────────────────────────────────
     CalendarContent {
         anchors {
             fill: parent
-            margins: 16
+            margins: Appearance.spacing.l
         }
 
         currentMonth: root.currentMonth

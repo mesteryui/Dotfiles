@@ -47,6 +47,52 @@ Singleton {
     property string pendingPreviewId: ""
     property var pendingDeleteQueue: []
     property bool pendingRefresh: false
+    // Watchdogs: ningún cliphist/wl-copy colgado debe wedgar su cola.
+    property Timer listWatchdog: Timer {
+        interval: 10000
+        onTriggered: {
+            if (listProc.running) {
+                Log.warn("ClipboardService: timeout listando");
+                listProc.running = false;
+            }
+        }
+    }
+    property Timer copyWatchdog: Timer {
+        interval: 10000
+        onTriggered: {
+            if (copyProc.running) {
+                Log.warn("ClipboardService: timeout copiando id=" + root.copyId);
+                copyProc.running = false;
+            }
+        }
+    }
+    property Timer previewWatchdog: Timer {
+        interval: 15000
+        onTriggered: {
+            if (previewProc.running) {
+                Log.warn("ClipboardService: timeout preview id=" + root.previewId);
+                previewProc.running = false;
+            }
+        }
+    }
+    property Timer textWatchdog: Timer {
+        interval: 10000
+        onTriggered: {
+            if (textProc.running) {
+                Log.warn("ClipboardService: timeout texto id=" + root.textCid);
+                textProc.running = false;
+            }
+        }
+    }
+    property Timer delWatchdog: Timer {
+        interval: 10000
+        onTriggered: {
+            if (delProc.running) {
+                Log.warn("ClipboardService: timeout delete id=" + delProc.currentId);
+                delProc.running = false;
+            }
+        }
+    }
 
     signal previewReady(string cid)
     // El decode falló (entrada expirada, binario corrupto...): sin esta
@@ -112,6 +158,7 @@ Singleton {
         error = "";
         refreshing = true;
         listProc.running = true;
+        listWatchdog.restart();
     }
 
     function rebuildSnapshot() {
@@ -150,6 +197,7 @@ Singleton {
         else
             copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy"];
         copyProc.running = true;
+        copyWatchdog.restart();
     }
 
     // Copia texto arbitrario al portapapeles (vía única para emoji y
@@ -182,8 +230,11 @@ Singleton {
 
     function startPreview(id) {
         previewId = id;
-        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(previewDir) + "/preview-" + shEscape(id) + ".png' && ([ -s \"$OUT\" ] || cliphist decode '" + shEscape(id) + "' > \"$OUT\")"];
+        // Tmp + mv atómico: antes `> "$OUT"` truncaba el cacheado bueno
+        // antes de saber si el decode iba a funcionar.
+        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(previewDir) + "/preview-" + shEscape(id) + ".png' && ([ -s \"$OUT\" ] || { TMP=\"$OUT.tmp.$$\"; cliphist decode '" + shEscape(id) + "' > \"$TMP\" && mv -f \"$TMP\" \"$OUT\"; rm -f \"$TMP\"; })"];
         previewProc.running = true;
+        previewWatchdog.restart();
     }
 
     // Texto completo de una entrada de texto (`cliphist list` solo trae la
@@ -219,6 +270,7 @@ Singleton {
         pendingTextId = "";
         textProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' 2>/dev/null | head -c 20000"];
         textProc.running = true;
+        textWatchdog.restart();
     }
 
     function deleteEntry(cid) {
@@ -227,8 +279,12 @@ Singleton {
             Log.warn("ClipboardService: delete con id inválido '" + cid + "'");
             return;
         }
-        // Encolar: pulsar Supr rápido ya no pierde borrados.
+        // Encolar: pulsar Supr rápido ya no pierde borrados (tope 50,
+        // los más viejos se descartan con aviso en vez de crecer sin fin).
         if (delProc.running) {
+            if (pendingDeleteQueue.length >= 50) {
+                Log.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift());
+            }
             pendingDeleteQueue.push(id);
             return;
         }
@@ -244,6 +300,7 @@ Singleton {
         // Guardamos el id en curso para limpiar su preview al terminar.
         delProc.currentId = id;
         delProc.running = true;
+        delWatchdog.restart();
     }
 
     function wipe() {
@@ -251,16 +308,21 @@ Singleton {
     }
 
     // Tope de 40 previews en caché (las entradas viejas se regeneran solas).
+    // find+sort por mtime: no parsea `ls` y aguanta espacios en nombres.
     Process {
         id: trimProc
 
-        command: ["sh", "-c", "d='" + root.previewDir + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 40 ]; then ls -t \"$d\" | tail -n +41 | (cd \"$d\" && xargs -r rm -f); fi"]
+        command: ["sh", "-c", "d='" + root.previewDir + "'; [ -d \"$d\" ] || exit 0; find \"$d\" -maxdepth 1 -type f -printf '%T@ %p\\n' 2>/dev/null | sort -rn | tail -n +41 | cut -d' ' -f2- | xargs -r rm -f"]
     }
 
     Process {
         id: mkdirProc
         command: ["mkdir", "-p", root.previewDir]
         Component.onCompleted: mkdirProc.running = true
+        onExited: code => {
+            if (code !== 0)
+                Log.warn("ClipboardService: no se pudo crear " + root.previewDir);
+        }
     }
 
     // cliphist list -> "<id>\t<preview>"
@@ -287,9 +349,12 @@ Singleton {
             }
         }
         onExited: (code, status) => {
+            root.listWatchdog.stop();
             root.refreshing = false;
             root.ready = true;
-            if (code !== 0 && root.entries.count === 0)
+            if (code === 127)
+                root.error = I18nService.getTranslation("launcher.clipboard_error", "Sin historial (¿daemon cliphist activo?)") + " (cliphist no instalado)";
+            else if (code !== 0)
                 root.error = I18nService.getTranslation("launcher.clipboard_error", "Sin historial (¿daemon cliphist activo?)");
             root.rebuildSnapshot();
             if (!trimProc.running)
@@ -306,8 +371,9 @@ Singleton {
     Process {
         id: copyProc
         onExited: (code, status) => {
+            root.copyWatchdog.stop();
             if (code !== 0)
-                Log.warn("ClipboardService: copy falló id=" + root.copyId);
+                Log.warn("ClipboardService: copy falló id=" + root.copyId + " (" + code + ")");
             // Si se pidió otra copia mientras tanto, ejecuta solo la última.
             if (root.hasPendingCopy) {
                 const nid = root.pendingCopyId;
@@ -322,6 +388,7 @@ Singleton {
     Process {
         id: previewProc
         onExited: (code, status) => {
+            root.previewWatchdog.stop();
             const finishedId = root.previewId;
             if (code === 0)
                 root.previewReady(finishedId);
@@ -351,6 +418,7 @@ Singleton {
             }
         }
         onExited: (code, status) => {
+            root.textWatchdog.stop();
             if (code === 0) {
                 let t = root.textAcc;
                 if (t.endsWith("\n"))
@@ -377,6 +445,7 @@ Singleton {
         id: delProc
         property string currentId: ""
         onExited: (code, status) => {
+            root.delWatchdog.stop();
             if (code !== 0)
                 Log.warn("ClipboardService: delete falló id=" + delProc.currentId);
             else if (delProc.currentId !== "")
@@ -404,6 +473,10 @@ Singleton {
     Process {
         id: wipeProc
         command: ["cliphist", "wipe"]
-        onExited: root.refresh()
+        onExited: (code, status) => {
+            if (code !== 0)
+                Log.warn("ClipboardService: wipe falló (" + code + ")");
+            root.refresh();
+        }
     }
 }
