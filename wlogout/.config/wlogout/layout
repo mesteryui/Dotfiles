@@ -1,30 +1,30 @@
 {
     "label" : "lock",
     "action" : "pidof hyprlock || hyprlock",
-    "text" : "Lock",
+    "text" : "Bloquear",
     "keybind" : "l"
 }
 {
     "label" : "logout",
     "action" : "loginctl terminate-user $USER",
-    "text" : "Logout",
+    "text" : "Cerrar sesión",
     "keybind" : "e"
 }
 {
     "label" : "shutdown",
     "action" : "hyprshutdown -t 'Apagando equipo' -p 'systemctl poweroff'",
-    "text" : "Shutdown",
+    "text" : "Apagar",
     "keybind" : "s"
 }
 {
     "label" : "suspend",
     "action" : "systemctl suspend",
-    "text" : "Suspend",
+    "text" : "Suspender",
     "keybind" : "u"
 }
 {
     "label" : "reboot",
     "action" : "hyprshutdown -t 'Reinciando equipo' -p systemctl reboot",
-    "text" : "Reboot",
+    "text" : "Reiniciar",
     "keybind" : "r"
 }
