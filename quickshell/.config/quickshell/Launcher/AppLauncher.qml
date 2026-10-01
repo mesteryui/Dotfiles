@@ -211,9 +211,14 @@ Scope {
                 }
             }
 
-            // Prefijo tecleado (tiene prioridad: los caracteres siempre cambian de menú)
+            // Prefijo tecleado (tiene prioridad: los caracteres siempre cambian de menú).
+            // Los triggers de plugins van primero: "!..." es modo system
+            // con ámbito en la sección del plugin (ver syncTriggerSection).
             function typedMode() {
-                return MenuModes.modeForPrefix(searchBar.field.text);
+                const t = searchBar.field.text;
+                if (Services.PluginService.triggerFor(t))
+                    return "system";
+                return MenuModes.modeForPrefix(t);
             }
 
             // Modo activo: prefijo tecleado manda; si no, modo forzado por IPC.
@@ -227,11 +232,15 @@ Scope {
             }
 
             // Query sin prefijo (inmediata: decide modo + alimenta calc/files,
-            // que ya tienen su propio debounce interno).
+            // que ya tienen su propio debounce interno). Los triggers de
+            // plugin se pelan igual que los prefijos clásicos.
             property string query: {
                 const t = searchBar.field.text;
                 const m = launcher.activeMode;
                 if (m !== "todo") {
+                    const tg = Services.PluginService.triggerFor(t);
+                    if (tg)
+                        return t.slice(tg.trigger.length).trim();
                     const p = launcher.prefixOf(m);
                     if (p !== "" && t.startsWith(p))
                         return t.slice(p.length).trim();
@@ -252,6 +261,7 @@ Scope {
             }
 
             onQueryChanged: {
+                launcher.syncTriggerSection();
                 if (launcher.query === "") {
                     filterDebounce.stop();
                     launcher.debouncedQuery = "";
@@ -292,6 +302,8 @@ Scope {
                 // Modelos live del menú de sistema (búsqueda global + badges "Actual",
                 // más menús propios; no-op si aún no se descubrieron).
                 SystemMenuRegistry.refreshAll();
+                // Si se reabre con un trigger tecleado, re-sincroniza la sección.
+                launcher.syncTriggerSection();
                 // Generador de emojis en background (no-op tras el primero):
                 // el arranque del shell ya no espera/spawnea python.
                 EmojiService.ensureLib();
@@ -394,6 +406,19 @@ Scope {
                 launcher.filterEpoch++;
                 SystemMenuRegistry.refreshSection(id);
                 searchBar.field.forceActiveFocus();
+            }
+
+            // Salto por trigger de plugin ("!..."): entra en la sección del
+            // plugin sin pisar el texto (el resto filtra con ámbito).
+            // Solo actúa al cambiar de sección: no hay refresh-spam por tecla.
+            // Navegar con submenús resetea a ">" (goSection) y libera el ámbito.
+            function syncTriggerSection() {
+                const tg = Services.PluginService.triggerFor(searchBar.field.text);
+                if (tg && scope.menuSection !== tg.section) {
+                    scope.menuSection = tg.section;
+                    launcher.filterEpoch++;
+                    SystemMenuRegistry.refreshSection(tg.section);
+                }
             }
 
             // Mueve la selección: vive en ResultList (con el flash de borde).
@@ -749,8 +774,18 @@ Scope {
                 // Sin query → navegación por secciones estilo Omarchy.
                 if (q === "")
                     return sectionItems(scope.menuSection);
+                // Con trigger tecleado → mismo fuzzy pero con ámbito en la
+                // sección del plugin (sin menuback: no hay a dónde volver).
+                const tg = Services.PluginService.triggerFor(searchBar.field.text);
+                if (tg)
+                    return scopedSectionResults(scope.menuSection, q);
                 // Pesos: título 1.0 > subtítulo 0.25 > sección 0.1 (el nombre manda).
                 return Services.FuzzySearch.filterItemsMulti(q, systemPool(), it => [{ text: it.title, weight: 1 }, { text: it.sub, weight: 0.25 }, { text: it.cat, weight: 0.1 }]);
+            }
+
+            function scopedSectionResults(sectionId, q) {
+                const items = sectionItems(sectionId).filter(it => it.kind !== "menuback");
+                return Services.FuzzySearch.filterItemsMulti(q, items, it => [{ text: it.title || "", weight: 1 }, { text: it.sub || "", weight: 0.25 }, { text: it.cat || "", weight: 0.1 }]);
             }
 
             // ---------- emojis vía EmojiService ----------

@@ -1,0 +1,13 @@
+{
+    "id": "example-hello",
+    "name": "Ejemplo Hola",
+    "description": "Plugin de ejemplo (launcher): demuestra el pipeline sin tocar el core.",
+    "version": "1.0.0",
+    "author": "shinro",
+    "type": "launcher",
+    "capabilities": ["launcher-section"],
+    "component": "./HelloMenu.qml",
+    "trigger": "!",
+    "requires_shinro": ">=1.0",
+    "permissions": []
+}

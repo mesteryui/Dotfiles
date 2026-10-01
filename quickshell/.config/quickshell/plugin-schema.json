@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://shinro/shell/plugin-schema.json",
+    "title": "shinro plugin.json",
+    "description": "Manifest de un plugin de shinro. Ver PLUGINS.md.",
+    "type": "object",
+    "required": ["id", "name", "version", "type", "component"],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$",
+            "description": "Identificador único. Minúsculas, números, _ y -. No colisionar con sectionIds reservados."
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Nombre visible en Ajustes > Plugins."
+        },
+        "description": {
+            "type": "string",
+            "description": "Descripción corta para Ajustes > Plugins."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$",
+            "description": "Versión del plugin (semver)."
+        },
+        "author": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string",
+            "enum": ["launcher", "bar-widget", "panel", "daemon"],
+            "description": "Superficie que extiende. Fase 1: solo 'launcher' se instancia; el resto se lista como disponible."
+        },
+        "capabilities": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Capacidades declarativas (informativo en fase 1)."
+        },
+        "component": {
+            "type": "string",
+            "description": "Ruta al QML raíz, relativa al directorio del plugin ('./Menu.qml'). Sin '..'."
+        },
+        "zone": {
+            "type": "string",
+            "enum": ["left", "center", "right"],
+            "description": "Solo bar-widget: zona de la barra donde se inserta (defecto right). Los widgets se añaden AL FINAL de la zona, sin intercalar con el core."
+        },
+        "order": {
+            "type": "number",
+            "description": "Solo bar-widget: orden entre plugins de la misma zona (defecto 100, menor primero; desempate por id)."
+        },
+        "trigger": {
+            "type": "string",
+            "pattern": "^\\S+$",
+            "description": "Solo launcher: prefijo que salta directo a la sección del plugin (ej. '!'). No espacios, máx 8 chars, no puede ser > / @ . = : ni repetirse. longest-match gana."
+        },
+        "settings": {
+            "type": "string",
+            "description": "Solo UI fase 4: QML de ajustes relativo al plugin ('./Settings.qml')."
+        },
+        "extensions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Solo capability wallpaper-backend: extensiones que el proveedor maneja (ej. ['mp4','webm']). Sin proveedor activo no hay rastro en menús."
+        },
+        "requires_shinro": {
+            "type": "string",
+            "description": "Versión mínima del shell: '>=1.0', '1.2.0' o '*'."
+        },
+        "permissions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Declarativo/documental. QML no tiene sandbox: instalar un plugin es confiar en su autor."
+        }
+    },
+    "additionalProperties": true
+}

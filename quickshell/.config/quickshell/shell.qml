@@ -17,6 +17,7 @@ import qs.Launcher
 import qs.Bar
 import qs.Panels.Volume
 import qs.Features.CheatSheet
+import qs.Panels.PluginPanel
 import qs.Windows
 import QtQuick
 import Quickshell
@@ -28,6 +29,7 @@ ShellRoot {
 
     Component.onCompleted: {
         ConfigService.load();
+        PluginService.load();
         KeyboardThings.load();
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).
         ThemeApplier.init();
@@ -54,6 +56,7 @@ ShellRoot {
     Notifications {}
     Cheatsheet {}
     PolkitWindow {}
+    PluginPanelHost {}
     Bar {}
     LockScreen {}
 }

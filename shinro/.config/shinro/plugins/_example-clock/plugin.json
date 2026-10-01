@@ -1,0 +1,14 @@
+{
+    "id": "example-clock",
+    "name": "Ejemplo Reloj",
+    "description": "Plugin de ejemplo (bar-widget): reloj en la zona derecha.",
+    "version": "1.0.0",
+    "author": "shinro",
+    "type": "bar-widget",
+    "capabilities": ["dankbar-widget"],
+    "component": "./ClockWidget.qml",
+    "zone": "center",
+    "order": 150,
+    "requires_shinro": ">=1.0",
+    "permissions": []
+}

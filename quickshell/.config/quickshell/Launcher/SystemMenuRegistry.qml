@@ -12,12 +12,13 @@ pragma Singleton
 //   Internos: MenuProviders/System/*.qml (cargan primero).
 //   Tuyos: MenuProviders/*.qml (vía new-menu.sh o a mano).
 //
-// Crear un menú nuevo (única vía, estático o dinámico):
+// Crear un menú nuevo (vía clásica, estático o dinámico):
 //   ejecuta MenuProviders/new-menu.sh MiMenu "Mi menú" (o escribe un
 //   MenuDefinition { } a mano), rellena entries y guarda: la recarga en vivo
 //   lo aplica en ~2 s. Sin tocar este archivo y sin recargar todo el shell.
 //   Dinámico = implementa refresh() reasignando entries entero
 //   (ver MenuProviders/System/FastfetchMenu.qml).
+// (Segunda vía: plugins tipo `launcher`; ver PLUGINS.md.)
 //
 // Reactividad: las funciones que sirven items/secciones leen
 // MenuStore.revision, así cualquier reload() reevalúa los bindings
@@ -153,13 +154,15 @@ Singleton {
 
     // Refresca todos los providers al abrir el launcher.
     // Además dispara la comprobación de cambios en disco (recarga en
-    // vivo: si editaste un provider, se aplica solo).
+    // vivo: si editaste un provider, se aplica solo). También la de
+    // plugins (PluginService.checkNow()).
     function refreshAll() {
         if (Date.now() - root.lastRefreshAll < 8000)
             return;
         root.lastRefreshAll = Date.now();
         MenuStore.refreshAll();
         MenuStore.checkNow();
+        Services.PluginService.checkNow();
     }
 
     // Recarga completa de menús sin recargar el shell (vía IPC:
