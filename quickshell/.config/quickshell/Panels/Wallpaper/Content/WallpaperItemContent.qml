@@ -1,6 +1,5 @@
 import qs.Primitives
 import qs.Core
-import qs.Core.Services as Services
 import QtQuick
 import Quickshell.Widgets
 
@@ -19,53 +18,14 @@ Item {
 
     required property string filePath
 
-    // Proveedor externo: miniatura vía capability (genera en background
-    // y avisa con thumbsRevision). Sin proveedor no hay rastro: estas
-    // entradas ni se listan. Petición explícita fuera del binding
-    // (mutar dentro = "Binding loop detected"); lectura pura dentro.
-    readonly property bool isProviderFile: Services.WallpaperService.isProviderWallpaper(root.filePath)
-    property string providerThumb: {
-        Services.WallpaperService.thumbsRevision;
-        return root.isProviderFile ? Services.WallpaperService.providerThumbnail(root.filePath) : "";
-    }
-
-    function requestProviderThumb() {
-        if (root.isProviderFile)
-            Services.WallpaperService.requestProviderThumbnail(root.filePath);
-    }
-
-    Component.onCompleted: requestProviderThumb()
-    onFilePathChanged: requestProviderThumb()
-
     // Icono placeholder mientras se carga
     MaterialIcon {
         anchors.centerIn: parent
-        icon: root.isProviderFile ? "movie" : "image"
+        icon: "image"
         size: 32
         color: Appearance.md3.on_surface_variant
         opacity: 0.3
         visible: wallpaperPreview.status !== Image.Ready
-    }
-
-    // Insignia de vídeo (arriba a la izquierda, sobre el thumb)
-    Rectangle {
-        anchors {
-            left: parent.left
-            top: parent.top
-            margins: 8
-        }
-        width: 30
-        height: 22
-        radius: Appearance.shape.small
-        color: Qt.rgba(0, 0, 0, 0.55)
-        visible: root.isProviderFile
-
-        MaterialIcon {
-            anchors.centerIn: parent
-            icon: "play_arrow"
-            size: 14
-            color: "white"
-        }
     }
 
     // ── Imagen y Borde de Cristal ──────────────────────────────
@@ -92,9 +52,7 @@ Item {
                 id: wallpaperPreview
 
                 anchors.fill: parent
-                // Proveedor con thumb lista → thumb; sin thumb aún → vacío
-                // (placeholder + insignia). Estático → directa.
-                source: root.isProviderFile ? (root.providerThumb !== "" ? Qt.resolvedUrl(root.providerThumb) : "") : Qt.resolvedUrl(root.filePath)
+                source: Qt.resolvedUrl(root.filePath)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 // Thumbs locales: sin caché global para que el Loader al

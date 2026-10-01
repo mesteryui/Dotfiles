@@ -7,18 +7,18 @@
             "type": "scheme-tonal-spot"
         },
         "monospace": "JetBrains Mono NerdFont",
-        "reading": "Google Sans Flex"
+        "reading": "Google Sans Flex",
+        "reduceMotion": false
     },
     "bar": {
         "barType": "partial_hug",
-        "floating": true,
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"
     },
-    "language": "auto",
+    "language": "es_ES",
     "lockscreen": {
-        "blurLevel": 1.29,
+        "blurLevel": 1.32,
         "useWallpaper": true
     },
     "nightLight": {
@@ -26,15 +26,15 @@
         "temperature": 3631
     },
     "notifications": {
-        "timeout": 10
+        "timeout": 8
     },
     "updates": {
         "command": "shelly -U",
-        "countTime": 20
+        "countTime": 14
     },
     "weather": {
         "autoLocation": false,
         "city": "Vigo,ES",
-        "reloadTime": 6
+        "reloadTime": 10
     }
 }
