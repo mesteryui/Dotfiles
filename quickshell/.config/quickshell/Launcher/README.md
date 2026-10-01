@@ -78,5 +78,4 @@ persistente (pins en `Persistent`, recientes/favoritos de emoji en
 
 ## Log
 
-`import "<ruta>/Core/Log.js" as Log` → `Log.debug/info/warn/error(...)`.
-Nivel con `QS_LOG_LEVEL` (ver `shell.qml`). Nada de `console.*` directo.
+`console.debug/info/warn/error(...)` directo en el código. Sin niveles ni wrapper.

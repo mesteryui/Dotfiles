@@ -5,8 +5,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-import "../Log.js" as Log
-
 Singleton {
     id: root
 
@@ -79,7 +77,7 @@ Singleton {
                     const numKb = data.keyboards.find(k => k.name === "asus_numpad") ?? data.keyboards[0];
                     root.numsLock = numKb?.numLock ?? false;
                 } catch (e) {
-                    Log.warn("No se pudo parsear hyprctl devices:", e);
+                    console.warn("No se pudo parsear hyprctl devices:", e);
                 }
             }
         }

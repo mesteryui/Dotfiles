@@ -30,7 +30,7 @@ Singleton {
 
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) {
-                Log.warn("[RandomPhrases] hyprctl splash falló:", exitCode);
+                console.warn("[RandomPhrases] hyprctl splash falló:", exitCode);
             }
         }
     }

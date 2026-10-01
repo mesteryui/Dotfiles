@@ -9,8 +9,6 @@ import QtQml.Models
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
-import "../Log.js" as Log
-
 
 /**
  * A service that provides easy access to the active Mpris player.
@@ -30,6 +28,12 @@ Singleton {
 
 	property var activeTrack;
 
+	// Al cambiar el idioma se regenera activeTrack (los "Unknown *"
+	// van traducidos). Mismo patrón que ClipboardService.langWatch.
+	readonly property string langWatch: I18nService.language
+
+	onLangWatchChanged: updateTrack()
+
 	readonly property bool hasActivePlasmaIntegration: Mpris.players.values.some(
 		p => p?.dbusName?.startsWith('org.mpris.MediaPlayer2.plasma-browser-integration')
 	)
@@ -44,7 +48,6 @@ Singleton {
             // Non-instance mpd bus
             !(player.dbusName?.endsWith('.mpd') && !player.dbusName.endsWith('MediaPlayer2.mpd')));
     }
-
 
 	// Original stuff from fox below
 	Instantiator {
@@ -131,9 +134,9 @@ Singleton {
 		this.activeTrack = {
 			uniqueId: this.activePlayer?.uniqueId ?? 0,
 			artUrl: this._cleanArtUrl(this.activePlayer?.trackArtUrl),
-			title: this.activePlayer?.trackTitle || "Unknown Title",
-			artist: this.activePlayer?.trackArtist || "Unknown Artist",
-			album: this.activePlayer?.trackAlbum || "Unknown Album",
+			title: this.activePlayer?.trackTitle || I18nService.getTranslation("media.unknown_title", "Título desconocido"),
+			artist: this.activePlayer?.trackArtist || I18nService.getTranslation("media.unknown_artist", "Artista desconocido"),
+			album: this.activePlayer?.trackAlbum || I18nService.getTranslation("media.unknown_album", "Álbum desconocido"),
 		};
 
 		this.trackChanged(__reverse);
@@ -171,7 +174,7 @@ Singleton {
 				try {
 					root.position = p.position;
 				} catch (e) {
-					Log.warn("[Mpris] position read failed:", e);
+					console.warn("[Mpris] position read failed:", e);
 				}
 			}
 		}

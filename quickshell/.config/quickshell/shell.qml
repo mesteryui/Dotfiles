@@ -20,7 +20,6 @@ import qs.Features.CheatSheet
 import qs.Windows
 import QtQuick
 import Quickshell
-import "./Core/Log.js" as Log
 
 ShellRoot {
     id: root
@@ -28,7 +27,6 @@ ShellRoot {
     settings.watchFiles: true
 
     Component.onCompleted: {
-        Log.init(Quickshell.env("QS_LOG_LEVEL"));
         ConfigService.load();
         KeyboardThings.load();
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).

@@ -6,8 +6,6 @@ import Quickshell
 import Quickshell.Io
 import qs.Core.Modules
 
-import "../Log.js" as Log
-
 Singleton {
     id: root
 
@@ -70,7 +68,7 @@ Singleton {
             } else {
                 root.failed = true;
                 root.error = code === 127 ? "awww no instalado" : "awww falló (" + code + ")";
-                Log.warn("[Wallpaper] awww falló (" + code + "): " + done);
+                console.warn("[Wallpaper] awww falló (" + code + "): " + done);
             }
         }
     }
@@ -88,7 +86,7 @@ Singleton {
             if (applyProcess.running) {
                 root.failed = true;
                 root.error = "timeout aplicando fondo";
-                Log.warn("[Wallpaper] timeout aplicando: " + root._pendingWallpaper);
+                console.warn("[Wallpaper] timeout aplicando: " + root._pendingWallpaper);
                 applyProcess.running = false;
             }
         }
@@ -111,7 +109,7 @@ Singleton {
         if (!root.validImage(file)) {
             root.failed = true;
             root.error = "formato no soportado";
-            Log.warn("[Wallpaper] formato no soportado: " + file);
+            console.warn("[Wallpaper] formato no soportado: " + file);
             return;
         }
         if (applyProcess.running) {

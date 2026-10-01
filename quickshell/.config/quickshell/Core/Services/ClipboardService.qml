@@ -15,8 +15,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-import "../Log.js" as Log
-
 Singleton {
     id: root
 
@@ -52,7 +50,7 @@ Singleton {
         interval: 10000
         onTriggered: {
             if (listProc.running) {
-                Log.warn("ClipboardService: timeout listando");
+                console.warn("ClipboardService: timeout listando");
                 listProc.running = false;
             }
         }
@@ -61,7 +59,7 @@ Singleton {
         interval: 10000
         onTriggered: {
             if (copyProc.running) {
-                Log.warn("ClipboardService: timeout copiando id=" + root.copyId);
+                console.warn("ClipboardService: timeout copiando id=" + root.copyId);
                 copyProc.running = false;
             }
         }
@@ -70,7 +68,7 @@ Singleton {
         interval: 15000
         onTriggered: {
             if (previewProc.running) {
-                Log.warn("ClipboardService: timeout preview id=" + root.previewId);
+                console.warn("ClipboardService: timeout preview id=" + root.previewId);
                 previewProc.running = false;
             }
         }
@@ -79,7 +77,7 @@ Singleton {
         interval: 10000
         onTriggered: {
             if (textProc.running) {
-                Log.warn("ClipboardService: timeout texto id=" + root.textCid);
+                console.warn("ClipboardService: timeout texto id=" + root.textCid);
                 textProc.running = false;
             }
         }
@@ -88,7 +86,7 @@ Singleton {
         interval: 10000
         onTriggered: {
             if (delProc.running) {
-                Log.warn("ClipboardService: timeout delete id=" + delProc.currentId);
+                console.warn("ClipboardService: timeout delete id=" + delProc.currentId);
                 delProc.running = false;
             }
         }
@@ -173,7 +171,7 @@ Singleton {
     function copyEntry(cid, isImage) {
         const id = String(cid).trim();
         if (!isValidId(id)) {
-            Log.warn("ClipboardService: copy con id inválido '" + cid + "'");
+            console.warn("ClipboardService: copy con id inválido '" + cid + "'");
             return;
         }
         // Si ya hay una copia en curso, encolamos solo la última.
@@ -276,14 +274,14 @@ Singleton {
     function deleteEntry(cid) {
         const id = String(cid).trim();
         if (!isValidId(id)) {
-            Log.warn("ClipboardService: delete con id inválido '" + cid + "'");
+            console.warn("ClipboardService: delete con id inválido '" + cid + "'");
             return;
         }
         // Encolar: pulsar Supr rápido ya no pierde borrados (tope 50,
         // los más viejos se descartan con aviso en vez de crecer sin fin).
         if (delProc.running) {
             if (pendingDeleteQueue.length >= 50) {
-                Log.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift());
+                console.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift());
             }
             pendingDeleteQueue.push(id);
             return;
@@ -321,7 +319,7 @@ Singleton {
         Component.onCompleted: mkdirProc.running = true
         onExited: code => {
             if (code !== 0)
-                Log.warn("ClipboardService: no se pudo crear " + root.previewDir);
+                console.warn("ClipboardService: no se pudo crear " + root.previewDir);
         }
     }
 
@@ -373,7 +371,7 @@ Singleton {
         onExited: (code, status) => {
             root.copyWatchdog.stop();
             if (code !== 0)
-                Log.warn("ClipboardService: copy falló id=" + root.copyId + " (" + code + ")");
+                console.warn("ClipboardService: copy falló id=" + root.copyId + " (" + code + ")");
             // Si se pidió otra copia mientras tanto, ejecuta solo la última.
             if (root.hasPendingCopy) {
                 const nid = root.pendingCopyId;
@@ -393,7 +391,7 @@ Singleton {
             if (code === 0)
                 root.previewReady(finishedId);
             else {
-                Log.warn("ClipboardService: preview falló id=" + finishedId);
+                console.warn("ClipboardService: preview falló id=" + finishedId);
                 root.previewFailed(finishedId);
             }
             // Navegación rápida: atiende el último preview pendiente. Solo
@@ -428,7 +426,7 @@ Singleton {
                     t += "\n…";
                 root.textContent = t;
             } else {
-                Log.warn("ClipboardService: texto falló id=" + root.textCid);
+                console.warn("ClipboardService: texto falló id=" + root.textCid);
                 root.textContent = "";
             }
             root.textReady(root.textCid);
@@ -447,7 +445,7 @@ Singleton {
         onExited: (code, status) => {
             root.delWatchdog.stop();
             if (code !== 0)
-                Log.warn("ClipboardService: delete falló id=" + delProc.currentId);
+                console.warn("ClipboardService: delete falló id=" + delProc.currentId);
             else if (delProc.currentId !== "")
                 // Limpia el preview cacheado de la entrada borrada para
                 // no mostrar una imagen fantasma si el id se recicla.
@@ -475,7 +473,7 @@ Singleton {
         command: ["cliphist", "wipe"]
         onExited: (code, status) => {
             if (code !== 0)
-                Log.warn("ClipboardService: wipe falló (" + code + ")");
+                console.warn("ClipboardService: wipe falló (" + code + ")");
             root.refresh();
         }
     }

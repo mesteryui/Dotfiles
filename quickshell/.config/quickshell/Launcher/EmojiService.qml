@@ -27,7 +27,6 @@ import Quickshell
 import Quickshell.Io
 import qs.Core.Modules
 import qs.Core.Services
-import "../Core/Log.js" as Log
 import "EmojiCustom.js" as EmojiCustom
 
 Singleton {
@@ -192,7 +191,7 @@ Singleton {
         onLoadFailed: error => {
             // Instalación fresca sin capa custom: no es un error.
             if (error !== FileViewError.FileNotFound)
-                Log.warn("EmojiService: no se pudo leer EmojiCustom.js: " + error);
+                console.warn("EmojiService: no se pudo leer EmojiCustom.js: " + error);
         }
     }
 
@@ -324,7 +323,7 @@ Singleton {
             if (error == FileViewError.FileNotFound)
                 writeTimer.restart();
             else
-                Log.warn("EmojiService: no se pudo leer emoji.json: " + error);
+                console.warn("EmojiService: no se pudo leer emoji.json: " + error);
         }
 
         JsonAdapter {

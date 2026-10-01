@@ -41,7 +41,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Core.Modules
-import "../Core/Log.js" as Log
 
 Singleton {
     id: root
@@ -211,13 +210,13 @@ Singleton {
         const comp = Qt.createComponent(Qt.resolvedUrl(url));
         if (comp.status !== Component.Ready) {
             root.lastError = base + name + ": " + comp.errorString();
-            Log.warn("MenuStore: no se pudo cargar " + root.lastError);
+            console.warn("MenuStore: no se pudo cargar " + root.lastError);
             return null;
         }
         const obj = comp.createObject(root, {});
         if (!obj || !obj.sectionId) {
             root.lastError = base + name + " no expone sectionId, se ignora";
-            Log.warn("MenuStore: " + root.lastError);
+            console.warn("MenuStore: " + root.lastError);
             if (obj)
                 obj.destroy();
             return null;
@@ -241,7 +240,7 @@ Singleton {
             }
             if (seen[obj.sectionId]) {
                 root.lastError = "sectionId duplicado '" + obj.sectionId + "' en " + name + ", se ignora (manda el primero)";
-                Log.warn("MenuStore: " + root.lastError);
+                console.warn("MenuStore: " + root.lastError);
                 obj.destroy();
                 continue;
             }
@@ -257,7 +256,7 @@ Singleton {
         // lo que haya, como antes.
         root.loadErrors = errors;
         if (errors > 0 && root.loadEpoch > 0 && root.providers.length > 0) {
-            Log.warn("MenuStore: " + errors + " provider(s) con error, se conservan los menús actuales");
+            console.warn("MenuStore: " + errors + " provider(s) con error, se conservan los menús actuales");
             for (let d = 0; d < sys.length; d++)
                 sys[d].destroy();
             for (let e = 0; e < usr.length; e++)
@@ -268,7 +267,7 @@ Singleton {
         // los viejos (p. ej. error transitorio del ls): mejor menú viejo
         // que ningún menú.
         if (sys.length + usr.length === 0 && root.providers.length > 0) {
-            Log.warn("MenuStore: redescubrimiento vacío, se conservan los providers actuales");
+            console.warn("MenuStore: redescubrimiento vacío, se conservan los providers actuales");
             return;
         }
         // Limpia providers anteriores (recarga) antes de reasignar.

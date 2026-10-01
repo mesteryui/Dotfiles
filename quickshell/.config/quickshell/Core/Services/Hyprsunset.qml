@@ -38,7 +38,6 @@ import Quickshell.Io
 //   conectar + drift cada 30 s). Los comandos mutadores mandados sin conexión
 //   no se pierden: se guardan en _offlineJournal y se reproducen en orden al
 //   conectar, antes del sync.
-import "../Log.js" as Log
 
 Singleton {
     id: root
@@ -99,7 +98,7 @@ Singleton {
             }
             if (!root._offlineWarned) {
                 root._offlineWarned = true;
-                Log.warn("[Hyprsunset] socket no conectado, comando guardado para al conectar:", cmd);
+                console.warn("[Hyprsunset] socket no conectado, comando guardado para al conectar:", cmd);
             }
             return;
         }
@@ -169,7 +168,7 @@ Singleton {
             // Un aviso por episodio: si el daemon no existe, no spamea.
             if (!root._offlineWarned) {
                 root._offlineWarned = true;
-                Log.warn("[Hyprsunset] error de socket:", err);
+                console.warn("[Hyprsunset] error de socket:", err);
             }
             socket.connected = false;
         }

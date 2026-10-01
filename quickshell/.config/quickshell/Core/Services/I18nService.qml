@@ -4,8 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-import "../Log.js" as Log
-
 Singleton {
     id: root
 
@@ -21,7 +19,7 @@ Singleton {
     // completo. Igual para inglés ("en", "en_GB" → "en_US").
     readonly property string candidateLang: {
         const raw = (userDefinedLang === "auto" || userDefinedLang === "") ? systemLang : userDefinedLang;
-        const norm = raw.replace("-", "_");
+        const norm = raw.replace(/-/g, "_");
         if (norm === "es" || norm.startsWith("es_"))
             return "es_ES";
         if (norm === "en" || norm.startsWith("en_"))
@@ -40,8 +38,9 @@ Singleton {
     // (que suele estar en español y enmascaraba los huecos).
     property var fallbackTranslations: ({})
 
-    // Si el candidato no tiene archivo, se carga el fallback inglés.
-    property bool useFallback: false
+    // El fallback inglés solo se carga si el candidato no ES inglés:
+    // entonces `translations` ya es en_US y leerlo dos veces es redundante.
+    readonly property bool needFallbackFile: root.candidateLang !== "en_US"
 
     readonly property string candidatePath: Quickshell.shellPath("Core/i18n/" + root.candidateLang + ".json")
     readonly property string fallbackPath: Quickshell.shellPath("Core/i18n/en_US.json")
@@ -49,7 +48,7 @@ Singleton {
     FileView {
         id: fallbackFile
 
-        path: root.fallbackPath
+        path: root.needFallbackFile ? root.fallbackPath : ""
         blockLoading: true
         watchChanges: true
         printErrors: false
@@ -58,20 +57,23 @@ Singleton {
             try {
                 root.fallbackTranslations = JSON.parse(fallbackFile.text());
             } catch (e) {
-                Log.error("I18n fallback error:", e);
+                console.error("I18n fallback error:", e);
                 root.fallbackTranslations = ({});
             }
         }
         onLoadFailed: error => {
-            Log.error("I18n error: missing fallback file:", fallbackFile.path);
+            // path "" = descargado a propósito (candidato inglés), no es error.
+            if (fallbackFile.path === "")
+                return;
+            console.error("I18n error: missing fallback file:", fallbackFile.path);
             root.fallbackTranslations = ({});
         }
     }
 
     FileView {
-        id: fileManagment
+        id: fileManagement
 
-        path: root.useFallback ? root.fallbackPath : root.candidatePath
+        path: root.candidatePath
         blockLoading: true
         watchChanges: true
         printErrors: false
@@ -79,29 +81,23 @@ Singleton {
 
         onLoaded: {
             try {
-                root.translations = JSON.parse(fileManagment.text());
+                root.translations = JSON.parse(fileManagement.text());
             } catch (e) {
-                Log.error("I18n error:", e);
+                console.error("I18n error:", e);
                 root.translations = ({});
             }
-            root.language = root.useFallback ? "en_US" : root.candidateLang;
-            Log.info("[I18n] system=" + root.systemLang + " candidate=" + root.candidateLang + " -> " + root.language);
+            root.language = root.candidateLang;
+            console.info("[I18n] system=" + root.systemLang + " candidate=" + root.candidateLang + " -> " + root.language);
         }
         onLoadFailed: error => {
-            if (!root.useFallback && root.candidateLang !== "en_US") {
-                root.useFallback = true;
-            } else {
-                Log.error("I18n error: missing translation file:", fileManagment.path);
-                root.translations = ({});
-                root.language = "en_US";
-            }
+            // Sin flag useFallback: se vacía y la cadena de getTranslation
+            // (translations → fallbackTranslations → default) resuelve al
+            // inglés vivo, que sigue actualizándose si se edita en_US.json.
+            root.translations = ({});
+            root.language = "en_US";
+            if (root.candidateLang !== "en_US")
+                console.warn("I18n: no translation file for '" + root.candidateLang + "', using English fallback");
         }
-    }
-
-    // Al cambiar el candidato (config o locale) se reintenta su archivo.
-    // Nota: candidateLang es readonly pero sí emite candidateLangChanged.
-    onCandidateLangChanged: {
-        root.useFallback = false;
     }
 
     function _lookup(dict, key: string): var {

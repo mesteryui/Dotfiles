@@ -48,7 +48,6 @@
 // Reasignación entera de `entries` al terminar, nunca push parcial.
 
 import QtQuick
-import "../Core/Log.js" as Log
 
 QtObject {
     id: root
@@ -76,7 +75,7 @@ QtObject {
 
     Component.onCompleted: {
         if (root.sectionId === "")
-            Log.warn("MenuDefinition: sectionId vacío, el menú se ignorará");
+            console.warn("MenuDefinition: sectionId vacío, el menú se ignorará");
     }
 
     function entry(entryId, title, sub, icon, action, opts) {

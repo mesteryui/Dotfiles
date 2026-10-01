@@ -75,7 +75,10 @@
   "media": {
     "empty": "Nada reproduciendo",
     "play": "Reproducir",
-    "pause": "Pausar"
+    "pause": "Pausar",
+    "unknown_title": "Título desconocido",
+    "unknown_artist": "Artista desconocido",
+    "unknown_album": "Álbum desconocido"
   },
   "notifications": {
     "clear_all": "Limpiar todo",

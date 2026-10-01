@@ -15,4 +15,4 @@
   `failed`/`error`, no fire-and-forget success assumptions.
 - `i18n/` — `en_US.json` (reference), `es_ES.json`, `eo.json`.
   See `i18n/I18N.md` for key conventions and fallback.
-- `Log.js` — leveled logging (`Log.init(QS_LOG_LEVEL)` in `shell.qml`).
+- Logging: `console.debug/info/warn/error(...)` directo. Sin wrapper.

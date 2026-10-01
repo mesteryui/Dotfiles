@@ -30,7 +30,6 @@ import Quickshell.Io
  *
  * Re-parses automatically whenever Hyprland reloads its config.
  */
-import "../Log.js" as Log
 
 Singleton {
     id: root
@@ -247,7 +246,7 @@ Singleton {
                     root.keybinds = JSON.parse(text);
                     root.rebuildGroups();
                 } catch (e) {
-                    Log.error("[HyprlandKeybinds] Error parsing keybinds:", e);
+                    console.error("[HyprlandKeybinds] Error parsing keybinds:", e);
                     root.failed = true;
                 }
             }

@@ -5,8 +5,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-import "../Log.js" as Log
-
 Singleton {
     id: root
 
@@ -48,7 +46,7 @@ Singleton {
             // Enviar la estructura Lua mediante 'hyprctl eval'
             proc.command = ["hyprctl", "eval", luaConfig];
             proc.running = true;
-            Log.info("[GameMode] Modo Juego ACTIVADO: Efectos desactivados.");
+            console.info("[GameMode] Modo Juego ACTIVADO: Efectos desactivados.");
         } else {
             // --- DESACTIVAR MODO JUEGO ---
 
@@ -56,7 +54,7 @@ Singleton {
             proc.command = ["hyprctl", "reload"];
             proc.running = true;
 
-            Log.info("[GameMode] Modo Juego DESACTIVADO: Configuración habitual restaurada.");
+            console.info("[GameMode] Modo Juego DESACTIVADO: Configuración habitual restaurada.");
         }
     }
 
@@ -67,7 +65,7 @@ Singleton {
 
         function onExited(exitCode) {
             if (exitCode !== 0) {
-                Log.warn("[GameMode] hyprctl falló con código:", exitCode);
+                console.warn("[GameMode] hyprctl falló con código:", exitCode);
             }
         }
     }

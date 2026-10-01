@@ -75,7 +75,10 @@
   "media": {
     "empty": "Neniu aŭdvidaĵo ludas",
     "play": "Ludi",
-    "pause": "Paŭzi"
+    "pause": "Paŭzi",
+    "unknown_title": "Nekonata titolo",
+    "unknown_artist": "Nekonata artisto",
+    "unknown_album": "Nekonata albumo"
   },
   "notifications": {
     "clear_all": "Viŝi ĉion",

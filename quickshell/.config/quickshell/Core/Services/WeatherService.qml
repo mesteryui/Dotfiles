@@ -6,7 +6,6 @@ import QtQuick
 import QtPositioning
 import Quickshell
 
-import "../Log.js" as Log
 import "WeatherFormat.js" as WeatherFormat
 
 Singleton {
@@ -128,7 +127,7 @@ Singleton {
             if (root._gpsRunning)
                 return;
             root._gpsRunning = true;
-            Log.info("[WeatherService] Iniciando servicio GPS.");
+            console.info("[WeatherService] Iniciando servicio GPS.");
             if (!positionSource.active)
                 positionSource.start();
         } else {
@@ -189,7 +188,7 @@ Singleton {
         if ((daily.time || []).length === 0 || (hourly.time || []).length === 0) {
             root.isError = true;
             root.errorMessage = "Datos incompletos";
-            Log.warn("[WeatherService] Forecast: respuesta sin daily/hourly");
+            console.warn("[WeatherService] Forecast: respuesta sin daily/hourly");
             root._scheduleRetry();
             return;
         }
@@ -370,17 +369,17 @@ Singleton {
         function handleError(msg) {
             const offline = msg === "Sin conexión" || msg === "Error de red";
             if (onFailure) {
-                Log.warn(`[WeatherService] ${label}: ${msg} (respaldo)`);
+                console.warn(`[WeatherService] ${label}: ${msg} (respaldo)`);
                 onFailure(msg);
             } else if (offline) {
                 root.isError = true;
                 root.errorMessage = "Sin conexión";
-                Log.warn(`[WeatherService] ${label}: sin conexión (reintentando)`);
+                console.warn(`[WeatherService] ${label}: sin conexión (reintentando)`);
                 root._scheduleRetry();
             } else {
                 root.isError = true;
                 root.errorMessage = msg;
-                Log.error(`[WeatherService] ${label} falló: ${msg}`);
+                console.error(`[WeatherService] ${label} falló: ${msg}`);
                 root._scheduleRetry();
             }
         }
@@ -452,7 +451,7 @@ Singleton {
             if (results.length === 0) {
                 root.isError = true;
                 root.errorMessage = `Ciudad no encontrada`;
-                Log.error(`[WeatherService] No se encontró "${root.city}"`);
+                console.error(`[WeatherService] No se encontró "${root.city}"`);
                 return;
             }
 
@@ -600,7 +599,7 @@ Singleton {
             return;
         const url = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + root.location.countrySlug;
         root._request("_alertsXhr", url, "Alerts", json => root.parseAlerts(json), msg => {
-            Log.warn("[WeatherService] Alerts: " + msg + " (sin avisos)");
+            console.warn("[WeatherService] Alerts: " + msg + " (sin avisos)");
             // Sin avisos fiables: limpiar en vez de dejar caducados fijos.
             const d = Object.assign({}, root.data);
             d.alertLevel = 0;
@@ -626,7 +625,7 @@ Singleton {
             d.aqiLevel = root.aqiLevelOf(value);
             root.data = d;
         }, msg => {
-            Log.warn("[WeatherService] AirQuality: " + msg + " (sin AQI)");
+            console.warn("[WeatherService] AirQuality: " + msg + " (sin AQI)");
             const d = Object.assign({}, root.data);
             d.aqi = -1;
             d.aqiLevel = 0;

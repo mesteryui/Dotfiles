@@ -2,7 +2,6 @@
 // Gestiona estado de posición, timers, focus y ensambla Background + Content.
 
 import qs.Core.Services
-import "../../Core/Log.js" as Log
 import qs.Shared.Background
 import qs.Primitives
 import QtQuick
@@ -81,7 +80,7 @@ BarPopupWindow {
                     root.currentPosition = p.position;
                 } catch (e) {
                     root.currentPosition = 0;
-                    Log.warn("[Mpris] visible init read failed:", e);
+                    console.warn("[Mpris] visible init read failed:", e);
                 }
             }
         }
@@ -108,13 +107,13 @@ BarPopupWindow {
             if (!p)
                 return;
             if (!(p.canSeek || p.canControl)) {
-                Log.warn("[Mpris] seek ignored: player not controllable");
+                console.warn("[Mpris] seek ignored: player not controllable");
                 return;
             }
             try {
                 p.position = newPosition;
             } catch (e) {
-                Log.warn("[Mpris] seek failed:", e);
+                console.warn("[Mpris] seek failed:", e);
                 // opcional: MprisService.setActivePlayer(null);
             }
             // Fijar la optimista de inmediato: la barra y los tiempos ya
