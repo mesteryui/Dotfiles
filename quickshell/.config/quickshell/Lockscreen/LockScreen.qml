@@ -33,6 +33,7 @@ Scope {
     function captureLockedMonitor() {
         root.lockedMonitorName = Hyprland.focusedMonitor?.name ?? "";
         root.screenLocked = true;
+        LockState.locked = true;
     }
 
     // Decide si una pantalla concreta es la "primaria" de esta sesión de bloqueo.
@@ -54,6 +55,7 @@ Scope {
             return;
         root.screenLocked = false;
         root.isUnlocking = false;
+        LockState.locked = false;
     }
 
     Connections {

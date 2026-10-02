@@ -796,7 +796,10 @@ Scope {
             // `revision` como dependencia reactiva: la lista se reevalúa sola
             // al fusionarse la librería o cambiar recientes/favoritos.
             property var emojiGroups: {
-                EmojiService.revision;
+                // `revision` como dependencia reactiva: la lista se reevalúa
+                // sola al fusionarse la librería o cambiar recientes/favoritos.
+                const rev = EmojiService.revision;
+                void rev;
                 EmojiService.ready;
                 return EmojiService.groups();
             }

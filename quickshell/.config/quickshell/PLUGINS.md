@@ -45,8 +45,6 @@ Dentro del componente puedes usar **solo**:
   los plugins heredan el tema sin tocar internals.
 - `qs.Launcher` — `MenuDefinition` como raíz de menús plugin.
 - `PluginService.tr(pluginId, key, fallback)` — i18n con scope.
-- `PluginService.getData(pluginId)` / `setData(pluginId, obj)` —
-  persistencia namespaced (`~/.local/state/shinro/plugins.json`).
 
 Fuera del contrato (puede romperse entre versiones): `Appearance`
 directo, `ConfigService.configs` crudo, rutas relativas al repo.
@@ -93,6 +91,10 @@ hasta el rescan. Verás un aviso cosmético único por escaneo
 inocuo, el objeto nunca se pinta.
 Pueden declarar `IpcHandler` propio con target único,
 `Timer`/`Process`, y `property var plugin` opcional.
+Si definen `function shutdown()`, se les llama antes de destruir
+(disable/rescan): parar reproducción, matar procesos, cerrar su
+capa. La capa estática sigue debajo, así que al desactivar se
+vuelve solo al estático sin restore.
 Se reinician en cada `rescan`/`enable`/`disable` (documentado).
 
 ### Panels
@@ -127,26 +129,20 @@ o Escape / click fuera. `property var plugin` opcional.
   objetos previos, se conservan los viejos.
 - `qs ipc call plugins list|rescan|enable <id>|disable <id>|reload|openPanel <id>|closePanel`.
 
-## Capabilities funcionales (patrón de referencia: fondos)
+## Capabilities funcionales
 
-`capabilities` puede ser funcional, no solo informativo: el core
-pregunta `PluginService.providerForCapability(cap)` y obtiene el
-**objeto daemon vivo** para llamarlo directamente (sin IPC):
+`capabilities` es informativo hoy (reserva para proveedores vivos).
+Errores runtime: `PluginService.noteError/clearError(id)` (visibles
+en `plugins list`).
 
-- `wallpaper-backend` (plugin `video-wallpaper`): el core no conoce
-  formatos — el proveedor anuncia `extensions` en el manifiesto y el
-  servicio enruta `apply()`, filtros del menú y miniaturas por
-  coincidencia. Sin proveedor activo no hay rastro. Interfaz:
-  `applyWallpaper(path)`, `cachedThumbnail(path) -> ruta|""` +
-  `requestThumbnail(path)` (lectura pura + petición explícita),
-  `property bool active`, `extensions` en manifiesto. Gana el primero.
-- El servicio avisa con `WallpaperService.bumpThumbs()` al generar.
-- `applyPosterFrame(path)` del servicio: aplica + notifica (matugen)
-  sin persistir (lo necesita cualquier backend animado).
-- Reglas: la capability la implementa un **daemon** (objeto único
-  y vivo); en otros types es solo informativa. Errores runtime del
-  proveedor: `PluginService.noteError/clearError(id)` (visibles
-  en `plugins list`).
+## Fondos: solo estáticos
+
+La shell pinta el fondo (`Panels/Wallpaper/WallpaperLayer.qml`:
+una `PanelWindow` por pantalla con fundido a negro + entrada con
+zoom sutil). `WallpaperService` solo acepta imágenes fijas
+(jpg, jpeg, png, webp, avif, bmp, svg): valida, persiste en
+`Persistent.persistence.currentWallpaper` y notifica a matugen.
+No hay proveedores externos de fondo ni delegación de formatos.
 
 ## Confianza
 

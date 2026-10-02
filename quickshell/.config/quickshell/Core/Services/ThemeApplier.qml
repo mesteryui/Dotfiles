@@ -8,6 +8,7 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    // Fuente para matugen: el wallpaper estático persistido.
     readonly property string currentWallpaper: Persistent.persistence.currentWallpaper
     readonly property string matugenMode: ConfigService.configs.appearance.darkMode ? "dark" : "light"
     readonly property string matugenType: ConfigService.configs.appearance.matugen.type
@@ -25,7 +26,7 @@ Singleton {
     onMatugenTypeChanged: root.updateMatugenColors(currentWallpaper)
 
     function applyTheme(wallpaperPath: string) {
-        root.updateMatugenColors(root.currentWallpaper);
+        root.updateMatugenColors(wallpaperPath);
     }
 
     // Punto de entrada explícito para shell.qml: aplica el tema actual al

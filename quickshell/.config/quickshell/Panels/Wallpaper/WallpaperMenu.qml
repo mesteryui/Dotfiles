@@ -54,7 +54,7 @@ Scope {
             id: wallpaperMenu
 
         implicitWidth: 1120
-        implicitHeight: 330 // +52 respecto al original: fila de búsqueda + spacing
+        implicitHeight: 330
         color: "transparent"
         screen: root.focusedScreen
         visible: root.showing || root._isAnimatingOut

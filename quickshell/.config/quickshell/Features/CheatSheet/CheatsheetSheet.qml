@@ -387,11 +387,11 @@ ColumnLayout {
                 }
                 switch (event.key) {
                 case Qt.Key_Escape:
-                    // 1º Esc con texto: limpia. 2º Esc (vacío): cierra.
+                    // 1º Esc con texto: limpia. 2º Esc (vacío): cierra via signal al padre.
                     if (searchField.text.length > 0) {
                         searchField.text = "";
                     } else {
-                        active = false;
+                        closeRequested();
                     }
                     event.accepted = true;
                     break;

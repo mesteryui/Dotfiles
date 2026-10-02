@@ -57,6 +57,7 @@ ShellRoot {
     Cheatsheet {}
     PolkitWindow {}
     PluginPanelHost {}
+    WallpaperLayer {}
     Bar {}
     LockScreen {}
 }

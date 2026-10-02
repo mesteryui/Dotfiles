@@ -16,44 +16,9 @@ Item {
 
     signal hideRequested
 
-    // ── Búsqueda ──────────────────────────────────────────────────────────
-    // FolderListModel no expone filtrado nativo, así que reconstruimos un
-    // array plano (filePath/fileName) cada vez que cambia el texto. Los
-    // nombres de rol usados aquí (fileName, filePath) son los mismos que
-    // ya usaba applyCurrentWallpaper() y WallpaperItem.modelData.filePath.
-    property string searchQuery: ""
-
-    property var filteredWallpapers: []
-
-    function rebuildFilteredList() {
-        const source = Services.WallpaperService.wallpaperList;
-        const query = root.searchQuery.trim().toLowerCase();
-        const result = [];
-        for (let i = 0; i < source.count; i++) {
-            const fileName = source.get(i, "fileName") ?? "";
-            if (query.length === 0 || fileName.toLowerCase().includes(query)) {
-                result.push({
-                    filePath: source.get(i, "filePath") ?? "",
-                    fileName: fileName
-                });
-            }
-        }
-        root.filteredWallpapers = result;
-        if (wallpaperList.currentIndex >= result.length)
-            wallpaperList.currentIndex = Math.max(0, result.length - 1);
-    }
-
-    onSearchQueryChanged: rebuildFilteredList()
-    Component.onCompleted: rebuildFilteredList()
-
-    // Si el contenido de la carpeta cambia (fondo agregado/borrado), re-filtrar
-    Connections {
-        target: Services.WallpaperService.wallpaperList
-
-        function onCountChanged() {
-            root.rebuildFilteredList();
-        }
-    }
+    // El modelo es el FolderListModel del servicio: sin capa intermedia.
+    // (Antes había un array filtrado por búsqueda, pero la barra de
+    // búsqueda no existe: código muerto eliminado.)
 
     ColumnLayout {
         anchors.fill: parent
@@ -74,7 +39,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            // Contador de elementos, ya refleja el resultado filtrado
+            // Contador de elementos
             Rectangle {
                 color: Appearance.md3.surface_container_high
                 radius: Appearance.shape.small
@@ -138,9 +103,6 @@ Item {
             }
         }
 
-        // ── Barra de búsqueda ────────────────────────────────────────────
-
-
         // ── Carrusel / Coverflow ListView ────────────────────────────────
         Item {
             Layout.fillWidth: true
@@ -150,7 +112,7 @@ Item {
                 id: wallpaperList
 
                 anchors.fill: parent
-                model: root.filteredWallpapers
+                model: Services.WallpaperService.wallpaperList
                 orientation: ListView.Horizontal
                 spacing: 20 // positivo: evita que las tarjetas se pisen entre sí
                 clip: false
@@ -200,8 +162,7 @@ Item {
                     }
                 }
 
-                // Navegación por teclado (usa wallpaperList.count, no
-                // model.count: el modelo ahora es un array filtrado plano)
+                // Navegación por teclado
                 Keys.onLeftPressed: {
                     currentIndex === 0 ? currentIndex = wallpaperList.count - 1 : decrementCurrentIndex();
                 }
@@ -220,10 +181,10 @@ Item {
                 }
             }
 
-            // Estado vacío cuando la búsqueda no encuentra nada
+            // Estado vacío cuando la carpeta no tiene fondos
             StyledText {
                 anchors.centerIn: parent
-                visible: root.filteredWallpapers.length === 0
+                visible: wallpaperList.count === 0
                 text: Services.I18nService?.getTranslation("wallpaper.no_results", "No se encontraron fondos") ?? "No se encontraron fondos"
                 font.pixelSize: Appearance.typeScale.bodyLarge
                 color: Appearance.md3.on_surface_variant
@@ -234,9 +195,9 @@ Item {
     function applyCurrentWallpaper() {
         if (!wallpaperList.currentItem)
             return;
-        const entry = root.filteredWallpapers[wallpaperList.currentIndex];
-        if (entry?.fileName) {
-            Services.WallpaperService.apply(entry.fileName);
+        const fileName = Services.WallpaperService.wallpaperList.get(wallpaperList.currentIndex, "fileName") ?? "";
+        if (fileName !== "") {
+            Services.WallpaperService.apply(fileName);
             root.hideRequested();
         }
     }

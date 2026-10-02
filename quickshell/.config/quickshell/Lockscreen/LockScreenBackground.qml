@@ -57,17 +57,21 @@ Item {
             visible: !root.useWallpaper
         }
 
-        // ── Wallpaper normal, directo ─────────────────────────────
+        // ── Wallpaper, directo ────────────────────────────────────
         // Sin Loader ni fundidos: la imagen aparece tal cual en cuanto
         // está lista. Mientras carga se ve la base opaca (nunca negro,
-        // nunca screencopy).
+        // nunca screencopy). Siempre el estático persistido.
         Image {
             id: wallpaper
 
             anchors.fill: parent
             // Sin fondo elegido (instalación fresca) no se resuelve nada:
             // Qt.resolvedUrl("") apuntaría al propio directorio QML.
-            source: root.useWallpaper && Persistent.persistence.currentWallpaper !== "" ? Qt.resolvedUrl(Persistent.persistence.currentWallpaper) : ""
+            source: {
+                const persisted = Persistent.persistence.currentWallpaper || "";
+                const chosen = root.useWallpaper ? persisted : "";
+                return chosen !== "" ? Qt.resolvedUrl(chosen) : "";
+            }
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: true

@@ -62,13 +62,10 @@ Singleton {
     }
 
     // ---------- estado persistido ----------
-    Timer {
-        id: stateWriteTimer
-
-        interval: 100
-        repeat: false
-        onTriggered: stateFile.setText(JSON.stringify(root.pluginState))
-    }
+    // Escritura SÍNCRONA (blockWrites + setText directo, sin debounce):
+    // un toggle debe sobrevivir a un kill inmediato. El fichero es
+    // diminuto; no hay nada que coalescer. La recarga sí va con
+    // debounce (ediciones externas).
     Timer {
         id: stateReloadTimer
 
@@ -82,6 +79,7 @@ Singleton {
 
         path: root.statePath
         blockLoading: true
+        blockWrites: true
         watchChanges: true
         printErrors: false
         onFileChanged: stateReloadTimer.restart()
@@ -96,21 +94,22 @@ Singleton {
                     root.pluginState = s;
                 }
             } catch (e) {
-                console.warn("PluginService: estado corrupto, se usa vacío");
-                root.pluginState = ({ enabled: ({}), data: ({}) });
+                // Lectura rota/transitoria (p. ej. escritura a medias):
+                // se conserva el estado en memoria, nunca se vacía.
+                console.warn("PluginService: estado ilegible, se conserva el actual");
             }
         }
         onLoadFailed: error => {
             // Primera ejecución: se crea con defaults al guardar.
             if (error == FileViewError.FileNotFound)
-                stateWriteTimer.restart();
+                stateFile.setText(JSON.stringify(root.pluginState));
             else
                 console.warn("PluginService: no se pudo leer estado:", error);
         }
     }
 
     function saveState() {
-        stateWriteTimer.restart();
+        stateFile.setText(JSON.stringify(root.pluginState));
     }
 
     function isEnabled(id) {
@@ -125,35 +124,8 @@ Singleton {
         st.enabled[id] = !!on;
         root.pluginState = st;
         saveState();
+        console.info("PluginService: '" + id + "' " + (on ? "enabled" : "disabled") + " (persistido)");
         root.rescan();
-    }
-
-    // Persistencia namespaced por plugin (análogo a pluginData de DMS).
-    function getData(pluginId) {
-        const d = (root.pluginState && root.pluginState.data) || ({});
-        const v = d[pluginId];
-        return v !== undefined ? v : ({});
-    }
-
-    function setData(pluginId, obj) {
-        const st = JSON.parse(JSON.stringify(root.pluginState));
-        if (!st.data || typeof st.data !== "object")
-            st.data = ({});
-        st.data[pluginId] = (obj !== undefined && obj !== null) ? obj : ({});
-        root.pluginState = st;
-        saveState();
-    }
-
-    // Proveedor vivo de una capability (daemons): p. ej.
-    // providerForCapability("video-wallpaper-backend"). Sin proveedor → null.
-    // Las capabilities en manifiestos no-daemon son informativas.
-    function providerForCapability(cap) {
-        for (let i = 0; i < root.daemonObjects.length; i++) {
-            const a = root.pluginById(root.daemonIds[i]);
-            if (a && (a.capabilities || []).indexOf(cap) >= 0)
-                return root.daemonObjects[i];
-        }
-        return null;
     }
 
     function daemonObjectById(id) {
@@ -168,6 +140,23 @@ Singleton {
         delete errs[id];
         root.pluginErrors = errs;
         root.lastError = "";
+    }
+
+    // Persistencia namespaced por plugin (los plugins guardan settings
+    // y estado propio; sobrevive a reinicios porque el fichero está en disco).
+    function getData(pluginId) {
+        const d = (root.pluginState && root.pluginState.data) || ({});
+        const v = d[pluginId];
+        return v !== undefined ? v : ({});
+    }
+
+    function setData(pluginId, obj) {
+        const st = JSON.parse(JSON.stringify(root.pluginState));
+        if (!st.data || typeof st.data !== "object")
+            st.data = ({});
+        st.data[pluginId] = (obj !== undefined && obj !== null) ? obj : ({});
+        root.pluginState = st;
+        saveState();
     }
 
     // i18n con scope: dict del plugin -> plugin.<id>.<key> global -> default.
@@ -406,14 +395,33 @@ Singleton {
         const r = root.parseScan(root.scanAcc);
         root.available = r.found;
         root.pluginStrings = r.strings;
+        // Poda higiénica: sin el directorio ya no hay plugin; sus claves
+        // huérfanas (enabled/data) no vuelven a significar nada.
+        const alive = {};
+        for (let a = 0; a < r.found.length; a++)
+            alive[r.found[a].id] = true;
+        const st = JSON.parse(JSON.stringify(root.pluginState));
+        let pruned = false;
+        for (const k in (st.enabled || ({})))
+            if (!alive[k]) {
+                delete st.enabled[k];
+                pruned = true;
+            }
+        for (const k in (st.data || ({})))
+            if (!alive[k]) {
+                delete st.data[k];
+                pruned = true;
+            }
+        if (pruned) {
+            root.pluginState = st;
+            saveState();
+        }
         root.instantiateLaunchers();
         root.compileSurfaces();
         root.instantiateDaemons();
         // Si el panel abierto dejó de ser válido, se cierra solo.
         if (root.activePanelId !== "" && root.panelEntries().indexOf(root.activePanelId) < 0)
             root.activePanelId = "";
-        // Backend de fondos: decide estático o proveedor (idempotente).
-        WallpaperService.ensureBackend();
         // Un solo bump por escaneo (lo leen Registry, MainBar y host).
         root.revision += 1;
     }
@@ -591,7 +599,9 @@ Singleton {
 
     // [{id, component}] ordenados por (order, id) para una zona.
     function widgetsForZone(zone) {
-        root.revision;
+        // Dependencia reactiva del rescan (ver finishScan).
+        const rev = root.revision;
+        void rev;
         const comps = root.widgetComps;
         const errs = root.pluginErrors;
         const out = [];
@@ -612,7 +622,6 @@ Singleton {
     }
 
     function panelEntries() {
-        root.revision;
         const comps = root.panelComps;
         const errs = root.pluginErrors;
         const out = [];
@@ -639,9 +648,22 @@ Singleton {
     }
 
     // Daemons: objetos únicos vivos hasta el próximo rescan.
+    // Apagado gracioso: si define shutdown(), se le llama antes de
+    // destruir (parar reproducción, matar procesos, cerrar su capa).
+    // La capa estática sigue debajo mostrando el persistido, así que
+    // al desactivar se vuelve solo al estático sin restore.
     function instantiateDaemons() {
-        for (let k = 0; k < root.daemonObjects.length; k++)
-            root.daemonObjects[k].destroy();
+        for (let k = 0; k < root.daemonObjects.length; k++) {
+            const obj = root.daemonObjects[k];
+            if (obj) {
+                try {
+                    if (typeof obj.shutdown === "function")
+                        obj.shutdown();
+                } catch (e) {
+                }
+                obj.destroy();
+            }
+        }
         const objs = [];
         const ids = [];
         for (let i = 0; i < root.available.length; i++) {

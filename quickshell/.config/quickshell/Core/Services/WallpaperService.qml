@@ -3,9 +3,13 @@ pragma Singleton
 import QtQuick
 import Qt.labs.folderlistmodel // IMPORTANTE: Este es el módulo reactivo
 import Quickshell
-import Quickshell.Io
+import Quickshell.Io // IpcHandler
 import qs.Core.Modules
 
+// Solo wallpapers estáticos: el servicio valida, persiste y notifica.
+// Sin proveedores externos (sin delegación, sin miniaturas ajenas, sin
+// hooks de pausa): cualquier formato no listado en `extensions` falla
+// con "formato no soportado".
 Singleton {
     id: root
 
@@ -17,78 +21,41 @@ Singleton {
     property string error: ""
     property bool failed: false
 
-    readonly property list<string> extensions: [
-        "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
+    readonly property list<string> extensions: ["jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
 
     FolderListModel {
         id: folderModel
 
         folder: Qt.resolvedUrl(root.wallpaperDir)
-        nameFilters: root.extensions.map(e => `*.${e}`) // Filtra solo imágenes
+        nameFilters: root.extensions.map(e => `*.${e}`)
         showDirs: false
         showDotAndDotDot: false
         sortReversed: false
         sortField: FolderListModel.Name
     }
-    // Ruta pendiente de confirmar: solo se persiste y se emite `changed`
-    // (→ matugen) cuando awww sale con 0. Sin esto, un fondo inexistente
-    // o un awww fallido dejaba basura persistida + matugen sobre nada.
-    // `notify=false` (restore) re-pone la imagen sin tocar matugen: los
-    // colores ya existen del apply que eligió ese fondo.
-    property string _pendingWallpaper: ""
-    property bool _pendingNotify: true
-    property var _queued: null
 
-    Process {
-        id: applyProcess
-
-        onExited: code => {
-            watchdog.stop();
-            // Muerte provocada para superseder (cambio rápido de fondo):
-            // retoma lo último pedido en vez de persistir lo viejo.
-            if (root._queued !== null) {
-                const q = root._queued;
-                root._queued = null;
-                root._apply(q.file, q.notify);
-                return;
-            }
-            const done = root._pendingWallpaper;
-            const notify = root._pendingNotify;
-            root._pendingWallpaper = "";
-            root._pendingNotify = true;
-            if (done === "")
-                return;
-            if (code === 0) {
-                root.failed = false;
-                root.error = "";
-                if (notify) {
-                    Persistent.persistence.currentWallpaper = done;
-                    root.changed(done);
-                }
-            } else {
-                root.failed = true;
-                root.error = code === 127 ? "awww no instalado" : "awww falló (" + code + ")";
-                console.warn("[Wallpaper] awww falló (" + code + "): " + done);
-            }
-        }
-    }
-
+    // Ruta confirmada al instante: validar, persistir y notificar es
+    // síncrono.
     function apply(file: string): void {
-        let fullPath = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
-        root._apply(fullPath, true);
+        // Acepta nombre (relativo a wallpaperDir) o ruta absoluta (IPC).
+        const fullPath = String(file || "").startsWith("/") ? String(file) : wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/") + file;
+        root.applyStatic(fullPath, true);
     }
 
-    Timer {
-        id: watchdog
-
-        interval: 20000
-        onTriggered: {
-            if (applyProcess.running) {
-                root.failed = true;
-                root.error = "timeout aplicando fondo";
-                console.warn("[Wallpaper] timeout aplicando: " + root._pendingWallpaper);
-                applyProcess.running = false;
-            }
+    function applyStatic(file: string, notify: bool): void {
+        if (file === "")
+            return;
+        if (!root.validImage(file)) {
+            root.failed = true;
+            root.error = "formato no soportado";
+            console.warn("[Wallpaper] formato no soportado: " + file);
+            return;
+        }
+        root.failed = false;
+        root.error = "";
+        if (notify ?? true) {
+            Persistent.persistence.currentWallpaper = file;
+            root.changed(file);
         }
     }
 
@@ -103,40 +70,21 @@ Singleton {
         return false;
     }
 
-    function _apply(file: string, notify: bool) {
-        if (file === "")
-            return;
-        if (!root.validImage(file)) {
-            root.failed = true;
-            root.error = "formato no soportado";
-            console.warn("[Wallpaper] formato no soportado: " + file);
-            return;
-        }
-        if (applyProcess.running) {
-            root._queued = { file: file, notify: notify };
-            applyProcess.running = false;
-            return;
-        }
-        root.failed = false;
-        root.error = "";
-        root._pendingWallpaper = file;
-        root._pendingNotify = notify ?? true;
-        applyProcess.command = ["awww", "img", file, "--transition-type", "center"];
-        applyProcess.running = true;
-        watchdog.restart();
+    // Solo re-pone la imagen (p. ej. tras reiniciar el compositor):
+    // nunca regenera colores.
+    function restoreStatic(): void {
+        root.applyStatic(Persistent.persistence.currentWallpaper, false);
     }
 
-    // IPC: qs ipc call wallpaper set /ruta/absoluta/imagen.png
+    // IPC: qs ipc call wallpaper set /ruta/absoluta
     IpcHandler {
         target: "wallpaper"
 
         function set(path: string): void {
-            root._apply(path, true);
+            root.apply(path);
         }
-        // Solo re-pone la imagen (p. ej. tras reiniciar el compositor):
-        // nunca regenera colores.
         function restore(): void {
-            root._apply(Persistent.persistence.currentWallpaper, false);
+            root.restoreStatic();
         }
     }
 }

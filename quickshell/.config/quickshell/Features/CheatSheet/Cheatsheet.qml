@@ -24,6 +24,9 @@ Scope {
     property bool active: false
     readonly property int hideAnimDuration: 160
 
+    /// `true` mientras la hoja debe estar visible (abierta o en fade-out).
+    readonly property bool isVisible: active || hideTimer.running
+
     Timer {
         id: hideTimer
 
@@ -62,7 +65,7 @@ Scope {
 
     LazyLoader {
         id: cheatsheetLoader
-        loading: scope.active || hideTimer.running
+        loading: scope.isVisible
 
         component: PanelWindow {
             id: root
@@ -78,7 +81,7 @@ Scope {
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
 
-            visible: scope.active || scope.hideTimer.running
+            visible: scope.isVisible
 
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.namespace: "quickshell:cheatsheet"
@@ -96,14 +99,13 @@ Scope {
                 }
             }
 
-
             // --- Scrim ---
             Rectangle {
                 id: scrim
 
                 anchors.fill: parent
                 color: Appearance.md3.shadow
-                opacity: scope.active ? 0.55 : 0
+                opacity: scope.isVisible ? 0.55 : 0
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -125,8 +127,7 @@ Scope {
                 id: sheetLoader
 
                 anchors.fill: parent
-                active: scope.active || scope.hideTimer.running
-                asynchronous: true
+                active: scope.isVisible
                 sourceComponent: sheetComp
                 onLoaded: {
                     if (scope.active)

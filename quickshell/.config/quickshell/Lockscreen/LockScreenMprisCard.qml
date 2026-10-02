@@ -12,7 +12,7 @@ Item {
     id: root
 
     implicitWidth: 400
-    implicitHeight: 132
+    implicitHeight: 150
     visible: MprisService.activePlayer !== null
     opacity: visible ? 1 : 0
 
@@ -52,14 +52,15 @@ Item {
             return;
         try {
             p.position = newPosition;
-        } catch (e) {
-        }
+        } catch (e) {}
         root.seekTarget = newPosition;
         root.seekTargetUntil = Date.now() + 1000;
     }
 
     Behavior on opacity {
-        NumberAnimation { duration: Appearance.motion.short4 }
+        NumberAnimation {
+            duration: Appearance.motion.short4
+        }
     }
 
     function withAlpha(hexColor, alphaValue) {

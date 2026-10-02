@@ -4,13 +4,13 @@ import qs.Panels.Wallpaper.Content
 import qs.Core
 import qs.Shared.Background
 import QtQuick
-import QtQuick.Effects
 
 Item {
     id: delegateRoot
 
-    required property var modelData
     required property int index
+    // Rol del FolderListModel: el ListView lo inyecta solo (como `index`).
+    required property string filePath
 
     signal clicked
 
@@ -54,7 +54,7 @@ Item {
         isSelected: delegateRoot.isSelected
         hovered: mouse.containsMouse
         radius: delegateRoot.surfaceRadius
-        filePath: delegateRoot.modelData?.filePath ?? ""
+        filePath: delegateRoot.filePath
     }
 
     // ── Captura de Interacción ──────────────────────────────────────────────

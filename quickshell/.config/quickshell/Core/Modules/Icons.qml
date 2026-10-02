@@ -36,8 +36,9 @@ Singleton {
     function getAppIcon(name: string, fallback: string): string {
         const key = (name || "") + "|" + (fallback || "");
         const hit = root._appIconCache[key];
-        if (hit !== undefined)
-            return hit;
+        if (hit !== undefined) {
+          return hit;
+        }
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
         const resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(icon);
         // Capado blando: si alguna vez hay cientos de appIds distintos, se

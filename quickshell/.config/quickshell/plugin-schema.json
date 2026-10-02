@@ -63,7 +63,7 @@
         "extensions": {
             "type": "array",
             "items": { "type": "string" },
-            "description": "Solo capability wallpaper-backend: extensiones que el proveedor maneja (ej. ['mp4','webm']). Sin proveedor activo no hay rastro en menús."
+            "description": "Extensiones que el proveedor maneja. Solo tiene efecto con capabilities funcionales que las consuman."
         },
         "requires_shinro": {
             "type": "string",

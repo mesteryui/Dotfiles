@@ -196,6 +196,10 @@
         "workspace_style_numbers": "Números"
       }
     },
+    "plugins": {
+      "title": "Plugins",
+      "empty": "Sin plugins instalados"
+    },
     "screen": {
       "lockscreen": {
         "blur_level": "Nivel de desenfoque",
@@ -230,6 +234,10 @@
       "interface": {
         "description": "Apariencia",
         "title": "Interfaz"
+      },
+      "plugins": {
+        "title": "Plugins",
+        "description": "Extensiones"
       },
       "screen": {
         "description": "Bloqueo y luz",
