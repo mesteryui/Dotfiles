@@ -32,6 +32,10 @@ Item {
         inputField.text = "";
     }
 
+    function resetError() {
+        overlay.authError = false;
+    }
+
     // Cada fallo de autenticación: marcar error + agitar la tarjeta.
     Connections {
         target: PolkitService

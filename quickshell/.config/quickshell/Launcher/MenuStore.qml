@@ -21,8 +21,6 @@
 // abrir el launcher, que comprueba cambios en disco). Quitarlo =
 // borrarlo. Sin tocar Registry ni servicios, y sin recargar todo el
 // shell. `qs ipc call launcher reloadMenus` fuerza la recarga inmediata.
-// (Segunda vía: plugins tipo `launcher` en ~/.config/shinro/plugins,
-// gestionados por PluginService; ver PLUGINS.md.)
 //
 // Reactividad: `revision` se incrementa en cada (re)descubrimiento y el
 // Registry lo lee en sus funciones, así los bindings del launcher se
@@ -54,9 +52,6 @@ Singleton {
     // Se reasigna entero al descubrir.
     property var systemProviders: []
     property var userProviders: []
-    // Providers de plugins (propiedad de PluginService: este store solo
-    // los referencia, nunca los destruye). Ver setPluginProviders().
-    property var pluginProviders: []
     property var providers: []
 
     // Contador de descubrimientos. El Registry lo lee para que los
@@ -117,27 +112,6 @@ Singleton {
         for (let i = 0; i < providers.length; i++)
             if (typeof providers[i].refresh === "function")
                 providers[i].refresh();
-    }
-
-    // Registra los providers aportados por plugins (los crea y destruye
-    // PluginService; aquí solo se referencian). Sin bump si ni los ids
-    // ni los objetos cambian: evita bucles con quien observe revision.
-    function setPluginProviders(list) {
-        const next = list || [];
-        const cur = root.pluginProviders;
-        let same = cur.length === next.length;
-        if (same) {
-            for (let i = 0; i < cur.length; i++)
-                if (cur[i] !== next[i]) {
-                    same = false;
-                    break;
-                }
-        }
-        root.pluginProviders = next;
-        if (!same) {
-            root.providers = root.systemProviders.concat(root.userProviders).concat(next);
-            root.revision += 1;
-        }
     }
 
     Component.onCompleted: discoverProc.running = true
@@ -297,16 +271,13 @@ Singleton {
             return;
         }
         // Limpia providers anteriores (recarga) antes de reasignar.
-        // OJO: los de plugins son propiedad de PluginService y se saltan.
         for (let k = 0; k < root.providers.length; k++)
-            if (root.pluginProviders.indexOf(root.providers[k]) < 0)
-                root.providers[k].destroy();
+            root.providers[k].destroy();
         root.systemProviders = sys;
         root.userProviders = usr;
         // Internos primero: en colisiones con dinámicos manda el interno
-        // (ver SystemMenuRegistry.sections()). Los plugins van últimos:
-        // nunca pisan a core ni a usuario.
-        root.providers = sys.concat(usr).concat(root.pluginProviders);
+        // (ver SystemMenuRegistry.sections()).
+        root.providers = sys.concat(usr);
         if (errors === 0)
             root.lastError = "";
         // Invalida los bindings que leen menús (ver SystemMenuRegistry).

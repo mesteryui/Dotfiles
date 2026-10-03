@@ -15,10 +15,12 @@ Scope {
 
             visible: PolkitService.active
 
-            readonly property bool usePasswordChars: !PolkitService.flow?.responseVisible ?? true
+            readonly property bool usePasswordChars: !(PolkitService.flow?.responseVisible ?? true)
 
-            // Full-screen overlay, above everything, grabs keyboard while active
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            // Full-screen overlay, above everything, grabs keyboard while active.
+            // Exclusive a propósito: es un diálogo de autenticación y ningún
+            // otro overlay debe poder robarle el foco y suplantarlo.
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
             WlrLayershell.layer: WlrLayer.Overlay
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:polkitDialog"
@@ -38,8 +40,21 @@ Scope {
                 function onInteractionAvailableChanged() {
                     if (!PolkitService.interactionAvailable)
                         return;
+                    // Petición nueva (el loader cachea el diálogo): arrancar
+                    // limpio, sin texto ni error heredados de la anterior.
                     content.clearText();
+                    content.resetError();
                     content.forceFocus();
+                }
+            }
+
+            // El diálogo se cachea entre peticiones: al ocultarse (éxito o
+            // cancelación) no debe quedar la contraseña en el campo ni el
+            // estado de error para la próxima vez.
+            onVisibleChanged: {
+                if (!visible) {
+                    content.clearText();
+                    content.resetError();
                 }
             }
 

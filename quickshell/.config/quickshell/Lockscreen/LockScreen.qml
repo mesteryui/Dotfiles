@@ -16,11 +16,13 @@ Scope {
 
     property bool screenLocked: false
 
-    // Se pone a true en cuanto la autenticación tiene éxito (o se fuerza un
-    // unlock por IPC), y se propaga a cada LockScreenWrapper para que
-    // reproduzca su animación de salida. WlSessionLockSurface no se puede
-    // ocultar, solo destruir — por eso screenLocked no se pone a false hasta
-    // que la animación termina (ver finishUnlock / onUnlockAnimationFinished).
+    // Se pone a true solo cuando PAM emite successUnlocking, y se propaga
+    // a cada LockScreenWrapper para que reproduzca su animación de salida.
+    // NO existe handler IPC de unlock a propósito: `qs ipc` es un socket
+    // local sin autenticación y cualquier proceso podría desbloquear.
+    // WlSessionLockSurface no se puede ocultar, solo destruir — por eso
+    // screenLocked no se pone a false hasta que la animación termina
+    // (ver finishUnlock / onUnlockAnimationFinished).
     property bool isUnlocking: false
 
     // Nombre (ShellScreen.name) del monitor con foco justo antes de bloquear.
@@ -93,13 +95,11 @@ Scope {
     IpcHandler {
         target: "lockscreen"
 
+        // Solo bloqueo por IPC. El desbloqueo solo ocurre vía
+        // AuthService.successUnlocking tras PAM; exponer unlock() aquí
+        // permitiría a cualquier proceso local saltarse la autenticación.
         function lock() {
             root.captureLockedMonitor();
-        }
-
-        function unlock() {
-            AuthService.abort();
-            root.isUnlocking = true;
         }
     }
     //qmllint disable unresolved-type

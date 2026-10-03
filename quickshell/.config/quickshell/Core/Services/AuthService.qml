@@ -24,6 +24,12 @@ import Quickshell.Services.Pam
 //   signal successUnlocking()
 //   signal failedUnlocking()
 //   signal promptMessage(message)     // prompts normales (huella, etc.), no errores
+//
+// Seguridad: la contraseña solo vive en pendingResponse entre validate() y
+// el primer onPamMessage con responseRequired; se consume de un solo uso y
+// se limpia en completed/error/abort/start. El bloqueo por intentos
+// repetidos lo hace PAM (faillock en system-auth): este servicio no duplica
+// esa lógica, solo evita reenvíos y no loguea nunca la contraseña.
 
 Singleton {
     id: root
@@ -60,7 +66,9 @@ Singleton {
 
     // Guardamos la respuesta hasta que PAM realmente la pida.
     // pam.start() es asíncrono: responseRequired NO se vuelve true
-    // en el mismo tick en que llamamos a start().
+    // en el mismo tick en que llamamos a start(). Se consume de un solo
+    // uso en onPamMessage y se limpia en onCompleted/abort: nunca queda
+    // reutilizable para un segundo prompt de la misma transacción.
     property string pendingResponse: ""
 
     PamContext {
@@ -75,7 +83,7 @@ Singleton {
             // pamMessage() no trae argumentos — se leen las propiedades.
             // Mensajes de fprintd (p.ej. "Place your finger on the reader")
             // llegan aquí igual que los de pam_unix — no hay que distinguirlos,
-            // solo mostrarlos.
+            // solo mostrarlos. Nunca se loguea pendingResponse.
             if (pam.messageIsError) {
                 root.promptMessage(pam.message);
             } else if (pam.message.length > 0) {
@@ -85,24 +93,32 @@ Singleton {
             // Solo respondemos si PAM lo pide Y ya tenemos algo que mandar
             // (ej. el usuario ya escribió la contraseña). Si es un intento
             // de huella, responseRequired queda en false y no hacemos nada:
-            // seguimos esperando el escaneo.
+            // seguimos esperando el escaneo. Consumo de un solo uso: tras
+            // responder se limpia para que no pueda reutilizarse en otro
+            // prompt inesperado de la misma transacción.
             if (pam.responseRequired && root.pendingResponse.length > 0) {
-                pam.respond(root.pendingResponse);
+                const once = root.pendingResponse;
+                root.pendingResponse = "";
+                pam.respond(once);
             }
         }
 
         onCompleted: result => {
+            // Limpieza primero: la credencial no sobrevive a la transacción.
+            root.pendingResponse = "";
             if (result === PamResult.Success) {
                 root.successUnlocking();
             } else {
+                // El conteo/bloqueo por reintentos lo aplica PAM (faillock);
+                // aquí solo se notifica para que la UI muestre shake/reintento.
                 root.failedUnlocking();
             }
-            root.pendingResponse = "";
         }
 
         // Distinto de completed(PamResult.Error): fallo anormal de PAM
         // (config inexistente, módulo faltante, etc.)
         onError: pamError => {
+            root.pendingResponse = "";
             root.promptMessage("Error de PAM: " + pamError);
             root.failedUnlocking();
         }
@@ -115,6 +131,7 @@ Singleton {
     function start() {
         if (pam.active)
             return;
+        root.pendingResponse = "";
         pam.config = root.fingerprintConfig;
         if (!pam.start()) {
             root.failedUnlocking();
@@ -122,15 +139,21 @@ Singleton {
     }
 
     // El usuario escribió una contraseña y pulsó Enter: autenticar normal,
-    // sin esperar al lector de huella.
+    // sin esperar al lector de huella. Se ignora en vacío.
     function validate(password) {
-        root.pendingResponse = password;
+        const pw = String(password || "");
+        if (pw.length === 0)
+            return;
+        root.pendingResponse = pw;
 
         if (pam.active) {
             if (pam.responseRequired) {
                 // Ya está en fase de contraseña (p.ej. fprintd ya se rindió
-                // dentro de la misma transacción) — responder directo.
-                pam.respond(password);
+                // dentro de la misma transacción) — responder directo con
+                // consumo de un solo uso.
+                const once = root.pendingResponse;
+                root.pendingResponse = "";
+                pam.respond(once);
                 return;
             }
 
@@ -143,6 +166,7 @@ Singleton {
 
         pam.config = root.passwordConfig;
         if (!pam.start()) {
+            root.pendingResponse = "";
             root.failedUnlocking();
         }
         // La respuesta real se envía en onPamMessage en cuanto

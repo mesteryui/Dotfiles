@@ -75,13 +75,6 @@ Item {
                 selected: root.currentTab === 3
                 onClicked: root.currentTab = 3
             }
-            SettingsSidebarTab {
-                iconName: "extension"
-                title: Services.I18nService.getTranslation("settings.tabs.plugins.title", "Plugins")
-                description: Services.I18nService.getTranslation("settings.tabs.plugins.description", "Extensiones")
-                selected: root.currentTab === 4
-                onClicked: root.currentTab = 4
-            }
 
             Item {
                 Layout.fillHeight: true
@@ -422,36 +415,6 @@ Item {
                         onEdited: text => Services.ConfigService.configs.updates.command = text
                     }
                 }
-                Item {
-                    Layout.preferredHeight: 8
-                }
-            }
-
-            // ── PESTAÑA 4: PLUGINS ──
-            TabFlickable {
-                SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.plugins.title", "Plugins")
-
-                    Repeater {
-                        model: Services.PluginService.available
-
-                        delegate: SettingsSwitchRow {
-                            required property var modelData
-
-                            label: (modelData.name || modelData.id) + " " + (modelData.version || "")
-                            stateText: Services.PluginService.statusOf(modelData)
-                            iconName: "extension"
-                            checked: Services.PluginService.isEnabled(modelData.id)
-                            onToggled: Services.PluginService.setEnabled(modelData.id, !Services.PluginService.isEnabled(modelData.id))
-                        }
-                    }
-
-                    StyledText {
-                        visible: Services.PluginService.available.length === 0
-                        text: Services.I18nService.getTranslation("settings.plugins.empty", "Sin plugins instalados")
-                    }
-                }
-
                 Item {
                     Layout.preferredHeight: 8
                 }

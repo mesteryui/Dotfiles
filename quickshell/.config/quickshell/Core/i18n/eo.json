@@ -196,10 +196,6 @@
         "workspace_style_numbers": "Nombroj"
       }
     },
-    "plugins": {
-      "title": "Kromprogramoj",
-      "empty": "Neniuj kromprogramoj instalitaj"
-    },
     "screen": {
       "lockscreen": {
         "blur_level": "Malklariga nivelo",
@@ -234,10 +230,6 @@
       "interface": {
         "description": "Aspekto",
         "title": "Interfaco"
-      },
-      "plugins": {
-        "title": "Kromprogramoj",
-        "description": "Etendaĵoj"
       },
       "screen": {
         "description": "Ŝloso kaj lumo",

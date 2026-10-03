@@ -24,17 +24,37 @@ Singleton {
     property string cleanPrompt: {
         const inputPrompt = root.flow?.inputPrompt.trim() ?? "";
         const cleanedInputPrompt = inputPrompt.endsWith(":") ? inputPrompt.slice(0, -1) : inputPrompt;
-        const usePasswordChars = !root.flow?.responseVisible ?? true
-        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("polkit.password") : I18nService.getTranslation("polkit.input"))
+        const usePasswordChars = !(root.flow?.responseVisible ?? true);
+        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("polkit.password") : I18nService.getTranslation("polkit.input"));
     }
 
     function cancel() {
-        root.flow.cancelAuthenticationRequest()
+        // Sin petición activa no hay nada que cancelar: sin este guard,
+        // un doble Esc / Enter tardío lanzaba excepción sobre flow nulo
+        // y dejaba el agente inservible hasta reiniciar el shell.
+        if (!root.flow)
+            return;
+        root.flow.cancelAuthenticationRequest();
     }
 
     function submit(string) {
-        root.flow.submit(string)
-        root.interactionAvailable = false
+        // Igual que cancel(): el texto puede llegar cuando el flow ya
+        // terminó (reintento tardío). No se toca interactionAvailable si
+        // no había flow, para no dejar la UI deshabilitada sin petición.
+        if (!root.flow)
+            return;
+        root.flow.submit(string);
+        root.interactionAvailable = false;
+    }
+
+    // Fin de petición (éxito o cancelación): no queda conteo viejo para
+    // la siguiente. Durante la petición activa el contador solo crece en
+    // onAuthenticationFailed, que es lo que observa la UI para el shake.
+    onFlowChanged: {
+        if (!root.flow) {
+            root.failedAttempts = 0;
+            root.interactionAvailable = false;
+        }
     }
 
     Connections {

@@ -196,10 +196,6 @@
         "workspace_style_numbers": "Numbers"
       }
     },
-    "plugins": {
-      "title": "Plugins",
-      "empty": "No plugins installed"
-    },
     "screen": {
       "lockscreen": {
         "blur_level": "Blur level",
@@ -234,10 +230,6 @@
       "interface": {
         "description": "Appearance",
         "title": "Interface"
-      },
-      "plugins": {
-        "title": "Plugins",
-        "description": "Extensions"
       },
       "screen": {
         "description": "Lock and light",
