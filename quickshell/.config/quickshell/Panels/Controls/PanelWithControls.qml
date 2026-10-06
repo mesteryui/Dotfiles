@@ -43,22 +43,17 @@ Scope {
             visible: scope.shown
 
             // Altura completa: la ventana se estira de arriba a abajo.
-            // Márgenes según el modo de barra (mismo contrato que
-            // Bar.qml/ScreenRounding.qml): nunca pisa la barra (reserva
-            // barHeight) ni las esquinas de 20px / líneas de 10px que
-            // dibuja ScreenRounding en los modos hug.
-            readonly property int barHeight: ConfigService.configs.bar.height
+            // Modelo de huecos: cada lado ya viene recortado por su
+            // exclusive zone (barra: su alto en Bar.qml; líneas hug de 10px
+            // de ScreenRounding en full_hug) y aquí solo se suma el respiro.
+            // Medido: sin esto el panel quedaba 10px de más a izquierda y
+            // abajo en full_hug (las líneas también reservan zona).
             readonly property bool barAtBottom: ConfigService.configs.bar.position === "bottom"
             readonly property string barType: GameMode.enabled ? "no_floating" : ConfigService.configs.bar.barType
-            readonly property bool hugTop: barType === "full_hug" || (barType === "partial_hug" && !barAtBottom)
-            readonly property bool hugBottom: barType === "full_hug" || (barType === "partial_hug" && barAtBottom)
             // Separación mínima (6px) en todos los límites, haya o no
             // elementos: la barra flotante suma sus 3px de margen exterior.
             readonly property int edgeGap: 6
-            readonly property int barClear: barHeight + (barType === "floating" ? 3 : 0) + edgeGap
-            // Esquinas (20) y línea lateral (10) de ScreenRounding.
-            readonly property int cornerClear: 20 + edgeGap
-            readonly property int sideClear: 10 + edgeGap
+            readonly property int barClear: (barType === "floating" ? 3 : 0) + edgeGap
 
             anchors {
                 left: true
@@ -67,19 +62,15 @@ Scope {
             }
 
             margins {
-                left: visible ? (barType === "full_hug" ? sideClear : edgeGap) : -implicitWidth - 40
-                top: !barAtBottom ? barClear : (hugTop ? cornerClear : edgeGap)
-                bottom: barAtBottom ? barClear : (hugBottom ? cornerClear : edgeGap)
+                left: visible ? edgeGap : -implicitWidth - 40
+                top: !barAtBottom ? barClear : edgeGap
+                bottom: barAtBottom ? barClear : edgeGap
             }
 
-            Behavior on margins.left {
-                id: slideAnim
-
-                NumberAnimation {
-                    duration: Appearance.motion.medium1
-                    easing.type: Easing.OutCubic
-                }
-            }
+            // Sin animación de slide aquí: el compositor ya anima la capa
+            // con `slide left` (layerrules.lua → dashboard). Animar también
+            // margins.left duplicaba el movimiento. El salto es instantáneo
+            // y Hyprland pone el deslizamiento al mapear/desmapear.
 
             // ── Datos ─────────────────────────────────────────────────────
             property string username: Quickshell.env("USER")
@@ -157,7 +148,8 @@ Scope {
             MultiEffect {
                 id: panelShadow
                 anchors.fill: bg
-                shadowEnabled: true
+                visible: Appearance.shadows
+                shadowEnabled: Appearance.shadows
                 shadowColor: Appearance.md3.shadow ?? "#000000"
                 shadowOpacity: Appearance.elevation4.opacity
                 shadowBlur: Appearance.elevation4.blur
@@ -179,7 +171,10 @@ Scope {
                     bottom: bg.bottom
                 }
                 active: root.visible
-                asynchronous: false
+                // Async para no congelar el hilo QML al abrir (el contenido
+                // trae SysInfoTab + bluetooth/audio; en sync el slide se
+                // atrancaba un frame).
+                asynchronous: true
                 sourceComponent: panelComp
                 onLoaded: {
                     if (root.visible)

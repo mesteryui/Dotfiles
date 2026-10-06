@@ -183,7 +183,8 @@ Item {
                 MultiEffect {
                     id: artShadow
                     anchors.fill: artShapeBg
-                    shadowEnabled: true
+                    visible: Appearance.shadows
+                    shadowEnabled: Appearance.shadows
                     shadowColor: Appearance.md3.shadow
                     shadowOpacity: Appearance.elevation3.opacity
                     shadowBlur: Appearance.elevation3.blur
@@ -412,7 +413,8 @@ Item {
                 MultiEffect {
                     id: heroShadow
                     anchors.fill: heroBg
-                    shadowEnabled: true
+                    visible: Appearance.shadows
+                    shadowEnabled: Appearance.shadows
                     shadowColor: Appearance.md3.shadow
                     shadowOpacity: Appearance.elevation3.opacity
                     shadowBlur: Appearance.elevation3.blur

@@ -61,9 +61,9 @@ Scope {
                 windows: [powerButtons]
                 active: root.show
                 onCleared: {
-                   if (root.show) {
-                        root.animating = true
-                        animatingTimer.running = true
+                    if (root.show) {
+                        root.animating = true;
+                        animatingTimer.running = true;
                         root.show = false;
                     }
                 }
@@ -73,25 +73,23 @@ Scope {
                 sequence: "Escape"
                 onActivated: {
                     if (root.show) {
-                        root.animating = true
-                        animatingTimer.running = true
+                        root.animating = true;
+                        animatingTimer.running = true;
                         root.show = false;
-
                     }
-
                 }
             }
 
             onVisibleChanged: {
                 if (visible)
                     shutdownBtn.forceActiveFocus();
-                root.show = visible
+                root.show = visible;
             }
 
             // Scrim M3 (spec diálogos): velo scrim al 32%.
             Rectangle {
                 anchors.fill: parent
-                color: Qt.alpha(Appearance.md3.scrim, 0.32)
+                color: Qt.alpha(Appearance.md3.scrim, 0.5)
 
                 opacity: root.show ? 1 : 0
 
@@ -208,10 +206,10 @@ Scope {
                 }
             }
         }
+    }
 
     // El morph al resaltar lo gestiona GenericButton (reposo Circle,
     // resaltado con forma-identidad); aquí solo se fija la identidad
     // de cada acción vía buttonShape.
-    component PowerButton: GenericButton {
-    }
-}}
+    component PowerButton: GenericButton {}
+}

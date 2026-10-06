@@ -97,6 +97,7 @@ MenuDefinition {
                 root._current = "";
             }
         }
+        // qmllint disable signal-handler-parameters
         onExited: {
             const out = [];
             const subBase = root.tr("sysmenu.dynamic_fastfetch", "Tema de fastfetch");
@@ -114,5 +115,6 @@ MenuDefinition {
             }
             root.entries = out;
         }
+        // qmllint enable signal-handler-parameters
     } ]
 }

@@ -24,6 +24,8 @@ import Quickshell
 ShellRoot {
     id: root
 
+    // watchFiles en false en uso diario: en true cualquier toque
+    // a un QML recarga toda la shell (útil en dev, ruido en prod).
     settings.watchFiles: true
 
     Component.onCompleted: {

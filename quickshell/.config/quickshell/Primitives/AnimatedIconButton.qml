@@ -54,8 +54,8 @@ Item {
     MultiEffect {
         id: btnShadow
         anchors.fill: bgRect
-        visible: root.hasShadow
-        shadowEnabled: true
+        visible: root.hasShadow && Appearance.shadows
+        shadowEnabled: root.hasShadow && Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: 0.22
         shadowBlur: 0.5

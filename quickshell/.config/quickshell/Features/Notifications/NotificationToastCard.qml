@@ -369,7 +369,8 @@ Item {
     MultiEffect {
         id: cardShadow
         anchors.fill: card
-        shadowEnabled: true
+        visible: Appearance.shadows
+        shadowEnabled: Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: root.isCritical ? 0.25 : 0.16
         shadowBlur: 0.6

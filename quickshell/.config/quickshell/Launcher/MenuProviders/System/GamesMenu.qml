@@ -12,7 +12,7 @@ MenuDefinition {
 
     entries: [
         shell("game-steam", "Steam", "steam-setup", "sports_esports",
-            "kitty --class=float_kitty -e steam-setup",
+            "kitty --class=local.floating -e steam-setup",
             { titleKey: "sysmenu.game_steam_title", subtitleKey: "sysmenu.game_steam_subtitle" })
     ]
 }

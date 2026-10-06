@@ -47,7 +47,8 @@ BarPopupWindow {
     MultiEffect {
         id: panelShadow
         anchors.fill: bg
-        shadowEnabled: true
+        visible: Appearance.shadows
+        shadowEnabled: Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowBlur: 0.85
         shadowVerticalOffset: 6

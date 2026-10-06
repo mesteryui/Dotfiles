@@ -204,7 +204,8 @@ Item {
     MultiEffect {
         id: mprisShadow
         anchors.fill: mprisBg
-        shadowEnabled: true
+        visible: Appearance.shadows
+        shadowEnabled: Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: Appearance.elevation4.opacity
         shadowBlur: Appearance.elevation4.blur

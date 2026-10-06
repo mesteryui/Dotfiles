@@ -151,6 +151,7 @@ Singleton {
             if (running)
                 root.watchAcc = "";
         }
+        // qmllint disable signal-handler-parameters
         onExited: {
             const sig = root.watchAcc;
             if (root.dirSignature === "") {
@@ -162,6 +163,7 @@ Singleton {
                 root.reload();
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     // Recarga los menús sin recargar todo el shell:
@@ -197,7 +199,9 @@ Singleton {
             if (running)
                 root.foundFiles = [];
         }
+        // qmllint disable signal-handler-parameters
         onExited: code => root.instantiate()
+        // qmllint enable signal-handler-parameters
     }
 
     function loadOne(tag, name) {

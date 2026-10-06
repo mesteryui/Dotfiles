@@ -101,6 +101,7 @@ QtObject {
                 root.acc += data + "\n";
             }
         }
+        // qmllint disable signal-handler-parameters
         onExited: code => {
             root.watchdog.stop();
             root.busy = false;
@@ -122,5 +123,6 @@ QtObject {
             // coincidir y no pinta un resultado de otra query.
             root.forQuery = root._launchQuery;
         }
+        // qmllint enable signal-handler-parameters
     }
 }

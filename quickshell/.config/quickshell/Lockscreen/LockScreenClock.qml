@@ -3,7 +3,6 @@ import qs.Core.Services
 import qs.Primitives
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 
 // Reloj expresivo estilo Pixel / Material You.
 // large  = etapa dormida (hero clock). compact = etapa auth (pequeño).
@@ -13,12 +12,6 @@ ColumnLayout {
     spacing: 2
 
     property bool compact: false
-
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Minutes
-    }
 
     // Fecha arriba estilo Pixel ("At a Glance"), con clima.
     // (Se probó también un sol/luna de día/noche, pero duplicaba
@@ -37,7 +30,7 @@ ColumnLayout {
             font.variableAxes: Appearance.font.variableAxes.title
             font.family: Appearance.font.sans
 
-            text: root.compact ? clock.date.toLocaleDateString(I18nService.locale, "ddd, d MMM") : clock.date.toLocaleDateString(I18nService.locale, "dddd, d MMMM")
+            text: root.compact ? TimeService.dateString("ddd, d MMM") : TimeService.dateString("dddd, d MMMM")
         }
 
         // Clima "At a Glance" estilo Pixel: icono + temperatura.
@@ -82,6 +75,6 @@ ColumnLayout {
             })
         lineHeight: 1.0
 
-        text: clock.date.toLocaleTimeString(I18nService.locale, "hh:mm")
+        text: TimeService.timeString()
     }
 }

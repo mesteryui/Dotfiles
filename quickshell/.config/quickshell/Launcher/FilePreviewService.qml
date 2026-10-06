@@ -217,7 +217,8 @@ Singleton {
             }
         }
 
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             // Muerte provocada por requestText() para superseder: reintenta
             // con la última ruta pedida en vez de pintar texto ajeno.
             if (root.textRestart) {
@@ -227,6 +228,7 @@ Singleton {
             }
             root.textReady(root.textReqPath, root.textAcc);
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
@@ -238,7 +240,8 @@ Singleton {
             }
         }
 
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             // Muerte provocada por requestMeta() para superseder.
             if (root.metaRestart) {
                 root.metaRestart = false;
@@ -257,6 +260,7 @@ Singleton {
                 root.metaReady(donePath, "", "", "", "");
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
@@ -270,7 +274,8 @@ Singleton {
             }
         }
 
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             const donePath = root.reqPath;
             if (root.pendingPath !== "") {
                 const p = root.pendingPath;
@@ -285,5 +290,6 @@ Singleton {
             // El actual ya está servido: sigue el prefetch si lo hay.
             root._pumpPrefetch();
         }
+        // qmllint enable signal-handler-parameters
     }
 }

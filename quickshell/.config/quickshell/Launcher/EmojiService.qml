@@ -378,6 +378,7 @@ Singleton {
             if (running)
                 root.libLines = [];
         }
+        // qmllint disable signal-handler-parameters
         onExited: code => {
             if (code !== 0) {
                 root.libStatus = "error";
@@ -385,6 +386,7 @@ Singleton {
             }
             root.mergeLibLines(root.libLines);
         }
+        // qmllint enable signal-handler-parameters
     }
 
     function mergeLibLines(lines) {

@@ -111,6 +111,7 @@ QtObject {
                 root.failReason = "";
             }
         }
+        // qmllint disable signal-handler-parameters
         onExited: code => {
             root.watchdog.stop();
             // Salida de un proceso ya superado por otro refresh: ignorar.
@@ -134,5 +135,6 @@ QtObject {
             FileMenu.sortSnapshot(out);
             root.snapshot = out;
         }
+        // qmllint enable signal-handler-parameters
     }
 }

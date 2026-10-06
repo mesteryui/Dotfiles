@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -25,21 +26,33 @@ PanelWindow {
         bottom: true
         left: true
         right: true
-      }
-    
+    }
+
     component WallpaperImage: Image {
-      anchors.fill: parent
-      fillMode: Image.PreserveAspectCrop
-      asynchronous: true
-      cache: false
+        anchors.fill: parent
+        fillMode: Image.PreserveAspectCrop
+        asynchronous: true
+        cache: false
+        smooth: true
+        // Mipmap: el zoom 1.04→1 y el crop reescalan cada frame; sin
+        // mipmaps el filtrado tiembla y rinde peor en la animación.
+        mipmap: true
+        // Decodificar acotado a la pantalla EN PÍXELES FÍSICOS (lógicos ×
+        // DPR): con solo screen.width en HiDPI 200% un fondo se decodifica
+        // a 1920 y el compositor lo estira a 3840 físicos = imagen blanda.
+        // Sin esto un wallhaven de 17MB se decodifica entero (~30MB de
+        // textura por cara, x2 en fundido). Patrón igual que lockscreen.
+        readonly property real targetScale: Math.max(1, Math.ceil(Screen.devicePixelRatio))
+        sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
+        sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
     }
 
     WallpaperImage {
-        id: imgA 
+        id: imgA
         opacity: 1
     }
     WallpaperImage {
-        id: imgB 
+        id: imgB
         opacity: 0
     }
 
@@ -125,7 +138,7 @@ PanelWindow {
                 }
             };
             root.readyHandler = handler;
-            root.readyItem = img; // <-- FALTA ESTA LÍNEA
+            root.readyItem = img;
             img.statusChanged.connect(handler);
             if (img.status === Image.Ready) {
                 root.clearReadyWait();

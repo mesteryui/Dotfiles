@@ -91,6 +91,7 @@ MenuDefinition {
                 root._current = "";
             }
         }
+        // qmllint disable signal-handler-parameters
         onExited: {
             const out = [];
             const subBase = root.tr("sysmenu.dynamic_animations", "Animación de Hyprland");
@@ -104,5 +105,6 @@ MenuDefinition {
             }
             root.entries = out;
         }
+        // qmllint enable signal-handler-parameters
     } ]
 }

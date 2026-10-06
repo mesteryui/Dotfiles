@@ -33,23 +33,6 @@ Rectangle {
 
     readonly property bool current: ListView.isCurrentItem ?? false
 
-    // Reloj barato para refrescar el "hace X min".
-    // (SystemClock no existe en el contexto de este módulo versionado;
-    //  un Timer por minuto hace lo mismo y Qt lo comparte.)
-    property int relTick: 0
-
-    Timer {
-        id: relTimer
-        interval: 60000
-        running: true
-        repeat: true
-        onTriggered: root.relTick++
-    }
-
-    Component.onDestruction: {
-        relTimer.stop()
-    }
-
     implicitHeight: mainLayout.implicitHeight + 24
     color: "transparent"
     radius: Appearance.shape.large
@@ -139,9 +122,10 @@ Rectangle {
                 }
                 StyledText {
                     visible: root.time !== "" || root.historyEpoch > 0
-                    // relTick invalida el binding cada minuto.
+                    // TimeService.date invalida el binding cada minuto
+                    // (un solo wakeup compartido en vez de un Timer por tarjeta).
                     text: {
-                        root.relTick;
+                        Services.TimeService.date;
                         if (root.historyEpoch > 0)
                             return Services.NotificationService.formatRelative(root.historyEpoch);
                         return root.time;

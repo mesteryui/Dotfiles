@@ -377,7 +377,8 @@ PanelWindow {
                     MultiEffect {
                         id: emptyStateShadow
                         anchors.fill: emptyStateShape
-                        shadowEnabled: true
+                        visible: Appearance.shadows
+                        shadowEnabled: Appearance.shadows
                         shadowColor: Appearance.md3.shadow
                         shadowOpacity: 0.15
                         shadowBlur: 0.5
@@ -442,7 +443,8 @@ PanelWindow {
     MultiEffect {
         id: panelShadow
         anchors.fill: panelBg
-        shadowEnabled: true
+        visible: Appearance.shadows
+        shadowEnabled: Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: Appearance.elevation5.opacity
         shadowBlur: Appearance.elevation5.blur

@@ -294,7 +294,8 @@ Item {
     MultiEffect {
         id: passwordShadow
         anchors.fill: passwordBg
-        shadowEnabled: true
+        visible: Appearance.shadows
+        shadowEnabled: Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: 0.18
         shadowBlur: 0.8

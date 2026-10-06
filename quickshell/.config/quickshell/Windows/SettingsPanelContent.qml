@@ -110,6 +110,14 @@ Item {
                         onToggled: Services.ConfigService.configs.appearance.reduceMotion = !Services.ConfigService.configs.appearance.reduceMotion
                     }
 
+                    SettingsSwitchRow {
+                        label: Services.I18nService.getTranslation("settings.interface.appearance.shadows", "Sombras decorativas")
+                        stateText: Services.ConfigService.configs.appearance.shadows ?? true ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        iconName: "ev_shadow"
+                        checked: Services.ConfigService.configs.appearance.shadows ?? true
+                        onToggled: Services.ConfigService.configs.appearance.shadows = !(Services.ConfigService.configs.appearance.shadows ?? true)
+                    }
+
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
                         iconName: "palette"

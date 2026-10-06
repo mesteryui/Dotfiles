@@ -10,6 +10,7 @@ Scope {
     // Como heredan de BaseOSD, ya saben exactamente en qué pantalla aparecer gracias a 'focusedScreen'.
     VolumeOSD {}
     BrightnessOSD {}
+    KeyboardBrightnessOSD {}
     MicOSD {}
 
     SpecialKeysOSD {}

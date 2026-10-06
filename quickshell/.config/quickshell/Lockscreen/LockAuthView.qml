@@ -43,13 +43,7 @@ Item {
         return Qt.rgba(c.r, c.g, c.b, alphaValue);
     }
 
-// Reloj compartido para el saludo (precisión minutos: tick barato y
-// compartido por Qt; evita que el saludo quede rancio al cambiar de hora).
-SystemClock {
-    id: greetingClock
-
-    precision: SystemClock.Minutes
-}
+// Saludo según la hora (lee del reloj único TimeService).
 
     anchors.fill: parent
     z: 1
@@ -212,7 +206,8 @@ SystemClock {
             MultiEffect {
                 id: avatarShadow
                 anchors.fill: avatarBg
-                shadowEnabled: true
+                visible: Appearance.shadows
+                shadowEnabled: Appearance.shadows
                 shadowColor: Appearance.md3.shadow
                 shadowOpacity: Appearance.elevation5.opacity
                 shadowBlur: Appearance.elevation5.blur
@@ -237,7 +232,7 @@ SystemClock {
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: {
-                const h = greetingClock.date.getHours();
+                const h = TimeService.hours;
                 if (h >= 6 && h < 12)
                     return I18nService.getTranslation("lockscreen.greeting_morning", "Buenos días");
                 if (h >= 12 && h < 21)

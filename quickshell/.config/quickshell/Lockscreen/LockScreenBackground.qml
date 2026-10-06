@@ -18,6 +18,9 @@ Item {
     readonly property bool isDark: ConfigService.configs.appearance.darkMode
     readonly property bool useWallpaper: ConfigService.configs.lockscreen.useWallpaper
     property real scrimAlpha: isDark ? 0.32 : 0.22
+    // Blur clamp 0..1 (MultiEffect trabaja en ese rango; config trae 1.3
+    // por defecto). Con 0 se apaga la capa offscreen completa.
+    readonly property real blurAmount: Math.min(1, Math.max(0, ConfigService.configs.lockscreen.blurLevel))
 
     function withAlpha(hexColor, alphaValue) {
         var c = Qt.color(hexColor);
@@ -28,14 +31,17 @@ Item {
         id: background
 
         anchors.fill: parent
-        layer.enabled: true
+        // Offscreen solo si hay blur real: a fullscreen el FBO + blur 64px
+        // es de lo más caro de la shell. Con blur 0 se pinta directo.
+        layer.enabled: root.blurAmount > 0
         layer.effect: MultiEffect {
             autoPaddingEnabled: false
-            blurEnabled: true
+            blurEnabled: root.blurAmount > 0
             // MultiEffect.blur trabaja en 0..1: se clamp el valor de
             // config (por defecto 1.3) para no romper la capa.
-            blur: Math.min(1, Math.max(0, ConfigService.configs.lockscreen.blurLevel))
-            blurMax: 64
+            blur: root.blurAmount
+            // 64→32: mitad de coste, diferencia visual mínima a fullscreen.
+            blurMax: 32
             blurMultiplier: 1
         }
 

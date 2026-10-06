@@ -51,6 +51,8 @@ Scope {
         component: PanelWindow {
             id: root
 
+            WlrLayershell.namespace: "quickshell:window-switcher"
+
             // ── Tokens locales (geometría del switcher) ──
             // cardWidth debe coincidir con el literal del delegado (Bound:
             // el delegado no ve este scope). cardSpacing va en ListView.spacing.
@@ -334,7 +336,9 @@ Scope {
                                     }
 
                                     Behavior on implicitSize {
-                                        NumberAnimation { duration: Appearance.motion.short3 }
+                                        NumberAnimation {
+                                            duration: Appearance.motion.short3
+                                        }
                                     }
                                 }
                             }

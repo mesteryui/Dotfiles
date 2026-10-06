@@ -18,6 +18,8 @@ BaseOSD {
 
     // Silencio (p. ej. muteado): ClamShell (boca cerrada) + colores error.
     property bool alert: false
+    // Etiqueta personalizada en vez del "42%": p. ej. teclado "1 / 3".
+    property string labelOverride: ""
     // Morph discreto por nivel (volumen/micro): más diferenciación visual.
     property int shapeLow: MaterialShape.Circle
     property int shapeMid: MaterialShape.Diamond
@@ -90,10 +92,10 @@ BaseOSD {
         StyledText {
             id: textPercentage
 
-            text: Math.round(root.percentage * 100) + "%"
+            text: root.labelOverride !== "" ? root.labelOverride : Math.round(root.percentage * 100) + "%"
             font.pixelSize: Appearance.font.pixelSize.large
             color: Appearance.md3.on_surface
-            Layout.preferredWidth: 40
+            Layout.preferredWidth: root.labelOverride !== "" ? 56 : 40
             horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignVCenter
         }

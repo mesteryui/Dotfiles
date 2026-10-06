@@ -2,7 +2,6 @@ import qs.Core
 import qs.Core.Services as Services
 import qs.Primitives
 import QtQuick
-import Quickshell
 
 Item {
     id: root
@@ -10,26 +9,14 @@ Item {
     implicitWidth: clockText.implicitWidth
     implicitHeight: clockText.implicitHeight
 
-    SystemClock {
-        id: clock
-
-        // Solo se pinta "hh:mm": Minutes evita 60x wakeups/segundo
-        // sin cambiar el texto visible.
-        precision: SystemClock.Minutes
-    }
-
     StyledText {
         id: clockText
 
         font.family: Services.ConfigService.configs.appearance.fontSans
-
-        // Tu lógica de locale está bien, solo asegúrate de que el ID sea único (corregido a 'locale')
-
         color: Appearance.md3.on_surface
         font.pixelSize: Appearance.typeScale.titleSmall
 
-
-        // Corrección: Usar el objeto clock.date correctamente en ambas partes
-        text: clock.date.toLocaleDateString(Services.I18nService.locale, "ddd") + " " + clock.date.toLocaleTimeString(Services.I18nService.locale, "hh:mm")
+        // Reloj único del shell (TimeService): "mar 14:32".
+        text: Services.TimeService.barText
     }
 }

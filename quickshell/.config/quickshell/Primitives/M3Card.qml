@@ -59,8 +59,8 @@ Item {
     MultiEffect {
         id: cardShadow
         anchors.fill: _bg
-        visible: root.shadowEnabled
-        shadowEnabled: root.shadowEnabled
+        visible: root.shadowEnabled && Appearance.shadows
+        shadowEnabled: root.shadowEnabled && Appearance.shadows
         shadowColor: Appearance.md3.shadow
         shadowOpacity: Appearance.elevation1.opacity
         shadowBlur: Appearance.elevation1.blur
