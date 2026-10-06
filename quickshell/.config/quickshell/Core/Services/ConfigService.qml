@@ -68,12 +68,17 @@ Singleton {
             property LockScreen lockscreen: LockScreen {}
             property NightLight nightLight: NightLight {}
             property Appearance appearance: Appearance {}
+            property Brightness brightness: Brightness {}
         }
     }
 
     component LockScreen: JsonObject {
         property real blurLevel: 1.3
         property bool useWallpaper: true
+    }
+    component Brightness: JsonObject {
+        // false = teclas/slider van al monitor enfocado (end-4/caelestia).
+        property bool syncAll: false
     }
     component Weather: JsonObject {
         property bool autoLocation: true
@@ -87,6 +92,9 @@ Singleton {
     component Appearance: JsonObject {
         property bool darkMode: true
         property bool reduceMotion: false
+        // Sombras decorativas (MultiEffect = pass offscreen cada una).
+        // En false se apagan todas las de adorno (máscaras y blur intactos).
+        property bool shadows: true
         property string fontSans: "Google Sans Flex"
         property string monospace: "JetBrains Mono Nerd Font"
         property string reading: "Google Sans Flex"

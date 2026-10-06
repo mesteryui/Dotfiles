@@ -24,6 +24,10 @@ Singleton {
     // bucles infinitos —indeterminado, respiraciones— se apagan donde viven).
     readonly property bool reduceMotion: ConfigService.configs.appearance.reduceMotion ?? false
 
+    // Sombras decorativas: cada MultiEffect de sombra es un pass offscreen.
+    // En false, las de adorno no se instancian (máscaras/blur no afectados).
+    readonly property bool shadows: ConfigService.configs.appearance.shadows ?? true
+
     FileView {
         path: Directories.state + "/quickshell/generated/colors.json"
         watchChanges: true

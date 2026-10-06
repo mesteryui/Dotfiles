@@ -160,6 +160,7 @@ Singleton {
             }
         }
 
+        // qmllint disable signal-handler-parameters
         onError: err => {
             // Un connectToServer() fallido (daemon no corriendo todavía) no
             // siempre dispara onSocketDisconnected en Quickshell, así que
@@ -172,6 +173,7 @@ Singleton {
             }
             socket.connected = false;
         }
+        // qmllint enable signal-handler-parameters
 
         parser: SplitParser {
             splitMarker: "" // las respuestas no siempre traen \n

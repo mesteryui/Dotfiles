@@ -1,0 +1,4 @@
+module qs.Core.Services.Brightness
+singleton BrightnessService 1.0 BrightnessService.qml
+singleton KbdBacklight 1.0 KbdBacklight.qml
+BrightnessMonitor 1.0 BrightnessMonitor.qml

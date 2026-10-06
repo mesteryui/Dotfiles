@@ -317,10 +317,12 @@ Singleton {
         id: mkdirProc
         command: ["mkdir", "-p", root.previewDir]
         Component.onCompleted: mkdirProc.running = true
+        // qmllint disable signal-handler-parameters
         onExited: code => {
             if (code !== 0)
                 console.warn("ClipboardService: no se pudo crear " + root.previewDir);
         }
+        // qmllint enable signal-handler-parameters
     }
 
     // cliphist list -> "<id>\t<preview>"
@@ -346,7 +348,8 @@ Singleton {
                 });
             }
         }
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             root.listWatchdog.stop();
             root.refreshing = false;
             root.ready = true;
@@ -364,11 +367,13 @@ Singleton {
                 Qt.callLater(() => root.refresh());
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
         id: copyProc
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             root.copyWatchdog.stop();
             if (code !== 0)
                 console.warn("ClipboardService: copy falló id=" + root.copyId + " (" + code + ")");
@@ -381,11 +386,13 @@ Singleton {
                 root.startCopy(nid, nimg);
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
         id: previewProc
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             root.previewWatchdog.stop();
             const finishedId = root.previewId;
             if (code === 0)
@@ -405,6 +412,7 @@ Singleton {
                 root._pumpPreview();
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
@@ -415,7 +423,8 @@ Singleton {
                     root.textAcc += data + "\n";
             }
         }
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             root.textWatchdog.stop();
             if (code === 0) {
                 let t = root.textAcc;
@@ -437,12 +446,14 @@ Singleton {
                 root.startTextRequest(nid);
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
         id: delProc
         property string currentId: ""
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             root.delWatchdog.stop();
             if (code !== 0)
                 console.warn("ClipboardService: delete falló id=" + delProc.currentId);
@@ -457,6 +468,7 @@ Singleton {
             }
             root.refresh();
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
@@ -471,10 +483,12 @@ Singleton {
     Process {
         id: wipeProc
         command: ["cliphist", "wipe"]
-        onExited: (code, status) => {
+        // qmllint disable signal-handler-parameters
+        onExited: code => {
             if (code !== 0)
                 console.warn("ClipboardService: wipe falló (" + code + ")");
             root.refresh();
         }
+        // qmllint enable signal-handler-parameters
     }
 }

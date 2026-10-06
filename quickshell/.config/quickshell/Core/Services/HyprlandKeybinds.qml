@@ -113,7 +113,9 @@ Singleton {
             "XF86AudioNext": "Next",
             "XF86AudioPrev": "Prev",
             "XF86MonBrightnessUp": "Bright +",
-            "XF86MonBrightnessDown": "Bright -"
+            "XF86MonBrightnessDown": "Bright -",
+            "XF86KbdBrightnessUp": "Kbd +",
+            "XF86KbdBrightnessDown": "Kbd -"
         })
 
     function prettyModName(raw) {
@@ -141,8 +143,8 @@ Singleton {
             return modkeys.split(" ").filter(s => s.length > 0).map(prettyModName);
         }
         var out = [];
-        for (var i = 0; i < root.modBits.length; i++) {
-            var m = root.modBits[i];
+        for (let i = 0; i < root.modBits.length; i++) {
+            let m = root.modBits[i];
             if ((modmask & m.bit) === m.bit)
                 out.push(m.label);
         }
@@ -151,7 +153,7 @@ Singleton {
 
     function formatKeyLabel(bind) {
         if (bind.mouse) {
-            var btn = bind.key && bind.key.length > 0 ? bind.key : bind.arg;
+            let btn = bind.key && bind.key.length > 0 ? bind.key : bind.arg;
             return "Mouse " + (btn || "");
         }
         var key = bind.key || "";
@@ -170,14 +172,14 @@ Singleton {
         var cats = {};
         var order = [];
 
-        for (var i = 0; i < root.keybinds.length; i++) {
-            var b = root.keybinds[i];
+        for (let i = 0; i < root.keybinds.length; i++) {
+            let b = root.keybinds[i];
             if (!b.has_description || !b.description || b.description.length === 0)
                 continue;
 
-            var sepIdx = b.description.indexOf(":");
-            var category = sepIdx > 0 ? b.description.substring(0, sepIdx).trim() : "General";
-            var label = sepIdx > 0 ? b.description.substring(sepIdx + 1).trim() : b.description.trim();
+            let sepIdx = b.description.indexOf(":");
+            let category = sepIdx > 0 ? b.description.substring(0, sepIdx).trim() : "General";
+            let label = sepIdx > 0 ? b.description.substring(sepIdx + 1).trim() : b.description.trim();
             if (label.length === 0)
                 label = b.description.trim();
 
@@ -186,8 +188,8 @@ Singleton {
                 order.push(category);
             }
 
-            var mods = root.decodeMods(b.modmask, b.modkeys);
-            var keyLabel = root.formatKeyLabel(b);
+            let mods = root.decodeMods(b.modmask, b.modkeys);
+            let keyLabel = root.formatKeyLabel(b);
 
             cats[category].push({
                 mods: mods,
@@ -251,11 +253,12 @@ Singleton {
                 }
             }
         }
-
-        onExited: (exitCode, exitStatus) => {
+        // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
             // hyprctl ausente o error: sin datos NUNCA es "vacío real".
             if (exitCode !== 0 && root.keybinds.length === 0)
                 root.failed = true;
         }
+        // qmllint enable signal-handler-parameters
     }
 }

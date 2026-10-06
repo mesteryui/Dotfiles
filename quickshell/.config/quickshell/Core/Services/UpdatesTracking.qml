@@ -14,11 +14,15 @@ Singleton {
     property bool failed: false
     // Evita repetir el chequeo inicial (timer + al recuperar la red).
     property bool startupCheckDone: false
+    // Si `checkupdates` no existe (no-Arch), se detecta una vez (exit 127)
+    // y se deja de spawnear en cada ciclo: sin esto cada poll lanzaba un
+    // proceso condenado al fallo.
+    property bool checkerMissing: false
 
     property ListModel packagesToUpdate: ListModel {}
 
     function tryStartupCheck() {
-        if (root.startupCheckDone)
+        if (root.startupCheckDone || root.checkerMissing)
             return;
         if (!NetworkService?.hasInternet)
             return;
@@ -35,6 +39,8 @@ Singleton {
     }
 
     function checkNow() {
+        if (root.checkerMissing)
+            return;
         countUpdates.running = true;
     }
 
@@ -62,6 +68,8 @@ Singleton {
         // en cada ciclo cuando la red está caída. Tampoco pisa un
         // chequeo o actualización ya en curso.
         onTriggered: {
+            if (root.checkerMissing)
+                return;
             if (!(NetworkService?.hasInternet ?? true))
                 return;
             if (countUpdates.running || root.checking || root.updating)
@@ -132,7 +140,15 @@ Singleton {
             }
         }
 
-        onExited: (exitCode, exitStatus) => {
+        // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
+            if (exitCode === 127) {
+                // Binario ausente (p. ej. no-Arch): no reintentar en cada
+                // ciclo. Se marca failed una vez para que el icono avise.
+                root.checkerMissing = true;
+                root.failed = true;
+                return;
+            }
             if (exitCode === 0 || exitCode === 2) {
                 root.updateCount = root.packagesToUpdate.count;
                 root.failed = false;
@@ -140,6 +156,7 @@ Singleton {
                 root.failed = true;
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     Process {
@@ -152,10 +169,12 @@ Singleton {
             root.updating = running;
         }
 
-        onExited: (exitCode, exitStatus) => {
+        // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
             if (!countUpdates.running)
                 countUpdates.running = true;
         }
+        // qmllint enable signal-handler-parameters
     }
 
     IpcHandler {

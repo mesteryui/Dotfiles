@@ -15,7 +15,6 @@ Singleton {
         reloadableId: "GameModeSettings"
 
         property bool enabled: false
-        property string previousBarLayout: ""
     }
 
     readonly property alias enabled: settings.enabled
@@ -41,7 +40,7 @@ Singleton {
             // --- ACTIVAR MODO JUEGO ---
 
             // Enviar keywords directamente por el socket IPC nativo de Hyprland:
-            let luaConfig = "hl.config({ " + "animations = { enabled = false }, " + "decoration = { rounding = 2, blur = { enabled = false }, shadow = { enabled = false } }, " + "general = { gaps_in = 0, gaps_out = 0, border_size = 1 } " + "})";
+            let luaConfig = "hl.config({ " + "animations = { enabled = false }, " + "decoration = { rounding = 2, blur = { enabled = false }, shadow = { enabled = false } }, " + "general = { gaps_in = 0, gaps_out = 0, border_size = 1, allow_tearing = true } " + "})";
 
             // Enviar la estructura Lua mediante 'hyprctl eval'
             proc.command = ["hyprctl", "eval", luaConfig];
@@ -60,7 +59,7 @@ Singleton {
 
     // Manejo de errores del proceso hyprctl
     Connections {
-        target: proc
+        target: root.proc
         ignoreUnknownSignals: true
 
         function onExited(exitCode) {

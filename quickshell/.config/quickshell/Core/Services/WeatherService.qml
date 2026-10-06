@@ -89,6 +89,10 @@ Singleton {
     // Evita arrancar el PositionSource (y loguear) dos veces al inicio:
     // onCompleted + onGpsActiveChanged tras cargar ConfigService.
     property bool _gpsRunning: false
+    // Guardia anti-doble-fetch al arrancar: onCompleted corre con city=""
+    // y al cargar config.json onCityChanged/onGpsActiveChanged relanzan
+    // getData. Se difiere el fetch inicial hasta ConfigService.ready.
+    property bool _bootFetchDone: false
 
     onConfigGpsEnabledChanged: {
         if (root.configGpsEnabled)
@@ -97,6 +101,10 @@ Singleton {
 
     onGpsActiveChanged: {
         root._syncPositionSource();
+        // Durante el arranque (config aún sin cargar) no se pide nada:
+        // el fetch único lo dispara onConfigReady una vez.
+        if (!ConfigService.ready || !root._bootFetchDone)
+            return;
         // Al salir de GPS el Timer se reactiva pero esperaría un ciclo
         // entero: si el parte está caducado, pedirlo ya (sin cambiar
         // el intervalo ni el comportamiento en GPS).
@@ -105,6 +113,10 @@ Singleton {
     }
 
     onCityChanged: {
+        // Arranque: city pasa de "" al valor de config.json; no se
+        // fetch aquí, ya lo hace onConfigReady una sola vez.
+        if (!ConfigService.ready || !root._bootFetchDone)
+            return;
         root.location.valid = false;
         root.location.cachedCity = "";
         root.getData();
@@ -671,7 +683,23 @@ Singleton {
 
     Component.onCompleted: {
         root._syncPositionSource();
-        root.getData();
+        // Fetch inicial único: si la config ya está (reload en caliente)
+        // directo; si no, espera a onConfigReady (una vez).
+        if (ConfigService.ready) {
+            root._bootFetchDone = true;
+            root.getData();
+        }
+    }
+
+    Connections {
+        target: ConfigService
+        function onReadyChanged() {
+            if (ConfigService.ready && !root._bootFetchDone) {
+                root._bootFetchDone = true;
+                root._syncPositionSource();
+                root.getData();
+            }
+        }
     }
 
     PositionSource {

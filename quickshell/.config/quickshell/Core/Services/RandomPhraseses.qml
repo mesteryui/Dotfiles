@@ -28,11 +28,13 @@ Singleton {
             }
         }
 
-        onExited: (exitCode, exitStatus) => {
+        // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
             if (exitCode !== 0) {
                 console.warn("[RandomPhrases] hyprctl splash falló:", exitCode);
             }
         }
+        // qmllint enable signal-handler-parameters
     }
 
     function obtainPhrase() {

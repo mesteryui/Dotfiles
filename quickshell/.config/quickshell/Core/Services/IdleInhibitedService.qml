@@ -10,7 +10,7 @@ Singleton {
     property alias inhibited: props.inhibited
 
     function toggle(): void {
-        props.inhibited = !props.inhibited
+        props.inhibited = !props.inhibited;
     }
 
     PersistentProperties {
@@ -25,15 +25,19 @@ Singleton {
         target: "inhibit"
 
         function on() {
-            props.inhibited = true
+            props.inhibited = true;
+        }
+
+        function isEnabled(): bool {
+            return props.inhibited;
         }
 
         function off() {
-            props.inhibited = false
+            props.inhibited = false;
         }
 
         function toggle() {
-            root.toggle()
+            root.toggle();
         }
     }
     IdleInhibitor {
@@ -43,10 +47,6 @@ Singleton {
             implicitHeight: 0
             implicitWidth: 0
             color: "transparent"
-            anchors {
-                right: true
-                bottom: true
-            }
             mask: Region {
                 item: null
             }
