@@ -1,4 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v rfkill &>/dev/null; then
+    echo "Error: 'rfkill' no está instalado." >&2
+    exit 1
+fi
+
+if ! command -v bluetui &>/dev/null; then
+    echo "Error: 'bluetui' no está instalado." >&2
+    exit 1
+fi
 
 sudo rfkill unblock bluetooth
 exec bluetui

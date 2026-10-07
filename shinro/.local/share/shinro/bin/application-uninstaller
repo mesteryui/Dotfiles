@@ -1,9 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+if ! command -v fzf &>/dev/null; then
+    echo "Error: 'fzf' no está instalado." >&2
+    exit 1
+fi
 
 fzf_args=(
   --multi
-  --preview 'pacman -Qii {1}'
+  --preview 'pacman -Qi {1}'
   --preview-label='alt-p: toggle description, alt-j/k: scroll, tab: multi-select'
   --preview-label-pos='bottom'
   --preview-window 'down:65%:wrap'
@@ -13,9 +18,9 @@ fzf_args=(
   --color 'pointer:blue,marker:blue'
 )
 
-pkg_names=$(pacman -Qsq | fzf "${fzf_args[@]}")
+pkg_names=$(pacman -Qsq | fzf "${fzf_args[@]}" || true)
 
 if [[ -n "$pkg_names" ]]; then
-  # Convert newline-separated selections to space-separated for yay
-  echo "$pkg_names" | tr '\n' ' ' | xargs sudo pacman -Rs --noconfirm
+  # Convert newline-separated selections to space-separated for pacman
+  echo "$pkg_names" | tr '\n' ' ' | xargs -r sudo pacman -Rs --noconfirm
 fi

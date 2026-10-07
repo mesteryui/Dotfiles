@@ -1,20 +1,38 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-if [[ "$1" == "--help" ]]; then
+usage() {
     echo "git-identity: Cambia la identidad de git en local para un repositorio"
     echo "Ejemplo:"
-    echo '	git-identity "Juan P." "juanp@gmail.com" y ahora seria mi identidad en github'
-else
-git config user.name "$1"
-if [ $? -eq 0 ]; then
+    echo '	git-identity "Juan P." "juanp@gmail.com"'
+}
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ $# -ne 2 || -z "${1:-}" || -z "${2:-}" ]]; then
+    usage >&2
+    echo "Error: se requieren nombre y email." >&2
+    exit 1
+fi
+
+if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+    echo "Error: no estás dentro de un repositorio git." >&2
+    exit 1
+fi
+
+if git config --local user.name "$1"; then
     echo "El usuario $1 ha sido configurado correctamente en el proyecto"
 else
-    echo "Ha habido un fallo en las configuraciones para este proyecto"
+    echo "Ha habido un fallo en las configuraciones para este proyecto" >&2
+    exit 1
 fi
-git config user.email "$2"
-if [ $? -eq 0 ]; then
+
+if git config --local user.email "$2"; then
     echo "El email $2 ha sido configurado correctamente en el proyecto"
 else
-    echo "Ha habido un fallo en las configuraciones para este proyecto"
-fi
+    echo "Ha habido un fallo en las configuraciones para este proyecto" >&2
+    exit 1
 fi

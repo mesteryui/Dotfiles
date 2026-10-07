@@ -363,10 +363,18 @@ Singleton {
     }
 
     function _request(xhrPropName, url, label, onSuccess, onFailure) {
+        // Sin abort(): abortar un TLS en handshake loguea a nivel C++
+        // "QIODevice::read (QSslSocket): device not open" sin categoría
+        // filtrable. Se huérfana la anterior (handlers a no-op) y se
+        // ignora su resultado; gasta una petición extra pero no ruido.
         const prevXhr = root[xhrPropName];
         if (prevXhr) {
+            try {
+                prevXhr.onreadystatechange = () => {};
+                prevXhr.onerror = () => {};
+                prevXhr.ontimeout = () => {};
+            } catch (e) {}
             root[xhrPropName] = null;
-            prevXhr.abort();
         }
 
         const xhr = new XMLHttpRequest();
@@ -609,6 +617,9 @@ Singleton {
             return;
         if (!force && Date.now() - root.lastAlertsTimestamp < 30 * 60 * 1000)
             return;
+        // Sin pisar petición en vuelo: evita huérfanas en racha.
+        if (root._alertsXhr !== null)
+            return;
         const url = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + root.location.countrySlug;
         root._request("_alertsXhr", url, "Alerts", json => root.parseAlerts(json), msg => {
             console.warn("[WeatherService] Alerts: " + msg + " (sin avisos)");
@@ -628,6 +639,8 @@ Singleton {
 
     function fetchAqi() {
         if (!root.location.valid)
+            return;
+        if (root._aqiXhr !== null)
             return;
         const url = "https://air-quality-api.open-meteo.com/v1/air-quality" + `?latitude=${root.location.lat}&longitude=${root.location.lon}` + "&current=european_aqi&timezone=auto";
         root._request("_aqiXhr", url, "AirQuality", json => {

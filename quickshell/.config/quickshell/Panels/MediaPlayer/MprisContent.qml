@@ -178,11 +178,14 @@ Item {
                 }
 
                 // Sombra tonal para dar profundidad Material You (sigue la silueta).
-                // source se asigna en onCompleted para evitar warning
+                // source declarativo: evita el warning del primer frame
                 // "ShaderEffect: 'source' does not have a matching property"
+                // que aparece cuando source es null al crear el MultiEffect
+                // (el patrón onCompleted retrasa la asignación un frame).
                 MultiEffect {
                     id: artShadow
                     anchors.fill: artShapeBg
+                    source: artShapeBg
                     visible: Appearance.shadows
                     shadowEnabled: Appearance.shadows
                     shadowColor: Appearance.md3.shadow
@@ -190,7 +193,6 @@ Item {
                     shadowBlur: Appearance.elevation3.blur
                     shadowVerticalOffset: Appearance.elevation3.offsetY
                     z: -1
-                    Component.onCompleted: artShadow.source = artShapeBg
                 }
 
                 // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
@@ -210,7 +212,13 @@ Item {
                     layer.enabled: true
                 }
 
-                // Imagen recortada a la silueta expresiva vía máscara
+                // Imagen recortada a la silueta expresiva vía máscara.
+                // root.artURL ya viene validado desde el wrapper
+                // (MprisSubwindow filtra file:// inexistentes vía FileView
+                // para no spamear "QQuickImage: Cannot open"), así que aquí
+                // solo queda el fallback a placeholder si el decodificador
+                // falla (p. ej. cover a medio escribir por carrera
+                // navegador/Image asíncrona).
                 Image {
                     id: artImage
 
@@ -225,6 +233,10 @@ Item {
                     sourceSize.height: 152
                     visible: root.hasArt && status === Image.Ready
                     opacity: visible ? 1.0 : 0.0
+                    onStatusChanged: {
+                        if (status === Image.Error)
+                            console.info("[Mpris] art failed, placeholder:", source);
+                    }
 
                     Behavior on opacity {
                         NumberAnimation {
@@ -235,12 +247,12 @@ Item {
                     // No necesita MouseArea/hover → layer.enabled aquí es seguro
                     layer.enabled: true
 
-                    // maskSource se asigna en onCompleted (mismo patrón que las
-                    // sombras): evita el warning del primer frame.
+                    // maskSource declarativo (mismo motivo que las sombras):
+                    // con onCompleted el primer frame usa máscara nula.
                     layer.effect: MultiEffect {
                         id: artMaskEffect
                         maskEnabled: true
-                        Component.onCompleted: artMaskEffect.maskSource = artMaskShape
+                        maskSource: artMaskShape
                     }
                 }
             }
@@ -408,11 +420,11 @@ Item {
                     animationDuration: 450
                 }
 
-                // Sombra: source se asigna en onCompleted para evitar warning
-                // "ShaderEffect: 'source' does not have a matching property"
+                // Sombra: source declarativo (ver artShadow arriba).
                 MultiEffect {
                     id: heroShadow
                     anchors.fill: heroBg
+                    source: heroBg
                     visible: Appearance.shadows
                     shadowEnabled: Appearance.shadows
                     shadowColor: Appearance.md3.shadow
@@ -420,7 +432,6 @@ Item {
                     shadowBlur: Appearance.elevation3.blur
                     shadowVerticalOffset: Appearance.elevation3.offsetY
                     z: -1
-                    Component.onCompleted: heroShadow.source = heroBg
                 }
 
                 // Capa de estado (hover/press) — misma silueta que el fondo

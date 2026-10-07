@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -uo pipefail
 
 # A script to display Hyprland keybindings defined in your configuration
 # using walker for an interactive search menu.
@@ -14,6 +15,13 @@
 #   - `dispatcher` is always "__lua" and `arg` is an opaque internal handle,
 #     not a real command, so we can no longer reconstruct the action text
 #     from dispatcher+arg — we rely entirely on `allow_input_capture`.
+
+for cmd in hyprctl jq walker; do
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Error: '$cmd' no está instalado." >&2
+        exit 1
+    fi
+done
 
 SEP=$'\x1f' # unit separator: safe even if descriptions contain commas/spaces
 
@@ -32,6 +40,8 @@ sanitize_binds_json() {
       rest = substr(line, RLENGTH + 1)
       trail = ""
       if (rest ~ /,[[:space:]]*$/) { trail = ","; sub(/,[[:space:]]*$/, "", rest) }
+      # Elimina espacios trailing antes de comparar (evita falsos barewords)
+      sub(/[[:space:]]+$/, "", rest)
       if (rest !~ /^(true|false|null|-?[0-9]+(\.[0-9]+)?|".*")$/) {
         gsub(/"/, "\\\"", rest)
         rest = "\"" rest "\""
@@ -53,12 +63,12 @@ dynamic_bindings() {
       .[] |
       select((.allow_input_capture // "") != "" and (.allow_input_capture // "") != "false") |
       [
-        (.submap // "0"),
+        ((.submap // "0") | tostring),
         (.submap_universal // ""),
         (.keycode // .key // ""),
         (.allow_input_capture // .description // ""),
         (.dispatcher // ""),
-        (.arg // "")
+        ((.arg // "") | tostring)
       ] | join($sep)
     '
 }
@@ -66,7 +76,7 @@ dynamic_bindings() {
 # Map the numeric modmask (now living in the `submap` field) to readable text.
 parse_modmask() {
   case "$1" in
-    0)  echo "" ;;
+    0|"0")  echo "" ;;
     1)  echo "SHIFT" ;;
     4)  echo "CTRL" ;;
     5)  echo "SHIFT CTRL" ;;
@@ -82,6 +92,7 @@ parse_modmask() {
     73) echo "SUPER SHIFT ALT" ;;
     76) echo "SUPER CTRL ALT" ;;
     77) echo "SUPER SHIFT CTRL ALT" ;;
+    "") echo "" ;;
     *)  echo "MOD($1)" ;;
   esac
 }
@@ -91,6 +102,8 @@ parse_bindings() {
   local raw_mod submap_name key desc dispatcher arg mod_txt key_combo action
 
   while IFS="$SEP" read -r raw_mod submap_name key desc dispatcher arg; do
+    # Salta líneas vacías (ej. hyprctl sin binds con descripción)
+    [[ -z "${key}${desc}${dispatcher}" ]] && continue
     mod_txt=$(parse_modmask "$raw_mod")
     key_combo="${mod_txt:+$mod_txt + }$key"
 
@@ -104,10 +117,11 @@ parse_bindings() {
         action="${action/,$/}"
         action=$(sed -r \
           -e 's,~/.local/share/omarchy/bin/,,' \
+          -e 's,~/.local/share/shinro/bin/,,' \
           -e 's,uwsm app -- ,,' \
           -e 's,uwsm-app -- ,,' \
           -e 's/(^|,)[[:space:]]*exec[[:space:]]*,?//' \
-          <<<"$action")
+          <<< "$action")
       else
         continue
       fi
@@ -123,11 +137,18 @@ parse_bindings() {
   done
 }
 
-monitor_height=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .height')
+monitor_height="$(hyprctl monitors -j 2>/dev/null | jq -r '[.[] | select(.focused == true) | .height][0] // empty' || true)"
+if [[ ! "$monitor_height" =~ ^[0-9]+$ ]]; then
+    monitor_height=1080
+fi
 menu_height=$((monitor_height * 40 / 100))
 
-dynamic_bindings |
-  sort -u |
-  parse_bindings |
+bindings="$(dynamic_bindings | sort -u | parse_bindings || true)"
+if [[ -z "$bindings" ]]; then
+    echo "No se encontraron keybindings con descripción." >&2
+    exit 0
+fi
+
+printf '%s\n' "$bindings" |
   #rofi -dmenu -i -p "Shorcuts" -theme-str "window { width: 820px; height: ${menu_height}px; }" -matching fuzzy
   walker --height "$menu_height" --width 800 --dmenu

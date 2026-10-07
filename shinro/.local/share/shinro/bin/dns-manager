@@ -1,0 +1,1162 @@
+#!/usr/bin/env bash
+#
+# dns-manager.sh — Interfaz Gum para configurar DNS con systemd-resolved
+#
+# Requisitos: gum, systemd-resolved activo, sudo
+# Opcionales: dig o drill (benchmark por servidor), nmcli o iwgetid (perfiles por SSID), timeout
+#
+# Uso no interactivo (para dispatcher/automatización):
+#   dns-manager.sh --help
+#   dns-manager.sh --test            # verifica la configuración actual
+#   dns-manager.sh --benchmark       # compara latencia de los presets
+#   dns-manager.sh --apply <perfil>  # aplica un perfil guardado sin preguntar
+#   dns-manager.sh --auto            # aplica el perfil ligado al SSID actual
+#
+set -euo pipefail
+
+DROPIN_DIR="/etc/systemd/resolved.conf.d"
+DROPIN_FILE="${DROPIN_DIR}/99-dns-manager.conf"
+DEFAULT_FALLBACK_IPS="1.1.1.1,9.9.9.9"
+DEFAULT_FALLBACK_HOSTNAME="cloudflare-dns.com"
+
+TEST_DOMAINS=("archlinux.org" "example.com" "github.com")
+BENCH_DOMAIN="archlinux.org"
+
+PROFILE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dns-manager/profiles"
+SSID_MAP_FILE="${PROFILE_DIR}/ssid.map"
+DISPATCHER_FILE="/etc/NetworkManager/dispatcher.d/99-dns-manager"
+
+# ---------------------------------------------------------------------------
+# Utilidades
+# ---------------------------------------------------------------------------
+
+check_deps() {
+    if ! command -v gum &>/dev/null; then
+        echo "Error: 'gum' no está instalado. Instálalo con: sudo pacman -S gum" >&2
+        exit 1
+    fi
+    if ! command -v resolvectl &>/dev/null; then
+        echo "Error: 'resolvectl' no encontrado. ¿systemd-resolved está instalado?" >&2
+        exit 1
+    fi
+    if ! systemctl is-active --quiet systemd-resolved; then
+        gum style --foreground 212 "Aviso: systemd-resolved no está activo actualmente."
+        if gum confirm "¿Quieres activarlo ahora?"; then
+            sudo systemctl enable --now systemd-resolved
+        fi
+    fi
+    # Avisos de opcionales (no bloquean)
+    if ! command -v dig &>/dev/null && ! command -v drill &>/dev/null; then
+        echo "Nota: ni 'dig' ni 'drill' encontrados. El benchmark por servidor quedará desactivado." >&2
+        echo "      Instala uno con: sudo pacman -S bind drill" >&2
+    fi
+}
+
+have_cmd() {
+    command -v "$1" &>/dev/null
+}
+
+title() {
+    gum style --border rounded --border-foreground 212 --padding "0 2" --bold "$1"
+}
+
+warn() {
+    gum style --foreground 214 "$1"
+}
+
+ok_msg() {
+    gum style --foreground 82 --bold "$1"
+}
+
+err_msg() {
+    gum style --foreground 196 "$1"
+}
+
+is_valid_ipv4() {
+    local ip="$1"
+    [[ "$ip" =~ ^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$ ]]
+}
+
+is_valid_ipv6() {
+    local ip="$1"
+    # Validación laxa: hex, ':' y '.' con al menos un ':'
+    [[ "$ip" == *:* ]] && [[ "$ip" =~ ^[0-9a-fA-F:.]+$ ]]
+}
+
+is_valid_ip() {
+    is_valid_ipv4 "$1" || is_valid_ipv6 "$1"
+}
+
+is_valid_hostname() {
+    local h="$1"
+    [[ "$h" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$ ]]
+}
+
+# "1.1.1.1#cloudflare-dns.com" -> "1.1.1.1" ; "8.8.8.8" -> "8.8.8.8"
+strip_ip() {
+    local entry="$1"
+    echo "${entry%%#*}"
+}
+
+# ---------------------------------------------------------------------------
+# Presets: nombre|IP1,IP2|hostname_tls
+# ---------------------------------------------------------------------------
+
+PRESETS=(
+    "Cloudflare|1.1.1.1,1.0.0.1|cloudflare-dns.com"
+    "Google|8.8.8.8,8.8.4.4|dns.google"
+    "Quad9 (con filtrado malware)|9.9.9.9,149.112.112.112|dns.quad9.net"
+    "AdGuard (bloqueo de anuncios)|94.140.14.14,94.140.15.15|dns.adguard.com"
+    "Mullvad (sin logs)|194.242.2.2,194.242.2.3|dns.mullvad.net"
+)
+
+pick_preset() {
+    local labels=()
+    for p in "${PRESETS[@]}"; do
+        labels+=("${p%%|*}")
+    done
+    gum choose --header "Elige un preset de DNS" "${labels[@]}"
+}
+
+preset_data() {
+    local name="$1"
+    for p in "${PRESETS[@]}"; do
+        if [[ "${p%%|*}" == "$name" ]]; then
+            echo "$p"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# ---------------------------------------------------------------------------
+# Construcción de la línea DNS= según haya o no TLS
+# ---------------------------------------------------------------------------
+
+build_dns_line() {
+    local ips="$1" hostname="$2" use_tls="$3"
+    local -a entries=()
+    local IFS=','
+    local -a ip_arr
+    read -ra ip_arr <<< "$ips"
+    local raw_ip ip_trimmed
+    for raw_ip in "${ip_arr[@]}"; do
+        # Trim sin subshells: elimina todos los espacios (las IPs no los llevan)
+        ip_trimmed="${raw_ip//[[:space:]]/}"
+        [[ -z "$ip_trimmed" ]] && continue
+        if ! is_valid_ip "$ip_trimmed"; then
+            echo "Aviso: '$ip_trimmed' no parece una IP válida, se omite." >&2
+            continue
+        fi
+        if [[ "$use_tls" == "yes" && -n "$hostname" ]]; then
+            entries+=("${ip_trimmed}#${hostname}")
+        else
+            entries+=("$ip_trimmed")
+        fi
+    done
+    local IFS=' '
+    echo "${entries[*]}"
+}
+
+# Pide servidores uno a uno (reutilizable para DNS principal y FallbackDNS).
+# Cada servidor puede tener su propio hostname TLS (SNI), no todos comparten
+# el mismo — ej: dns.rocksdns.ovh / dns2.rocksdns.ovh
+# Uso: input_custom_servers <use_tls> ; imprime "ip[#host] ip[#host]..." o "" si nada
+input_custom_servers() {
+    local use_tls="$1"
+    local -a entries=()
+    local server_ip server_host add_more="yes"
+    local count=0
+    while [[ "$add_more" == "yes" ]]; do
+        count=$((${#entries[@]} + 1))
+        server_ip="$(gum input --placeholder "ej: 82.223.31.111" \
+            --header "IP del servidor DNS #${count}" || true)"
+        # Elimina espacios
+        server_ip="${server_ip//[[:space:]]/}"
+        if [[ -z "$server_ip" ]]; then
+            break
+        fi
+        if ! is_valid_ip "$server_ip"; then
+            gum style --foreground 196 "'$server_ip' no parece una IP válida. Servidor omitido."
+        elif [[ "$use_tls" == "yes" ]]; then
+            server_host="$(gum input --placeholder "ej: dns.rocksdns.ovh" \
+                --header "Hostname TLS (SNI) para $server_ip" || true)"
+            server_host="${server_host//[[:space:]]/}"
+            if [[ -z "$server_host" ]]; then
+                gum style --foreground 196 "DNS over TLS requiere un hostname para cada IP. Servidor omitido."
+            elif ! is_valid_hostname "$server_host"; then
+                gum style --foreground 196 "'$server_host' no parece un hostname válido. Servidor omitido."
+            else
+                entries+=("${server_ip}#${server_host}")
+            fi
+        else
+            entries+=("$server_ip")
+        fi
+
+        if gum confirm "¿Añadir otro servidor?"; then
+            add_more="yes"
+        else
+            add_more="no"
+        fi
+    done
+
+    local IFS=' '
+    echo "${entries[*]}"
+}
+
+# Pregunta por el modo DNSOverTLS. Imprime "yes", "opportunistic" o "" si cancela.
+ask_tls_mode() {
+    local choice
+    choice="$(gum choose --header "Modo de DNSOverTLS" \
+        "yes (estricto, falla si no hay TLS)" \
+        "opportunistic (usa TLS si puede, si no cae a texto plano)" || true)"
+    if [[ -z "$choice" ]]; then
+        echo ""
+    elif [[ "$choice" == yes* ]]; then
+        echo "yes"
+    else
+        echo "opportunistic"
+    fi
+}
+
+# Pregunta por Domains=. Por defecto "~." (enruta todo por estos DNS).
+ask_domains() {
+    local current="${1:-~.}"
+    local choice
+    choice="$(gum choose --header "Dominios (actual: ${current}). '~.' = todo el tráfico por estos DNS" \
+        "~. (todo, recomendado)" \
+        "Vacío (usar DHCP del sistema)" \
+        "Personalizado..." || true)"
+    case "$choice" in
+        "~."*) echo "~." ;;
+        "Vacío"*) echo "" ;;
+        "Personalizado"*)
+            local custom
+            custom="$(gum input --placeholder "ej: ~. o ~example.com example.com" \
+                --header "Domains (separados por espacios)" --value "$current" || true)"
+            # Validación permisiva: letras, números, puntos, guiones, ~ y espacios
+            if [[ -z "$custom" ]]; then
+                echo ""
+            elif [[ "$custom" =~ ^[A-Za-z0-9._~[:space:]-]+$ ]]; then
+                echo "$custom"
+            else
+                err_msg "Valor no válido, se mantiene '${current}'."
+                echo "$current"
+            fi
+            ;;
+        *) echo "$current" ;;
+    esac
+}
+
+# ---------------------------------------------------------------------------
+# FallbackDNS
+# ---------------------------------------------------------------------------
+# Pregunta si se quiere configurar FallbackDNS y devuelve la línea lista
+# para el fichero (ej: "1.1.1.1 9.9.9.9" o "1.1.1.1#cloudflare-dns.com ...").
+# Devuelve "" si no se quiere fallback o se cancela.
+
+ask_fallback_dns() {
+    local use_tls="$1"
+    local primary_line="${2:-}"
+
+    if ! gum confirm "¿Configurar DNS de respaldo (FallbackDNS)? Se usa solo si fallan los DNS principales."; then
+        echo ""
+        return 0
+    fi
+
+    local method
+    method="$(gum choose --header "Método para FallbackDNS" \
+        "Elegir preset" \
+        "Introducir IPs manualmente" \
+        "Usar valores por defecto (1.1.1.1 9.9.9.9)" || true)"
+
+    case "$method" in
+        "Elegir preset"*)
+            local choice data rest ips hostname fallback
+            choice="$(pick_preset || true)"
+            if [[ -z "$choice" ]]; then
+                gum style --foreground 212 "Sin preset de respaldo: no se configura FallbackDNS."
+                echo ""
+                return 0
+            fi
+            data="$(preset_data "$choice" || true)"
+            if [[ -z "$data" ]]; then
+                gum style --foreground 196 "Preset no reconocido. Sin FallbackDNS."
+                echo ""
+                return 0
+            fi
+            rest="${data#*|}"
+            ips="${rest%%|*}"
+            hostname="${rest#*|}"
+            fallback="$(build_dns_line "$ips" "$hostname" "$use_tls")"
+            if [[ -n "$primary_line" && "$fallback" == "$primary_line" ]]; then
+                gum style --foreground 214 "Aviso: el FallbackDNS es idéntico al DNS principal."
+            fi
+            echo "$fallback"
+            ;;
+        "Introducir"*)
+            local fallback
+            fallback="$(input_custom_servers "$use_tls")"
+            if [[ -z "$fallback" ]]; then
+                gum style --foreground 212 "Sin servidores de respaldo: no se configura FallbackDNS."
+                echo ""
+                return 0
+            fi
+            if [[ -n "$primary_line" && "$fallback" == "$primary_line" ]]; then
+                gum style --foreground 214 "Aviso: el FallbackDNS es idéntico al DNS principal."
+            fi
+            echo "$fallback"
+            ;;
+        "Usar valores"*)
+            local fallback
+            fallback="$(build_dns_line "$DEFAULT_FALLBACK_IPS" "$DEFAULT_FALLBACK_HOSTNAME" "$use_tls")"
+            echo "$fallback"
+            ;;
+        *)
+            # Cancelado en el choose
+            echo ""
+            ;;
+    esac
+}
+
+# ---------------------------------------------------------------------------
+# Verificación y benchmark (lo que lo hace práctico)
+# ---------------------------------------------------------------------------
+
+wait_resolved_ready() {
+    local i
+    for i in $(seq 1 10); do
+        if resolvectl status &>/dev/null; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+resolvectl_query_ok() {
+    local domain="$1" secs="${2:-5}"
+    if have_cmd timeout; then
+        timeout "$secs" resolvectl query "$domain" &>/dev/null
+    else
+        resolvectl query "$domain" &>/dev/null
+    fi
+}
+
+# Mide la latencia de un servidor concreto. Imprime ms, "fail" o "nodig".
+# Nunca falla (return 0) para no romper set -e en bucles.
+dig_query_ms() {
+    local ip="$1" domain="${2:-$BENCH_DOMAIN}"
+    local out ms
+    if have_cmd dig; then
+        out="$(timeout 4 dig +time=2 +tries=1 @"$ip" "$domain" 2>&1 || true)"
+        ms="$(printf '%s\n' "$out" | sed -n 's/.*Query time: \([0-9][0-9]*\) msec.*/\1/p' | head -n1)"
+        if [[ "$ms" =~ ^[0-9]+$ ]]; then
+            echo "$ms"
+        elif printf '%s\n' "$out" | grep -q 'status: NOERROR'; then
+            echo "0"
+        else
+            echo "fail"
+        fi
+    elif have_cmd drill; then
+        out="$(timeout 4 drill @"$ip" "$domain" 2>&1 || true)"
+        ms="$(printf '%s\n' "$out" | sed -n 's/.*Query time: \([0-9][0-9]*\) msec.*/\1/p' | head -n1)"
+        if [[ "$ms" =~ ^[0-9]+$ ]]; then
+            echo "$ms"
+        else
+            echo "fail"
+        fi
+    else
+        echo "nodig"
+    fi
+    return 0
+}
+
+# Benchmark de una línea "ip[#host] ip[#host]...".
+# Imprime filas "IP|MS" y devuelve 0 aunque todo falle.
+benchmark_line() {
+    local dns_line="$1" domain="${2:-$BENCH_DOMAIN}"
+    local entry ip ms
+    for entry in $dns_line; do
+        [[ -z "$entry" ]] && continue
+        ip="$(strip_ip "$entry")"
+        ms="$(dig_query_ms "$ip" "$domain")"
+        printf '%s|%s\n' "$ip" "$ms"
+    done
+    return 0
+}
+
+# Muestra una tabla: si hay `gum table` se usa, si no printf.
+show_table() {
+    local header="$1"
+    shift
+    if gum table --help &>/dev/null; then
+        { echo "$header"; printf '%s\n' "$@"; } | gum table --print || printf '%s\n%s\n' "$header" "$@"
+    else
+        printf '%s\n' "$header" "$@"
+    fi
+}
+
+# Verificación completa: resolución global + latencia por servidor.
+# Uso: verify_and_benchmark "<dns_line>" "<fallback_line>"
+verify_and_benchmark() {
+    local dns_line="$1" fallback_line="${2:-}"
+    local domain="${3:-$BENCH_DOMAIN}"
+
+    echo
+    title "Verificación de DNS"
+
+    if ! wait_resolved_ready; then
+        err_msg "systemd-resolved no responde tras 10s."
+        return 0
+    fi
+
+    # 1) Resolución global (usa la config activa del sistema)
+    local ok_count=0 fail_count=0 d
+    local -a fail_domains=()
+    for d in "${TEST_DOMAINS[@]}"; do
+        if resolvectl_query_ok "$d"; then
+            ok_count=$((ok_count + 1))
+        else
+            fail_count=$((fail_count + 1))
+            fail_domains+=("$d")
+        fi
+    done
+
+    if [[ "$fail_count" -eq 0 ]]; then
+        ok_msg "Resolución OK (${ok_count}/${#TEST_DOMAINS[@]} dominios: ${TEST_DOMAINS[*]})."
+    else
+        err_msg "Fallan ${fail_count}/${#TEST_DOMAINS[@]} dominios: ${fail_domains[*]}."
+        if [[ -n "$fallback_line" ]]; then
+            warn "Revisa si está tirando del FallbackDNS (${fallback_line}) en 'resolvectl status'."
+        else
+            warn "Sin FallbackDNS configurado: si el primario falla, no hay respaldo."
+        fi
+    fi
+
+    # 2) Latencia por servidor (requiere dig/drill)
+    if ! have_cmd dig && ! have_cmd drill; then
+        warn "Sin 'dig' ni 'drill': se omite el benchmark por servidor."
+        return 0
+    fi
+
+    echo
+    echo "Midiendo latencia contra ${domain} (timeout 2s por servidor)..."
+    local -a rows_primary=()
+    local -a rows_fallback=()
+    local line entry_row
+    while IFS= read -r entry_row; do
+        [[ -n "$entry_row" ]] && rows_primary+=("$entry_row")
+    done < <(benchmark_line "$dns_line" "$domain")
+    if [[ -n "$fallback_line" ]]; then
+        while IFS= read -r entry_row; do
+            [[ -n "$entry_row" ]] && rows_fallback+=("$entry_row")
+        done < <(benchmark_line "$fallback_line" "$domain")
+    fi
+
+    echo
+    echo "-- Primarios --"
+    if [[ "${#rows_primary[@]}" -gt 0 ]]; then
+        show_table "Servidor,Latencia(ms)" "${rows_primary[@]/|/,}"
+    else
+        echo "(sin servidores primarios)"
+    fi
+    if [[ -n "$fallback_line" ]]; then
+        echo "-- Respaldo (FallbackDNS) --"
+        show_table "Servidor,Latencia(ms)" "${rows_fallback[@]/|/,}"
+    fi
+
+    # 3) Aviso si el primario falla pero el fallback responde
+    local primary_ok=false fallback_ok=false r ms
+    for r in "${rows_primary[@]}"; do
+        ms="${r#*|}"; [[ "$ms" != "fail" && "$ms" != "nodig" ]] && primary_ok=true
+    done
+    for r in "${rows_fallback[@]:-}"; do
+        ms="${r#*|}"; [[ "$ms" != "fail" && "$ms" != "nodig" ]] && fallback_ok=true
+    done
+    if [[ "$primary_ok" == false && "$fallback_ok" == true ]]; then
+        warn "El primario no responde pero el FallbackDNS sí: estás navegando gracias al respaldo."
+    elif [[ "$primary_ok" == false && -n "$dns_line" ]]; then
+        err_msg "Ningún primario responde. Cambia de preset o revisa la red/TLS."
+    fi
+    return 0
+}
+
+# Lee el drop-in actual en variables CURRENT_*. Vacío si no existe.
+parse_dropin() {
+    CURRENT_DNS=""
+    CURRENT_FALLBACK=""
+    CURRENT_TLS="no"
+    CURRENT_MODE="no"
+    CURRENT_DOMAINS="~."
+    [[ -f "$DROPIN_FILE" ]] || return 0
+    local line key val
+    while IFS= read -r line; do
+        # Omite comentarios de línea completa. OJO: no cortar por '#' a secas
+        # porque 'IP#hostname' (DoT) lo usa (ej: 1.1.1.1#cloudflare-dns.com).
+        # Solo se trata como comentario si va al inicio o tras un espacio.
+        [[ "$line" =~ ^[[:space:]]*[#\;] ]] && continue
+        line="${line%%[[:space:]]#*}"
+        line="${line%%[[:space:]];*}"
+        [[ "$line" != *"="* ]] && continue
+        key="${line%%=*}"; val="${line#*=}"
+        key="${key//[[:space:]]/}"
+        val="$(printf '%s' "$val" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+        case "$key" in
+            DNS) CURRENT_DNS="$val" ;;
+            FallbackDNS) CURRENT_FALLBACK="$val" ;;
+            DNSOverTLS) CURRENT_TLS="$val"; CURRENT_MODE="$val" ;;
+            Domains) CURRENT_DOMAINS="$val" ;;
+        esac
+    done < "$DROPIN_FILE"
+    return 0
+}
+
+# ---------------------------------------------------------------------------
+# Flujo: preset
+# ---------------------------------------------------------------------------
+
+flow_preset() {
+    title "Configurar DNS mediante preset"
+
+    local choice data name rest ips hostname
+    choice="$(pick_preset || true)"
+    if [[ -z "$choice" ]]; then
+        gum style --foreground 212 "Cancelado."
+        return 0
+    fi
+    data="$(preset_data "$choice" || true)"
+    if [[ -z "$data" ]]; then
+        gum style --foreground 196 "Preset no reconocido. Cancelado."
+        return 0
+    fi
+    name="${data%%|*}"
+    rest="${data#*|}"
+    ips="${rest%%|*}"
+    hostname="${rest#*|}"
+
+    local use_tls="no"
+    if gum confirm "¿Activar DNS over TLS para $name?"; then
+        use_tls="yes"
+    fi
+
+    local tls_mode="no"
+    if [[ "$use_tls" == "yes" ]]; then
+        tls_mode="$(ask_tls_mode)"
+        if [[ -z "$tls_mode" ]]; then
+            gum style --foreground 212 "Cancelado."
+            return 0
+        fi
+    fi
+
+    local dns_line
+    dns_line="$(build_dns_line "$ips" "$hostname" "$use_tls")"
+    if [[ -z "$dns_line" ]]; then
+        gum style --foreground 196 "No se pudo construir la lista de DNS. Cancelado."
+        return 0
+    fi
+
+    local fallback_line
+    fallback_line="$(ask_fallback_dns "$use_tls" "$dns_line")"
+
+    local domains="~."
+    if gum confirm "¿Personalizar Domains? (actual: ~. = todo por estos DNS)"; then
+        domains="$(ask_domains "~.")"
+    fi
+
+    write_config "$dns_line" "$use_tls" "$tls_mode" "$fallback_line" "$domains"
+}
+
+# ---------------------------------------------------------------------------
+# Flujo: DNS personalizado
+# ---------------------------------------------------------------------------
+
+flow_custom() {
+    title "Configurar DNS personalizado"
+
+    local use_tls="no"
+    if gum confirm "¿Activar DNS over TLS?"; then
+        use_tls="yes"
+    fi
+
+    local tls_mode="no"
+    if [[ "$use_tls" == "yes" ]]; then
+        tls_mode="$(ask_tls_mode)"
+        if [[ -z "$tls_mode" ]]; then
+            gum style --foreground 212 "Cancelado."
+            return 0
+        fi
+    fi
+
+    local dns_line
+    dns_line="$(input_custom_servers "$use_tls")"
+
+    if [[ -z "$dns_line" ]]; then
+        gum style --foreground 196 "No se ha indicado ningún servidor DNS. Cancelado."
+        return 0
+    fi
+
+    local fallback_line
+    fallback_line="$(ask_fallback_dns "$use_tls" "$dns_line")"
+
+    local domains="~."
+    if gum confirm "¿Personalizar Domains? (actual: ~. = todo por estos DNS)"; then
+        domains="$(ask_domains "~.")"
+    fi
+
+    write_config "$dns_line" "$use_tls" "$tls_mode" "$fallback_line" "$domains"
+}
+
+# ---------------------------------------------------------------------------
+# Escritura de configuración
+# ---------------------------------------------------------------------------
+
+write_config() {
+    local dns_line="$1" use_tls="$2" tls_mode="$3" fallback_line="${4:-}" domains="${5-~.}"
+
+    local content
+    content="[Resolve]
+DNS=${dns_line}
+"
+    if [[ -n "$fallback_line" ]]; then
+        content+="FallbackDNS=${fallback_line}
+"
+    fi
+    if [[ "$use_tls" == "yes" ]]; then
+        content+="DNSOverTLS=${tls_mode}
+"
+    else
+        content+="DNSOverTLS=no
+"
+    fi
+    if [[ -n "$domains" ]]; then
+        content+="Domains=${domains}
+"
+    fi
+
+    echo
+    title "Vista previa de ${DROPIN_FILE}"
+    gum style --border normal --padding "1 2" "$content"
+    echo
+
+    if ! gum confirm "¿Aplicar esta configuración?"; then
+        gum style --foreground 212 "Cancelado, no se ha escrito nada."
+        return 0
+    fi
+
+    sudo mkdir -p "$DROPIN_DIR"
+    printf '%s' "$content" | sudo tee "$DROPIN_FILE" >/dev/null
+    sudo systemctl restart systemd-resolved
+
+    ok_msg "Configuración aplicada correctamente."
+
+    # Verificación práctica inmediata (resolución + latencia)
+    verify_and_benchmark "$dns_line" "$fallback_line"
+
+    # Ofrecer guardar como perfil reutilizable
+    echo
+    if gum confirm "¿Guardar esta configuración como perfil para reutilizarla?"; then
+        local pname
+        pname="$(gum input --placeholder "ej: casa-cloudflare" --header "Nombre del perfil" || true)"
+        if [[ -n "$pname" ]]; then
+            local use_tls_flag="$use_tls" mode="$tls_mode"
+            [[ "$use_tls" != "yes" ]] && mode="no"
+            if save_profile "$pname" "$dns_line" "$fallback_line" "$use_tls_flag" "$mode" "$domains"; then
+                ok_msg "Perfil '$pname' guardado."
+            fi
+        fi
+    fi
+
+    echo
+    if gum confirm "¿Ver 'resolvectl status' completo?"; then
+        resolvectl status | gum pager || true
+    fi
+}
+
+# Escribe el drop-in sin interacción (para perfiles/dispatcher).
+# Uso: write_dropin_only "<dns>" "<tls:yes|no>" "<mode>" "<fallback>" "<domains>"
+write_dropin_only() {
+    local dns_line="$1" use_tls="$2" tls_mode="$3" fallback_line="${4:-}" domains="${5-~.}"
+    local content="[Resolve]
+DNS=${dns_line}
+"
+    [[ -n "$fallback_line" ]] && content+="FallbackDNS=${fallback_line}
+"
+    if [[ "$use_tls" == "yes" ]]; then
+        content+="DNSOverTLS=${tls_mode}
+"
+    else
+        content+="DNSOverTLS=no
+"
+    fi
+    [[ -n "$domains" ]] && content+="Domains=${domains}
+"
+    sudo mkdir -p "$DROPIN_DIR"
+    printf '%s' "$content" | sudo tee "$DROPIN_FILE" >/dev/null
+    sudo systemctl restart systemd-resolved
+}
+
+# ---------------------------------------------------------------------------
+# Probar / benchmark
+# ---------------------------------------------------------------------------
+
+flow_test_current() {
+    title "Probar DNS actual"
+    parse_dropin
+    if [[ -z "$CURRENT_DNS" ]]; then
+        warn "Sin drop-in personalizado. Se prueba la resolución del sistema tal cual."
+        echo
+        resolvectl status | gum pager || true
+        echo
+    else
+        echo "DNS: ${CURRENT_DNS}"
+        echo "FallbackDNS: ${CURRENT_FALLBACK:-(ninguno)}"
+        echo "DNSOverTLS: ${CURRENT_TLS}"
+        echo "Domains: ${CURRENT_DOMAINS:-(vacío)}"
+    fi
+    verify_and_benchmark "$CURRENT_DNS" "$CURRENT_FALLBACK"
+}
+
+flow_benchmark_presets() {
+    title "Comparar presets (latencia)"
+    if ! have_cmd dig && ! have_cmd drill; then
+        err_msg "Instala 'dig' (bind) o 'drill' para el benchmark: sudo pacman -S bind drill"
+        return 0
+    fi
+    local -a rows=()
+    local p name rest ips hostname first_ip ms
+    echo "Midiendo primer servidor de cada preset contra ${BENCH_DOMAIN}..."
+    for p in "${PRESETS[@]}"; do
+        name="${p%%|*}"
+        rest="${p#*|}"
+        ips="${rest%%|*}"
+        first_ip="${ips%%,*}"
+        first_ip="${first_ip//[[:space:]]/}"
+        ms="$(dig_query_ms "$first_ip" "$BENCH_DOMAIN")"
+        rows+=("${name}|${first_ip}|${ms}")
+    done
+    # Ordena: números primero ascendente, fail/nodig al final
+    local sorted
+    sorted="$(printf '%s\n' "${rows[@]}" | awk -F'|' '{ms=$3; ord=(ms~/^[0-9]+$/)?0:1; printf "%d|%s|%s|%s\n", ord, (ms~/^[0-9]+$/ ? sprintf("%010d",$3) : "9999999999"), $0}' | sort -t'|' -k1,1n -k2,2 | cut -d'|' -f3-)"
+    echo
+    show_table "Preset,IP,Ms" $sorted
+    echo
+    warn "Nota: la latencia varía con la red. Repite el test si dudas."
+}
+
+# ---------------------------------------------------------------------------
+# Perfiles (~/.config/dns-manager/profiles) y auto por SSID
+# ---------------------------------------------------------------------------
+
+sanitize_profile_name() {
+    local n="$1"
+    if [[ "$n" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        echo "$n"
+        return 0
+    fi
+    return 1
+}
+
+profile_path() {
+    echo "${PROFILE_DIR}/$1.conf"
+}
+
+list_profiles() {
+    [[ -d "$PROFILE_DIR" ]] || return 0
+    local f base
+    for f in "$PROFILE_DIR"/*.conf; do
+        [[ -e "$f" ]] || continue
+        base="$(basename "$f" .conf)"
+        [[ "$base" == "ssid" ]] && continue
+        echo "$base"
+    done
+    return 0
+}
+
+save_profile() {
+    local name="$1" dns="$2" fallback="$3" use_tls="$4" mode="$5" domains="$6"
+    local clean
+    clean="$(sanitize_profile_name "$name" || true)"
+    if [[ -z "$clean" ]]; then
+        err_msg "Nombre de perfil no válido (usa letras, números, . _ -)."
+        return 1
+    fi
+    mkdir -p "$PROFILE_DIR"
+    {
+        printf 'DNS="%s"\n' "$dns"
+        printf 'FALLBACK="%s"\n' "$fallback"
+        printf 'USE_TLS="%s"\n' "$use_tls"
+        printf 'MODE="%s"\n' "$mode"
+        printf 'DOMAINS="%s"\n' "$domains"
+    } > "$(profile_path "$clean")"
+    return 0
+}
+
+# Carga un perfil en PROFILE_DNS/PROFILE_FALLBACK/PROFILE_USE_TLS/PROFILE_MODE/PROFILE_DOMAINS
+load_profile_vars() {
+    local name="$1"
+    local clean f
+    clean="$(sanitize_profile_name "$name" || true)"
+    [[ -n "$clean" ]] || return 1
+    f="$(profile_path "$clean")"
+    [[ -f "$f" ]] || return 1
+    PROFILE_DNS=""; PROFILE_FALLBACK=""; PROFILE_USE_TLS="no"; PROFILE_MODE="no"; PROFILE_DOMAINS="~."
+    # Parseo sin source (evita ejecutar contenido arbitrario)
+    local line key val
+    while IFS= read -r line; do
+        [[ "$line" != *"="* ]] && continue
+        key="${line%%=*}"; val="${line#*=}"
+        val="${val%\"}"; val="${val#\"}"
+        case "$key" in
+            DNS) PROFILE_DNS="$val" ;;
+            FALLBACK) PROFILE_FALLBACK="$val" ;;
+            USE_TLS) PROFILE_USE_TLS="$val" ;;
+            MODE) PROFILE_MODE="$val" ;;
+            DOMAINS) PROFILE_DOMAINS="$val" ;;
+        esac
+    done < "$f"
+    [[ -n "$PROFILE_DNS" ]] || return 1
+    return 0
+}
+
+apply_profile_file() {
+    local name="$1"
+    if ! load_profile_vars "$name"; then
+        err_msg "Perfil '$name' no encontrado o inválido."
+        return 1
+    fi
+    write_dropin_only "$PROFILE_DNS" "$PROFILE_USE_TLS" "$PROFILE_MODE" "$PROFILE_FALLBACK" "$PROFILE_DOMAINS"
+    ok_msg "Perfil '$name' aplicado: DNS=${PROFILE_DNS} Fallback=${PROFILE_FALLBACK:-(ninguno)}"
+    verify_and_benchmark "$PROFILE_DNS" "$PROFILE_FALLBACK"
+}
+
+delete_profile() {
+    local name="$1"
+    local clean f
+    clean="$(sanitize_profile_name "$name" || true)"
+    [[ -n "$clean" ]] || return 1
+    f="$(profile_path "$clean")"
+    [[ -f "$f" ]] || return 1
+    rm -f "$f"
+    # Limpia referencias en ssid.map (formato ssid<TAB>perfil)
+    if [[ -f "$SSID_MAP_FILE" ]]; then
+        awk -F'\t' -v p="$clean" '$2 != p' "$SSID_MAP_FILE" > "${SSID_MAP_FILE}.tmp" || true
+        mv "${SSID_MAP_FILE}.tmp" "$SSID_MAP_FILE"
+    fi
+}
+
+current_ssid() {
+    local ssid=""
+    if have_cmd nmcli; then
+        ssid="$(nmcli -t -f ACTIVE,SSID dev wifi 2>/dev/null | grep '^yes:' | cut -d: -f2- | head -n1 || true)"
+    elif have_cmd iwgetid; then
+        ssid="$(iwgetid -r 2>/dev/null || true)"
+    fi
+    printf '%s' "$ssid"
+    return 0
+}
+
+ssid_profile_for() {
+    local ssid="$1" result
+    [[ -f "$SSID_MAP_FILE" && -n "$ssid" ]] || return 1
+    result="$(awk -F'\t' -v s="$ssid" '$1 == s {print $2; exit}' "$SSID_MAP_FILE")"
+    [[ -n "$result" ]] || return 1
+    printf '%s' "$result"
+}
+
+link_ssid_profile() {
+    local ssid="${1:-}" profile="${2:-}"
+    if [[ -z "$ssid" ]]; then
+        ssid="$(current_ssid)"
+        if [[ -z "$ssid" ]]; then
+            ssid="$(gum input --placeholder "ej: CasaFibra" --header "SSID de la red WiFi" || true)"
+        else
+            ssid="$(gum input --header "SSID de la red WiFi" --value "$ssid" || true)"
+        fi
+    fi
+    [[ -n "$ssid" ]] || { err_msg "Sin SSID, cancelado."; return 1; }
+    if [[ -z "$profile" ]]; then
+        local profiles
+        profiles="$(list_profiles)"
+        if [[ -z "$profiles" ]]; then
+            err_msg "No hay perfiles guardados. Guarda uno primero."
+            return 1
+        fi
+        # shellcheck disable=SC2086
+        profile="$(printf '%s\n' $profiles | gum choose --header "Perfil para '$ssid'" || true)"
+    fi
+    [[ -n "$profile" ]] || { warn "Cancelado."; return 1; }
+    load_profile_vars "$profile" || { err_msg "Perfil inválido."; return 1; }
+    mkdir -p "$PROFILE_DIR"
+    touch "$SSID_MAP_FILE"
+    # Reemplaza entrada existente para ese SSID
+    awk -F'\t' -v s="$ssid" '$1 != s' "$SSID_MAP_FILE" > "${SSID_MAP_FILE}.tmp" || true
+    printf '%s\t%s\n' "$ssid" "$profile" >> "${SSID_MAP_FILE}.tmp"
+    mv "${SSID_MAP_FILE}.tmp" "$SSID_MAP_FILE"
+    ok_msg "Red '$ssid' → perfil '$profile'."
+}
+
+# Modo no interactivo para dispatcher: aplica el perfil del SSID actual.
+auto_apply() {
+    local ssid profile
+    ssid="$(current_ssid)"
+    if [[ -z "$ssid" ]]; then
+        echo "dns-manager --auto: sin SSID detectable, no se aplica nada." >&2
+        return 0
+    fi
+    profile="$(ssid_profile_for "$ssid" || true)"
+    if [[ -z "$profile" ]]; then
+        echo "dns-manager --auto: sin perfil para SSID '$ssid'." >&2
+        return 0
+    fi
+    if ! load_profile_vars "$profile"; then
+        echo "dns-manager --auto: perfil '$profile' inválido." >&2
+        return 1
+    fi
+    write_dropin_only "$PROFILE_DNS" "$PROFILE_USE_TLS" "$PROFILE_MODE" "$PROFILE_FALLBACK" "$PROFILE_DOMAINS"
+    echo "dns-manager --auto: SSID '$ssid' → perfil '$profile' aplicado."
+    verify_and_benchmark "$PROFILE_DNS" "$PROFILE_FALLBACK" >/dev/null 2>&1 || true
+    return 0
+}
+
+install_dispatcher() {
+    if ! have_cmd nmcli; then
+        err_msg "NetworkManager/nmcli no detectado. El dispatcher no tiene sentido aquí."
+        return 1
+    fi
+    local self
+    self="$(readlink -f "${BASH_SOURCE[0]}")"
+    local body
+    body="#!/usr/bin/env bash
+# Generado por dns-manager: aplica perfil DNS según SSID al conectarse.
+# Fichero: ${DISPATCHER_FILE}
+if [[ \"\$2\" == \"up\" ]]; then
+    sudo -u \"\${SUDO_USER:-\$(id -un 1000 2>/dev/null || echo root)}\" \"${self}\" --auto >>/var/log/dns-manager-dispatcher.log 2>&1 || true
+fi
+"
+    printf '%s' "$body" | sudo tee "$DISPATCHER_FILE" >/dev/null
+    sudo chmod +x "$DISPATCHER_FILE"
+    ok_msg "Dispatcher instalado en ${DISPATCHER_FILE}."
+    warn "Usa 'dns-manager → Perfiles → Vincular SSID' para asignar perfiles."
+}
+
+flow_profiles_menu() {
+    while true; do
+        local option
+        option="$(gum choose --header "Perfiles de DNS (${PROFILE_DIR})" \
+            "Aplicar perfil" \
+            "Guardar configuración actual como perfil" \
+            "Vincular SSID WiFi → perfil" \
+            "Aplicar perfil según WiFi actual" \
+            "Borrar perfil" \
+            "Instalar auto-cambio por WiFi (dispatcher)" \
+            "Volver" || true)"
+        case "$option" in
+            "Aplicar perfil"*)
+                local profiles sel
+                profiles="$(list_profiles)"
+                if [[ -z "$profiles" ]]; then
+                    warn "No hay perfiles. Guarda la configuración actual primero."
+                else
+                    # shellcheck disable=SC2086
+                    sel="$(printf '%s\n' $profiles | gum choose --header "Elige perfil" || true)"
+                    if [[ -n "$sel" ]]; then
+                        echo
+                        title "Vista previa del perfil '$sel'"
+                        load_profile_vars "$sel" && printf 'DNS=%s\nFallbackDNS=%s\nDNSOverTLS=%s\nDomains=%s\n' \
+                            "$PROFILE_DNS" "${PROFILE_FALLBACK:-(ninguno)}" \
+                            "$([ "$PROFILE_USE_TLS" == yes ] && echo "$PROFILE_MODE" || echo no)" \
+                            "${PROFILE_DOMAINS:-(vacío)}"
+                        echo
+                        if gum confirm "¿Aplicar perfil '$sel'?"; then
+                            apply_profile_file "$sel"
+                        fi
+                    fi
+                fi
+                ;;
+            "Guardar configuración actual"*)
+                parse_dropin
+                if [[ -z "$CURRENT_DNS" ]]; then
+                    err_msg "No hay configuración personalizada que guardar."
+                else
+                    local pname
+                    pname="$(gum input --placeholder "ej: casa-cloudflare" --header "Nombre del perfil" || true)"
+                    if [[ -n "$pname" ]]; then
+                        if save_profile "$pname" "$CURRENT_DNS" "$CURRENT_FALLBACK" \
+                            "$([ "$CURRENT_TLS" != "no" ] && echo yes || echo no)" \
+                            "$CURRENT_MODE" "$CURRENT_DOMAINS"; then
+                            ok_msg "Perfil '$pname' guardado."
+                        fi
+                    fi
+                fi
+                ;;
+            "Vincular SSID"*)
+                link_ssid_profile || true
+                ;;
+            "Aplicar perfil según WiFi actual"*)
+                local ssid prof
+                ssid="$(current_ssid)"
+                if [[ -z "$ssid" ]]; then
+                    err_msg "No se detecta SSID (¿sin WiFi o sin nmcli?)."
+                else
+                    prof="$(ssid_profile_for "$ssid" || true)"
+                    if [[ -z "$prof" ]]; then
+                        warn "SSID actual '$ssid' sin perfil vinculado."
+                    else
+                        if gum confirm "SSID '$ssid' → perfil '$prof'. ¿Aplicar?"; then
+                            apply_profile_file "$prof"
+                        fi
+                    fi
+                fi
+                ;;
+            "Borrar perfil"*)
+                local profiles sel
+                profiles="$(list_profiles)"
+                if [[ -z "$profiles" ]]; then
+                    warn "No hay perfiles."
+                else
+                    # shellcheck disable=SC2086
+                    sel="$(printf '%s\n' $profiles | gum choose --header "Borrar perfil" || true)"
+                    if [[ -n "$sel" ]] && gum confirm "¿Borrar perfil '$sel'?"; then
+                        delete_profile "$sel" && ok_msg "Perfil '$sel' borrado."
+                    fi
+                fi
+                ;;
+            "Instalar auto-cambio"*)
+                install_dispatcher || true
+                ;;
+            "Volver"|"") return 0 ;;
+        esac
+        echo
+        if ! gum confirm "¿Seguir en perfiles?"; then
+            return 0
+        fi
+    done
+}
+
+# ---------------------------------------------------------------------------
+# Ver estado actual
+# ---------------------------------------------------------------------------
+
+flow_status() {
+    title "Estado actual de resolución DNS"
+    parse_dropin
+    if [[ -n "$CURRENT_DNS" ]]; then
+        echo "--- ${DROPIN_FILE} ---"
+        cat "$DROPIN_FILE"
+        echo "----------------------"
+        echo
+    else
+        echo "(Sin drop-in personalizado; se usa la configuración del sistema/DHCP.)"
+        echo
+    fi
+    resolvectl status | gum pager || true
+}
+
+# ---------------------------------------------------------------------------
+# Restaurar valores por defecto
+# ---------------------------------------------------------------------------
+
+flow_reset() {
+    title "Restaurar configuración por defecto"
+    if [[ ! -f "$DROPIN_FILE" ]]; then
+        gum style --foreground 212 "No hay ninguna configuración personalizada activa."
+        return 0
+    fi
+    if gum confirm "Esto eliminará ${DROPIN_FILE} (incluye DNS y FallbackDNS) y volverá a la configuración del sistema. ¿Continuar?"; then
+        sudo rm -f "$DROPIN_FILE"
+        sudo systemctl restart systemd-resolved
+        gum style --foreground 82 "Configuración restaurada. DNS controlado de nuevo por systemd-resolved.conf / DHCP."
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Menú principal
+# ---------------------------------------------------------------------------
+
+print_help() {
+    cat <<EOF
+dns-manager.sh — Gestor de DNS con systemd-resolved
+
+Uso interactivo:
+  dns-manager.sh
+
+No interactivo:
+  dns-manager.sh --help              Muestra esta ayuda
+  dns-manager.sh --test              Verifica la configuración actual
+  dns-manager.sh --benchmark        Compara latencia de los presets
+  dns-manager.sh --apply <perfil>    Aplica un perfil guardado
+  dns-manager.sh --auto              Aplica el perfil del SSID actual (dispatcher)
+
+Perfiles en: ${PROFILE_DIR}/
+Mapa SSID en: ${SSID_MAP_FILE}
+EOF
+}
+
+main_menu() {
+    while true; do
+        clear
+        gum style --border double --border-foreground 99 --padding "1 4" --bold \
+            "Gestor de DNS — systemd-resolved"
+
+        local option
+        option="$(gum choose \
+            "Aplicar preset de DNS" \
+            "DNS personalizado" \
+            "Probar DNS actual (verificación + latencia)" \
+            "Comparar presets (benchmark)" \
+            "Perfiles de DNS" \
+            "Ver estado actual" \
+            "Restaurar configuración por defecto" \
+            "Salir" || true)"
+
+        case "$option" in
+            "Aplicar preset de DNS") flow_preset ;;
+            "DNS personalizado") flow_custom ;;
+            "Probar DNS actual"*) flow_test_current ;;
+            "Comparar presets"*) flow_benchmark_presets ;;
+            "Perfiles de DNS") flow_profiles_menu ;;
+            "Ver estado actual") flow_status ;;
+            "Restaurar configuración por defecto") flow_reset ;;
+            "Salir"|"") echo "Hasta luego."; exit 0 ;;
+        esac
+
+        echo
+        if ! gum confirm "¿Volver al menú principal?"; then
+            exit 0
+        fi
+    done
+}
+
+# --- Entrada: flags no interactivos o menú ---
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    print_help
+    exit 0
+elif [[ "${1:-}" == "--test" ]]; then
+    check_deps
+    flow_test_current
+    exit 0
+elif [[ "${1:-}" == "--benchmark" ]]; then
+    check_deps
+    flow_benchmark_presets
+    exit 0
+elif [[ "${1:-}" == "--apply" ]]; then
+    check_deps
+    if [[ -z "${2:-}" ]]; then
+        echo "Error: falta el nombre del perfil. Uso: dns-manager.sh --apply <perfil>" >&2
+        exit 1
+    fi
+    apply_profile_file "$2"
+    exit $?
+elif [[ "${1:-}" == "--auto" ]]; then
+    # Sin gum: pensado para dispatcher
+    if ! command -v resolvectl &>/dev/null; then
+        echo "Error: resolvectl no encontrado." >&2
+        exit 1
+    fi
+    auto_apply
+    exit $?
+fi
+
+check_deps
+main_menu

@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-systemctl is-active --user waybar &>/dev/null
-
-if [ $? -eq 0 ]; then
-   systemctl reload --user waybar
+if systemctl --user is-active --quiet waybar.service; then
+    systemctl --user reload waybar.service || systemctl --user restart waybar.service
 else
-   systemctl start --user waybar
+    systemctl --user start waybar.service
 fi

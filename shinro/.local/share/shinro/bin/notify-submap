@@ -1,46 +1,71 @@
 #!/usr/bin/env bash
+set -uo pipefail
 
 # Script para monitorear cambios de submap en Hyprland y enviar notificaciones
 
-# Directorio del socket de Hyprland
-HYPRLAND_INSTANCE_SIGNATURE="${HYPRLAND_INSTANCE_SIGNATURE:=$(echo $DISPLAY | grep -o ':[0-9]*' | cut -c2-)}"
-SOCKET_DIR="/run/user/$(id -u)/hypr"
+for cmd in hyprctl socat; do
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Error: '$cmd' no está instalado." >&2
+        exit 1
+    fi
+done
 
-if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    echo "Error: No se pudo detectar HYPRLAND_INSTANCE_SIGNATURE"
-    exit 1
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+SOCKET_DIR="$RUNTIME_DIR/hypr"
+
+# HYPRLAND_INSTANCE_SIGNATURE es un hash largo, no se puede derivar de $DISPLAY.
+# Si no está exportada, se intenta descubrir el socket existente.
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    shopt -s nullglob
+    candidates=("$SOCKET_DIR"/*/.socket2.sock)
+    shopt -u nullglob
+    if [[ ${#candidates[@]} -eq 0 ]]; then
+        echo "Error: No se pudo detectar HYPRLAND_INSTANCE_SIGNATURE ni ningún socket en $SOCKET_DIR" >&2
+        exit 1
+    fi
+    # candidates[0] = .../hypr/<SIG>/.socket2.sock
+    HYPRLAND_INSTANCE_SIGNATURE="$(basename "$(dirname "${candidates[0]}")")"
 fi
 
-# Obtener el submap actual
-get_current_submap() {
-    hyprctl getkeyboardlayout | grep -oP 'keymap: \K[^ ]+'
-}
+SOCKET_PATH="$SOCKET_DIR/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+if [[ ! -S "$SOCKET_PATH" ]]; then
+    echo "Error: socket no encontrado en $SOCKET_PATH" >&2
+    exit 1
+fi
 
 # Enviar notificación
 notify() {
     local submap=$1
-    if command -v notify-send &> /dev/null; then
-        if [ -z "$submap" ] || [ "$submap" = "null" ]; then
+    if command -v notify-send &>/dev/null; then
+        if [[ -z "$submap" ]]; then
             notify-send "Submap cambiado" "Submap: ninguno (normal)" -u low
         else
             notify-send "Submap cambiado" "Submap: $submap" -u low
         fi
     else
-        echo "Submap cambiado: $submap"
+        echo "Submap cambiado: ${submap:-ninguno (normal)}"
     fi
 }
 
 echo "Iniciando monitoreo de cambios de submap en Hyprland..."
 echo "Presiona Ctrl+C para detener"
 
+last_submap="__init__"
+
 # Monitorear eventos del socket
-socat - UNIX-CONNECT:"$SOCKET_DIR/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while IFS= read -r event; do
-    if [[ "$event" == *"submap"* ]]; then
-        # Extraer el nombre del submap
-        submap=$(echo "$event" | grep -oP 'submap>>\K[^,]*' || echo "")
-        
-        # Evitar notificaciones duplicadas
-        if [ -n "$submap" ]; then
+socat - UNIX-CONNECT:"$SOCKET_PATH" | while IFS= read -r event; do
+    if [[ "$event" == *"submap>>"* ]]; then
+        # Formato del evento: "submap>>NOMBRE" (vacío = volver al default).
+        # Extracción en bash puro, sin depender de grep -P.
+        submap="${event##*submap>>}"
+        # Corta en la primera coma/espacio por si el protocolo añade campos.
+        submap="${submap%%,*}"
+        submap="${submap%%[[:space:]]*}"
+
+        # Evitar notificaciones duplicadas (incluye el retorno a default "")
+        if [[ "$submap" != "$last_submap" ]]; then
+            last_submap="$submap"
             notify "$submap"
         fi
     fi

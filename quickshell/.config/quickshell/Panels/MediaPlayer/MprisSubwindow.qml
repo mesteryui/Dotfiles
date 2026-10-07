@@ -5,6 +5,7 @@ import qs.Core.Services
 import qs.Shared.Background
 import qs.Primitives
 import QtQuick
+import Quickshell.Io
 
 BarPopupWindow {
     id: root
@@ -25,7 +26,45 @@ BarPopupWindow {
         return u.startsWith("data:") ? "" : u;
     }
 
-    readonly property string finalArt: artURL.length > 0 ? Qt.resolvedUrl(artURL) : ""
+    // Las carátulas file:// de navegadores (p. ej. Zen/Firefox
+    // ~/.config/zen/firefox-mpris/<pid>_<n>.png) son racy: MPRIS anuncia
+    // la URL antes de que el archivo exista (o con el PID de una sesión
+    // anterior ya borrada) y QQuickImage spamea
+    // "Cannot open: file:///...png". Se valida con FileView silencioso
+    // (printErrors:false): sin archivo no se publica URL y el Image ni
+    // lo intenta (enseña placeholder). watchChanges cubre el caso en que
+    // el archivo aparece justo después del anuncio MPRIS.
+    // file:///home/x → /home/x (slice(7) quita "file://").
+    // Se decodifica %XX (espacios, etc.) y se tolera file://localhost/….
+    readonly property string artLocalPath: {
+        if (!root.artURL.startsWith("file://"))
+            return "";
+        let p = root.artURL.slice(7);
+        if (p.startsWith("localhost"))
+            p = p.slice(9);
+        try {
+            return decodeURIComponent(p);
+        } catch (e) {
+            return p;
+        }
+    }
+
+    FileView {
+        id: artProbe
+        path: root.artLocalPath
+        blockLoading: root.artLocalPath === ""
+        printErrors: false
+        watchChanges: true
+    }
+
+    readonly property string finalArt: {
+        if (root.artURL.length === 0)
+            return "";
+        // Local: solo si el fichero existe (evita el WARN de QQuickImage).
+        if (root.artLocalPath !== "")
+            return artProbe.loaded ? Qt.resolvedUrl(root.artURL) : "";
+        return Qt.resolvedUrl(root.artURL);
+    }
 
     property real currentPosition: 0
 

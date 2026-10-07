@@ -8,17 +8,21 @@
         },
         "monospace": "JetBrains Mono NerdFont",
         "reading": "Google Sans Flex",
-        "reduceMotion": false
+        "reduceMotion": false,
+        "shadows": true
     },
     "bar": {
-        "barType": "partial_hug",
+        "barType": "full_hug",
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"
     },
+    "brightness": {
+        "syncAll": false
+    },
     "language": "es_ES",
     "lockscreen": {
-        "blurLevel": 1.32,
+        "blurLevel": 1.51,
         "useWallpaper": true
     },
     "nightLight": {
