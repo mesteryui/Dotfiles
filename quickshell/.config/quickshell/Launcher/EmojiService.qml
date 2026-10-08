@@ -38,6 +38,20 @@ Singleton {
     property int revision: 0
     property bool ready: false
 
+    // Watchdog del generador (ver refreshFromLib): el dump tarda segundos;
+    // si python se cuelga no debe wedgar el modo emoji (se quedaría en
+    // "pending" eterno). Se mata y el onExited cae al camino de error ya
+    // existente (custom + símbolos).
+    property Timer libWatchdog: Timer {
+        interval: 60000
+        onTriggered: {
+            if (libProc.running) {
+                console.warn("EmojiService: timeout generando catálogo, mato python");
+                libProc.running = false;
+            }
+        }
+    }
+
     // Base cruda fusionada: [{ ch, name, kw, group, src }]
     // src: 0 = custom (tu config), 1 = runtime (programa/librería).
     property var base: []
@@ -361,6 +375,7 @@ Singleton {
         if (libProc.running)
             return false;
         libProc.running = true;
+        root.libWatchdog.restart();
         return true;
     }
 
@@ -380,6 +395,7 @@ Singleton {
         }
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            root.libWatchdog.stop();
             if (code !== 0) {
                 root.libStatus = "error";
                 return;

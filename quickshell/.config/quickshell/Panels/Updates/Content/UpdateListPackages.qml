@@ -35,7 +35,7 @@ Item {
         visible: Services.UpdatesTracking.updateCount === 0
             && !Services.UpdatesTracking.checking
         text: Services.I18nService.getTranslation("updates.list_empty")
-        font.pixelSize: 13
+        font.pixelSize: Appearance.typeScale.bodySmall
         color: Appearance.md3.on_surface_variant
     }
 
@@ -43,8 +43,8 @@ Item {
         id: packageList
         anchors {
             fill: parent
-            topMargin: 8
-            bottomMargin: 8
+            topMargin: Appearance.spacing.s
+            bottomMargin: Appearance.spacing.s
         }
 
         clip: true

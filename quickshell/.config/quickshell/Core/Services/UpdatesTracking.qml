@@ -21,6 +21,19 @@ Singleton {
 
     property ListModel packagesToUpdate: ListModel {}
 
+    // Watchdog: checkupdates es rápido; si se cuelga no debe wedgar el
+    // ciclo (checking eterno, icono girando). Se mata y se marca failed
+    // como cualquier otro fallo.
+    property Timer countWatchdog: Timer {
+        interval: 120000
+        onTriggered: {
+            if (countUpdates.running) {
+                console.warn("[Updates] timeout chequeando, mato checkupdates");
+                countUpdates.running = false;
+            }
+        }
+    }
+
     function tryStartupCheck() {
         if (root.startupCheckDone || root.checkerMissing)
             return;
@@ -117,8 +130,10 @@ Singleton {
                 root.checking = true;
                 root.failed = false;
                 root.packagesToUpdate.clear();
+                root.countWatchdog.restart();
             } else {
                 root.checking = false;
+                root.countWatchdog.stop();
             }
         }
 

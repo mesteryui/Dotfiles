@@ -17,6 +17,7 @@ singleton KeyboardThings 1.0 KeyboardThings.qml
 singleton LockState 1.0 LockState.qml
 singleton MprisService 1.0 MprisService.qml
 singleton NetworkService 1.0 NetworkService.qml
+singleton NotificationData 1.0 NotificationData.qml
 singleton NotificationService 1.0 NotificationService.qml
 singleton PolkitService 1.0 PolkitService.qml
 singleton RandomPhraseses 1.0 RandomPhraseses.qml

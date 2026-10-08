@@ -60,8 +60,8 @@ Scope {
             readonly property int cardSpacing: 8
             // Ancho de cada botón + spacing.
             readonly property int itemWidth: cardWidth + cardSpacing
-            readonly property int listMargins: 12
-            readonly property int edgeMargin: 16
+            readonly property int listMargins: Appearance.spacing.m
+            readonly property int edgeMargin: Appearance.spacing.l
             readonly property int footerSideMargin: 18
             readonly property int fadeWidth: 56
             readonly property int chevronSize: 28
@@ -318,7 +318,7 @@ Scope {
                                 MaterialShape {
                                     anchors.fill: parent
                                     shape: parent.isCurrent ? MaterialShape.Cookie9Sided : MaterialShape.Circle
-                                    animationDuration: 300
+                                    animationDuration: Appearance.motion.medium2
                                     color: parent.isCurrent ? Appearance.md3.primary_container : Appearance.md3.surface_container_highest
                                 }
 
@@ -336,8 +336,12 @@ Scope {
                                     }
 
                                     Behavior on implicitSize {
-                                        NumberAnimation {
-                                            duration: Appearance.motion.short3
+                                        enabled: !Appearance.motion.reduced
+                                        SpringAnimation {
+                                            spring: Appearance.motion.springSnappy.spring
+                                            damping: Appearance.motion.springSnappy.damping
+                                            mass: Appearance.motion.springSnappy.mass
+                                            epsilon: 0.25
                                         }
                                     }
                                 }

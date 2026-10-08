@@ -34,7 +34,7 @@ BaseOSD {
             MaterialShape {
                 anchors.fill: parent
                 shape: root.playing ? MaterialShape.Puffy : MaterialShape.Circle
-                animationDuration: 300
+                animationDuration: Appearance.motion.medium2
                 color: Appearance.md3.primary_container
 
                 MaterialIcon {

@@ -284,7 +284,7 @@ Item {
 
                         StyledText {
                             text: root.player?.identity ?? root.player?.dbusName ?? "Media"
-                            font.pixelSize: 10
+                            font.pixelSize: Appearance.typeScale.labelSmall
                             font.weight: Font.Medium
                             font.family: Appearance.font.sans
                             color: Appearance.md3.on_surface_variant
@@ -417,7 +417,7 @@ Item {
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
                     color: heroMouse.enabled ? Appearance.md3.primary : Appearance.md3.surface_container_highest
-                    animationDuration: 450
+                    animationDuration: Appearance.motion.long1
                 }
 
                 // Sombra: source declarativo (ver artShadow arriba).
@@ -441,7 +441,7 @@ Item {
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
                     color: Appearance.md3.on_primary
-                    animationDuration: 450
+                    animationDuration: Appearance.motion.long1
                     opacity: heroMouse.pressed ? Appearance.state.pressed : (heroMouse.containsMouse ? Appearance.state.hovered : 0)
 
                     Behavior on opacity {

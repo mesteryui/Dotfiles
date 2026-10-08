@@ -42,7 +42,7 @@ Item {
                 font.weight: Font.Medium
                 font.variableAxes: Appearance.font.variableAxes.title
                 color: Appearance.md3.on_surface
-                Layout.bottomMargin: 8
+                Layout.bottomMargin: Appearance.spacing.s
                 Layout.fillWidth: true
                 elide: Text.ElideRight
             }

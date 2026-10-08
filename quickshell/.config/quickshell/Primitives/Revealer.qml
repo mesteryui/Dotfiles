@@ -1,3 +1,4 @@
+import qs.Core
 import QtQuick
 
 /**
@@ -8,7 +9,7 @@ Item {
 
     property bool reveal
     property bool vertical: false
-    property int animationDuration: 200 // Duración por defecto para la animación
+    property int animationDuration: Appearance.motion.short4 // Duración por defecto para la animación
 
     clip: true
 
@@ -17,20 +18,24 @@ Item {
     visible: reveal || (implicitWidth > 0 && !vertical) || (implicitHeight > 0 && vertical)
 
     Behavior on implicitWidth {
-        enabled: !root.vertical
+        enabled: !root.vertical && !Appearance.motion.reduced
 
-        NumberAnimation {
-            duration: root.animationDuration
-            easing.type: Easing.OutCubic
+        SpringAnimation {
+            spring: Appearance.motion.springSize.spring
+            damping: Appearance.motion.springSize.damping
+            mass: Appearance.motion.springSize.mass
+            epsilon: Appearance.motion.springSize.epsilon
         }
     }
 
     Behavior on implicitHeight {
-        enabled: root.vertical
+        enabled: root.vertical && !Appearance.motion.reduced
 
-        NumberAnimation {
-            duration: root.animationDuration
-            easing.type: Easing.OutCubic
+        SpringAnimation {
+            spring: Appearance.motion.springSize.spring
+            damping: Appearance.motion.springSize.damping
+            mass: Appearance.motion.springSize.mass
+            epsilon: Appearance.motion.springSize.epsilon
         }
     }
 }

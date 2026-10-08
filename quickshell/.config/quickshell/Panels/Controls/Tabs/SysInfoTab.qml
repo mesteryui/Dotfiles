@@ -46,11 +46,6 @@ Item {
         return Services.I18nService.getTranslation("panel.temp_normal", "Normal")
     }
 
-    function withAlpha(hex, a) {
-        const c = Qt.color(hex)
-        return Qt.rgba(c.r, c.g, c.b, a)
-    }
-
     ColumnLayout {
         id: mainColumn
         anchors {
@@ -110,7 +105,7 @@ Item {
                             implicitHeight: 20
                             radius: Appearance.shape.full
                             Layout.alignment: Qt.AlignVCenter
-                            color: root.withAlpha(Appearance.md3.surface_container_highest, 0.9)
+                            color: Qt.alpha(Appearance.md3.surface_container_highest, 0.9)
 
                             StyledText {
                                 id: coresLabel
@@ -378,7 +373,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
+                    color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
                 }
 
                 RowLayout {

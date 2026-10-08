@@ -82,7 +82,7 @@ Item {
             anchors.centerIn: parent
             visible: (itemContainer.modelData?.icon ?? "") === ""
             text: String(itemContainer.modelData?.title ?? "?").trim().charAt(0).toUpperCase() || "?"
-            font.pixelSize: 16
+            font.pixelSize: Appearance.typeScale.bodyLarge
             font.weight: Font.Bold
             color: Appearance.md3.on_surface_variant
         }
@@ -92,11 +92,14 @@ Item {
         scale: mouseManagement.pressed ? 1.25 : hoverHandler.hovered ? 1.10 : 1.0
 
         Behavior on scale {
-        NumberAnimation {
-            duration: Appearance.motion.short2
-            easing.type: Easing.OutQuad
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: 0.005
+            }
         }
-    }
 }
 
 MouseArea {

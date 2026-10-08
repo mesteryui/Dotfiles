@@ -48,8 +48,8 @@ ColumnLayout {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 12
-            anchors.rightMargin: 8
+            anchors.leftMargin: Appearance.spacing.m
+            anchors.rightMargin: Appearance.spacing.s
             spacing: Appearance.spacing.s
 
             MaterialIcon {

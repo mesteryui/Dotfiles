@@ -508,14 +508,14 @@ Item {
                     StyledText {
                         Layout.fillWidth: true
                         text: entryDelegate.dispTitle
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.typeScale.bodyMedium
                         color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
                         elide: Text.ElideRight
                     }
                     StyledText {
                         Layout.fillWidth: true
                         text: entryDelegate.dispSub
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                         visible: text.length > 0

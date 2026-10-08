@@ -107,12 +107,14 @@ Scope {
                     duration: root.animDuration
                     easing.type: Easing.OutCubic
                 }
-                ScaleAnimator {
+                SpringAnimation {
                     target: animatedContainer
+                    property: "scale"
                     to: 1.0
-                    duration: root.animDuration
-                    easing.type: Easing.OutBack
-                    easing.overshoot: 0.8
+                    spring: Appearance.motion.springBouncy.spring
+                    damping: Appearance.motion.springBouncy.damping
+                    mass: Appearance.motion.springBouncy.mass
+                    epsilon: Appearance.motion.springBouncy.epsilon
                 }
             }
 
@@ -139,11 +141,20 @@ Scope {
                 }
             }
 
-            Component.onCompleted: {
-                if (root.showing) {
-                    closeAnim.stop();
+            function playOpen() {
+                closeAnim.stop();
+                if (Appearance.motion.reduced) {
+                    openAnim.stop();
+                    animatedContainer.opacity = 1.0;
+                    animatedContainer.scale = 1.0;
+                } else {
                     openAnim.start();
                 }
+            }
+
+            Component.onCompleted: {
+                if (root.showing)
+                    animatedContainer.playOpen();
             }
 
             Connections {
@@ -151,8 +162,7 @@ Scope {
 
                 function onShowingChanged() {
                     if (root.showing) {
-                        closeAnim.stop();
-                        openAnim.start();
+                        animatedContainer.playOpen();
                     } else {
                         openAnim.stop();
                         closeAnim.start();

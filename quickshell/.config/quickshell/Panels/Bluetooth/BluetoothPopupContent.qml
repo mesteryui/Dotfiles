@@ -144,8 +144,8 @@ Item {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
+                    anchors.leftMargin: Appearance.spacing.m
+                    anchors.rightMargin: Appearance.spacing.m
                     spacing: 10
 
                     MaterialIcon {
@@ -261,8 +261,8 @@ Item {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
+                            anchors.leftMargin: Appearance.spacing.m
+                            anchors.rightMargin: Appearance.spacing.m
                             spacing: 10
 
                             MaterialIcon {

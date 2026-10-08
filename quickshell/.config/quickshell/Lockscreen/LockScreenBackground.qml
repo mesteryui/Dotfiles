@@ -22,11 +22,6 @@ Item {
     // por defecto). Con 0 se apaga la capa offscreen completa.
     readonly property real blurAmount: Math.min(1, Math.max(0, ConfigService.configs.lockscreen.blurLevel))
 
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
     Item {
         id: background
 

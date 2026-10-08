@@ -103,9 +103,9 @@ ColumnLayout {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 12
-            spacing: 12
+            anchors.leftMargin: Appearance.spacing.l
+            anchors.rightMargin: Appearance.spacing.m
+            spacing: Appearance.spacing.m
 
             MaterialIcon {
                 visible: dropRow.iconName !== ""
@@ -173,8 +173,8 @@ ColumnLayout {
             id: menuFlick
 
             anchors.fill: parent
-            anchors.topMargin: 4
-            anchors.bottomMargin: 4
+            anchors.topMargin: Appearance.spacing.xs
+            anchors.bottomMargin: Appearance.spacing.xs
             contentWidth: width
             contentHeight: menuCol.implicitHeight
             clip: true
@@ -235,9 +235,9 @@ ColumnLayout {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
+                            anchors.leftMargin: Appearance.spacing.m
+                            anchors.rightMargin: Appearance.spacing.m
+                            spacing: Appearance.spacing.m
 
                             MaterialIcon {
                                 Layout.alignment: Qt.AlignVCenter

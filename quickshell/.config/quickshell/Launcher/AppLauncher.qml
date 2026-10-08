@@ -998,42 +998,25 @@ Scope {
                                 }
                             }
 
-                            // Estado vacío / cargando
-                            ColumnLayout {
+                            // Estado vacío / cargando (primitivo unificado).
+                            EmptyState {
                                 anchors.centerIn: parent
-                                spacing: Appearance.spacing.m
                                 visible: resultList.count === 0 && launcher.showEmpty
-
-                                IconImage {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    implicitWidth: 48
-                                    implicitHeight: 48
-                                    source: Quickshell.iconPath("search-none-symbolic", true)
-                                            || Quickshell.iconPath("edit-find-symbolic", true)
+                                iconSource: Quickshell.iconPath("search-none-symbolic", true) || Quickshell.iconPath("edit-find-symbolic", true)
+                                iconSize: 48
+                                title: {
+                                    if (launcher.activeMode === "clip")
+                                        return Services.ClipboardService.error !== "" ? Services.ClipboardService.error : launcher.tr("launcher.clipboard_empty", "Portapapeles vacío");
+                                    if (launcher.activeMode === "files" && fileSearch.failed)
+                                        return launcher.tr("launcher.files_fd_missing", "Búsqueda no disponible (¿fd instalado?)");
+                                    if (launcher.activeMode === "todo" && launcher.query === "" && launcher.appCount === 0)
+                                        return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
+                                    return launcher.tr("launcher.empty_no_results", "Sin resultados");
                                 }
-                                StyledText {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: {
-                                        if (launcher.activeMode === "clip")
-                                            return Services.ClipboardService.error !== "" ? Services.ClipboardService.error : launcher.tr("launcher.clipboard_empty", "Portapapeles vacío");
-                                        if (launcher.activeMode === "files" && fileSearch.failed)
-                                            return launcher.tr("launcher.files_fd_missing", "Búsqueda no disponible (¿fd instalado?)");
-                                        if (launcher.activeMode === "todo" && launcher.query === "" && launcher.appCount === 0)
-                                            return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
-                                        return launcher.tr("launcher.empty_no_results", "Sin resultados");
-                                    }
-                                    font.pixelSize: Appearance.typeScale.titleSmall
-                                    color: Appearance.md3.on_surface_variant
-                                }
-
                                 // Acción M3 (spec empty-states): reintentar fd.
-                                AnimatedTextButton {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    visible: launcher.activeMode === "files" && fileSearch.failed
-                                    text: launcher.tr("launcher.files_retry", "Reintentar")
-                                    isFilled: true
-                                    onClicked: fileSearch.refresh()
-                                }
+                                actionVisible: launcher.activeMode === "files" && fileSearch.failed
+                                actionText: launcher.tr("launcher.files_retry", "Reintentar")
+                                onActionClicked: fileSearch.refresh()
                             }
                         }
 
@@ -1059,7 +1042,7 @@ Scope {
                         text: tr("launcher.footer_hint", "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
                         font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
-                        opacity: 0.8
+                        opacity: Appearance.opacity.hintStrong
                     }
                 }
             }

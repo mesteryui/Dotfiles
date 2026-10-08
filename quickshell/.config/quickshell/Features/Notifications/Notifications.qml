@@ -19,7 +19,7 @@ Scope {
 
         NotificationCenter {
             visible: NotificationService.centerOpen
-            historyModel: NotificationService.history
+            historyModel: NotificationData.history
         }
     }
     Variants {

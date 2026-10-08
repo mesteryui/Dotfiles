@@ -13,7 +13,7 @@ Item {
             left: parent.left
             bottom: parent.bottom
             margins: Appearance.spacing.l
-            bottomMargin: 12
+            bottomMargin: Appearance.spacing.m
         }
         spacing: 10
 
@@ -42,7 +42,7 @@ Item {
                 return Services.UpdatesTracking.updateCount + " "
                      + Services.I18nService.getTranslation(key);
             }
-            font.pixelSize: 15
+            font.pixelSize: Appearance.typeScale.bodyMedium
             font.variableAxes: Appearance.font.variableAxes.title
             color: Services.UpdatesTracking.failed ? Appearance.md3.error
                                                    : Appearance.md3.on_surface

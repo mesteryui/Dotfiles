@@ -95,7 +95,7 @@ ColumnLayout {
                             MaterialShape {
                                 anchors.fill: parent
                                 shape: controller.modeShape(modelData.modeId)
-                                animationDuration: 300
+                                animationDuration: Appearance.motion.medium2
                                 color: chipRect.isActive ? Appearance.md3.primary : Appearance.md3.surface_container_highest
 
                                 MaterialIcon {
@@ -116,7 +116,7 @@ ColumnLayout {
                             elide: Text.ElideRight
                             // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
                             text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " : "") + controller.modeLabel(modelData.modeId)
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.typeScale.labelMedium
                             color: chipRect.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                         }
                     }
@@ -220,7 +220,7 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         // Sin conteo: chips compactos de una fila.
                         text: modelData.label
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                     }
                 }
@@ -260,7 +260,7 @@ ColumnLayout {
 
                     anchors.centerIn: parent
                     text: (index > 0 ? "› " : "") + modelData.title
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     color: parent.isLast ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                 }
 

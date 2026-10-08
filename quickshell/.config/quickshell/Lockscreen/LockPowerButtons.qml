@@ -12,14 +12,6 @@ Item {
 
     anchors.fill: parent
 
-    // Copia local a propósito (ver FileMenu.js): los .js no ven Qt y
-    // los componentes no comparten ámbito; misma semántica en todos.
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
-
     Column {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -38,9 +30,9 @@ Item {
                 implicitWidth: 44
                 implicitHeight: 44
                 radius: Appearance.shape.full
-                color: powerMouse.containsMouse ? withAlpha(Appearance.md3.error_container, 0.5) : withAlpha(Appearance.md3.surface_container_high, 0.72)
+                color: powerMouse.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.5) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
                 border.width: 1
-                border.color: withAlpha(Appearance.md3.outline_variant, 0.5)
+                border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.name

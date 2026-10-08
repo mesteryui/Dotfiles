@@ -51,7 +51,7 @@ Item {
 
                     anchors.centerIn: parent
                     text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / " + wallpaperList.count
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.primary
                 }
@@ -66,11 +66,11 @@ Item {
                 spacing: 6
 
                 Rectangle {
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Qt.alpha(Appearance.md3.on_surface, 0.06)
                     radius: Appearance.shape.unsharpenmore
                     implicitWidth: hint1.implicitWidth + 12
                     implicitHeight: 22
-                    border.color: Qt.rgba(1, 1, 1, 0.1)
+                    border.color: Qt.alpha(Appearance.md3.on_surface, 0.1)
                     border.width: 1
 
                     StyledText {
@@ -78,17 +78,17 @@ Item {
 
                         anchors.centerIn: parent
                         text: "← → Navegar"
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                     }
                 }
 
                 Rectangle {
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Qt.alpha(Appearance.md3.on_surface, 0.06)
                     radius: Appearance.shape.unsharpenmore
                     implicitWidth: hint2.implicitWidth + 12
                     implicitHeight: 22
-                    border.color: Qt.rgba(1, 1, 1, 0.1)
+                    border.color: Qt.alpha(Appearance.md3.on_surface, 0.1)
                     border.width: 1
 
                     StyledText {
@@ -96,7 +96,7 @@ Item {
 
                         anchors.centerIn: parent
                         text: "↵ Aplicar"
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                     }
                 }

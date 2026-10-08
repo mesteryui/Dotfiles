@@ -1,6 +1,7 @@
 # Primitives
 
-M3 building blocks. Import with `import qs.Primitives`.
+M3 building blocks. Import with `import qs.Primitives`. 24
+components + `effects/` (currently empty, reserved).
 
 Selection (single source of truth):
 
@@ -29,6 +30,15 @@ everywhere):
   `PageTab`; toggle rows → `RadioButton` + `checked`; buttons → `Button`;
 - search fields → `Accessible.name: placeholderText`.
 
-Other: `M3Card`, `AnimatedIconButton/TextButton`, `ButtonIcon`,
-`ControlSlider/Toggle/Switch`, `MaterialIcon`, `StyledText(/Area)`,
-`StyledScrollBar/ProgressBar`, `AppIcon`, `BarPopupWindow`, `Revealer`.
+Other:
+
+- Cards/layout: `M3Card`, `Revealer`, `StyledClippingRectangle`,
+  `EmptyState`.
+- Buttons: `AnimatedIconButton`, `AnimatedTextButton`, `ButtonIcon`.
+- Controls: `ControlSlider`, `ControlSwitch`, `ControlToggle`.
+- Text: `StyledText`, `StyledTextArea`, `MaterialTextField`.
+- Bars: `M3ProgressBar`, `StyledProgressBar`, `StyledScrollBar`,
+  `MprisSeekBar`.
+- Icons/media: `MaterialIcon`, `FluentIcon`, `AppIcon`.
+- Windows: `BarPopupWindow` (popup anchored to the bar; follows
+  `ConfigService.configs.bar.position` via `barAtBottom`).

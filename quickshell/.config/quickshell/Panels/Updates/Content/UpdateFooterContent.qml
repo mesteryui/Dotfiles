@@ -71,7 +71,7 @@ Item {
 
             Text {
                 text: Services.UpdatesTracking.updating ? Services.I18nService.getTranslation("updates.updating") : Services.UpdatesTracking.checking ? Services.I18nService.getTranslation("updates.checking") : Services.I18nService.getTranslation("updates.update_all")
-                font.pixelSize: 13
+                font.pixelSize: Appearance.typeScale.bodySmall
                 font.weight: Font.Medium
                 font.family: Services.ConfigService.configs.appearance.fontSans
                 color: root.btnEnabled ? Appearance.md3.on_primary : Qt.alpha(Appearance.md3.on_surface, 0.38)

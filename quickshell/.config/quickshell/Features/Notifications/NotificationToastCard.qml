@@ -29,7 +29,7 @@ Item {
 
     readonly property bool hasInlineReply: root.notification.hasInlineReply ?? false
 
-    visible: !Services.NotificationService.dnd || isCritical
+    visible: !Services.NotificationData.dnd || isCritical
 
     // ── Temporizador de Expiración (se pausa al hacer hover) ──
     Timer {
@@ -108,7 +108,7 @@ Item {
 
                         anchors.fill: parent
                         shape: root.isCritical ? MaterialShape.Boom : (root.notification.urgency === NotificationUrgency.Low ? MaterialShape.Circle : MaterialShape.Cookie4Sided)
-                        animationDuration: 300
+                        animationDuration: Appearance.motion.medium2
                         color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
 
                         // Respiración en críticas: el ojo va a lo urgente.
@@ -181,7 +181,7 @@ Item {
 
                                 anchors.centerIn: parent
                                 text: "Urgente"
-                                font.pixelSize: 9
+                                font.pixelSize: Appearance.typeScale.labelXSmall
                                 font.weight: Font.Bold
                                 font.family: Appearance.font.sans
                                 color: Appearance.md3.on_error
@@ -214,7 +214,7 @@ Item {
                         visible: text !== ""
                         color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface
                         font.family: Appearance.font.sans
-                        font.pixelSize: 13
+                        font.pixelSize: Appearance.typeScale.bodySmall
                         font.weight: Font.DemiBold
                         elide: Text.ElideRight
                         maximumLineCount: 1
@@ -227,7 +227,7 @@ Item {
                         visible: text !== ""
                         color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.90) : Appearance.md3.on_surface_variant
                         font.family: Appearance.font.sans
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         wrapMode: Text.WordWrap
                         maximumLineCount: 3
                         elide: Text.ElideRight
@@ -317,19 +317,23 @@ Item {
                         id: replyInput
 
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
+                        anchors.leftMargin: Appearance.spacing.m
+                        anchors.rightMargin: Appearance.spacing.m
                         verticalAlignment: TextInput.AlignVCenter
                         clip: true
                         color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface
                         font.family: Appearance.font.sans
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
 
                         function submit() {
                             if (text.trim() === "")
                                 return;
                             root.notification.sendInlineReply(text);
                             text = "";
+                            // Suelta el foco tras responder: si el toast
+                            // expira/destruye con el foco puesto, Qt intenta
+                            // disableSurface en una surface ya sin foco.
+                            replyInput.focus = false;
                         }
                         onAccepted: submit()
 
@@ -339,7 +343,7 @@ Item {
                             text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : Services.I18nService.getTranslation("notifications.reply", "Responder…")
                             color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.6) : Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.typeScale.labelMedium
                         }
                     }
                 }

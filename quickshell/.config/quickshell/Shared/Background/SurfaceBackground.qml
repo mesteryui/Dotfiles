@@ -29,7 +29,7 @@ Rectangle {
     property color baseColor: Appearance.md3.surface_container_high
 
     /// Radio de esquinas
-    property real surfaceRadius: 20
+    property real surfaceRadius: Appearance.shape.card
 
     // ── Computed ─────────────────────────────────────────────────────────────
     radius: surfaceRadius

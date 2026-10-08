@@ -46,7 +46,7 @@ Rectangle {
         StyledText {
             text: tabBtn.iconName
             font.family: "Material Symbols Rounded"
-            font.pixelSize: 22
+            font.pixelSize: Appearance.typeScale.headlineSmall
             color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
         }
 

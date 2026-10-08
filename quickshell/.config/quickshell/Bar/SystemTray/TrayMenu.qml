@@ -98,8 +98,8 @@ PopupWindow {
                         RowLayout {
                             anchors {
                                 fill: parent
-                                leftMargin: 12
-                                rightMargin: 12
+                                leftMargin: Appearance.spacing.m
+                                rightMargin: Appearance.spacing.m
                             }
                             spacing: Appearance.spacing.s
 
@@ -121,7 +121,7 @@ PopupWindow {
                                 Layout.fillWidth: true
                                 text: itemDelegate.modelData?.text ?? ""
                                 color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
-                                font.pixelSize: 13
+                                font.pixelSize: Appearance.typeScale.bodySmall
                                 elide: Text.ElideRight
 
                                 Behavior on color {

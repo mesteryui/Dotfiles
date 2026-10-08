@@ -12,7 +12,7 @@ BarItem {
     LazyLoader {
         id: loader
 
-        loading: root.area.hoveredChanged
+        loading: root.hoveredChanged
         component: BatteryPopupWindow {
             id: popupWindow
         }

@@ -20,7 +20,10 @@ Scope {
             // Full-screen overlay, above everything, grabs keyboard while active.
             // Exclusive a propósito: es un diálogo de autenticación y ningún
             // otro overlay debe poder robarle el foco y suplantarlo.
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+            // Gatillado a active: con Exclusive incondicional la ventana
+            // cacheada oculta competía por el foco Wayland y disparaba
+            // spam enable/disableSurface de text-input.
+            WlrLayershell.keyboardFocus: PolkitService.active ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             WlrLayershell.layer: WlrLayer.Overlay
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:polkitDialog"

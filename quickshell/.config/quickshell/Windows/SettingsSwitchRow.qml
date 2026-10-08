@@ -47,8 +47,8 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 4
-        anchors.rightMargin: 4
+        anchors.leftMargin: Appearance.spacing.xs
+        anchors.rightMargin: Appearance.spacing.xs
         spacing: Appearance.spacing.l
 
         MaterialIcon {

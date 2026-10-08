@@ -22,14 +22,14 @@ BarItem {
         id: tooltip
 
         text: (NetworkService.currentNetwork && NetworkService.currentNetwork.name) ? NetworkService.currentNetwork.name : "No Network"
-        visible: root.area.containsMouse
+        visible: root.hovered
         delay: 500      // ms antes de mostrarse
         timeout: 5000   // ms antes de ocultarse solo
 
         contentItem: StyledText {
             text: tooltip.text
             color: Appearance.md3.inverse_on_surface
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             wrapMode: Text.NoWrap
         }
 

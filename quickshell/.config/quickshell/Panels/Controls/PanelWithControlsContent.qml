@@ -80,11 +80,6 @@ Item {
     }
 
     // ── Helper ─────────────────────────────────────────────────────
-    function withAlpha(hex, a) {
-        const c = Qt.color(hex);
-        return Qt.rgba(c.r, c.g, c.b, a);
-    }
-
     // ── Scroll por teclado ─────────────────────────────────────────
     // El foco mueve el scroll de la pestaña activa (ensureVisible) y
     // RePág/AvPág/Inicio/Fin desplazan su contenido. Los sliders consumen
@@ -133,10 +128,10 @@ Item {
         id: mainColumn
         anchors {
             fill: parent
-            topMargin: 16
+            topMargin: Appearance.spacing.l
             leftMargin: Appearance.spacing.l
             rightMargin: Appearance.spacing.l
-            bottomMargin: 16
+            bottomMargin: Appearance.spacing.l
         }
 
         spacing: Appearance.spacing.m
@@ -180,7 +175,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
+                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
             }
 
             ControlsTogglesGrid {
@@ -193,7 +188,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
+                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
             }
 
             ControlsTabBar {

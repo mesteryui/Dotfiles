@@ -14,7 +14,7 @@ Item {
 
     signal clicked
 
-    property int surfaceRadius: 18
+    property int surfaceRadius: Appearance.shape.windowRounding
 
     readonly property bool isSelected: ListView.isCurrentItem
 
@@ -27,9 +27,12 @@ Item {
     z: isSelected ? 10 : (100 - Math.abs(ListView.view.currentIndex - index))
 
     Behavior on scale {
-        NumberAnimation {
-            duration: Appearance.motion.medium1
-            easing.type: Easing.OutCubic
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSoft.spring
+            damping: Appearance.motion.springSoft.damping
+            mass: Appearance.motion.springSoft.mass
+            epsilon: Appearance.motion.springSoft.epsilon
         }
     }
     Behavior on opacity {

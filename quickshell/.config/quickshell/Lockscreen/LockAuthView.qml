@@ -36,13 +36,6 @@ Item {
         passwordInput.triggerShake();
     }
 
-    // Copia local a propósito (ver FileMenu.js): los .js no ven Qt y
-    // los componentes no comparten ámbito; misma semántica en todos.
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
 // Saludo según la hora (lee del reloj único TimeService).
 
     anchors.fill: parent
@@ -72,19 +65,19 @@ Item {
         // Barra superior M3: volver a dormir (GNOME) + chip batería
         RowLayout {
             Layout.fillWidth: true
-            Layout.topMargin: 12
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
+            Layout.topMargin: Appearance.spacing.m
+            Layout.leftMargin: Appearance.spacing.l
+            Layout.rightMargin: Appearance.spacing.l
             spacing: Appearance.spacing.s
 
             MaterialShape {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 shape: MaterialShape.Circle
-                color: downMouse.containsMouse ? withAlpha(Appearance.md3.on_surface, 0.10) : withAlpha(Appearance.md3.surface_container_high, 0.72)
+                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
                 strokeWidth: 1
-                strokeColor: withAlpha(Appearance.md3.outline_variant, 0.5)
-                animationDuration: 150
+                strokeColor: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+                animationDuration: Appearance.motion.short3
 
                 MaterialIcon {
                     anchors.centerIn: parent
@@ -110,9 +103,9 @@ Item {
                 Layout.preferredHeight: 36
                 Layout.preferredWidth: authBatteryRow.implicitWidth + 28
                 radius: Appearance.shape.full
-                color: withAlpha(Appearance.md3.surface_container_high, 0.72)
+                color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
                 border.width: 1
-                border.color: withAlpha(Appearance.md3.outline_variant, 0.5)
+                border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
                 RowLayout {
                     id: authBatteryRow
@@ -160,7 +153,7 @@ Item {
                 height: 110
                 shape: isAwake ? MaterialShape.Cookie9Sided : MaterialShape.Circle
                 animationDuration: 600
-                color: withAlpha(Appearance.md3.primary, isAwake ? 0.35 : 0.18)
+                color: Qt.alpha(Appearance.md3.primary, isAwake ? 0.35 : 0.18)
             }
 
             MaterialShape {
@@ -168,10 +161,10 @@ Item {
 
                 anchors.fill: parent
                 shape: MaterialShape.Circle
-                color: withAlpha(Appearance.md3.primary_container, 0.92)
+                color: Qt.alpha(Appearance.md3.primary_container, 0.92)
                 strokeColor: Appearance.md3.primary
                 strokeWidth: 2
-                animationDuration: 150
+                animationDuration: Appearance.motion.short3
 
                 MaterialIcon {
                     anchors.centerIn: parent
@@ -220,7 +213,7 @@ Item {
         // Nombre de usuario (M3 titleLarge)
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 4
+            Layout.topMargin: Appearance.spacing.xs
             text: Quickshell.env("USER")
             font.pixelSize: Appearance.font.pixelSize.larger
             font.weight: Font.DemiBold
@@ -251,9 +244,9 @@ Item {
             implicitWidth: fpRow.implicitWidth + 28
             implicitHeight: 32
             radius: Appearance.shape.full
-            color: withAlpha(Appearance.md3.primary, 0.16)
+            color: Qt.alpha(Appearance.md3.primary, 0.16)
             border.width: 1
-            border.color: withAlpha(Appearance.md3.primary, 0.35)
+            border.color: Qt.alpha(Appearance.md3.primary, 0.35)
 
             RowLayout {
                 id: fpRow
@@ -288,6 +281,7 @@ Item {
             // Solo la primaria anima la respiración (ver PasswordInput):
             // en multi-monitor ahorra N-1 timers + morphs concurrentes.
             isPrimary: isPrimary
+            isAwake: root.isAwake
 
             onAccepted: password => validatePassword(password)
             onTogglePasswordVisibility: togglePasswordVisibility()
@@ -302,9 +296,9 @@ Item {
             implicitHeight: statusText.implicitHeight + 12
             radius: Appearance.shape.full
             visible: authFailed || KeyboardThings.capsLockOn
-            color: authFailed ? withAlpha(Appearance.md3.error_container, 0.72) : withAlpha(Appearance.md3.tertiary_container, 0.55)
+            color: authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container, 0.55)
             border.width: 1
-            border.color: authFailed ? Appearance.md3.error : withAlpha(Appearance.md3.tertiary, 0.5)
+            border.color: authFailed ? Appearance.md3.error : Qt.alpha(Appearance.md3.tertiary, 0.5)
 
             StyledText {
                 id: statusText
@@ -345,7 +339,7 @@ Item {
                 MaterialShape {
                     anchors.fill: parent
                     shape: MaterialShape.Bun
-                    color: withAlpha(Appearance.md3.primary_container, 0.72)
+                    color: Qt.alpha(Appearance.md3.primary_container, 0.72)
 
                     MaterialIcon {
                         anchors.centerIn: parent

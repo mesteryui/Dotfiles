@@ -44,14 +44,17 @@ Todo vive en:
 │   ├── MenuModes.js         # qué menús existen y con qué letra se activan
 │   ├── ItemKinds.js         # predicados sobre items (clip/imagen/texto…)
 │   ├── LauncherApps.js      # orden y dedup de .desktop
+│   ├── CalcCache.js         # stale-while-revalidate del modo calc (.pragma library)
 │   └── ShellUtils.js        # shellEscape/fileUrl (única implementación)
 ├── Modes/                   # un modo = su lógica (qalc, fd…)
-│   ├── LauncherCalc.qml     # calculadora vía qalc
-│   ├── LauncherFileSearch.qml # búsqueda con fd + snapshot
-│   └── FileMenu.js          # mapeo/orden del modo archivos
+│   ├── LauncherCalc.qml     # calculadora vía qalc (debounce 250 ms, watchdog 5 s)
+│   ├── LauncherFileSearch.qml # búsqueda con fd (debounce 250 ms, watchdog 15 s) + snapshot
+│   └── FileMenu.js          # mapeo/orden del modo archivos + fdCommand
 ├── UI/                      # componentes visuales reutilizables
-│   ├── ResultList.qml       # lista + navegación + flash de borde
-│   └── PreviewPanel.qml     # panel lateral de preview
+│   ├── LauncherSearchBar.qml # campo buscador + atajos (expone `field`)
+│   ├── LauncherModeBar.qml  # chips de modo + grupos emoji + breadcrumb
+│   ├── ResultList.qml       # lista/grid + navegación + flash de borde
+│   └── PreviewPanel.qml     # panel lateral de preview (solo pinta)
 ├── scripts/emoji-dump.py    # programa: genera el catálogo en runtime
 │                            # (librería `emoji` + stdlib `unicodedata`)
 ├── MenuProviders/           # SISTEMA ÚNICO (todo aquí dentro)
@@ -122,7 +125,7 @@ Funciones que expone:
 
 ---
 
-## 3. `AppLauncher.qml` — la ventana, el cerebro y la lista (~1285 líneas)
+## 3. `AppLauncher.qml` — la ventana, el cerebro y la lista (~1050 líneas)
 
 Es el archivo grande. Hazlo en capas:
 
@@ -188,8 +191,8 @@ property var results: {
 }
 ```
 
-* `todoResults`: todas las apps si `q==""`, si no filtro difuso por nombre/comentario/id.
-* `systemResults`: si `q==""` → `sectionItems(menuSection)` (navegación por secciones estilo Omarchy, con botón "Atrás"). Si hay query → búsqueda global en `systemPool()` (todo el sistema aplanado).
+* `todoResults`: todas las apps si `q==""`, si no filtro difuso por nombre/comentario/id. La lista filtra sobre `debouncedQuery` (90 ms; el modo es inmediato, solo la lista espera) y sobre `sortedBase`: snapshots planos (`LauncherApps.snapshotEntry`, nunca QObjects vivos — un rescan de `.desktop` los destruye y leerlos sería SIGSEGV); ejecutar resuelve el entry vivo por id (`liveEntryFor`).
+* `systemResults`: si `q==""` → `sectionItems(menuSection)` (navegación por secciones estilo Omarchy, con botón "Atrás"; envuelve a `SystemMenuRegistry.sectionResultItems`). Si hay query → búsqueda global en `systemPool()` (todo el sistema aplanado; envuelve a `systemSearchPool()`).
 * `emojiResults`: delega en `EmojiService.queryItems(q)` (ver §9, sin
   tope: devuelve todos). Encima hay chips de categoría (grupos + Recientes
   + Favoritos, en Flow adaptable que salta de línea solo) que alternan el
@@ -197,15 +200,30 @@ property var results: {
   `Ctrl+Mayús+F` marca/desmarca favorito sobre la selección.
 * `clipResults`: foto (`snapshot`) del `ClipboardService`, filtro por título.
 * `fileResultsList`: convierte `fileSnapshot` (llenado por `fd`) en items con icono/media, y pone primero lo que **empieza** por lo escrito.
-* `calcResults`: solo muestra el resultado si es "fresco" (`calcForQuery===q`). Si no, "Calculando…" o "Escribe una operación".
+* `calcResults`: solo muestra el resultado si es "fresco" (`calcState.forQuery === q`, con `CalcCache` stale-while-revalidate de fondo). Si no, "Calculando…" o "Escribe una operación".
 * `webResults`: si parece URL (`isUrl`), ofrece "Abrir URL"; siempre ofrece "Buscar en DuckDuckGo".
 
 Cada item tiene forma común: `{ kind, title, sub, iconName/appIcon/ch/imagePath, cat, ...datos propios }`. Eso permite que **un solo delegate** pinte todo.
 
 ### 3.5. Archivos con `fd` y calculadora con `qalc`
 
-* Archivos: `fdCommand(home, query)` construye `["fd", "--type", "f", --exclude ..., ...]`. Sin query busca visibles con `"."` (truco: `fd` sin patrón no devuelve nada), con query busca en literal (`--fixed-strings`, `--hidden`, tope 100). Un `Timer` de 250 ms (debounce) evita lanzar `fd` a cada letra. La salida entra por streaming a `fileResults` (tope 200) y al terminar se congela en `fileSnapshot` para no romper bindings.
-* Calc: `looksLikeCalc(q)` exige dígito + caracteres plausibles. Otro debounce de 250 ms lanza `["env","LC_ALL=C","qalc","-t", expr]` (coma → punto). La salida se acumula en `calcAcc` y al salir se guarda en `calcResult`.
+* Archivos: `fdCommand(home, query)` (`Modes/FileMenu.js`) construye
+  `["fd", "--type", "f", --exclude ..., ...]` (excluye `.git/.cache/
+  node_modules/__pycache__/…`). Sin query busca visibles con `"."`
+  (truco: `fd` sin patrón no devuelve nada, tope `--max-results 200`);
+  con query busca en literal (`--hidden --fixed-strings --max-results
+  100 -- query`, el `"--"` evita flag injection). Un `Timer` de 250 ms
+  (debounce) evita lanzar `fd` a cada letra (watchdog 15 s por si se
+  cuelga). La salida entra por streaming al `buffer` (tope 200) y al
+  terminar se congela en `fileSnapshot` para no romper bindings.
+* Calc: `looksLikeCalc(q)` exige dígito + caracteres plausibles (miles
+  con coma `"1,000"` se quitan, coma decimal `"1,5"` pasa a punto).
+  Otro debounce de 250 ms lanza `["env","LC_ALL=C","qalc","-t", expr]`
+  (watchdog 5 s; caché negativa 30 s si `qalc` no existe, sin spamear
+  procesos). El estado vive en `calcState` (`forQuery/busy/result`) y
+  `CalcCache.js` hace stale-while-revalidate (muestra lo anterior
+  mientras la query pendiente desciende de ella; `.pragma library` a
+  propósito para no crear un binding loop).
 
 ### 3.6. Preview lateral (panel derecho)
 
@@ -217,18 +235,22 @@ Cada item tiene forma común: `{ kind, title, sub, iconName/appIcon/ch/imagePath
   sin preview limpia al instante (el panel no se retrasa).
 * `clip` imagen → `ClipboardService.previewImage(cid)` (ruta temporal).
 * `file` audio/video/pdf → `FilePreviewService.request(path, media)` (mata lo obsoleto).
-* `file` texto → `FilePreviewService.requestText(path)` (primeros 6000 bytes, tope 200 KB; mata lo obsoleto).
+* `file` texto → `FilePreviewService.requestText(path)` (primeros 6000 bytes, tope 204800 = `QSTEXT_TOO_BIG`; mata lo obsoleto).
 * Si ya es el mismo item, no recarga (evita parpadeo).
 
 En QML el `previewPanel.hasPreview` decide el ancho (600 vs 900) y qué mostrar: `Image` (miniatura), bloque de texto monoespaciado con scroll, o icono/emoji grande.
 
 ### 3.7. Interfaz (UI) de arriba a abajo
 
+(Vive en `UI/`: buscador en `LauncherSearchBar.qml`, chips/breadcrumb
+en `LauncherModeBar.qml`, lista en `ResultList.qml`, lateral en
+`PreviewPanel.qml`.)
+
 1. `MaterialTextField` (buscador) con `placeholder` distinto por modo + atajos: `Ctrl+J/N` abajo, `Ctrl+K/P` arriba, `↑/↓` moverse, `Tab/Shift+Tab` rotar de menú (`cycleMode`), `Backspace` en sistema vacío = subir de sección, `Supr` en clip = borrar entrada, `Enter` activar, `Esc` cerrar.
-2. Fila de chips (pestañas) con scroll horizontal: `[>] Sistema  [/] Archivos ...`. Clic = cambiar de menú.
+2. Fila de chips (pestañas) con scroll horizontal: `[>] Sistema  [/] Archivos ...`. Clic = cambiar de menú (señales `pickTodo`/`pickSystem`/`pickMode`).
 3. Breadcrumb (miga de pan) solo en `system`: `Sistema › Apariencia › Tema Fastfetch`. Clic = saltar.
-4. `ListView` de resultados (56px por fila: icono + título + `cat · sub`). Hover = selecciona. Estado vacío: "Sin resultados" / "Portapapeles vacío" / "Cargando aplicaciones…".
-5. Panel preview (si `hasPreview`).
+4. `ResultList` de resultados (56px por fila: icono + título + `cat · sub`; grid en modo emoji). Hover = selecciona. Estado vacío: "Sin resultados" / "Portapapeles vacío" / "Cargando aplicaciones…".
+5. Panel preview (si `hasPreview`: 600 px sin preview, 900 px con él).
 6. Barra de ayuda: `Enter ejecutar · Tab cambia de modo · ...`.
 
 ---
@@ -337,7 +359,8 @@ Hay **una sola forma**: providers (ver §5 para el formato de entradas).
 
 ### 6.2. El contrato: tu archivo es un `MenuDefinition`
 
-Ejecuta `MenuProviders/new-menu.sh MiMenu "Mi menú"` (o escribe el archivo a mano en `MenuProviders/` con `import qs.Launcher`):
+Ejecuta `MenuProviders/new-menu.sh MiMenu "Mi menú" [parentId] [icono]`
+(o escribe el archivo a mano en `MenuProviders/` con `import qs.Launcher`):
 
 ```qml
 import qs.Launcher
@@ -439,7 +462,7 @@ Objetivo: listar tus scripts `~/.local/bin/mis-*` como botones.
 import qs.Launcher
 import Quickshell
 import Quickshell.Io
-import "../../Base/ShellUtils.js" as ShellUtils
+import "../Base/ShellUtils.js" as ShellUtils
 MenuDefinition {
   id: root
   sectionId: "scripts"
@@ -489,7 +512,7 @@ MenuDefinition {
 
 ### 6.6. Errores típicos de principiantes
 
-1. **`sectionId` duplicado o con espacios** → usa minúsculas-guiones (`"mis-notas"`). Si choca con `main/screenshot/configure/...`, se ignora el tuyo.
+1. **`sectionId` duplicado o con espacios** → usa minúsculas-guiones (`"mis-notas"`). Reservados (se rechazan en `new-menu.sh` y los internos ganan si chocan): `main,todo,system,files,web,emoji,calc,clip,powerprofiles,fastfetch,animations`.
 2. **Icono roto (círculo vacío)** → `iconName` debe existir en Material Symbols (`folder`, `terminal`, `palette`, `menu`...). Prueba con `menu` si dudas.
 3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `MenuDefinition.qml`? Abre de nuevo el launcher (comprueba cambios en disco) o fuerza con `qs ipc call launcher reloadMenus`. Mira la consola: `MenuStore: ...` te dice qué falló.
 4. **Comillas rotas en `shellCommand`** → si tu ruta tiene `'`, escápala. Usa comillas dobles fuera y simples dentro, o la función `shEscape` del ejemplo.
@@ -522,10 +545,10 @@ a copiar: `_found/_current` + `onExited: root.entries = out`).
 
 Solo para modo `/` (archivos). Las imágenes se muestran directas, el resto pasa por aquí:
 
-* `audio` → carátula con `ffmpeg -vcodec mjpeg`.
-* `video` → fotograma con `ffmpegthumbnailer -s 512`.
-* `pdf` → primera página con `pdftoppm -png -r 100`.
-* `texto` → `requestText`: `head -c 6000`, tope 200 KB (`QSTEXT_TOO_BIG` si se pasa).
+* `audio` → carátula con `ffmpeg` (escala a 512 px, mjpeg).
+* `video` → fotograma con `ffmpegthumbnailer -s 384` (el panel muestra 340).
+* `pdf` → primera página con `pdftoppm -png -r 72 -singlefile`.
+* `texto` → `requestText`: `head -c 6000`, tope 204800 bytes (`QSTEXT_TOO_BIG` si se pasa).
 
 Caché en `/tmp/qs-filepreview/<sha16>.jpg|.png` (clave = ruta+mtime+tamaño, tope 60 ficheros, se podan los viejos). El shell imprime `QSOUT:<ruta>` y el servicio emite `ready(path,image)` / `textReady(path,text)`. Si pides otra cosa mientras trabaja, mata lo en curso y solo gana la última (nada en paralelo).
 
@@ -535,7 +558,7 @@ Caché en `/tmp/qs-filepreview/<sha16>.jpg|.png` (clave = ruta+mtime+tamaño, to
 
 El modo `.` lo sirve **`EmojiService.qml`** (Singleton en `Launcher/`).
 El catálogo NO vive en ningún `.js`: al arrancar, el servicio ejecuta UN
-solo proceso `python3 scripts/emoji-dump.py --all` (la versión de la
+solo proceso `python3 Launcher/scripts/emoji-dump.py --all` (la versión de la
 librería viene en la cabecera `#VERSION`, sin segundo proceso) y consume
 su salida TSV (`CH \t NOMBRE \t GRUPO \t KEYWORDS`) línea a línea vía
 `Process` + `SplitParser`. Fuentes del programa:
@@ -580,7 +603,7 @@ ocupa todo el ancho y cada fila ya muestra carácter + nombre + keywords.
 ## 10. Flujo completo (para fijar ideas)
 
 1. Pulsas atajo → `qs ipc call launcher openSystem` → `forcedMode="system"`, `menuSection="main"`, `launcherVisible=true`.
-2. Al abrir: `refreshAll()` (llama al `refresh()` de todos los providers; no-op en los estáticos; con guarda de 8 s si acabas de abrirlo), foco en buscador con `">"`. Entrar en una sección (`refreshSection`) es siempre fresco.
+2. Al abrir: `refreshAll()` (llama al `refresh()` de todos los providers; no-op en los estáticos; con guarda de 8 s si acabas de abrirlo; además `checkNow()` recarga providers editados en disco y `EmojiService.ensureLib()` arranca el catálogo en background), foco en buscador con `">"`. Entrar en una sección (`refreshSection`) es siempre fresco.
 3. Escribes `> ani` → `activeMode="system"`, `query="ani"` → `systemResults` filtra `systemSearchPool()` → ves "Animaciones Hyprland".
 4. `Enter` en un `isSubmenu` → `goSection("animations")` → `refreshSection` → lista dinámica + preview si hay PNG.
 5. `Enter` en hoja → `runShell(entry.shell)` → `launcherVisible=false` (p. ej. `powerprofilesctl set balanced`).
@@ -598,9 +621,10 @@ Abrir `/home` y previsualizar un PDF: modo `files`, `fd` llena `fileSnapshot`, s
 | Añadir/editar sección interna | `MenuProviders/System/*.qml` (se aplica al abrir el launcher) |
 | Añadir sección dinámica interna | `MenuProviders/System/NuevoDinamico.qml` (`MenuDefinition` + `refresh()`; copia `FastfetchMenu.qml`) |
 | **Crear MI menú (recomendado)** | **`./new-menu.sh X "Título"` o `MenuDefinition { }` a mano (se aplica al abrir)** |
-| Miniaturas audio/video/pdf/texto | `FilePreviewService.qml` |
+| Miniaturas audio/video/pdf/texto | `FilePreviewService.qml` (audio 512 px, video 384 px, pdf 72 dpi, texto 6000/204800) |
+| Stale-while-revalidate de calc | `Base/CalcCache.js` (`.pragma library`, sin estado reactivo a propósito) |
 | Más emojis / símbolos | `EmojiCustom.js` (tuyos, manda sobre lo generado) |
-| Cómo se genera el catálogo emoji | `scripts/emoji-dump.py --all` (runtime, sin .js de datos) |
+| Cómo se genera el catálogo emoji | `Launcher/scripts/emoji-dump.py --all` (runtime, sin .js de datos) |
 | Escape shell en comandos `sh -c` | `ShellUtils.shellEscape` (única implementación en Launcher) |
 | Copiar texto al portapapeles | `ClipboardService.copyText` (vía única) |
 | Traducciones | claves `titleKey/subtitleKey` + `I18nService` |

@@ -20,13 +20,6 @@ Item {
 
     signal wakeUp
 
-    // Copia local a propósito (ver FileMenu.js): los .js no ven Qt y
-    // los componentes no comparten ámbito; misma semántica en todos.
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
 // Respiración de la pastilla de despertar (Sunny↔VerySunny):
 // invita a tocarla. Solo corre dormido.
 property int wakeBreathShape: MaterialShape.Sunny
@@ -69,9 +62,9 @@ Component.onDestruction: {
             implicitWidth: batteryRow.implicitWidth + 28
             implicitHeight: 36
             radius: Appearance.shape.full
-            color: withAlpha(Appearance.md3.surface_container_high, 0.72)
+            color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
             border.width: 1
-            border.color: withAlpha(Appearance.md3.outline_variant, 0.5)
+            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
             RowLayout {
                 id: batteryRow
@@ -102,13 +95,13 @@ Component.onDestruction: {
         // en esta vista despierta vía LockDragArea).
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            visible: NotificationService.history.count > 0
+            visible: NotificationData.history.count > 0
             implicitWidth: notifRow.implicitWidth + 28
             implicitHeight: 36
             radius: Appearance.shape.full
-            color: withAlpha(Appearance.md3.surface_container_high, 0.72)
+            color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
             border.width: 1
-            border.color: withAlpha(Appearance.md3.outline_variant, 0.5)
+            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
             RowLayout {
                 id: notifRow
@@ -121,7 +114,7 @@ Component.onDestruction: {
                     color: Appearance.md3.primary
                 }
                 StyledText {
-                    text: NotificationService.history.count + " " + I18nService.getTranslation("lockscreen.notifications_unread", "sin leer")
+                    text: NotificationData.history.count + " " + I18nService.getTranslation("lockscreen.notifications_unread", "sin leer")
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.on_surface_variant
@@ -159,9 +152,9 @@ Component.onDestruction: {
         implicitWidth: wakeRow.implicitWidth + 32
         implicitHeight: 48
         radius: Appearance.shape.full
-        color: dragDy > 70 ? withAlpha(Appearance.md3.primary_container, 0.85) : withAlpha(Appearance.md3.surface_container_high, 0.72)
+        color: dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
         border.width: 1
-        border.color: dragDy > 70 ? Appearance.md3.primary : withAlpha(Appearance.md3.outline_variant, 0.5)
+        border.color: dragDy > 70 ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
         transform: Translate {
             y: -Math.min(28, dragDy * 0.22)

@@ -66,7 +66,7 @@ PanelWindow {
     Shortcut {
         sequence: "n"
         enabled: root.visible
-        onActivated: NotificationService.toggleDnd()
+        onActivated: NotificationData.toggleDnd()
     }
 
     // Borrar la notificación actualmente seleccionada con 'Delete' o 'Supr'
@@ -138,8 +138,8 @@ PanelWindow {
                     implicitHeight: 40
                     activeFocusOnTab: true
 
-                    readonly property int dndShape: NotificationService.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
-                    readonly property bool dndOn: NotificationService.dnd
+                    readonly property int dndShape: NotificationData.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+                    readonly property bool dndOn: NotificationData.dnd
 
                     Accessible.role: Accessible.Button
                     Accessible.checkable: true
@@ -147,9 +147,9 @@ PanelWindow {
                     Accessible.name: I18nService.getTranslation("notifications.dnd", "No molestar")
                     Accessible.description: dndToggle.dndOn ? I18nService.getTranslation("notifications.dnd_on", "No molestar activado") : I18nService.getTranslation("notifications.dnd_off", "No molestar desactivado")
 
-                    Keys.onReturnPressed: NotificationService.toggleDnd()
-                    Keys.onEnterPressed: NotificationService.toggleDnd()
-                    Keys.onSpacePressed: NotificationService.toggleDnd()
+                    Keys.onReturnPressed: NotificationData.toggleDnd()
+                    Keys.onEnterPressed: NotificationData.toggleDnd()
+                    Keys.onSpacePressed: NotificationData.toggleDnd()
 
                     // Halo de foco con la misma silueta expresiva, detrás del fondo
                     MaterialShape {
@@ -157,7 +157,7 @@ PanelWindow {
                         anchors.margins: -2
                         shape: dndToggle.dndShape
                         color: Appearance.md3.primary
-                        animationDuration: 300
+                        animationDuration: Appearance.motion.medium2
                         opacity: dndToggle.activeFocus ? 1 : 0
 
                         Behavior on opacity {
@@ -173,7 +173,7 @@ PanelWindow {
                         anchors.fill: parent
                         shape: dndToggle.dndShape
                         color: dndToggle.dndOn ? Appearance.md3.secondary_container : Appearance.md3.surface_container_highest
-                        animationDuration: 300
+                        animationDuration: Appearance.motion.medium2
 
                         Behavior on color {
                             ColorAnimation {
@@ -188,7 +188,7 @@ PanelWindow {
                         anchors.fill: dndContainer
                         shape: dndToggle.dndShape
                         color: dndToggle.dndOn ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
-                        animationDuration: 300
+                        animationDuration: Appearance.motion.medium2
                         opacity: dndMouse.pressed ? 0.12 : (dndMouse.containsMouse || dndToggle.activeFocus) ? 0.08 : 0
 
                         Behavior on opacity {
@@ -221,7 +221,7 @@ PanelWindow {
                         cursorShape: Qt.PointingHandCursor
                         onEntered: dndToggle.forceActiveFocus()
                         onPressed: dndToggle.forceActiveFocus()
-                        onClicked: NotificationService.toggleDnd()
+                        onClicked: NotificationData.toggleDnd()
                     }
                 }
 
@@ -337,91 +337,20 @@ PanelWindow {
             }
 
             // --- Empty state centrado, al estilo de las vistas vacías de GNOME ---
-            ColumnLayout {
+            // Primitivo unificado en modo expresivo (halo Sunny + respiración).
+            EmptyState {
                 Layout.fillWidth: true
-                Layout.topMargin: 24
-                Layout.bottomMargin: 24
+                Layout.topMargin: Appearance.spacing.xl
+                Layout.bottomMargin: Appearance.spacing.xl
                 Layout.alignment: Qt.AlignHCenter
                 visible: (root.historyModel ? root.historyModel.count : 0) === 0
-                spacing: Appearance.spacing.s
-
-                // Icono del estado vacío: MaterialShape con sombra + respiración
-                // lenta entre Sunny/VerySunny — región cuadrada (100×100), ideal
-                // para m3shapes.
-                Item {
-                    id: emptyStateIconContainer
-                    Layout.alignment: Qt.AlignHCenter
-
-                    implicitWidth: 100
-                    implicitHeight: 100
-
-                    MaterialShape {
-                        id: emptyStateShape
-
-                        anchors.fill: parent
-                        shape: MaterialShape.Sunny
-                        color: Appearance.md3.primary_container
-                        animationDuration: 1400
-                        animationEasing.type: Easing.InOutSine
-
-                        MaterialIcon {
-                            anchors.centerIn: parent
-                            text: "notifications_none"
-                            size: 32
-                            color: Appearance.md3.on_primary_container
-                        }
-                    }
-
-                    // Sombra: source se asigna en onCompleted para evitar warning
-                    // "ShaderEffect: 'source' does not have a matching property"
-                    MultiEffect {
-                        id: emptyStateShadow
-                        anchors.fill: emptyStateShape
-                        visible: Appearance.shadows
-                        shadowEnabled: Appearance.shadows
-                        shadowColor: Appearance.md3.shadow
-                        shadowOpacity: 0.15
-                        shadowBlur: 0.5
-                        shadowVerticalOffset: 2
-                        z: -1
-                        Component.onCompleted: emptyStateShadow.source = emptyStateShape
-                    }
-
-                    // Ciclo de respiración — solo corre mientras el estado vacío
-                    // está visible (y hay movimiento completo).
-                    Timer {
-                        id: emptyBreathTimer
-                        interval: 1600
-                        running: (root.historyModel ? root.historyModel.count : 0) === 0 && !Appearance.reduceMotion
-                        repeat: true
-                        onTriggered: emptyStateShape.shape = emptyStateShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
-                    }
-
-                    Component.onDestruction: {
-                        emptyBreathTimer.stop()
-                    }
-                }
-
-                StyledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: I18nService.getTranslation("notifications.empty_title", "")
-                    color: Appearance.md3.on_surface
-                    font.family: Appearance.font.sans
-                    font.variableAxes: Appearance.font.variableAxes.title
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
-                }
-
-                StyledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: I18nService.getTranslation("notifications.empty_subtitle", "Las nuevas notificaciones aparecerán aquí")
-                    color: Appearance.md3.on_surface_variant
-                    font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.typeScale.labelMedium
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
-                }
+                expressive: true
+                iconName: "notifications_none"
+                title: I18nService.getTranslation("notifications.empty_title", "")
+                titleSize: Appearance.font.pixelSize.large
+                titleColor: Appearance.md3.on_surface
+                titleEmphasis: true
+                subtitle: I18nService.getTranslation("notifications.empty_subtitle", "Las nuevas notificaciones aparecerán aquí")
             }
 
             // --- Pie sutil con atajos de teclado ---
@@ -430,7 +359,7 @@ PanelWindow {
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 text: I18nService.getTranslation("notifications.hint", "N no molestar · D borrar todo · Supr eliminar")
                 color: Appearance.md3.on_surface_variant
-                opacity: 0.7
+                opacity: Appearance.opacity.hint
                 font.family: Appearance.font.sans
                 font.pixelSize: Appearance.typeScale.labelSmall
                 horizontalAlignment: Text.AlignHCenter

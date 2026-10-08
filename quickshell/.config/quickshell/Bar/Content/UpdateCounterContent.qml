@@ -50,7 +50,7 @@ Item {
             text: root.service.updateCount
             renderType: Text.QtRendering
             color: root.service.failed ? Appearance.md3.error : Appearance.md3.on_surface
-            font.pixelSize: 16
+            font.pixelSize: Appearance.typeScale.bodyLarge
         }
     }
 }

@@ -14,7 +14,7 @@ BarItem {
     LazyLoader {
         id: weatherCharge
 
-        loading: root.area.hoveredChanged
+        loading: root.hoveredChanged
 
         WeatherPopup {
             id: popupWindow

@@ -6,8 +6,8 @@ import QtQuick
 Item {
     id: root
 
-    property int count: Services.NotificationService.history ? Services.NotificationService.history.count : 0
-    property bool dnd: Services.NotificationService.dnd
+    property int count: Services.NotificationData.history ? Services.NotificationData.history.count : 0
+    property bool dnd: Services.NotificationData.dnd
 
     implicitWidth: iconItem.width
     implicitHeight: 30
@@ -49,7 +49,7 @@ Item {
             anchors.centerIn: parent
             text: root.count > 99 ? "99+" : root.count
             color: Appearance.md3.on_primary
-            font.pixelSize: 9
+            font.pixelSize: Appearance.typeScale.labelXSmall
             font.bold: true
         }
     }

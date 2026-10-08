@@ -52,7 +52,7 @@ Item {
         // ── Navegación: anterior / mes+año / siguiente ────────
         RowLayout {
             Layout.fillWidth: true
-            Layout.topMargin: 4
+            Layout.topMargin: Appearance.spacing.xs
 
             // Botón anterior — Wrapper + Background + Content
             Item {
@@ -76,7 +76,7 @@ Item {
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: "chevron_backward"
-                    font.pixelSize: 22
+                    font.pixelSize: Appearance.typeScale.headlineSmall
                     color: Appearance.md3.on_surface_variant
                 }
 
@@ -124,7 +124,7 @@ Item {
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: "chevron_forward"
-                    font.pixelSize: 22
+                    font.pixelSize: Appearance.typeScale.headlineSmall
                     color: Appearance.md3.on_surface_variant
                 }
 
@@ -255,7 +255,7 @@ Item {
                         anchors.centerIn: parent
                         text: delegateItem.model.day
                         font.family: Services.ConfigService.configs.appearance.fontSans
-                        font.pixelSize: 13
+                        font.pixelSize: Appearance.typeScale.bodySmall
                         font.bold: delegateItem.isToday || delegateItem.isSelected
                         color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : delegateItem.isCurrentMonth ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant
                         opacity: delegateItem.isCurrentMonth ? 1.0 : 0.38

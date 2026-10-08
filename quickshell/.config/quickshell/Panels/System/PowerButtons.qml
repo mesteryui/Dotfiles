@@ -114,9 +114,12 @@ Scope {
                 opacity: root.show ? 1 : 0
 
                 Behavior on scale {
-                    NumberAnimation {
-                        duration: Appearance.motion.short4
-                        easing.type: Easing.OutBack
+                    enabled: !Appearance.motion.reduced
+                    SpringAnimation {
+                        spring: Appearance.motion.springSoft.spring
+                        damping: Appearance.motion.springSoft.damping
+                        mass: Appearance.motion.springSoft.mass
+                        epsilon: Appearance.motion.springSoft.epsilon
                     }
                 }
                 Behavior on opacity {

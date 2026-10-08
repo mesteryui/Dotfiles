@@ -29,6 +29,12 @@ Item {
     // respiración. Las secundarias muestran el mismo estado en estático.
     property bool isPrimary: true
 
+    // Etapa auth visible (despierto). Con `focus: true` incondicional el
+    // campo pedía text-input aun dormido/oculto -> spam
+    // `QWaylandTextInputv3::enableSurface`. El foco real lo da
+    // LockScreenWrapper.wakeTimer vía forceActiveFocus().
+    property bool isAwake: false
+
     property alias passwordField: password
 
     signal accepted(string text)
@@ -65,7 +71,7 @@ Item {
 
     Timer {
         interval: 900
-        running: root.isPrimary && root.isFingerprintActive && !root.authFailed && !Appearance.reduceMotion
+        running: root.isPrimary && root.isFingerprintActive && !root.authFailed && !Appearance.motion.reduced
         repeat: true
         onTriggered: root.breathShape = root.breathShape === MaterialShape.Cookie4Sided ? MaterialShape.Puffy : MaterialShape.Cookie4Sided
     }
@@ -76,11 +82,6 @@ Item {
 
     function clearInput() {
         password.text = "";
-    }
-
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
     }
 
     // Contenedor que absorbe la animación shake
@@ -142,8 +143,8 @@ Item {
 
         anchors.fill: parent
         radius: Appearance.shape.full
-        color: root.authFailed ? root.withAlpha(Appearance.md3.error_container, 0.55) : root.withAlpha(Appearance.md3.surface_container_high, 0.78)
-        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : root.withAlpha(Appearance.md3.outline_variant, 0.55))
+        color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.55) : Qt.alpha(Appearance.md3.surface_container_high, 0.78)
+        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline_variant, 0.55))
         border.width: password.activeFocus || root.authFailed ? 2 : 1
 
         Behavior on color {
@@ -160,8 +161,8 @@ Item {
         RowLayout {
             anchors {
                 fill: parent
-                leftMargin: 8
-                rightMargin: 8
+                leftMargin: Appearance.spacing.s
+                rightMargin: Appearance.spacing.s
             }
             spacing: 6
 
@@ -172,8 +173,8 @@ Item {
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
                 shape: root.successFlash ? MaterialShape.Heart : root.authFailed ? MaterialShape.Boom : (root.isPrimary && root.isFingerprintActive) ? root.breathShape : MaterialShape.Circle
-                animationDuration: 350
-                color: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.16) : root.withAlpha(Appearance.md3.primary, root.isFingerprintActive || password.activeFocus ? 0.18 : 0.10)
+                animationDuration: Appearance.motion.medium3
+                color: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.16) : Qt.alpha(Appearance.md3.primary, root.isFingerprintActive || password.activeFocus ? 0.18 : 0.10)
 
                 Behavior on color {
                     ColorAnimation {
@@ -207,11 +208,11 @@ Item {
                 // El error va en la pastilla de estado y la huella en su
                 // propia pastilla, para no duplicar textos.
                 placeholderText: root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña...")
-                placeholderTextColor: root.authFailed ? root.withAlpha(Appearance.md3.error, 0.8) : root.withAlpha(Appearance.md3.on_surface_variant, 0.8)
+                placeholderTextColor: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.8) : Qt.alpha(Appearance.md3.on_surface_variant, 0.8)
                 color: Appearance.md3.on_surface
                 background: null
                 verticalAlignment: TextInput.AlignVCenter
-                focus: true
+                focus: root.isAwake
                 enabled: !root.isAuthenticating
                 font.family: Appearance.font.sans
                 font.pixelSize: Appearance.typeScale.titleSmall ? Appearance.typeScale.titleSmall : 15
@@ -262,8 +263,8 @@ Item {
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
                 shape: MaterialShape.Circle
-                color: passwordMouse.containsMouse ? root.withAlpha(Appearance.md3.primary, 0.16) : "transparent"
-                animationDuration: 150
+                color: passwordMouse.containsMouse ? Qt.alpha(Appearance.md3.primary, 0.16) : "transparent"
+                animationDuration: Appearance.motion.short3
 
                 Behavior on color {
                     ColorAnimation {

@@ -3,6 +3,7 @@
 //@ pragma DefaultEnv QS_DROP_EXPENSIVE_FONTS=1
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
 //@ pragma DefaultEnv QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+//@ pragma Env QT_LOGGING_RULES=qt.qpa.wayland.textinput=false
 
 import qs.Core.Services
 import qs.Features.WindowSwitcher
@@ -29,6 +30,9 @@ ShellRoot {
     settings.watchFiles: true
 
     Component.onCompleted: {
+        Qt.application.organization = "shinro";
+        Qt.application.domain = "shinro.org";
+        Qt.application.name = "shinro";
         ConfigService.load();
         KeyboardThings.load();
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).

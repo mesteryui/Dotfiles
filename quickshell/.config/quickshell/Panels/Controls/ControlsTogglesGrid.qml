@@ -91,12 +91,12 @@ GridLayout {
     ControlToggle {
         id: dndToggle
         Layout.fillWidth: true
-        iconName: Services.NotificationService.dnd ? "bedtime" : "notifications"
+        iconName: Services.NotificationData.dnd ? "bedtime" : "notifications"
         label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
-        stateText: Services.NotificationService.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
-        active: Services.NotificationService.dnd
+        stateText: Services.NotificationData.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
+        active: Services.NotificationData.dnd
         keyboardMode: host.keyboardMode
-        onToggled: Services.NotificationService.toggleDnd()
+        onToggled: Services.NotificationData.toggleDnd()
         KeyNavigation.left: cafeToggle
         Keys.onPressed: host.keyboardMode = true
         Keys.onUpPressed: btToggle.forceActiveFocus()

@@ -30,6 +30,7 @@ Singleton {
 
     // Icono dinámico reactivo (Día / Noche)
     readonly property string icon: Icons.getWeatherIcon(data.wCode, data.isDay)
+    readonly property string temperature: data.temp
 
     // --- Ubicación y Caché ---
     property var location: ({

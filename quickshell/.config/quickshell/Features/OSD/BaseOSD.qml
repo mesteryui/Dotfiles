@@ -38,7 +38,7 @@ Scope {
         id: window
 
         // Sigue mapeada mientras se muestra, o mientras el fade-out está animando
-        visible: root.shown || fadeAnim.running
+        visible: root.shown || fadeAnim.running || popAnim.running
 
         screen: root.focusedScreen   // binding declarativo puro, no necesita Connections
 
@@ -60,6 +60,7 @@ Scope {
 
             anchors.fill: parent
             opacity: root.shown ? 1.0 : 0.0
+            scale: root.shown ? 1.0 : 0.92
 
             Behavior on opacity {
                 OpacityAnimator {
@@ -68,6 +69,16 @@ Scope {
                     duration: Appearance.motion.short3
                     easing.type: Easing.Bezier
                     easing.bezierCurve: Appearance.motion.emphasized
+                }
+            }
+            Behavior on scale {
+                enabled: !Appearance.motion.reduced
+                SpringAnimation {
+                    id: popAnim
+                    spring: Appearance.motion.springSoft.spring
+                    damping: Appearance.motion.springSoft.damping
+                    mass: Appearance.motion.springSoft.mass
+                    epsilon: Appearance.motion.springSoft.epsilon
                 }
             }
         }

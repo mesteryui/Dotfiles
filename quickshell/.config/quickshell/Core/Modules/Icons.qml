@@ -39,8 +39,15 @@ Singleton {
         if (hit !== undefined) {
           return hit;
         }
+        // Sin entrada de escritorio no hay icono: resolver solo el fallback.
+        // (Antes se pasaba `undefined` a iconPath y fabricaba el string
+        // literal "undefined?fallback=...", con warning por cada tamaño.)
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
-        const resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(icon);
+        let resolved = "";
+        if (icon)
+            resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(icon);
+        else if (fallback)
+            resolved = Quickshell.iconPath(fallback);
         // Capado blando: si alguna vez hay cientos de appIds distintos, se
         // reinicia en vez de crecer sin cota.
         if (Object.keys(root._appIconCache).length > 400)

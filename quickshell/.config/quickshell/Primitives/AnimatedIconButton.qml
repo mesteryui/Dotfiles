@@ -28,7 +28,15 @@ Item {
 
     scale: mouseArea.pressed ? 0.92 : (mouseArea.containsMouse ? 1.06 : 1.0)
 
-    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+    Behavior on scale {
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: 0.005
+        }
+    }
 
     Rectangle {
         id: bgRect

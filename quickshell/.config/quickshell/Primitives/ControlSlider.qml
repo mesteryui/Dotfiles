@@ -179,7 +179,7 @@ RowLayout {
             fromShape: MaterialShape.Circle
             toShape: MaterialShape.Cookie4Sided
             morphProgress: Math.max(0, Math.min(1, root.displayValue()))
-            animationDuration: 200
+            animationDuration: Appearance.motion.short4
             color: root.accentColor
             strokeColor: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : Appearance.md3.surface_container_low
             strokeWidth: 2
@@ -190,9 +190,12 @@ RowLayout {
                 }
             }
             Behavior on width {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
+                enabled: !Appearance.motion.reduced
+                SpringAnimation {
+                    spring: Appearance.motion.springSnappy.spring
+                    damping: Appearance.motion.springSnappy.damping
+                    mass: Appearance.motion.springSnappy.mass
+                    epsilon: 0.25
                 }
             }
             Behavior on color {

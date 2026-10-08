@@ -31,7 +31,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: Appearance.md3.on_surface
-            font.pixelSize: 14
+            font.pixelSize: Appearance.typeScale.bodyMedium
         }
     }
 }

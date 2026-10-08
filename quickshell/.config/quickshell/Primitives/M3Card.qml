@@ -33,9 +33,12 @@ Item {
     scale: root.clickable ? (cardArea.pressed ? 0.98 : (cardArea.containsMouse ? 1.015 : 1.0)) : 1.0
 
     Behavior on scale {
-        NumberAnimation {
-            duration: 140
-            easing.type: Easing.OutCubic
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSoft.spring
+            damping: Appearance.motion.springSoft.damping
+            mass: Appearance.motion.springSoft.mass
+            epsilon: Appearance.motion.springSoft.epsilon
         }
     }
 

@@ -41,7 +41,7 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 16
+        anchors.leftMargin: Appearance.spacing.l
         anchors.rightMargin: 6
         spacing: Appearance.spacing.xs
 
@@ -54,7 +54,7 @@ Rectangle {
             MaterialShape {
                 anchors.fill: parent
                 shape: controller.modeShape(controller.activeMode)
-                animationDuration: 350
+                animationDuration: Appearance.motion.medium3
                 color: Appearance.md3.primary_container
 
                 MaterialIcon {
@@ -85,7 +85,12 @@ Rectangle {
             Accessible.name: searchField.placeholderText
         selectedTextColor: Appearance.md3.on_primary
         selectionColor: Appearance.md3.primary
-        focus: true
+        // Solo pide text-input cuando el launcher está visible: con
+        // `focus: true` incondicional la ventana cacheada (oculta) competía
+        // con la surface enfocada -> `QWaylandTextInputv3::enableSurface`
+        // "Trying to enable ... but ... has focus". El foco real lo da
+        // onOpened()/goSection() vía forceActiveFocus().
+        focus: scopeObj.shown
     placeholderText: {
         switch (controller.activeMode) {
         case "system": return controller.tr("controller.placeholder_system", "Sistema… (> para este modo)");

@@ -6,7 +6,7 @@ Rectangle {
 
     // ── Apariencia ──────────────────────────────────────────
     property color baseColor: Appearance.md3.surface
-    property real  surfaceRadius: 20
+    property real  surfaceRadius: Appearance.shape.card
     property bool  showBorder: true
 
     // ── Internos ────────────────────────────────────────────

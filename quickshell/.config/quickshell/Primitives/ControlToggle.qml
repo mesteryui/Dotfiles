@@ -47,7 +47,15 @@ Rectangle {
 
     Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
     Behavior on opacity { OpacityAnimator { duration: Appearance.motion.short3 } }
-    Behavior on scale { ScaleAnimator { duration: 140; easing.type: Easing.OutCubic } }
+    Behavior on scale {
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: 0.005
+        }
+    }
 
     // Capa de estado M3 Expressive (Hover & Press overlay + foco de teclado)
     Rectangle {
@@ -72,7 +80,7 @@ Rectangle {
 
             shape: MaterialShape.Circle
             color: root.active ? Appearance.md3.primary : Appearance.md3.surface_container_highest
-            animationDuration: 150
+            animationDuration: Appearance.motion.short3
 
             Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
 

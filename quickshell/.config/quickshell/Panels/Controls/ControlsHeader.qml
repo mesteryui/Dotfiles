@@ -73,7 +73,7 @@ RowLayout {
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
         radius: Appearance.shape.full
-        color: powerArea.pressed ? host.withAlpha(Appearance.md3.error_container, 0.9) : (powerArea.containsMouse ? host.withAlpha(Appearance.md3.error_container, 0.4) : Appearance.md3.surface_container_high)
+        color: powerArea.pressed ? Qt.alpha(Appearance.md3.error_container, 0.9) : (powerArea.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.4) : Appearance.md3.surface_container_high)
         border.width: (activeFocus && host.keyboardMode) ? 2 : 0
         border.color: Appearance.md3.primary
         activeFocusOnTab: true
@@ -100,9 +100,12 @@ RowLayout {
             }
         }
         Behavior on scale {
-            NumberAnimation {
-                duration: 140
-                easing.type: Easing.OutCubic
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: 0.005
             }
         }
 

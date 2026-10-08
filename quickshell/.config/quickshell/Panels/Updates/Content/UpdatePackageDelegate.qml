@@ -20,8 +20,8 @@ Item {
     Rectangle {
         anchors {
             fill: parent
-            leftMargin: 8
-            rightMargin: 8
+            leftMargin: Appearance.spacing.s
+            rightMargin: Appearance.spacing.s
         }
         radius: Appearance.shape.verysmall
         color: "transparent"
@@ -44,15 +44,15 @@ Item {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: 16
-            rightMargin: 16
+            leftMargin: Appearance.spacing.l
+            rightMargin: Appearance.spacing.l
         }
         spacing: Appearance.spacing.s
 
         StyledText {
             Layout.fillWidth: true
             text: root.packageName
-            font.pixelSize: 13
+            font.pixelSize: Appearance.typeScale.bodySmall
             font.family: Services.ConfigService.configs.appearance.fontSans
             color: Appearance.md3.on_surface
             elide: Text.ElideRight
@@ -62,10 +62,10 @@ Item {
             Layout.maximumWidth: 60
             Layout.minimumWidth: 0
             text: root.oldVersion
-            font.pixelSize: 11
+            font.pixelSize: Appearance.typeScale.labelSmall
             font.family: Services.ConfigService.configs.appearance.monospace
             color: Appearance.md3.on_surface_variant
-            opacity: 0.7
+            opacity: Appearance.opacity.hint
             elide: Text.ElideMiddle
         }
 
@@ -79,7 +79,7 @@ Item {
             Layout.maximumWidth: 60
             Layout.minimumWidth: 0
             text: root.newVersion
-            font.pixelSize: 11
+            font.pixelSize: Appearance.typeScale.labelSmall
             font.family: Services.ConfigService.configs.appearance.monospace
             color: Appearance.md3.primary
             elide: Text.ElideMiddle

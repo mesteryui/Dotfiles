@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.Core
+import qs.Core.Services as Services
 
 // Una ventana de fondo estático por pantalla (la crea WallpaperLayer).
 // Transición en dos fases (idéntica siempre): fundido a negro rápido
@@ -14,6 +15,8 @@ PanelWindow {
     property string source: ""
     property bool frontIsA: true
     property string shownSource: ""
+    // Primera puesta: directa, sin transición de arranque.
+    property bool isInitialLoad: true
 
     visible: root.source !== ""
     color: "transparent"
@@ -26,6 +29,17 @@ PanelWindow {
         bottom: true
         left: true
         right: true
+    }
+
+    // Soltar un fichero de imagen pone ese fondo (ver handleDrop).
+    DropArea {
+        anchors.fill: parent
+
+        onEntered: drag => {
+            if (drag.hasUrls || drag.hasText)
+                drag.accepted = true;
+        }
+        onDropped: drop => root.handleDrop(drop)
     }
 
     component WallpaperImage: Image {
@@ -124,6 +138,21 @@ PanelWindow {
         img.source = src !== "" ? Qt.resolvedUrl(src) : "";
     }
 
+    // Soltar un fichero de imagen sobre el fondo lo pone como wallpaper
+    // (pasa por validación + persistencia + crossfade de applyBg).
+    function handleDrop(drop) {
+        let raw = "";
+        if (drop.hasUrls && drop.urls.length > 0)
+            raw = String(drop.urls[0]);
+        else if (drop.hasText && drop.text)
+            raw = String(drop.text).split("\n")[0].trim();
+        if (raw === "")
+            return;
+        const path = decodeURIComponent(raw.replace(/^file:\/\//, "")).trim();
+        if (Services.WallpaperService.validImage(path))
+            Services.WallpaperService.apply(path);
+    }
+
     // Arranca el fundido; si aún decodifica, espera al Ready (una vez).
     function beginFade(img) {
         const token = ++root.readyToken;
@@ -196,15 +225,32 @@ PanelWindow {
             root.shownSource = "";
             return;
         }
+        // Arranque: sin transición, puesta directa.
+        if (root.isInitialLoad) {
+            root.isInitialLoad = false;
+            const first = root.frontIsA ? imgB : imgA;
+            const prev = root.frontIsA ? imgA : imgB;
+            root.setHiddenSource(first, src);
+            first.opacity = 1;
+            first.scale = 1;
+            prev.opacity = 0;
+            prev.source = "";
+            root.frontIsA = !root.frontIsA;
+            root.shownSource = src;
+            return;
+        }
+        // Interrumpido a mitad de transición: degradar a fundido simple
+        // (directo a fase 2, sin apagar a medias).
+        const interrupted = fadeOut.running || fadeIn.running;
         // Fase 1: apagar lo visible; al terminar, beginHiddenLoad enciende
-        // lo nuevo (si no hay nada visible, directo a fase 2).
+        // lo nuevo (si no hay nada visible o venía interrumpido: directo).
         fadeIn.stop();
         zoomIn.stop();
         fadeOut.stop();
         root.clearReadyWait();
         root.pendingSrc = src;
         root.hasPending = true;
-        if (root.shownSource !== "") {
+        if (root.shownSource !== "" && !interrupted) {
             const front = root.frontIsA ? imgA : imgB;
             fadeOut.targetImage = front;
             fadeOut.target = front;

@@ -25,14 +25,14 @@ BarItem {
         x: (parent.width - width) / 2
         y: barAtBottom ? -height - 8 : parent.height + 8
         text: Services.IdleInhibitedService.inhibited ? "Cafeína activada (suspensión inhibida)" : "Cafeína desactivada"
-        visible: root.area.containsMouse
+        visible: root.hovered
         delay: 500
         timeout: 5000
 
         contentItem: StyledText {
             text: tooltip.text
             color: Appearance.md3.inverse_on_surface
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             wrapMode: Text.NoWrap
         }
 

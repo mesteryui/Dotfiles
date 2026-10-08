@@ -106,7 +106,7 @@ Rectangle {
             // el texto completo (evita verlo dos veces).
             visible: !(root.cur && ItemKinds.isClipText(root.cur))
             text: root.cur ? (root.cur.title || "") : ""
-            font.pixelSize: 14
+            font.pixelSize: Appearance.typeScale.bodyMedium
             color: Appearance.md3.on_surface
         }
         // Texto del fichero (ficheros de texto): bloque monoespaciado con scroll
@@ -131,7 +131,7 @@ Rectangle {
                     return root.previewText;
                 }
                 font.family: Appearance.font.mono
-                font.pixelSize: 11
+                font.pixelSize: Appearance.typeScale.labelSmall
                 color: Appearance.md3.on_surface_variant
             }
         }
@@ -150,7 +150,7 @@ Rectangle {
                     return (root.cur.fullText || root.cur.title) || "";
                 return root.cur.sub || "";
             }
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             color: Appearance.md3.on_surface_variant
         }
         // Metadatos del tema (audio): artista/título y álbum/duración
@@ -164,7 +164,7 @@ Rectangle {
             visible: root.metaText !== "" && root.cur && root.cur.kind === "file" && root.cur.media === "audio"
             text: root.metaText
             font.family: Appearance.font.mono
-            font.pixelSize: 11
+            font.pixelSize: Appearance.typeScale.labelSmall
             color: Appearance.md3.on_surface_variant
         }
         // Fallo del preview de imagen (clip): en vez de hueco en blanco,
@@ -177,7 +177,7 @@ Rectangle {
             elide: Text.ElideRight
             visible: root.previewError !== "" && root.cur && root.cur.kind === "clip" && root.cur.isImage
             text: root.previewError
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             color: Appearance.md3.error
         }
         // Texto del portapapeles (clip texto): bloque con scroll que
@@ -199,7 +199,7 @@ Rectangle {
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
                 text: root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText || root.cur.title) || "") : "")
-                font.pixelSize: 13
+                font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface
             }
         }

@@ -12,12 +12,15 @@ BarItem {
     clickable: true
     horizontalPadding: 15
 
-    scale: area.pressed ? 0.92 : (area.containsMouse ? 1.05 : 1.0)
+    scale: pressed ? 0.92 : (hovered ? 1.05 : 1.0)
 
     Behavior on scale {
-        NumberAnimation {
-            duration: Appearance.motion.short2
-            easing.type: Easing.OutQuad
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: 0.005
         }
     }
 

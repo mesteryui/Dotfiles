@@ -25,9 +25,12 @@ Item {
 
     scale: mouseArea.pressed ? 0.85 : 1.0
     Behavior on scale {
-        NumberAnimation {
-            duration: Appearance.motion.short2
-            easing.type: Easing.OutQuad
+        enabled: !Appearance.motion.reduced
+        SpringAnimation {
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: 0.005
         }
     }
     SurfaceBackground {

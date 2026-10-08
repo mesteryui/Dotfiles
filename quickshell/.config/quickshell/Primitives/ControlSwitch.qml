@@ -67,13 +67,37 @@ Item {
         height: width
         shape: MaterialShape.Circle
         color: root.checked ? Appearance.md3.on_primary : Appearance.md3.outline
-        animationDuration: 150
+        animationDuration: Appearance.motion.short3
         x: root.checked ? (52 - 8 - 24) : 8
         y: (32 - height) / 2
 
-        Behavior on x { NumberAnimation { duration: Appearance.motion.short3; easing.type: Easing.OutCubic } }
-        Behavior on width { NumberAnimation { duration: Appearance.motion.short3; easing.type: Easing.OutCubic } }
-        Behavior on height { NumberAnimation { duration: Appearance.motion.short3; easing.type: Easing.OutCubic } }
+        Behavior on x {
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: 0.25
+            }
+        }
+        Behavior on width {
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: 0.25
+            }
+        }
+        Behavior on height {
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: 0.25
+            }
+        }
         Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
 
         MaterialIcon {

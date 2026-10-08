@@ -82,9 +82,12 @@ Item {
             }
         }
         Behavior on scale {
-            ScaleAnimator {
-                duration: Appearance.motion.short3
-                easing.type: Easing.OutCubic
+            enabled: !Appearance.motion.reduced
+            SpringAnimation {
+                spring: Appearance.motion.springSoft.spring
+                damping: Appearance.motion.springSoft.damping
+                mass: Appearance.motion.springSoft.mass
+                epsilon: Appearance.motion.springSoft.epsilon
             }
         }
 
@@ -101,7 +104,7 @@ Item {
                 target: shakeT
                 property: "x"
                 to: -10
-                duration: 50
+                duration: Appearance.motion.short1
                 easing.type: Easing.OutQuad
             }
             NumberAnimation {
@@ -129,7 +132,7 @@ Item {
                 target: shakeT
                 property: "x"
                 to: 0
-                duration: 50
+                duration: Appearance.motion.short1
                 easing.type: Easing.OutQuad
             }
         }
@@ -158,7 +161,7 @@ Item {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: I18nService.getTranslation("polkit.authentication_required", "Autenticación requerida")
-                font.pixelSize: 18
+                font.pixelSize: Appearance.typeScale.titleLarge
                 font.bold: true
                 color: Appearance.md3.on_surface
             }
@@ -168,7 +171,7 @@ Item {
                 wrapMode: Text.Wrap
                 horizontalAlignment: Text.AlignLeft
                 text: overlay.cleanMessage
-                font.pixelSize: 13
+                font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface_variant
             }
 
@@ -183,12 +186,16 @@ Item {
                 verticalAlignment: TextInput.AlignVCenter
                 clip: true
                 enabled: overlay.interactionAvailable
-                font.pixelSize: 14
+                font.pixelSize: Appearance.typeScale.bodyMedium
                 placeholderText: overlay.cleanPrompt
                 placeholderTextColor: overlay.authError ? Appearance.md3.error : Appearance.md3.outline
                 echoMode: overlay.usePasswordChars ? TextInput.Password : TextInput.Normal
                 Material.accent: overlay.authError ? Appearance.md3.error : Appearance.md3.primary
-                focus: true
+                // Solo cuando el diálogo está activo: el Loader cachea la
+                // ventana oculta y `focus:true` pedía text-input sin tener
+                // el foco Wayland (spam enableSurface). El foco real lo da
+                // PolkitWindow vía content.forceFocus().
+                focus: PolkitService.active && overlay.interactionAvailable
                 onTextEdited: overlay.authError = false
                 onAccepted: {
                     overlay.authError = false;
@@ -206,14 +213,14 @@ Item {
                 Layout.fillWidth: true
                 visible: overlay.authError
                 text: I18nService.getTranslation("polkit.incorrect_password", "Contraseña incorrecta, inténtalo de nuevo")
-                font.pixelSize: 12
+                font.pixelSize: Appearance.typeScale.labelMedium
                 color: Appearance.md3.error
             }
 
             // Button row
             RowLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: 8
+                Layout.topMargin: Appearance.spacing.s
                 spacing: Appearance.spacing.s
 
                 Item {

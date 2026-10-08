@@ -26,7 +26,7 @@ MaterialShape {
     focus: true
 
     shape: btnMouse.pressed ? MaterialShape.Cookie4Sided : (root.highlighted ? root.buttonShape : MaterialShape.Circle)
-    animationDuration: 300
+    animationDuration: Appearance.motion.medium2
     color: highlighted ? accentColor : Appearance.md3.surface_container
     strokeWidth: highlighted ? 2 : 1
     strokeColor: highlighted ? Qt.alpha(accentColor, 0.7) : Appearance.md3.outline_variant
@@ -71,7 +71,7 @@ MaterialShape {
             text: root.buttonText
             font.family: Services.ConfigService.configs.appearance.fontSans
             color: root.highlighted ? Appearance.md3.on_primary : Appearance.md3.on_surface
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             font.weight: root.highlighted ? Font.Bold : Font.Normal
 
             Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }

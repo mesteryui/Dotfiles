@@ -19,7 +19,7 @@ Rectangle {
     required property string time
     required property string icon
     required property int index
-    // Id de historial para borrado via NotificationService.removeFromHistory.
+    // Id de historial para borrado via NotificationData.removeFromHistory.
     // Opcional para no romper usos existentes (NotificationCenter usa index).
     property int historyId: -1
     // Segundos Unix de llegada (para hora relativa; <=0 = usa `time`).
@@ -127,13 +127,13 @@ Rectangle {
                     text: {
                         Services.TimeService.date;
                         if (root.historyEpoch > 0)
-                            return Services.NotificationService.formatRelative(root.historyEpoch);
+                            return Services.NotificationData.formatRelative(root.historyEpoch);
                         return root.time;
                     }
                     color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
                     font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
-                    opacity: 0.8
+                    opacity: Appearance.opacity.hintStrong
                 }
             }
 

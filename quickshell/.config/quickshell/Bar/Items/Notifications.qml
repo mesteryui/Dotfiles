@@ -21,10 +21,9 @@ BarItem {
     area.acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
     onClicked: mouse => {
         if (mouse.button === Qt.RightButton) {
-            Services.NotificationService.toggleDnd();
+            Services.NotificationData.toggleDnd();
         } else if (mouse.button === Qt.MiddleButton) {
-            if (Services.NotificationService.history)
-                Services.NotificationService.history.clear();
+            Services.NotificationData.clearHistory();
         } else {
             const w = popupLoader.item;
             if (w)
@@ -39,7 +38,7 @@ BarItem {
     LazyLoader {
         id: popupLoader
 
-        loading: root.area.hoveredChanged || root.area.pressed
+        loading: root.hoveredChanged || root.pressed
         component: NotificationPopupWindow {
             anchorItem: root
         }
@@ -64,21 +63,21 @@ BarItem {
         x: (parent.width - width) / 2
         y: barAtBottom ? -height - 8 : parent.height + 8
         text: {
-            const n = Services.NotificationService.history ? Services.NotificationService.history.count : 0;
-            if (Services.NotificationService.dnd)
+            const n = Services.NotificationData.history ? Services.NotificationData.history.count : 0;
+            if (Services.NotificationData.dnd)
                 return "No molestar activado · " + n + " en historial (click dcho para desactivar)";
             if (n > 0)
                 return n + " notificaciones (click dcho: no molestar, central: limpiar)";
             return "Sin notificaciones (click dcho: no molestar)";
         }
-        visible: root.area.containsMouse && !root.popupOpen
+        visible: root.hovered && !root.popupOpen
         delay: 500
         timeout: 5000
 
         contentItem: StyledText {
             text: tooltip.text
             color: Appearance.md3.inverse_on_surface
-            font.pixelSize: 12
+            font.pixelSize: Appearance.typeScale.labelMedium
             wrapMode: Text.NoWrap
         }
 

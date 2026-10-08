@@ -24,7 +24,7 @@ Item {
         icon: "image"
         size: 32
         color: Appearance.md3.on_surface_variant
-        opacity: 0.3
+        opacity: Appearance.opacity.ghost
         visible: wallpaperPreview.status !== Image.Ready
     }
 
@@ -39,7 +39,7 @@ Item {
         StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            border.color: root.isSelected ? Appearance.md3.primary : Qt.rgba(1, 1, 1, 0.12)
+            border.color: root.isSelected ? Appearance.md3.primary : Qt.alpha(Appearance.md3.on_surface, 0.12)
             border.width: root.isSelected ? 2 : 1
 
             Behavior on border.color {
@@ -66,9 +66,12 @@ Item {
                 scale: root.hovered ? 1.04 : 1.0
 
                 Behavior on scale {
-                    NumberAnimation {
-                        duration: Appearance.motion.medium2
-                        easing.type: Easing.OutCubic
+                    enabled: !Appearance.motion.reduced
+                    SpringAnimation {
+                        spring: Appearance.motion.springSoft.spring
+                        damping: Appearance.motion.springSoft.damping
+                        mass: Appearance.motion.springSoft.mass
+                        epsilon: Appearance.motion.springSoft.epsilon
                     }
                 }
 
@@ -95,7 +98,8 @@ Item {
                 }
             }
 
-            // Scrim degradado inferior
+            // Scrim degradado inferior (excepción intencionada: monocromo
+            // sobre foto, igual en ambos temas).
             Rectangle {
                 id: nameScrim
                 anchors {
@@ -148,7 +152,7 @@ Item {
                         return parts.length > 0 ? parts[parts.length - 1] : "";
                     }
                     color: Qt.rgba(1, 1, 1, 0.95)
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     font.weight: Font.Medium
                 }
             }

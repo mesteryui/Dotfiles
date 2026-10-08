@@ -101,6 +101,16 @@ Singleton {
         property string expressive: "Google Sans Flex"
         property Matugen matugen: Matugen {}
     }
+    component BarLayout: JsonObject {
+        // Orden manual de módulos (ids de BarRegistry). Edítalos y recarga.
+        property list<string> left: ["launcher", "workspaces", "submap"]
+        property list<string> center: ["weather", "mpris", "updates", "clock"]
+        property list<string> right: ["tray", "network", "bluetooth", "battery", "volume"]
+        // Reservado para el futuro SideBar vertical (misma API, isSide=true).
+        property list<string> sideTop: ["launcher", "workspaces"]
+        property list<string> sideCenter: ["clock"]
+        property list<string> sideBottom: ["network", "bluetooth", "battery", "volume"]
+    }
     component Bar: JsonObject {
         property string position: "top"
         property int height: 36
@@ -109,6 +119,9 @@ Singleton {
         // con esquinas de pantalla redondeadas), "partial_hug" (adherida con
         // esquinas solo en el lado de la barra), "no_floating" (adherida cuadrada).
         property string barType: "floating"
+        // Disposición de módulos (ver BarLayout): se edita en config.json
+        // bajo bar.layout. Las claves planas antiguas (bar.left, …) se ignoran.
+        property BarLayout layout: BarLayout {}
     }
     component Notifications: JsonObject {
         property int timeout: 5

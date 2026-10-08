@@ -1,16 +1,40 @@
 # Panels
 
-One folder per surface; `*Content.qml` holds the UI, thin wrappers hold
-`Scope` + IPC + `PanelWindow`:
+One folder per surface. Wrappers own the background (`Shared/`) and
+the window (`Scope` + `LazyLoader` + `PanelWindow`); `*Content.qml`
+files only fill it.
 
-- `Controls/` — control center (`PanelWithControls.qml` wrapper +
-  `PanelWithControlsContent.qml`). Fixed header + per-tab scroll:
+- `Controls/` — control center. Wrapper `PanelWithControls.qml`
+  (`Scope` + IPC `dashboard` toggle, `PanelWindow` lazy) +
+  `PanelWithControlsContent.qml` (fixed header + per-tab scroll:
   `ControlsHeader`, `ControlsSliders`, `ControlsTogglesGrid`,
-  `ControlsTabBar` (each takes `host` = content root; focus chained via
-  aliases), tabs (`Tabs/SysInfoTab`, `Tabs/WeatherTab`).
-- `Volume/`, `Bluetooth/`, `MediaPlayer/`, `Calendar/`, `Weather/`,
-  `Wallpaper/`, `Updates/`, `Notifications/`, `Polkit/`, `System/`,
-  `Battery/`.
+  `ControlsTabBar`; 2 tabs: `Tabs/SysInfoTab`, `Tabs/WeatherTab`;
+  reusable bits `Tabs/AppVolume`, `Tabs/CpuArc`).
+- `Volume/` — `VolumeCenter.qml` (`Scope` + `GlobalShortcut`
+  `audio_panel` + `LazyLoader`) + `VolumePanel.qml` +
+  `VolumePopupContent.qml`.
+- `Bluetooth/` — `BluetoothPanel.qml` + `BluetoothPopupContent.qml`.
+- `MediaPlayer/` — `MprisContent.qml` (active/multi player,
+  shuffle/loop via `MprisService`) + `MprisSubwindow.qml`.
+- `Calendar/` — `CalendarContent.qml` + `CalendarPopupWindow.qml`.
+- `Weather/` — `WeatherPopup.qml` + `WeatherPopupContent.qml` +
+  `WeatherAlerts.qml`.
+- `Wallpaper/` — `WallpaperMenu.qml` (`Scope` + IPC
+  `ui.wallpaperMenu` + `LazyLoader`) + `WallpaperItem.qml` +
+  `WallpaperLayer.qml` + `WallpaperLayerScreen.qml` + `Content/`
+  (`WallpaperMenuContent`, `WallpaperItemContent`).
+- `Updates/` — `UpdateList.qml` + `UpdateListHeader.qml` +
+  `UpdateListFooter.qml` + `Content/` (`UpdateListContent`,
+  `UpdateListHeaderContent`, `UpdateFooterContent`,
+  `UpdateListPackages`, `UpdatePackageDelegate`).
+- `Notifications/` — `NotificationPopupContent.qml` +
+  `NotificationPopupWindow.qml` (popups per-screen; the center lives
+  in `Features/Notifications/`).
+- `Polkit/` — `PolkitWindow.qml` (`Scope` + `LazyLoader`, auth agent
+  vs `PolkitService`) + `PolkitContent.qml`.
+- `System/` — `PowerButtons.qml` (`Scope` + IPC `ui.powermenu`,
+  fullscreen overlay, `LazyLoader`) + `GenericButton.qml`.
+- `Battery/` — `BatteryPopupContent.qml` + `BatteryPopupWindow.qml`.
 
 Selection rule everywhere: `M3SelectionFill` (+ `on_secondary_container`
 content when selected) and `M3StateLayer` for hover/press. See

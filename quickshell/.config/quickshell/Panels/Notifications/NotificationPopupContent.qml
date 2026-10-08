@@ -14,7 +14,7 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
 
-    property int count: Services.NotificationService.history ? Services.NotificationService.history.count : 0
+    property int count: Services.NotificationData.history ? Services.NotificationData.history.count : 0
 
     spacing: 10
     implicitWidth: 348
@@ -59,25 +59,25 @@ ColumnLayout {
             implicitWidth: 36
             implicitHeight: 36
             radius: Appearance.shape.full
-            color: Services.NotificationService.dnd ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
+            color: Services.NotificationData.dnd ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
 
             Accessible.role: Accessible.Button
             Accessible.checkable: true
-            Accessible.checked: Services.NotificationService.dnd
+            Accessible.checked: Services.NotificationData.dnd
             Accessible.name: Services.I18nService.getTranslation("notifications.dnd", "No molestar")
 
             MaterialIcon {
                 anchors.centerIn: parent
-                icon: Services.NotificationService.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
+                icon: Services.NotificationData.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
                 size: Appearance.font.pixelSize.large
-                color: Services.NotificationService.dnd ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                color: Services.NotificationData.dnd ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
             }
 
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Services.NotificationService.toggleDnd()
+                onClicked: Services.NotificationData.toggleDnd()
             }
         }
 
@@ -118,7 +118,7 @@ ColumnLayout {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Services.NotificationService.history.clear()
+                onClicked: Services.NotificationData.clearHistory()
             }
         }
     }
@@ -129,7 +129,7 @@ ColumnLayout {
         Layout.preferredHeight: 1
         visible: root.count > 0
         color: Appearance.md3.outline_variant
-        opacity: 0.5
+        opacity: Appearance.opacity.faint
     }
 
     // ── Lista ─────────────────────────────────────────────────
@@ -142,21 +142,21 @@ ColumnLayout {
         clip: true
         spacing: Appearance.spacing.s
         boundsBehavior: Flickable.StopAtBounds
-        model: Services.NotificationService.history
+        model: Services.NotificationData.history
 
         ScrollBar.vertical: StyledScrollBar {}
 
         delegate: NotificationHistoryCard {
             width: historyList.width
-            onRemoveRequested: Services.NotificationService.removeFromHistory(historyId)
+            onRemoveRequested: Services.NotificationData.removeFromHistory(historyId)
         }
     }
 
     // ── Estado vacío ──────────────────────────────────────────
     ColumnLayout {
         Layout.fillWidth: true
-        Layout.topMargin: 12
-        Layout.bottomMargin: 12
+        Layout.topMargin: Appearance.spacing.m
+        Layout.bottomMargin: Appearance.spacing.m
         visible: root.count === 0
         spacing: Appearance.spacing.s
 

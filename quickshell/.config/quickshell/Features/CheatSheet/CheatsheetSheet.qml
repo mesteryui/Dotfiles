@@ -28,9 +28,12 @@ Behavior on opacity {
     }
 }
 Behavior on scale {
-    NumberAnimation {
-        duration: hideAnimDuration
-        easing.type: Easing.OutCubic
+    enabled: !Appearance.motion.reduced
+    SpringAnimation {
+        spring: Appearance.motion.springSoft.spring
+        damping: Appearance.motion.springSoft.damping
+        mass: Appearance.motion.springSoft.mass
+        epsilon: Appearance.motion.springSoft.epsilon
     }
 }
 
@@ -314,7 +317,7 @@ ColumnLayout {
             id: searchIcon
             anchors {
                 left: parent.left
-                leftMargin: 16
+                leftMargin: Appearance.spacing.l
                 verticalCenter: parent.verticalCenter
             }
 
@@ -336,7 +339,7 @@ ColumnLayout {
                 right: parent.right
                 top: parent.top
                 bottom: parent.bottom
-                leftMargin: 8
+                leftMargin: Appearance.spacing.s
                 rightMargin: 20
             }
 
@@ -345,6 +348,11 @@ ColumnLayout {
             color: Appearance.md3.on_surface
             placeholderText: Services.I18nService.getTranslation("cheatroot.search_placeholder", "Buscar atajos de teclado…")
             placeholderTextColor: Appearance.md3.on_surface_variant
+            // Gatillado a active: sin esto el campo retenía el foco durante
+            // el fade-out (active=false, ventana aún visible) y Qt pedía
+            // text-input en una surface sin foco Wayland (spam
+            // enable/disableSurface). El foco real lo da resetOnOpen().
+            focus: root.active
             selectedTextColor: Appearance.md3.on_secondary_container
             selectionColor: Appearance.md3.secondary_container
             font.family: Appearance.font.sans
@@ -445,7 +453,7 @@ ColumnLayout {
         text: Services.I18nService.getTranslation("cheatroot.hint", "Ctrl+J/K moverse · Ctrl+H/L columnas · Esc limpiar/cerrar")
         color: Appearance.md3.on_surface_variant
         font.pixelSize: Appearance.typeScale.labelMedium
-        opacity: 0.8
+        opacity: Appearance.opacity.hintStrong
     }
 
     // ----------------------------------------------------------------
@@ -524,26 +532,16 @@ ColumnLayout {
             width: emptyContent.implicitWidth + 56
             height: emptyContent.implicitHeight + 48
 
-            Column {
+            // Estado vacío unificado (la card la pone el llamador).
+            EmptyState {
                 id: emptyContent
 
-                anchors.centerIn: parent
-                spacing: 14
-
-                MaterialIcon {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    iconName: searchField.text.length > 0 ? "search_off" : (Services.HyprlandKeybinds.failed ? "error" : "keyboard")
-                    size: 52
-                    color: Services.HyprlandKeybinds.failed && searchField.text.length === 0 ? Appearance.md3.error : Appearance.md3.on_surface_variant
-                    opacity: 0.55
-                }
-
-                StyledText {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatroot.empty_no_match", "Ningún atajo coincide con") + " \u201c" + searchField.text + "\u201d" : (Services.HyprlandKeybinds.failed ? Services.I18nService.getTranslation("cheatroot.empty_error", "No se pudieron leer los atajos (¿hyprctl disponible?)") : Services.I18nService.getTranslation("cheatroot.empty_no_binds", "No se encontraron atajos documentados"))
-                    color: Appearance.md3.on_surface_variant
-                    font.pixelSize: Appearance.typeScale.bodyLarge
-                }
+                iconName: searchField.text.length > 0 ? "search_off" : (Services.HyprlandKeybinds.failed ? "error" : "keyboard")
+                iconSize: 52
+                iconOpacity: 0.55
+                iconColor: Services.HyprlandKeybinds.failed && searchField.text.length === 0 ? Appearance.md3.error : Appearance.md3.on_surface_variant
+                titleSize: Appearance.typeScale.bodyLarge
+                title: searchField.text.length > 0 ? Services.I18nService.getTranslation("cheatroot.empty_no_match", "Ningún atajo coincide con") + " \u201c" + searchField.text + "\u201d" : (Services.HyprlandKeybinds.failed ? Services.I18nService.getTranslation("cheatroot.empty_error", "No se pudieron leer los atajos (¿hyprctl disponible?)") : Services.I18nService.getTranslation("cheatroot.empty_no_binds", "No se encontraron atajos documentados"))
             }
         }
     }

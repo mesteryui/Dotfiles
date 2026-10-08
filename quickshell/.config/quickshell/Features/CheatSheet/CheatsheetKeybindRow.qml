@@ -80,8 +80,8 @@ Item {
             left: parent.left
             right: parent.right
             verticalCenter: parent.verticalCenter
-            leftMargin: 8
-            rightMargin: 8
+            leftMargin: Appearance.spacing.s
+            rightMargin: Appearance.spacing.s
         }
 
         spacing: 6

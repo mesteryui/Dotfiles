@@ -186,7 +186,7 @@ Item {
             font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
-            Layout.leftMargin: 4
+            Layout.leftMargin: Appearance.spacing.xs
         }
 
         // --- Botones de Perfiles de Energía ---

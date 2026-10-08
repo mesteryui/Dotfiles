@@ -16,11 +16,6 @@ Item {
     implicitWidth: mainColumn.implicitWidth
     implicitHeight: mainColumn.implicitHeight
 
-    function withAlpha(hex, a) {
-        const c = Qt.color(hex);
-        return Qt.rgba(c.r, c.g, c.b, a);
-    }
-
     function aqiLabel(level) {
         if (level >= 6)
             return Services.I18nService.getTranslation("weather.aqi_extremely_poor", "Pésima");
@@ -114,7 +109,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: root.withAlpha(Appearance.md3.outline_variant, 0.4)
+                    color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
                 }
 
                 GridLayout {
@@ -496,7 +491,7 @@ Item {
                                     width: 54
                                     height: 92
                                     radius: Appearance.shape.small
-                                    color: root.withAlpha(Appearance.md3.surface_container_highest, 0.7)
+                                    color: Qt.alpha(Appearance.md3.surface_container_highest, 0.7)
                                     border.width: 0
 
                                     Column {
@@ -550,7 +545,7 @@ Item {
             visible: Services.WeatherService.data.hourlyByDay.length === 0
             Layout.fillWidth: true
             padding: 12
-            color: root.withAlpha(Appearance.md3.surface_container_high, 0.7)
+            color: Qt.alpha(Appearance.md3.surface_container_high, 0.7)
 
             StyledText {
                 anchors.left: parent.left

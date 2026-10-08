@@ -24,6 +24,10 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "quickshell:notifications"
     WlrLayershell.layer: WlrLayer.Overlay
+    // OnDemand: el reply inline necesita foco Wayland solo al clicar el
+    // campo. Con None (defecto) Qt pedía text-input en una surface sin
+    // foco -> spam enableSurface al responder.
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     exclusionMode: ExclusionMode.Ignore
 
     ColumnLayout {

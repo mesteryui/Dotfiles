@@ -79,7 +79,7 @@ Item {
                     StyledText {
                         text: I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(WeatherService.data.tempFeelsLike)
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         Layout.alignment: Qt.AlignVCenter
                     }
                 }
@@ -87,7 +87,7 @@ Item {
                 StyledText {
                     text: WeatherService.data.city
                     color: Appearance.md3.on_surface
-                    font.pixelSize: 14
+                    font.pixelSize: Appearance.typeScale.bodyMedium
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
@@ -96,7 +96,7 @@ Item {
                 StyledText {
                     text: I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(WeatherService.data.tempMax).arg(WeatherService.data.tempMin)
                     color: Appearance.md3.on_surface
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.typeScale.labelMedium
                     font.weight: Font.Medium
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -106,7 +106,7 @@ Item {
                     visible: WeatherService.data.lastRefresh !== 0
                     text: WeatherService.data.lastRefresh
                     color: Appearance.md3.on_surface_variant
-                    font.pixelSize: 10
+                    font.pixelSize: Appearance.typeScale.labelSmall
                     Layout.fillWidth: true
                 }
             }
@@ -146,13 +146,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.wind + " " + WeatherService.data.windDir
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.wind", "Viento")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -171,13 +171,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.humidity
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.humidity", "Humedad")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -196,13 +196,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.press
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.pressure", "Presión")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -221,13 +221,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.visib
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.visibility", "Visibilidad")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -246,13 +246,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.precip
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.precipitation", "Precipitación")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -271,13 +271,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.precipProb
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.precipitation_probability", "Prob. lluvia")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -296,13 +296,13 @@ Item {
                     StyledText {
                         text: String(WeatherService.data.uv)
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.uv_index", "Índice UV")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -321,13 +321,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.sunrise
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.sunrise", "Amanecer")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -346,13 +346,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.sunset
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.sunset", "Atardecer")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -371,13 +371,13 @@ Item {
                     StyledText {
                         text: WeatherService.data.aqi >= 0 ? WeatherService.data.aqi + " · " + root.aqiLabel(WeatherService.data.aqiLevel) : "--"
                         color: Appearance.md3.on_surface
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium
                     }
                     StyledText {
                         text: I18nService.getTranslation("weather.aqi_title", "Calidad del aire")
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 10
+                        font.pixelSize: Appearance.typeScale.labelSmall
                     }
                 }
             }
@@ -414,7 +414,7 @@ Item {
                     StyledText {
                         text: modelData.dayLabel
                         color: Appearance.md3.on_surface_variant
-                        font.pixelSize: 12
+                        font.pixelSize: Appearance.typeScale.labelMedium
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
                     }
@@ -433,14 +433,14 @@ Item {
                         StyledText {
                             text: modelData.maxTemp + "°"
                             color: Appearance.md3.on_surface
-                            font.pixelSize: 13
+                            font.pixelSize: Appearance.typeScale.bodySmall
                             font.weight: Font.Medium
                         }
 
                         StyledText {
                             text: modelData.minTemp + "°"
                             color: Appearance.md3.on_surface_variant
-                            font.pixelSize: 13
+                            font.pixelSize: Appearance.typeScale.bodySmall
                         }
                     }
 
@@ -448,7 +448,7 @@ Item {
                         visible: modelData.precipProb > 0
                         text: modelData.precipProb + "%"
                         color: Appearance.md3.tertiary
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.typeScale.labelSmall
                         Layout.alignment: Qt.AlignHCenter
                     }
                 }

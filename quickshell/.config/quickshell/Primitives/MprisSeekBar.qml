@@ -97,7 +97,7 @@ ColumnLayout {
 
         SequentialAnimation on indetPhase {
             loops: Animation.Infinite
-            running: indetSeg.visible && !Appearance.reduceMotion
+            running: indetSeg.visible && !Appearance.motion.reduced
 
             NumberAnimation {
                 from: 0
@@ -207,7 +207,7 @@ ColumnLayout {
                 radius: parent.radius
                 color: Appearance.md3.primary
                 // Con movimiento reducido: segmento estático centrado.
-                x: Appearance.reduceMotion ? (trackBg.width - width) / 2 : (-width + trackContainer.indetPhase * (trackBg.width + width))
+                x: Appearance.motion.reduced ? (trackBg.width - width) / 2 : (-width + trackContainer.indetPhase * (trackBg.width + width))
             }
         }
 
@@ -247,7 +247,7 @@ ColumnLayout {
             color: Appearance.md3.primary
             strokeColor: Appearance.md3.surface_container_lowest
             strokeWidth: 1.5
-            animationDuration: 250
+            animationDuration: Appearance.motion.medium1
             opacity: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0
             scale: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0.5
 
@@ -257,9 +257,12 @@ ColumnLayout {
                 }
             }
             Behavior on scale {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutBack
+                enabled: !Appearance.motion.reduced
+                SpringAnimation {
+                    spring: Appearance.motion.springSnappy.spring
+                    damping: Appearance.motion.springSnappy.damping
+                    mass: Appearance.motion.springSnappy.mass
+                    epsilon: 0.005
                 }
             }
             Behavior on x {
@@ -270,9 +273,12 @@ ColumnLayout {
                 }
             }
             Behavior on width {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
+                enabled: !Appearance.motion.reduced
+                SpringAnimation {
+                    spring: Appearance.motion.springSnappy.spring
+                    damping: Appearance.motion.springSnappy.damping
+                    mass: Appearance.motion.springSnappy.mass
+                    epsilon: 0.25
                 }
             }
         }

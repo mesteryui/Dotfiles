@@ -29,6 +29,38 @@ Singleton {
     property string pendingPath: ""
     property string pendingKind: ""
 
+    // Watchdogs (ver startRequest/startMeta/requestText): ffmpeg/
+    // thumbnailer/pdftoppm/ffprobe suelen tardar <2 s; ante un fichero
+    // corrupto que los cuelgue se matan y el onExited ya sirve resultado
+    // vacío (mismo camino que cualquier otro fallo).
+    property Timer coverWatchdog: Timer {
+        interval: 30000
+        onTriggered: {
+            if (coverProc.running) {
+                console.warn("[FilePreview] timeout extrayendo " + root.reqPath);
+                coverProc.running = false;
+            }
+        }
+    }
+    property Timer metaWatchdog: Timer {
+        interval: 30000
+        onTriggered: {
+            if (metaProc.running) {
+                console.warn("[FilePreview] timeout metadatos " + root.metaReqPath);
+                metaProc.running = false;
+            }
+        }
+    }
+    property Timer textWatchdog: Timer {
+        interval: 15000
+        onTriggered: {
+            if (textProc.running) {
+                console.warn("[FilePreview] timeout texto " + root.textReqPath);
+                textProc.running = false;
+            }
+        }
+    }
+
     signal ready(string path, string image)
     signal textReady(string path, string text)
     // Metadatos de audio (tags + duración en segundos, "" si no hay).
@@ -139,6 +171,7 @@ Singleton {
         root.metaRestart = false;
         metaProc.command = ["sh", "-c", "ffprobe -v error -print_format json -show_format '" + ShellUtils.shellEscape(path) + "' 2>/dev/null"];
         metaProc.running = true;
+        root.metaWatchdog.restart();
     }
 
     // Las claves de tags varían en mayúsculas según el contenedor
@@ -177,6 +210,7 @@ Singleton {
         textRestart = false;
         textProc.command = ["sh", "-c", "f='" + p + "'; sz=$(stat -c %s \"$f\" 2>/dev/null || echo 0); if [ \"$sz\" -gt 204800 ]; then echo 'QSTEXT_TOO_BIG'; else head -c 6000 \"$f\" 2>/dev/null; fi"];
         textProc.running = true;
+        root.textWatchdog.restart();
     }
 
     function request(path, kind) {
@@ -201,6 +235,7 @@ Singleton {
         pendingKind = "";
         coverProc.command = ["sh", "-c", extractShell(path, kind)];
         coverProc.running = true;
+        root.coverWatchdog.restart();
     }
 
     Process {
@@ -219,6 +254,7 @@ Singleton {
 
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            root.textWatchdog.stop();
             // Muerte provocada por requestText() para superseder: reintenta
             // con la última ruta pedida en vez de pintar texto ajeno.
             if (root.textRestart) {
@@ -242,6 +278,7 @@ Singleton {
 
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            root.metaWatchdog.stop();
             // Muerte provocada por requestMeta() para superseder.
             if (root.metaRestart) {
                 root.metaRestart = false;
@@ -276,6 +313,7 @@ Singleton {
 
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            root.coverWatchdog.stop();
             const donePath = root.reqPath;
             if (root.pendingPath !== "") {
                 const p = root.pendingPath;

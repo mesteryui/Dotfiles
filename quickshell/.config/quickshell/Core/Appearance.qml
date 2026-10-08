@@ -59,6 +59,17 @@ Singleton {
         property int card: 20
     }
 
+    // Opacidades decorativas (textos atenuados, placeholders): un solo
+    // sitio en vez de literales 0.3/0.5/0.7/0.8 dispersos.
+    // (Objeto anónimo en vez de `component`: el registro inline fallaba
+    // aquí con "is not a type".)
+    readonly property QtObject opacity: QtObject {
+        property real hint: 0.7
+        property real hintStrong: 0.8
+        property real faint: 0.5
+        property real ghost: 0.3
+    }
+
     // Opacidades de estado M3 (state layers + deshabilitado): un solo sitio
     // para hover (8%), pressed (12%) y contenido deshabilitado (38%).
     component State: QtObject {
@@ -95,6 +106,7 @@ Singleton {
     // Escala de tipos M3 (nombres spec; los roles de icono/display usan
     // large/larger/huge/hugeass tal cual, fuera de la escala de texto).
     component TypeScale: QtObject {
+        property int labelXSmall: 9   // micro (badges, timestamps)
         property int labelSmall: 11   // spec 11
         property int labelMedium: 12  // spec 12
         property int bodySmall: 12    // spec 12
@@ -104,6 +116,24 @@ Singleton {
         property int titleMedium: 16  // spec 16
         property int titleLarge: 19   // spec 22 (larger; expresivo)
         property int headlineSmall: 22 // spec 24 (huge; expresivo)
+    }
+
+    // Presets físicos (M3 Expressive: esquema Expressive para entradas
+    // hero, Standard para micro-interacciones; spatial con overshoot,
+    // effects —color/opacity— siempre lineales, sin overshoot).
+    // Rangos según doc Qt (doc.qt.io/qt-6/qml-qtquick-springanimation):
+    // spring 0-5, damping 0-1 (¡el setter recorta a 1.0: valores mayores
+    // divergen y rompen la UI!). Integración Euler semi-implícita a 16ms:
+    // damping alto = menos rebote (manda el fuente qtdeclarative:
+    // velocity += spring*diff - damping*velocity).
+    // Epsilon según doc: 0.005 para scale, 0.25 para píxeles.
+    // Uso: Behavior on scale { SpringAnimation {
+    //   spring: Appearance.motion.springSnappy.spring; ... } }
+    component SpringParams: QtObject {
+        property real spring: 2.0
+        property real damping: 0.3
+        property real mass: 1.0
+        property real epsilon: 0.005
     }
 
     // Esquema de motion M3 (duraciones; los easings se migran aparte).
@@ -121,6 +151,23 @@ Singleton {
         // Curvas M3 para Easing.Bezier (easing.bezierCurve).
         property var standard: [0.2, 0.0, 0.0, 1.0]
         property var emphasized: [0.05, 0.7, 0.1, 1.0]
+
+        // Suave Standard (paneles, hovers): ~0.35s, overshoot <1%.
+        readonly property SpringParams springSoft: SpringParams {
+            spring: 2.0; damping: 0.32; mass: 1.0; epsilon: 0.005
+        }
+        // Entradas Expressive (aperturas): un overshoot ~10%, ~0.45s.
+        readonly property SpringParams springBouncy: SpringParams {
+            spring: 3.5; damping: 0.28; mass: 1.0; epsilon: 0.005
+        }
+        // Micro-interacciones (botones, switches): ~0.29s, overshoot ~1.5%.
+        readonly property SpringParams springSnappy: SpringParams {
+            spring: 5.0; damping: 0.45; mass: 1.0; epsilon: 0.005
+        }
+        // Tamaños en layout: casi crítico, sin rebote visible, ~0.25s.
+        readonly property SpringParams springSize: SpringParams {
+            spring: 4.0; damping: 0.5; mass: 1.0; epsilon: 0.25
+        }
     }
 
     component FontConfig: QtObject {

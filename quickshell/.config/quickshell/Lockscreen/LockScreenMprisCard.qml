@@ -63,26 +63,21 @@ Item {
         }
     }
 
-    function withAlpha(hexColor, alphaValue) {
-        var c = Qt.color(hexColor);
-        return Qt.rgba(c.r, c.g, c.b, alphaValue);
-    }
-
     Rectangle {
         id: mprisBg
 
         anchors.fill: parent
         radius: Appearance.shape.verylarge
-        color: root.withAlpha(Appearance.md3.surface_container_high, 0.78)
+        color: Qt.alpha(Appearance.md3.surface_container_high, 0.78)
         border.width: 1
-        border.color: root.withAlpha(Appearance.md3.outline_variant, 0.5)
+        border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
         RowLayout {
             id: mprisContent
             anchors {
                 fill: parent
-                leftMargin: 16
-                rightMargin: 16
+                leftMargin: Appearance.spacing.l
+                rightMargin: Appearance.spacing.l
                 topMargin: 14
                 bottomMargin: 14
             }
