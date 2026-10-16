@@ -2,8 +2,8 @@ import qs.Core
 import QtQuick
 
 /**
- * Recreation of GTK revealer. Expects one single child.
- */
+* Recreation of GTK revealer. Expects one single child.
+*/
 Item {
     id: root
 
@@ -18,7 +18,7 @@ Item {
     visible: reveal || (implicitWidth > 0 && !vertical) || (implicitHeight > 0 && vertical)
 
     Behavior on implicitWidth {
-        enabled: !root.vertical && !Appearance.motion.reduced
+        enabled: !root.vertical
 
         SpringAnimation {
             spring: Appearance.motion.springSize.spring
@@ -29,7 +29,7 @@ Item {
     }
 
     Behavior on implicitHeight {
-        enabled: root.vertical && !Appearance.motion.reduced
+        enabled: root.vertical
 
         SpringAnimation {
             spring: Appearance.motion.springSize.spring

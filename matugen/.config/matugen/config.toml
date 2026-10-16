@@ -1,117 +1,62 @@
 [config]
 
-[templates.quickshell]
-input_path = './templates/quickshell.json'
-output_path = '~/.local/state/quickshell/generated/colors.json'
-
-[templates.papirus-folders]
-input_path = '~/.config/matugen/templates/papirus-color'
-colors_to_compare = [
-    { name = "black",      color = "#4f4f4f" },
-    { name = "blue",       color = "#5294e2" },
-    { name = "bluegrey",   color = "#607d8b" },
-    { name = "brown",      color = "#ae8e6c" },
-    { name = "carmine",    color = "#a30002" },
-    { name = "cyan",       color = "#00bcd4" },
-    { name = "darkcyan",   color = "#45abb7" },
-    { name = "deeporange", color = "#eb6637" },
-    { name = "green",      color = "#87b158" },
-    { name = "grey",       color = "#8e8e8e" },
-    { name = "indigo",     color = "#5c6bc0" },
-    { name = "magenta",    color = "#ca71df" },
-    { name = "nordic",     color = "#81a1c1" },
-    { name = "orange",     color = "#ee923a" },
-    { name = "palebrown",  color = "#d1bfae" },
-    { name = "paleorange", color = "#eeca8f" },
-    { name = "pink",       color = "#f06292" },
-    { name = "red",        color = "#e25252" },
-    { name = "teal",       color = "#16a085" },
-    { name = "violet",     color = "#7e57c2" },
-    { name = "white",      color = "#e4e4e4" },
-    { name = "yaru",       color = "#676767" },
-    { name = "yellow",     color = "#f9bd30" },
-]
-compare_to = "{{ colors.primary.default.hex }}"
-post_hook = 'nohup sudo -n papirus-folders -C {{ closest_color }} -u > /dev/null 2>&1 &'
-index = 1
-
-[templates.bat]
-input_path  = '/home/oscar/.config/matugen/templates/matugen-bat-colors.tmTheme'
-output_path = '/home/oscar/.config/bat/themes/Matugen.tmTheme'
-post_hook = 'bat cache --build'
+# colors.json (the shell's own palette) is authored by the Go control plane;
+# matugen fans that same palette into the core desktop surface below. These
+# templates always render: the terminal, the Hyprland frame, the system
+# monitor, and the Qt toolkit the shell itself is built on. The GTK / GUI-app
+# fan-out lives in apps.toml, gated by the "Theme apps" toggle (theme.json
+# themeApps), so a user can keep third-party apps stock while the shell tracks
+# the palette.
 
 [templates.kitty]
-input_path = '/home/oscar/.config/matugen/templates/kitty-kolors.conf'
-output_path = '/home/oscar/.config/kitty/colors.conf'
-post_hook = 'pkill -SIGUSR2 kitty'
+input_path = "~/.config/matugen/templates/kitty-colors.conf"
+output_path = "~/.config/kitty/current-theme.conf"
 
-[templates.zathura]
-input_path = './templates/zathurarc'
-output_path = '~/.config/zathura/matugen-zathurarc'
-
-[templates.qt]
-input_path = './templates/matugen.colors'
-output_path = "~/.local/share/color-schemes/matugen.colors"
 
 [templates.hyprland]
 input_path = './templates/hyprland_template.lua'
 output_path = "~/.config/hypr/colors.lua"
 post_hook = "hyprctl reload"
 
-[templates.hypr]
-input_path = './templates/hyprlock_template.conf'
-output_path = "~/.config/hypr/colors.conf"
-
-[templates.gtk3]
-input_path = './templates/gtk3-colors.css'
-output_path = '~/.config/gtk-3.0/colors.css'
-
-[templates.thunar]
-input_path = './templates/thunar.css'
-output_path = '~/.config/gtk-3.0/thunar.css'
-
-[templates.gtk4]
-input_path = './templates/gtk4-colors.css'
-output_path = '~/.config/gtk-4.0/colors.css'
-post_hook = '~/.config/matugen/scripts/gtk-themes-reload.sh'
-#post_hook = "ags request restart"
-
 [templates.btop]
-input_path = './templates/btop.theme'
-output_path = '~/.config/btop/themes/matugen.theme'
-post_hook = 'pkill -USR2 btop || true'
+input_path = "~/.config/matugen/templates/btop.theme"
+output_path = "~/.config/btop/themes/ryoku.theme"
 
-[templates.hyprtoolkit]
-input_path = "/home/oscar/.config/matugen/templates/hyprland/hyprtoolkit.conf"
-output_path = "/home/oscar/.config/hypr/hyprtoolkit.conf"
-post_hook = "hyprctl reload"
+# The screen-share source chooser xdph launches. A core desktop surface, not a
+# third-party app: it renders here so the chooser follows the wallpaper even
+# with "Theme apps" off, instead of opening stock-grey in a themed session.
+[templates.sharepicker]
+input_path = "~/.config/matugen/templates/share-picker.css"
+output_path = "~/.cache/ryoku/share-picker.css"
 
-[templates.pywalfox]
-input_path = './templates/pywalfox-colors.json'
-output_path = '~/.cache/wal/colors.json'
-post_hook = 'pywalfox update'
+[templates.quickshell]
+input_path = './templates/quickshell.json'
+output_path = '~/.local/state/quickshell/generated/colors.json'
 
-[templates.starship]
-input_path = "/home/oscar/.config/matugen/templates/matugen-starship.toml"
-output_path = "/home/oscar/.config/starship.toml"
 
-[templates.vesktop]
-input_path = './templates/midnight-material.css'
-output_path = '~/.config/equibop/themes/midnight-discord.css'
+[templates.qt]
+input_path = './templates/matugen.colors'
+output_path = "~/.local/share/color-schemes/matugen.colors"
 
+# fish/conf.d se auto-evalúa al arrancar la shell, así que el color de
+# sintaxis y fzf sigue al wallpaper sin tocar tu config. Misma ruta que
+# declara apps.toml para no duplicar salidas si algún día se usa ese fichero.
 [templates.fish]
-input_path = '/home/oscar/.config/matugen/templates/fish_theme.fish'
-output_path = '/home/oscar/.config/fish/conf.d/some_confs.fish'
-post_hook = "source ~/.config/fish/config.fish"
+input_path = "~/.config/matugen/templates/colors.fish"
+output_path = "~/.config/fish/conf.d/ryoku-colors.fish"
 
-[templates.hyprland-share-picker]
-input_path = './templates/share-picker.css'
-output_path = "~/.config/hyprland-preview-share-picker/style.css"
+# El prompt (starship se carga desde config.fish). La plantilla es el
+# starship.toml completo: solo la paleta es dinámica, el diseño vive aquí.
+[templates.starship]
+input_path = "~/.config/matugen/templates/matugen-starship.toml"
+output_path = "~/.config/starship.toml"
 
-[templates.zen-userchrome]
-input_path = './templates/zen-userchrome.css'
-output_path = '~/.config/zen/7gspj477.Default (release)/chrome/zen-userChrome.css'
+# Extensión Matugen Theme de VSCodium: vigila ~/.cache/matugen/vscode-colors*
+# y regenera el tema "Matugen" al cambiar el wallpaper.
+[templates.vscode-raw]
+input_path = './templates/vscode-colors'
+output_path = '~/.cache/matugen/vscode-colors'
 
-[templates.zen-usercontent]
-input_path = './templates/zen-usercontent.css'
-output_path = '~/.config/zen/7gspj477.Default (release)/chrome/zen-userContent.css'
+[templates.vscode-json]
+input_path = './templates/vscode-colors.json'
+output_path = '~/.cache/matugen/vscode-colors.json'

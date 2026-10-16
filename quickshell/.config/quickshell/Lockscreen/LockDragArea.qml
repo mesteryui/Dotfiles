@@ -20,7 +20,9 @@ MouseArea {
     hoverEnabled: false
 
     property real dragStartY: 0
+
     property real dragDy: 0
+
     property bool dragging: false
 
     onPressed: mouse => {

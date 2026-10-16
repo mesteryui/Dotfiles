@@ -48,7 +48,9 @@ Item {
     LazyLoader {
         id: popupLoader
 
-        loading: titleInteraction.pressed || titleInteraction.hoveredChanged
+        // `containsMouse` (bool), no `hoveredChanged` (señal, siempre
+        // truthy: cargaba eager en arranque).
+        loading: titleInteraction.pressed || titleInteraction.containsMouse
         component: MprisSubwindow {
             id: popup
 

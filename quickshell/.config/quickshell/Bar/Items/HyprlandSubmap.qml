@@ -24,5 +24,4 @@ Item {
         anchors.centerIn: parent
         text: root.currentSubmap
     }
-
 }

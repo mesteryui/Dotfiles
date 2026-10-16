@@ -5,7 +5,7 @@ import QtQuick
 Item {
     id: root
 
-    signal updateRequested()
+    signal updateRequested
 
     implicitHeight: 64
 

@@ -1,5 +1,7 @@
 /* Ryoku palette -> classic GTK 3. Rendered by matugen; do not hand-edit.
-   GTK 3 has no CSS custom properties, so @define-color is the whole story here:
+   Thunar-specific rules live in thunar.css next to the generated gtk.css. */
+@import url("thunar.css");
+/* GTK 3 has no CSS custom properties, so @define-color is the whole story here:
    the :root { --* } form the GTK 4 template leads with would not parse. The
    theme this pairs with must derive its widget colours from these named colours,
    which adw-gtk3 does; stock Adwaita hardcodes literals and mostly ignores them.

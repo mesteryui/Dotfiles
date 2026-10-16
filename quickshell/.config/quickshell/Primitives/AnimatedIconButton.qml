@@ -1,7 +1,6 @@
 import qs.Core
 import qs.Primitives
 import QtQuick
-import QtQuick.Effects
 
 Item {
     id: root
@@ -18,10 +17,7 @@ Item {
     property color activeIconColor: Appearance.md3.on_primary
     property color disabledIconColor: Qt.alpha(Appearance.md3.on_surface, Appearance.state.disabled)
 
-    // Customization
-    property bool hasShadow: false
-
-    signal clicked()
+    signal clicked
 
     implicitWidth: 44
     implicitHeight: 44
@@ -29,7 +25,6 @@ Item {
     scale: mouseArea.pressed ? 0.92 : (mouseArea.containsMouse ? 1.06 : 1.0)
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping
@@ -45,31 +40,25 @@ Item {
         radius: width / 2
         color: root.isActive ? root.accentColor : root.baseColor
 
-        Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.motion.short3
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
             color: root.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface
-            opacity: mouseArea.pressed ? Appearance.state.pressed : (mouseArea.containsMouse ? Appearance.state.hovered : 0)
+            opacity: mouseArea.pressed ? Appearance.state.pressed : (mouseArea.containsMouse
+                                                                     ? Appearance.state.hovered : 0)
 
-            Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Appearance.motion.short2
+                }
+            }
         }
-    }
-
-    // Sombra: source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-    MultiEffect {
-        id: btnShadow
-        anchors.fill: bgRect
-        visible: root.hasShadow && Appearance.shadows
-        shadowEnabled: root.hasShadow && Appearance.shadows
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.22
-        shadowBlur: 0.5
-        shadowVerticalOffset: 3
-        z: -1
-        Component.onCompleted: btnShadow.source = bgRect
     }
 
     MaterialIcon {
@@ -78,7 +67,11 @@ Item {
         size: root.iconSize
         color: root.enabled ? (root.isActive ? root.activeIconColor : root.iconColor) : root.disabledIconColor
 
-        Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.motion.short3
+            }
+        }
     }
 
     MouseArea {

@@ -87,6 +87,7 @@ Item {
     }
 
     signal activated(var item)
+
     signal highlighted(var item)
 
     // Generación del filtro (la pone AppLauncher): distingue "nueva
@@ -94,6 +95,7 @@ Item {
     // (snapshot de fd, Supr en clip, rescan .desktop => conservar
     // selección y scroll).
     property int filterEpoch: 0
+
     property int _seenEpoch: -1
 
     // Marca de la última navegación por teclado: el hover del ratón no
@@ -108,12 +110,18 @@ Item {
         if (!item)
             return "";
         switch (root.activeMode) {
-        case "todo": return "app:" + (item.id || "");
-        case "clip": return "clip:" + (item.cid || "");
-        case "files": return "file:" + (item.path || "");
-        case "emoji": return "emoji:" + (item.ch || "");
-        case "system": return "sys:" + (item.section || "") + "|" + (item.title || "") + "|" + (item.shell || "");
-        default: return "t:" + (item.title || "");
+        case "todo":
+            return "app:" + (item.id || "");
+        case "clip":
+            return "clip:" + (item.cid || "");
+        case "files":
+            return "file:" + (item.path || "");
+        case "emoji":
+            return "emoji:" + (item.ch || "");
+        case "system":
+            return "sys:" + (item.section || "") + "|" + (item.title || "") + "|" + (item.shell || "");
+        default:
+            return "t:" + (item.title || "");
         }
     }
 
@@ -336,6 +344,7 @@ Item {
     // Al dar la vuelta se avisa discreto: línea fina en el borde hacia
     // donde se saltó (arriba = al primero, abajo = al último).
     property bool wrapFlash: false
+
     property int wrapDir: 0
 
     Timer {
@@ -449,16 +458,24 @@ Item {
                 return root.activeMode === "todo" && d && d.isDesktopApp === true;
             }
             readonly property string dispTitle: isRawApp ? (modelData.name || "") : (modelData.title || "")
-            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : ((modelData.cat ? modelData.cat + " · " : "") + (modelData.sub || ""))
-            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon || "")
+            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : ((
+                                                                                                          modelData.cat
+                                                                                                          ? modelData.cat
+                                                                                                            + " · " : "")
+                                                                                                      + (modelData.sub
+                                                                                                         || ""))
+            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon
+                                                                                       || "")
             readonly property string dispIconName: modelData.iconName || "circle"
             readonly property string dispCh: modelData.ch || ""
-            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(modelData.id)
+            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(
+                                                   modelData.id)
 
             // Selección efectiva: con un solo resultado, pinta seleccionado
             // desde el primer frame (el índice 0 llega un tick después del
             // swap y si no la fila parpadea sin/con selección por tecla).
-            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1 && root._swapping)
+            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1
+                                                                                         && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: entryDelegate.dispTitle
@@ -489,14 +506,16 @@ Item {
                         anchors.centerIn: parent
                         iconName: entryDelegate.dispIconName
                         size: 24
-                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.primary
                         visible: entryDelegate.dispAppIcon === "" && entryDelegate.dispCh === ""
                     }
                     StyledText {
                         anchors.centerIn: parent
                         text: entryDelegate.dispCh
                         font.pixelSize: 24
-                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.on_surface
                         visible: entryDelegate.dispCh !== ""
                     }
                 }
@@ -509,14 +528,16 @@ Item {
                         Layout.fillWidth: true
                         text: entryDelegate.dispTitle
                         font.pixelSize: Appearance.typeScale.bodyMedium
-                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.on_surface
                         elide: Text.ElideRight
                     }
                     StyledText {
                         Layout.fillWidth: true
                         text: entryDelegate.dispSub
                         font.pixelSize: Appearance.typeScale.labelMedium
-                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                        color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
                         visible: text.length > 0
                     }
@@ -527,16 +548,19 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     iconName: "push_pin"
                     size: 20
-                    color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
+                    color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                       Appearance.md3.primary
                     visible: entryDelegate.dispPinned
                 }
             }
 
             M3StateLayer {
                 id: stateLayer
+
                 anchors.fill: parent
                 radius: parent.radius
-                tint: entryDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                tint: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                  Appearance.md3.on_surface
                 animate: !root._swapping
             }
 
@@ -612,7 +636,8 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispFav: modelData.isFavorite ?? false
             readonly property bool dispRecent: (modelData.isRecent ?? false) && !gridDelegate.dispFav
-            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1 && root._swapping)
+            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1
+                                                                                        && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIconName
@@ -637,14 +662,16 @@ Item {
                     anchors.centerIn: parent
                     iconName: gridDelegate.dispIconName
                     size: 24
-                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
+                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                      Appearance.md3.primary
                     visible: gridDelegate.dispAppIcon === "" && gridDelegate.dispCh === ""
                 }
                 StyledText {
                     anchors.centerIn: parent
                     text: gridDelegate.dispCh
                     font.pixelSize: 26
-                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                    color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                      Appearance.md3.on_surface
                     visible: gridDelegate.dispCh !== ""
                 }
             }
@@ -656,7 +683,8 @@ Item {
                 anchors.margins: Appearance.spacing.xs
                 iconName: "star"
                 size: 12
-                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.primary
+                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                  Appearance.md3.primary
                 visible: gridDelegate.dispFav
             }
 
@@ -668,15 +696,18 @@ Item {
                 anchors.margins: Appearance.spacing.xs
                 iconName: "history"
                 size: 12
-                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                  Appearance.md3.on_surface_variant
                 visible: gridDelegate.dispRecent
             }
 
             M3StateLayer {
                 id: gridStateLayer
+
                 anchors.fill: parent
                 radius: parent.radius
-                tint: gridDelegate.effSelected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                tint: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                 Appearance.md3.on_surface
                 animate: !root._swapping
             }
 

@@ -18,13 +18,13 @@ BarPopupWindow {
     grabFocus: true
 
     // ── Estado ────────────────────────────────────────────────
-    property date currentDate:  new Date()
+    property date currentDate: new Date()
 
-    property int  currentMonth: currentDate.getMonth()
+    property int currentMonth: currentDate.getMonth()
 
-    property int  currentYear:  currentDate.getFullYear()
+    property int currentYear: currentDate.getFullYear()
 
-    property int  selectedDay:  -1
+    property int selectedDay: -1
 
     readonly property var currentLocale: Services.I18nService.locale
 
@@ -46,9 +46,9 @@ BarPopupWindow {
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
     MultiEffect {
         id: panelShadow
+
         anchors.fill: bg
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
+        shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowBlur: 0.85
         shadowVerticalOffset: 6
@@ -67,20 +67,26 @@ BarPopupWindow {
         }
 
         currentMonth: root.currentMonth
-        currentYear:  root.currentYear
-        selectedDay:  root.selectedDay
+        currentYear: root.currentYear
+        selectedDay: root.selectedDay
         currentLocale: root.currentLocale
 
         onPrevMonthRequested: {
-            if (root.currentMonth === 0) { root.currentMonth = 11; root.currentYear-- }
-            else root.currentMonth--
-            root.selectedDay = -1
+            if (root.currentMonth === 0) {
+                root.currentMonth = 11;
+                root.currentYear--;
+            } else
+                root.currentMonth--;
+            root.selectedDay = -1;
         }
         onNextMonthRequested: {
-            if (root.currentMonth === 11) { root.currentMonth = 0; root.currentYear++ }
-            else root.currentMonth++
-            root.selectedDay = -1
+            if (root.currentMonth === 11) {
+                root.currentMonth = 0;
+                root.currentYear++;
+            } else
+                root.currentMonth++;
+            root.selectedDay = -1;
         }
-        onDaySelected: (day) => root.selectedDay = day
+        onDaySelected: day => root.selectedDay = day
     }
 }

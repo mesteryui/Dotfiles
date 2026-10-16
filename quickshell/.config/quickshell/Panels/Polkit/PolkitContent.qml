@@ -2,8 +2,8 @@ import qs.Primitives
 import qs.Core
 import qs.Core.Services
 import QtQuick
-import QtQuick.Controls.Material
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 Item {
     id: overlay
@@ -49,6 +49,7 @@ Item {
     }
 
     anchors.fill: parent
+
     focus: true
 
     Keys.onPressed: event => { // Esc to close
@@ -82,7 +83,6 @@ Item {
             }
         }
         Behavior on scale {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSoft.spring
                 damping: Appearance.motion.springSoft.damping
@@ -212,7 +212,8 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 visible: overlay.authError
-                text: I18nService.getTranslation("polkit.incorrect_password", "Contraseña incorrecta, inténtalo de nuevo")
+                text: I18nService.getTranslation("polkit.incorrect_password",
+                                                 "Contraseña incorrecta, inténtalo de nuevo")
                 font.pixelSize: Appearance.typeScale.labelMedium
                 color: Appearance.md3.error
             }

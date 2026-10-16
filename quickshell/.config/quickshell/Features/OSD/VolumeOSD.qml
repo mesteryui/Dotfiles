@@ -40,7 +40,9 @@ PercentageOSD {
     // Morph continuo: Circle → Cookie9Sided (energía sonora).
     // Muteado: ClamShell (boca cerrada) + error.
     continuousMorph: true
+
     soundMorphFrom: MaterialShape.Circle
+
     soundMorphTo: MaterialShape.Cookie9Sided
 
     alert: AudioService.muted

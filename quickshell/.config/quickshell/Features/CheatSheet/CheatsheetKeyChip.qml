@@ -5,14 +5,14 @@ import qs.Primitives
 import QtQuick
 
 /**
- * CheatsheetKeyChip
- * ------------------
- * A single key/modifier chip, e.g. "Super", "Shift", "Q".
- * Pure presentational — no interaction, so no state layer needed.
- *
- * Uses `surface_container_highest` so it stands out from the card background
- * (`surface_container_high`) and reads more like a physical keyboard key.
- */
+* CheatsheetKeyChip
+* ------------------
+* A single key/modifier chip, e.g. "Super", "Shift", "Q".
+* Pure presentational — no interaction, so no state layer needed.
+*
+* Uses `surface_container_highest` so it stands out from the card background
+* (`surface_container_high`) and reads more like a physical keyboard key.
+*/
 Item {
     id: root
 
@@ -38,6 +38,9 @@ Item {
         text: root.label
         color: Appearance.md3.on_surface
         font.pixelSize: Appearance.typeScale.labelMedium
-        font.variableAxes: ({ "wght": 550, "wdth": 100 })
+        font.variableAxes: ({
+                                "wght": 550,
+                                "wdth": 100
+                            })
     }
 }

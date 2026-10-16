@@ -33,6 +33,7 @@ Rectangle {
     signal released(var mouse)
 
     readonly property bool containsMouse: _mouse.containsMouse
+
     readonly property bool mousePressed: _mouse.pressed
 
     color: "transparent"

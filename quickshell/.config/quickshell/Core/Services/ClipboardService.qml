@@ -27,25 +27,38 @@ Singleton {
     // Snapshot plano para bindings: entries se llena por streaming y leerlo
     // en vivo desde `results` disparaba binding loops. Solo se reasigna al
     // completar el listado.
+
     property var snapshot: []
+
     property bool ready: false
+
     property string error: ""
+
     property bool refreshing: false
 
     readonly property string previewDir: "/tmp/qs-clipboard"
 
     property string copyId: ""
+
     property bool copyIsImage: false
+
     property string previewId: ""
     // Cola para no perder peticiones si se pulsa muy rápido:
     // solo gana la última (igual que FilePreviewService).
+
     property string pendingCopyId: ""
+
     property bool pendingCopyIsImage: false
+
     property bool hasPendingCopy: false
+
     property string pendingPreviewId: ""
+
     property var pendingDeleteQueue: []
+
     property bool pendingRefresh: false
     // Watchdogs: ningún cliphist/wl-copy colgado debe wedgar su cola.
+
     property Timer listWatchdog: Timer {
         interval: 10000
         onTriggered: {
@@ -55,6 +68,7 @@ Singleton {
             }
         }
     }
+
     property Timer copyWatchdog: Timer {
         interval: 10000
         onTriggered: {
@@ -64,6 +78,7 @@ Singleton {
             }
         }
     }
+
     property Timer previewWatchdog: Timer {
         interval: 15000
         onTriggered: {
@@ -73,6 +88,7 @@ Singleton {
             }
         }
     }
+
     property Timer textWatchdog: Timer {
         interval: 10000
         onTriggered: {
@@ -82,6 +98,7 @@ Singleton {
             }
         }
     }
+
     property Timer delWatchdog: Timer {
         interval: 10000
         onTriggered: {
@@ -97,6 +114,7 @@ Singleton {
     // señal el preview se quedaría esperando eternamente en blanco y
     // reintentando el decode en cada highlight. El display muestra
     // fallback y no lo reintenta en la sesión.
+
     signal previewFailed(string cid)
 
     // Cola de prefetch (baja prioridad): cids vecinos al actual. Se
@@ -163,7 +181,12 @@ Singleton {
         const out = [];
         for (let i = 0; i < entries.count; i++) {
             const e = entries.get(i);
-            out.push({ cid: e.cid, text: e.text, raw: e.raw, isImage: e.isImage });
+            out.push({
+                         cid: e.cid,
+                         text: e.text,
+                         raw: e.raw,
+                         isImage: e.isImage
+                     });
         }
         snapshot = out;
     }
@@ -185,13 +208,20 @@ Singleton {
     }
 
     function startCopy(id, isImage) {
+        // Defensa en profundidad: los llamadores ya validan, pero este
+        // id termina en `sh -c` y no debe llegar sin filtrar.
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: startCopy con id inválido");
+            return;
+        }
         copyId = id;
         copyIsImage = isImage;
         // Asignación imperativa: evita la carrera de usar `command:`
         // ligado a la propiedad y `running = true` en la misma función
         // (el proceso podía arrancar con el id anterior).
         if (isImage)
-            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy --type image/png"];
+            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id)
+                                + "' | wl-copy --type image/png"];
         else
             copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy"];
         copyProc.running = true;
@@ -227,10 +257,18 @@ Singleton {
     }
 
     function startPreview(id) {
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: startPreview con id inválido");
+            return;
+        }
         previewId = id;
         // Tmp + mv atómico: antes `> "$OUT"` truncaba el cacheado bueno
         // antes de saber si el decode iba a funcionar.
-        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(previewDir) + "/preview-" + shEscape(id) + ".png' && ([ -s \"$OUT\" ] || { TMP=\"$OUT.tmp.$$\"; cliphist decode '" + shEscape(id) + "' > \"$TMP\" && mv -f \"$TMP\" \"$OUT\"; rm -f \"$TMP\"; })"];
+        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(
+                                   previewDir) + "/preview-" + shEscape(id)
+                               + ".png' && ([ -s \"$OUT\" ] || { TMP=\"$OUT.tmp.$$\"; cliphist decode '"
+                               + shEscape(id)
+                               + "' > \"$TMP\" && mv -f \"$TMP\" \"$OUT\"; rm -f \"$TMP\"; })"];
         previewProc.running = true;
         previewWatchdog.restart();
     }
@@ -239,9 +277,13 @@ Singleton {
     // primera línea truncada; para la preview hay que hacer `decode`).
     // Tope 20000 caracteres en el acumulador; si se corta, se marca con "…".
     property string textCid: ""
+
     property string textContent: ""
+
     property string textAcc: ""
+
     property string pendingTextId: ""
+
     signal textReady(string cid)
 
     // Pide el texto completo; devuelve el cacheado si ya es de este cid,
@@ -262,6 +304,10 @@ Singleton {
     }
 
     function startTextRequest(id) {
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: startTextRequest con id inválido");
+            return;
+        }
         textCid = id;
         textContent = "";
         textAcc = "";
@@ -281,7 +327,8 @@ Singleton {
         // los más viejos se descartan con aviso en vez de crecer sin fin).
         if (delProc.running) {
             if (pendingDeleteQueue.length >= 50) {
-                console.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift());
+                console.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift(
+                                 ));
             }
             pendingDeleteQueue.push(id);
             return;
@@ -290,6 +337,10 @@ Singleton {
     }
 
     function startDelete(id) {
+        if (!isValidId(id)) {
+            console.warn("ClipboardService: startDelete con id inválido");
+            return;
+        }
         // NOTA: antes era `cliphist delete-query <id>`, que borra POR
         // CONTENIDO (todo lo que contenga ese texto) y podía borrar
         // varias entradas ajenas o ninguna. Lo correcto para un id es
@@ -310,11 +361,13 @@ Singleton {
     Process {
         id: trimProc
 
-        command: ["sh", "-c", "d='" + root.previewDir + "'; [ -d \"$d\" ] || exit 0; find \"$d\" -maxdepth 1 -type f -printf '%T@ %p\\n' 2>/dev/null | sort -rn | tail -n +41 | cut -d' ' -f2- | xargs -r rm -f"]
+        command: ["sh", "-c", "d='" + root.shEscape(root.previewDir)
+            + "'; [ -d \"$d\" ] || exit 0; find \"$d\" -maxdepth 1 -type f -printf '%T@ %p\\n' 2>/dev/null | sort -rn | tail -n +41 | cut -d' ' -f2- | xargs -r rm -f"]
     }
 
     Process {
         id: mkdirProc
+
         command: ["mkdir", "-p", root.previewDir]
         Component.onCompleted: mkdirProc.running = true
         // qmllint disable signal-handler-parameters
@@ -328,6 +381,7 @@ Singleton {
     // cliphist list -> "<id>\t<preview>"
     Process {
         id: listProc
+
         command: ["cliphist", "list"]
         stdout: SplitParser {
             onRead: data => {
@@ -341,11 +395,11 @@ Singleton {
                 const txt = line.slice(tab + 1).trim();
                 const isImg = txt.indexOf("[[ binary data") === 0;
                 root.entries.append({
-                    cid: cid,
-                    text: isImg ? ("Imagen · " + cid) : txt,
-                    raw: txt,
-                    isImage: isImg
-                });
+                                        cid: cid,
+                                        text: isImg ? ("Imagen · " + cid) : txt,
+                                        raw: txt,
+                                        isImage: isImg
+                                    });
             }
         }
         // qmllint disable signal-handler-parameters
@@ -354,9 +408,12 @@ Singleton {
             root.refreshing = false;
             root.ready = true;
             if (code === 127)
-                root.error = I18nService.getTranslation("launcher.clipboard_error", "Sin historial (¿daemon cliphist activo?)") + " (cliphist no instalado)";
+                root.error = I18nService.getTranslation("launcher.clipboard_error",
+                                                        "Sin historial (¿daemon cliphist activo?)")
+                        + " (cliphist no instalado)";
             else if (code !== 0)
-                root.error = I18nService.getTranslation("launcher.clipboard_error", "Sin historial (¿daemon cliphist activo?)");
+                root.error = I18nService.getTranslation("launcher.clipboard_error",
+                                                        "Sin historial (¿daemon cliphist activo?)");
             root.rebuildSnapshot();
             if (!trimProc.running)
                 trimProc.running = true;
@@ -373,6 +430,7 @@ Singleton {
     Process {
         id: copyProc
         // qmllint disable signal-handler-parameters
+
         onExited: code => {
             root.copyWatchdog.stop();
             if (code !== 0)
@@ -392,6 +450,7 @@ Singleton {
     Process {
         id: previewProc
         // qmllint disable signal-handler-parameters
+
         onExited: code => {
             root.previewWatchdog.stop();
             const finishedId = root.previewId;
@@ -417,6 +476,7 @@ Singleton {
 
     Process {
         id: textProc
+
         stdout: SplitParser {
             onRead: data => {
                 if (root.textAcc.length < 20000)
@@ -451,8 +511,10 @@ Singleton {
 
     Process {
         id: delProc
+
         property string currentId: ""
         // qmllint disable signal-handler-parameters
+
         onExited: code => {
             root.delWatchdog.stop();
             if (code !== 0)
@@ -474,14 +536,24 @@ Singleton {
     Process {
         id: cleanProc
         // Borrado puntual de un preview; sin señales, no interfiere.
+
         function clean(cid) {
-            cleanProc.command = ["sh", "-c", "rm -f '" + root.shEscape(root.previewDir) + "/preview-" + root.shEscape(String(cid).trim()) + ".png'"];
+            const id = String(cid).trim();
+            // clean() es invocable y su arg termina en `sh -c`: validar
+            // aquí también, no solo en el llamador (deleteEntry).
+            if (!root.isValidId(id)) {
+                console.warn("ClipboardService: clean con id inválido");
+                return;
+            }
+            cleanProc.command = ["sh", "-c", "rm -f '" + root.shEscape(root.previewDir) + "/preview-"
+                                 + root.shEscape(id) + ".png'"];
             cleanProc.running = true;
         }
     }
 
     Process {
         id: wipeProc
+
         command: ["cliphist", "wipe"]
         // qmllint disable signal-handler-parameters
         onExited: code => {

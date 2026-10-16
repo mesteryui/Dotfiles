@@ -1,16 +1,17 @@
 -- configs/monitors.lua
 local mirroring = false
+
+hl.monitor({ output = "", mode = "highrr", position = "auto" })
+
 hl.monitor({
 	output = DefaultMonitor,
-	mode = "2880x1800@90.0",
-	position = "0x0",
-	scale = "auto",
+	scale = "1.80",
 })
+
+--hl.config({ experimental = { hdr = true, wide_color_gamut = true }, render = { explicit_sync = 1 } })
 
 hl.monitor({
 	output = "HDMI-A-1",
 	mode = "preferred",
-	position = "1440x0",
-	scale = "auto",
-	mirror = mirroring and DefaultMonitor or nil
+	mirror = mirroring and DefaultMonitor or nil,
 })

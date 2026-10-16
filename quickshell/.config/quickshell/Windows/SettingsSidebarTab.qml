@@ -65,7 +65,8 @@ Rectangle {
             StyledText {
                 text: tabBtn.description
                 font.pixelSize: Appearance.typeScale.labelMedium
-                color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                color: tabBtn.selected ? Appearance.md3.on_secondary_container :
+                                         Appearance.md3.on_surface_variant
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }

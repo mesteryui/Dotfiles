@@ -19,10 +19,26 @@ MenuDefinition {
     parentId: "configure"
 
     readonly property var ppMeta: [
-        { ctl: "power-saver", icon: "battery_saver", label: "battery.powersave", fallback: "Ahorro" },
-        { ctl: "balanced", icon: "balance", label: "battery.balanced", fallback: "Equilibrado" },
-        { ctl: "performance", icon: "bolt", label: "battery.performance", fallback: "Rendimiento" }
+        {
+            ctl: "power-saver",
+            icon: "battery_saver",
+            label: "battery.powersave",
+            fallback: "Ahorro"
+        },
+        {
+            ctl: "balanced",
+            icon: "balance",
+            label: "battery.balanced",
+            fallback: "Equilibrado"
+        },
+        {
+            ctl: "performance",
+            icon: "bolt",
+            label: "battery.performance",
+            fallback: "Rendimiento"
+        }
     ]
+
     readonly property string ppCurrentCtl: {
         switch (PowerProfiles.profile) {
         case PowerProfile.PowerSaver:
@@ -33,6 +49,7 @@ MenuDefinition {
             return "balanced";
         }
     }
+
     readonly property string langWatch: Services.I18nService.language
 
     onLangWatchChanged: refresh()
@@ -54,10 +71,12 @@ MenuDefinition {
             // El badge va en el fallback SIN subtitleKey: el Registry prefiere
             // la clave y la traduciría pelada, perdiendo el "● Actual".
             // El idioma se mantiene vía langWatch → refresh().
-            const sub = (badge !== "" ? "● " + badge + " · " : "") + tr("sysmenu.dynamic_power", "Perfil de energía");
-            out.push(root.shell("pp-" + m.ctl, tr(m.label, m.fallback), sub, m.icon,
-                "powerprofilesctl set " + m.ctl,
-                { titleKey: m.label }));
+            const sub = (badge !== "" ? "● " + badge + " · " : "") + tr("sysmenu.dynamic_power",
+                                                                        "Perfil de energía");
+            out.push(root.shell("pp-" + m.ctl, tr(m.label, m.fallback), sub, m.icon, "powerprofilesctl set "
+                                + m.ctl, {
+                                    titleKey: m.label
+                                }));
         }
         root.entries = out;
     }

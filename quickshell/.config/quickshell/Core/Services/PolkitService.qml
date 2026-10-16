@@ -16,16 +16,16 @@ Singleton {
     // feedback (shake + estado de error). Se reinicia con cada petición nueva.
     property int failedAttempts: 0
     property string cleanMessage: {
-        if (!root.flow) return "";
-        return root.flow.message.endsWith(".")
-            ? root.flow.message.slice(0, -1)
-            : root.flow.message
+        if (!root.flow)
+            return "";
+        return root.flow.message.endsWith(".") ? root.flow.message.slice(0, -1) : root.flow.message;
     }
     property string cleanPrompt: {
         const inputPrompt = root.flow?.inputPrompt.trim() ?? "";
         const cleanedInputPrompt = inputPrompt.endsWith(":") ? inputPrompt.slice(0, -1) : inputPrompt;
         const usePasswordChars = !(root.flow?.responseVisible ?? true);
-        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("polkit.password") : I18nService.getTranslation("polkit.input"));
+        return cleanedInputPrompt || (usePasswordChars ? I18nService.getTranslation("polkit.password") :
+                                                         I18nService.getTranslation("polkit.input"));
     }
 
     function cancel() {

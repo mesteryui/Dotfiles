@@ -1,5 +1,6 @@
 import qs.Primitives
 import qs.Core
+import qs.Core.Services as Services
 import QtQuick
 import Quickshell.Widgets
 
@@ -18,10 +19,51 @@ Item {
 
     required property string filePath
 
+    // Ventana de cercanía al viewport: el ListView instancia delegados
+    // fuera de pantalla por el cacheBuffer, y pedir el frame de todos al
+    // abrir el menú encolaba N ffmpeg de golpe. Solo piden frame los
+    // cercanos al actual (±4); al hacer scroll entran en ventana y lo
+    // piden entonces. El padre los ata a index/currentIndex.
+    property int delegateIndex: -1
+    property int listCurrentIndex: -1
+    readonly property bool isNear: delegateIndex < 0 || listCurrentIndex < 0
+        || Math.abs(delegateIndex - listCurrentIndex) <= 4
+
+    readonly property bool isVideo: Services.WallpaperService.isVideo(root.filePath)
+
+    function maybeRequestFrame() {
+        if (root.isVideo && root.isNear)
+            Services.VideoFrameService.ensureFrame(root.filePath);
+    }
+
+    // Los videos se representan por su frame (el Image no lee video). El
+    // frame se pide al entrar en ventana; la cola del servicio serializa
+    // las extracciones (un solo ffmpeg a la vez).
+    // Puerta igual que el lockscreen: el Image no reintenta un fichero
+    // ausente al primer intento, asi que la cadena solo se expone cuando
+    // el servicio confirma (binding sobre `confirmed`, sin Connections).
+    Component.onCompleted: root.maybeRequestFrame()
+
+    // Los delegados se reciclan (pool del ListView): si cambia el archivo,
+    // o si el scroll lo acerca al viewport, se pide su frame. Nunca desde
+    // el binding de source (escribir durante su evaluacion dispara
+    // "Binding loop detected").
+    onFilePathChanged: root.maybeRequestFrame()
+    onIsNearChanged: root.maybeRequestFrame()
+    onIsVideoChanged: root.maybeRequestFrame()
+
+    function thumbSource(): string {
+        if (!root.isVideo)
+            return root.filePath;
+        // LECTURA PURA: "" -> frame es un cambio real que carga.
+        const open = Services.VideoFrameService.confirmed[root.filePath] !== undefined;
+        return open ? Services.WallpaperService.staticSourceFor(root.filePath) : "";
+    }
+
     // Icono placeholder mientras se carga
     MaterialIcon {
         anchors.centerIn: parent
-        icon: "image"
+        icon: root.isVideo ? "movie" : "image"
         size: 32
         color: Appearance.md3.on_surface_variant
         opacity: Appearance.opacity.ghost
@@ -52,7 +94,10 @@ Item {
                 id: wallpaperPreview
 
                 anchors.fill: parent
-                source: Qt.resolvedUrl(root.filePath)
+                source: {
+                    const eff = root.thumbSource();
+                    return eff !== "" ? Qt.resolvedUrl(eff) : "";
+                }
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 // Thumbs locales: sin caché global para que el Loader al
@@ -66,7 +111,6 @@ Item {
                 scale: root.hovered ? 1.04 : 1.0
 
                 Behavior on scale {
-                    enabled: !Appearance.motion.reduced
                     SpringAnimation {
                         spring: Appearance.motion.springSoft.spring
                         damping: Appearance.motion.springSoft.damping
@@ -81,6 +125,31 @@ Item {
                         easing.type: Easing.Bezier
                         easing.bezierCurve: Appearance.motion.emphasized
                     }
+                }
+            }
+
+            // Insignia de video (solo videos): indica fondo animado.
+            Rectangle {
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 10
+                }
+                width: badgeIcon.implicitWidth + 14
+                height: 24
+                radius: Appearance.shape.small
+                color: Qt.rgba(0, 0, 0, 0.45)
+                border.color: Qt.rgba(1, 1, 1, 0.15)
+                border.width: 1
+                visible: root.isVideo && wallpaperPreview.status === Image.Ready
+
+                MaterialIcon {
+                    id: badgeIcon
+
+                    anchors.centerIn: parent
+                    icon: "play_arrow"
+                    size: 16
+                    color: Qt.rgba(1, 1, 1, 0.95)
                 }
             }
 

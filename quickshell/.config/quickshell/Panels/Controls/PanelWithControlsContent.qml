@@ -55,6 +55,7 @@ Item {
             icon: "partly_cloudy_day"
         }
     ]
+
     property int currentTab: 0
 
     // Flickable de la pestaña activa. Cada pestaña lleva su propio
@@ -136,108 +137,115 @@ Item {
 
         spacing: Appearance.spacing.m
 
-            // RePág/AvPág/Inicio/Fin no tienen señal dedicada en Keys:
-            // se gestionan con el manejador genérico onPressed.
-            Keys.onPressed: event => {
-                if (event.key === Qt.Key_PageDown) {
-                    root.scrollBy(root.activeFlick.height * 0.8);
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_PageUp) {
-                    root.scrollBy(-root.activeFlick.height * 0.8);
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_Home) {
-                    root.scrollTop();
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_End) {
-                    root.scrollBottom();
-                    event.accepted = true;
-                } else {
-                    root.keyboardMode = true;
+        // RePág/AvPág/Inicio/Fin no tienen señal dedicada en Keys:
+        // se gestionan con el manejador genérico onPressed.
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_PageDown) {
+                root.scrollBy(root.activeFlick.height * 0.8);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_PageUp) {
+                root.scrollBy(-root.activeFlick.height * 0.8);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Home) {
+                root.scrollTop();
+                event.accepted = true;
+            } else if (event.key === Qt.Key_End) {
+                root.scrollBottom();
+                event.accepted = true;
+            } else {
+                root.keyboardMode = true;
+            }
+        }
+
+        ControlsHeader {
+            id: header
+            Layout.fillWidth: true
+
+            host: root
+            focusBelow: sliders.volumeSlider
+        }
+
+        ControlsSliders {
+            id: sliders
+            Layout.fillWidth: true
+
+            host: root
+            focusAbove: header.powerButton
+            focusBelow: toggles.wifiToggle
+        }
+
+        // ══ DIVISOR ════════════════════════════════════════════════
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+        }
+
+        ControlsTogglesGrid {
+            id: toggles
+            Layout.fillWidth: true
+
+            host: root
+        }
+
+        // ══ DIVISOR ════════════════════════════════════════════════
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+        }
+
+        ControlsTabBar {
+            id: tabBar
+            Layout.fillWidth: true
+
+            host: root
+            focusAbove: toggles.gameToggle
+        }
+
+        // ══ CONTENIDO del Tab activo ════════════════════════════════
+        // Cada pestaña tiene su propio scroll y ocupa todo el alto
+        // libre bajo la cabecera fija: la rueda solo mueve la pestaña
+        // visible, nunca la ventana.
+        StackLayout {
+            id: stack
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            currentIndex: root.currentTab
+
+            Flickable {
+                id: sysFlick
+
+                contentWidth: width
+                contentHeight: sysTab.implicitHeight
+                clip: true
+                flickableDirection: Flickable.VerticalFlick
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: StyledScrollBar {}
+
+                SysInfoTab {
+                    id: sysTab
+
+                    width: parent.width
                 }
             }
+            Flickable {
+                id: weatherFlick
 
-            ControlsHeader {
-                id: header
-                Layout.fillWidth: true
-                host: root
-                focusBelow: sliders.volumeSlider
-            }
+                contentWidth: width
+                contentHeight: weatherTab.implicitHeight
+                clip: true
+                flickableDirection: Flickable.VerticalFlick
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: StyledScrollBar {}
 
-            ControlsSliders {
-                id: sliders
-                Layout.fillWidth: true
-                host: root
-                focusAbove: header.powerButton
-                focusBelow: toggles.wifiToggle
-            }
+                WeatherTab {
+                    id: weatherTab
 
-            // ══ DIVISOR ════════════════════════════════════════════════
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
-            }
-
-            ControlsTogglesGrid {
-                id: toggles
-                Layout.fillWidth: true
-                host: root
-            }
-
-            // ══ DIVISOR ════════════════════════════════════════════════
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
-            }
-
-            ControlsTabBar {
-                id: tabBar
-                Layout.fillWidth: true
-                host: root
-                focusAbove: toggles.gameToggle
-            }
-
-            // ══ CONTENIDO del Tab activo ════════════════════════════════
-            // Cada pestaña tiene su propio scroll y ocupa todo el alto
-            // libre bajo la cabecera fija: la rueda solo mueve la pestaña
-            // visible, nunca la ventana.
-            StackLayout {
-                id: stack
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                currentIndex: root.currentTab
-
-                Flickable {
-                    id: sysFlick
-
-                    contentWidth: width
-                    contentHeight: sysTab.implicitHeight
-                    clip: true
-                    flickableDirection: Flickable.VerticalFlick
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: StyledScrollBar {}
-
-                    SysInfoTab {
-                        id: sysTab
-                        width: parent.width
-                    }
-                }
-                Flickable {
-                    id: weatherFlick
-
-                    contentWidth: width
-                    contentHeight: weatherTab.implicitHeight
-                    clip: true
-                    flickableDirection: Flickable.VerticalFlick
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: StyledScrollBar {}
-
-                    WeatherTab {
-                        id: weatherTab
-                        width: parent.width
-                    }
+                    width: parent.width
                 }
             }
+        }
     }
 }

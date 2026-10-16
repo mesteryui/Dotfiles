@@ -60,7 +60,9 @@ ColumnLayout {
 
             StyledText {
                 Layout.fillWidth: true
-                text: root.levelLabel() + (Services.WeatherService.data.alertCount > 1 ? " · " + Services.WeatherService.data.alertCount : "")
+                text: root.levelLabel() + (Services.WeatherService.data.alertCount > 1 ? " · "
+                                                                                         + Services.WeatherService.data.alertCount :
+                                                                                         "")
                 font.pixelSize: Appearance.typeScale.titleSmall
                 font.weight: Font.Medium
                 color: Appearance.md3.on_surface
@@ -114,7 +116,10 @@ ColumnLayout {
 
                 StyledText {
                     Layout.fillWidth: true
-                    text: modelData.area + " · " + Services.I18nService.getTranslation("weather.alert_from", "desde %1").arg(root.shortDateTime(modelData.onset)) + " " + Services.I18nService.getTranslation("weather.alert_until", "hasta %1").arg(root.shortDateTime(modelData.expires))
+                    text: modelData.area + " · " + Services.I18nService.getTranslation("weather.alert_from",
+                                                                                       "desde %1").arg(
+                              root.shortDateTime(modelData.onset)) + " " + Services.I18nService.getTranslation(
+                              "weather.alert_until", "hasta %1").arg(root.shortDateTime(modelData.expires))
                     font.pixelSize: Appearance.typeScale.labelSmall
                     color: Appearance.md3.on_surface_variant
                     wrapMode: Text.WordWrap

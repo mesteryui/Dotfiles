@@ -37,7 +37,7 @@ Singleton {
         const key = (name || "") + "|" + (fallback || "");
         const hit = root._appIconCache[key];
         if (hit !== undefined) {
-          return hit;
+            return hit;
         }
         // Sin entrada de escritorio no hay icono: resolver solo el fallback.
         // (Antes se pasaba `undefined` a iconPath y fabricaba el string
@@ -45,7 +45,8 @@ Singleton {
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
         let resolved = "";
         if (icon)
-            resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(icon);
+            resolved = fallback !== undefined ? Quickshell.iconPath(icon, fallback) : Quickshell.iconPath(
+                                                    icon);
         else if (fallback)
             resolved = Quickshell.iconPath(fallback);
         // Capado blando: si alguna vez hay cientos de appIds distintos, se
@@ -79,33 +80,33 @@ Singleton {
     }
 
     readonly property var weatherIconMap: ({
-            0: ["bedtime", "wb_sunny"],
-            1: ["nights_stay", "partly_cloudy_day"],
-            2: ["nights_stay", "partly_cloudy_day"],
-            3: "cloud",
-            45: "foggy",
-            48: "foggy",
-            51: "rainy",
-            53: "rainy",
-            55: "rainy",
-            56: "rainy",
-            57: "rainy",
-            61: "rainy",
-            63: "rainy",
-            65: "rainy",
-            66: "rainy",
-            67: "rainy",
-            80: "rainy",
-            81: "rainy",
-            82: "rainy",
-            71: "ac_unit",
-            73: "ac_unit",
-            75: "ac_unit",
-            77: "ac_unit",
-            85: "ac_unit",
-            86: "ac_unit",
-            95: "thunderstorm",
-            96: "thunderstorm",
-            99: "thunderstorm"
-        })
+                                               0: ["bedtime", "wb_sunny"],
+                                               1: ["nights_stay", "partly_cloudy_day"],
+                                               2: ["nights_stay", "partly_cloudy_day"],
+                                               3: "cloud",
+                                               45: "foggy",
+                                               48: "foggy",
+                                               51: "rainy",
+                                               53: "rainy",
+                                               55: "rainy",
+                                               56: "rainy",
+                                               57: "rainy",
+                                               61: "rainy",
+                                               63: "rainy",
+                                               65: "rainy",
+                                               66: "rainy",
+                                               67: "rainy",
+                                               80: "rainy",
+                                               81: "rainy",
+                                               82: "rainy",
+                                               71: "ac_unit",
+                                               73: "ac_unit",
+                                               75: "ac_unit",
+                                               77: "ac_unit",
+                                               85: "ac_unit",
+                                               86: "ac_unit",
+                                               95: "thunderstorm",
+                                               96: "thunderstorm",
+                                               99: "thunderstorm"
+                                           })
 }

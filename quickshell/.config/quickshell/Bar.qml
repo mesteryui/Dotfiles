@@ -23,22 +23,35 @@ Variants {
             // Fallbacks mientras ConfigService.ready==false (primeros
             // frames): sin esto height es 0/undefined y la barra nace
             // invisible hasta que carga config.json.
-            readonly property var barType: Services.GameMode.enabled ? "no_floating" : (Services.ConfigService.ready ? (Services.ConfigService.configs.bar.barType || "floating") : "floating")
+            readonly property var barType: Services.GameMode.enabled ? "no_floating" : (
+                                                                           Services.ConfigService.ready ? (
+                                                                                                              Services.ConfigService.configs.bar.barType
+                                                                                                              || "floating") :
+                                                                                                          "floating")
 
             // Contrato de 4 modos (compartido con Bar/ScreenRounding.qml, sin cambios visuales):
             // "floating" = píldora flotante (márgenes + radio). "full_hug"/"partial_hug"/
             // "no_floating" = barra adherida (este fichero no reserva márgenes); el
             // redondeo de pantalla lo dibuja ScreenRounding.
             readonly property bool isFloating: barType === "floating"
+
             readonly property bool isFullHug: barType === "full_hug"
+
             readonly property bool isPartial: barType === "partial_hug"
 
-            readonly property bool isTop: !Services.ConfigService.ready ? true : (Services.ConfigService.configs.bar.position == "top" || Services.ConfigService.configs.bar.position == "")
+            readonly property bool isTop: !Services.ConfigService.ready ? true : (
+                                                                              Services.ConfigService.configs.bar.position
+                                                                              == "top"
+                                                                              || Services.ConfigService.configs.bar.position
+                                                                              == "")
 
-            property int barHeight: !Services.ConfigService.ready ? 36 : (Services.ConfigService.configs.bar.height || 36)
+            property int barHeight: !Services.ConfigService.ready ? 36 : (
+                                                                        Services.ConfigService.configs.bar.height
+                                                                        || 36)
 
             // Margen exterior en modo flotante / laterales del contenido.
             readonly property int floatingMargin: 3
+
             readonly property int contentMargin: 6
 
             WlrLayershell.layer: WlrLayer.Top

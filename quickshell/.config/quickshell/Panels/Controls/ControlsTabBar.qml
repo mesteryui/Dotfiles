@@ -21,6 +21,7 @@ RowLayout {
 
     Repeater {
         id: tabRepeater
+
         model: host.tabModel
 
         delegate: Rectangle {
@@ -32,7 +33,8 @@ RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             radius: Appearance.shape.full
-            color: host.currentTab === index ? Appearance.md3.primary_container : Appearance.md3.surface_container_high
+            color: host.currentTab === index ? Appearance.md3.primary_container :
+                                               Appearance.md3.surface_container_high
             border.width: (activeFocus && host.keyboardMode) ? 2 : 0
             border.color: Appearance.md3.primary
             activeFocusOnTab: true
@@ -71,14 +73,16 @@ RowLayout {
                 MaterialIcon {
                     icon: modelData.icon
                     size: Appearance.typeScale.bodyLarge
-                    color: host.currentTab === index ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                    color: host.currentTab === index ? Appearance.md3.on_primary_container :
+                                                       Appearance.md3.on_surface_variant
                 }
 
                 StyledText {
                     text: modelData.label
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
-                    color: host.currentTab === index ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                    color: host.currentTab === index ? Appearance.md3.on_primary_container :
+                                                       Appearance.md3.on_surface_variant
                 }
             }
 

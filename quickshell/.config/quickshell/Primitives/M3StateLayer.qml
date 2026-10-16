@@ -19,6 +19,7 @@ Rectangle {
 
     Behavior on opacity {
         enabled: root.animate
+
         NumberAnimation {
             duration: Appearance.motion.short2
         }

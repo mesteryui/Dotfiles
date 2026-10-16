@@ -51,6 +51,7 @@ BarPopupWindow {
 
     FileView {
         id: artProbe
+
         path: root.artLocalPath
         blockLoading: root.artLocalPath === ""
         printErrors: false
@@ -73,6 +74,7 @@ BarPopupWindow {
     // la pedida (evita el "salto atrás"). Se libera antes si lo reportado
     // alcanza lo pedido (tolerancia 1s), o al expirar el periodo.
     property real seekTarget: -1
+
     property double seekTargetUntil: 0
 
     // Posición vía MprisService.position (timer único centralizado):
@@ -80,6 +82,7 @@ BarPopupWindow {
     // ocultarse/destruirse.
     Connections {
         target: MprisService
+
         function onPositionChanged() {
             if (mprisContent.sliderDragging)
                 return;

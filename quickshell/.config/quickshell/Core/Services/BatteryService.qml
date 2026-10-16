@@ -7,6 +7,7 @@ import Quickshell.Services.UPower
 
 Singleton {
     id: root
+
     readonly property var displayDevice: UPower.displayDevice
     readonly property var percentage: {
         const p = displayDevice?.percentage ?? 0;

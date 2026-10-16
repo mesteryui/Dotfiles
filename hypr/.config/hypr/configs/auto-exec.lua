@@ -6,7 +6,10 @@ hl.on("hyprland.start", function()
 	-- fonts-override.conf al valor heredado y si apunta a un run
 	-- muerto/ciclado, fontconfig ve 0 fuentes (todo tofu). En
 	-- arranque limpio nunca está seteado, pero se blinda igual.
-	hl.exec_cmd("qs -d -n")
+	-- MALLOC_ARENA_MAX=4: con 12 cores glibc crearía hasta 96 arenas y
+	-- la shell retenía ~40 MB extra de heap fragmentado (medido: 660→621 MB).
+	-- `env` en vez de prefijo VAR= para no depender de shell en exec_cmd.
+	--hl.exec_cmd("env MALLOC_ARENA_MAX=4 qs -d -n")
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
 	--hl.exec_cmd("emacs --fg-daemon")
 	hl.exec_cmd("trash-empty 30")
@@ -24,5 +27,5 @@ hl.on("hyprland.start", function()
 	--hl.exec_cmd("systemctl start --user elephant")
 end)
 hl.on("monitor.added", function()
-	hl.exec_cmd("awww img" .. Colors.image)
+	--hl.exec_cmd("awww img" .. Colors.image)
 end)

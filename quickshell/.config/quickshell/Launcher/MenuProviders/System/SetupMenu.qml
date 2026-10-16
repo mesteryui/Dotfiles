@@ -10,12 +10,13 @@ MenuDefinition {
     iconName: "construction"
     parentId: "main"
 
-    entries: [
-        shell("setup-docker", "Setup Docker", "docker-setup.sh", "deployed_code",
-            "kitty --class=local.floating -e docker-setup.sh",
-            { titleKey: "sysmenu.setup_docker_title", subtitleKey: "sysmenu.setup_docker_subtitle" }),
-        shell("setup-python", "Setup Python", "python-setup.sh", "code",
-            "kitty --class=local.floating -e python-setup.sh",
-            { titleKey: "sysmenu.setup_python_title", subtitleKey: "sysmenu.setup_python_subtitle" })
-    ]
+    entries: [shell("setup-docker", "Setup Docker", "docker-setup.sh", "deployed_code",
+                    "kitty --class=local.floating -e docker-setup.sh", {
+                        titleKey: "sysmenu.setup_docker_title",
+                        subtitleKey: "sysmenu.setup_docker_subtitle"
+                    }), shell("setup-python", "Setup Python", "python-setup.sh", "code",
+                              "kitty --class=local.floating -e python-setup.sh", {
+                                  titleKey: "sysmenu.setup_python_title",
+                                  subtitleKey: "sysmenu.setup_python_subtitle"
+                              })]
 }

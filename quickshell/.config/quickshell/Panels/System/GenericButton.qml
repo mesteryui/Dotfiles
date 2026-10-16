@@ -14,7 +14,15 @@ MaterialShape {
 
     required property string buttonIcon
     required property string buttonText
-    required property string command
+
+    // Acción shell clásica (bash -c). Puede quedar vacía si se usa
+    // `hyprlandIpcCommand`.
+    property string command: ""
+
+    // Si se fija, el click envía la orden por el socket IPC de Hyprland
+    // (HyprlandIpc, sin fork) en vez de ejecutar `command` en bash.
+    // P.ej. "dispatch hl.dsp.exit()" o "reload".
+    property string hyprlandIpcCommand: ""
 
     property color accentColor: Appearance.md3.primary
 
@@ -25,7 +33,9 @@ MaterialShape {
 
     focus: true
 
-    shape: btnMouse.pressed ? MaterialShape.Cookie4Sided : (root.highlighted ? root.buttonShape : MaterialShape.Circle)
+    shape: btnMouse.pressed ? MaterialShape.Cookie4Sided : (root.highlighted ? root.buttonShape :
+                                                                               MaterialShape.Circle)
+
     animationDuration: Appearance.motion.medium2
     color: highlighted ? accentColor : Appearance.md3.surface_container
     strokeWidth: highlighted ? 2 : 1
@@ -41,6 +51,15 @@ MaterialShape {
         id: runCommand
 
         command: ["bash", "-c", root.command]
+    }
+
+    function activate() {
+        if (root.hyprlandIpcCommand !== "")
+            Services.HyprlandIpc.send(root.hyprlandIpcCommand);
+        else if (root.command !== "")
+            runCommand.running = true;
+        else
+            console.warn("[GenericButton] sin acción: ni command ni hyprlandIpcCommand.");
     }
 
     Column {
@@ -74,7 +93,11 @@ MaterialShape {
             font.pixelSize: Appearance.typeScale.labelMedium
             font.weight: root.highlighted ? Font.Bold : Font.Normal
 
-            Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.motion.short3
+                }
+            }
         }
     }
 
@@ -85,12 +108,12 @@ MaterialShape {
         hoverEnabled: true
         onEntered: root.forceActiveFocus()
         cursorShape: Qt.PointingHandCursor
-        onClicked: runCommand.running = true
+        onClicked: root.activate()
     }
 
-    Keys.onReturnPressed: runCommand.running = true
+    Keys.onReturnPressed: root.activate()
 
-    Keys.onEnterPressed: runCommand.running = true
+    Keys.onEnterPressed: root.activate()
 
-    Keys.onSpacePressed: runCommand.running = true
+    Keys.onSpacePressed: root.activate()
 }

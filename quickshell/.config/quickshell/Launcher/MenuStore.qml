@@ -37,10 +37,10 @@
 
 pragma Singleton
 
+import qs.Core.Modules
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Core.Modules
 
 Singleton {
     id: root
@@ -84,12 +84,12 @@ Singleton {
         for (let i = 0; i < providers.length; i++) {
             const p = providers[i];
             out.push({
-                sectionId: p.sectionId,
-                titleFallback: p.titleFallback,
-                titleKey: p.titleKey,
-                iconName: p.iconName,
-                parentId: p.parentId
-            });
+                         sectionId: p.sectionId,
+                         titleFallback: p.titleFallback,
+                         titleKey: p.titleKey,
+                         iconName: p.iconName,
+                         parentId: p.parentId
+                     });
         }
         return out;
     }
@@ -114,6 +114,21 @@ Singleton {
                 providers[i].refresh();
     }
 
+    // Escape para interpolar rutas propias en `sh -c '...'` (misma
+    // semántica que ShellUtils.shellEscape): las rutas vienen de
+    // $XDG_CONFIG_HOME/$HOME y podrían contener `'`.
+    function shEscape(s) {
+        return String(s).replace(/'/g, "'\\''");
+    }
+
+    // Refs aceptadas del descubrimiento ("S:nombre.qml" / "U:nombre.qml"):
+    // solo ficheros simples, sin rutas, ocultos ni metacaracteres. El `sh`
+    // solo emite basenames, pero esto neutraliza una salida manipulada
+    // (`..`, `/`, `'`, `;`, ...).
+    function isValidProviderRef(tag, name) {
+        return (tag === "S" || tag === "U") && /^[A-Za-z0-9_-]+\.qml$/.test(name);
+    }
+
     Component.onCompleted: discoverProc.running = true
 
     // --- Recarga en vivo sin polling fijo ---
@@ -136,12 +151,10 @@ Singleton {
     Process {
         id: watchProc
 
-        command: ["sh", "-c",
-            "for d in '" + root.systemDir + "' '" + root.providersDir + "'; do " +
-            "for f in \"$d\"/*.qml; do [ -f \"$f\" ] || continue; " +
-            "stat -c '%n|%Y|%s' \"$f\"; done; done; " +
-            "stat -c '%n|%Y|%s' '" + root.providersDir + "/../MenuDefinition.qml' " +
-            "2>/dev/null | sort"]
+        command: ["sh", "-c", "for d in '" + root.shEscape(root.systemDir) + "' '" + root.shEscape(
+                root.providersDir) + "'; do " + "for f in \"$d\"/*.qml; do [ -f \"$f\" ] || continue; "
+            + "stat -c '%n|%Y|%s' \"$f\"; done; done; " + "stat -c '%n|%Y|%s' '" + root.shEscape(
+                root.providersDir + "/../MenuDefinition.qml") + "' " + "2>/dev/null | sort"]
         stdout: SplitParser {
             onRead: data => {
                 root.watchAcc += data + "\n";
@@ -185,9 +198,10 @@ Singleton {
     Process {
         id: discoverProc
 
-        command: ["sh", "-c",
-            "for f in '" + root.systemDir + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"S:$n\"; done;" +
-            "for f in '" + root.providersDir + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"U:$n\"; done"]
+        command: ["sh", "-c", "for f in '" + root.shEscape(root.systemDir)
+            + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"S:$n\"; done;" + "for f in '"
+            + root.shEscape(root.providersDir)
+            + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"U:$n\"; done"]
         stdout: SplitParser {
             onRead: data => {
                 const line = data.trim();
@@ -205,6 +219,10 @@ Singleton {
     }
 
     function loadOne(tag, name) {
+        // Segunda capa (ver isValidProviderRef en instantiate): nunca
+        // construir una URL con una ref inesperada.
+        if (!root.isValidProviderRef(tag, name))
+            return null;
         const base = tag === "S" ? "MenuProviders/System/" : "MenuProviders/";
         // En reloads se añade "?epoch=" para romper la caché del motor QML:
         // sin esto, editar un provider y recargar devolvería el componente
@@ -237,13 +255,20 @@ Singleton {
             const raw = foundFiles[i];
             const tag = raw.slice(0, 1);
             const name = raw.slice(2);
+            // Filtra basura antes de cargar: no cuenta como error de
+            // compilación (no debe activar el todo-o-nada de abajo).
+            if (!root.isValidProviderRef(tag, name)) {
+                console.warn("MenuStore: ref de provider inesperada '" + raw + "', se ignora");
+                continue;
+            }
             const obj = loadOne(tag, name);
             if (!obj) {
                 errors += 1;
                 continue;
             }
             if (seen[obj.sectionId]) {
-                root.lastError = "sectionId duplicado '" + obj.sectionId + "' en " + name + ", se ignora (manda el primero)";
+                root.lastError = "sectionId duplicado '" + obj.sectionId + "' en " + name
+                        + ", se ignora (manda el primero)";
                 console.warn("MenuStore: " + root.lastError);
                 obj.destroy();
                 continue;

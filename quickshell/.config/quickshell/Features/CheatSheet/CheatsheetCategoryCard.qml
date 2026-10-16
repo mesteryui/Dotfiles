@@ -6,18 +6,18 @@ import QtQuick
 import QtQuick.Layouts
 
 /**
- * CheatsheetCategoryCard
- * ------------------------
- * One category block, e.g. "Window Management" with its list of binds.
- * Uses M3Card from Primitives for the surface + shadow, keeping the pattern
- * consistent with the rest of the shell (panels, popups, etc.).
- *
- * Height is driven by the content ColumnLayout, with 20 px top/bottom padding
- * (same rhythm as the rest of the cards in the shell).
- *
- * `firstRowIndex`  – global flat-list index of this card's first bind row.
- * `activeRowIndex` – global flat-list index currently highlighted by keyboard.
- */
+* CheatsheetCategoryCard
+* ------------------------
+* One category block, e.g. "Window Management" with its list of binds.
+* Uses M3Card from Primitives for the surface + shadow, keeping the pattern
+* consistent with the rest of the shell (panels, popups, etc.).
+*
+* Height is driven by the content ColumnLayout, with 20 px top/bottom padding
+* (same rhythm as the rest of the cards in the shell).
+*
+* `firstRowIndex`  – global flat-list index of this card's first bind row.
+* `activeRowIndex` – global flat-list index currently highlighted by keyboard.
+*/
 Item {
     id: root
 
@@ -90,9 +90,9 @@ Item {
                 color: Appearance.md3.primary
                 font.pixelSize: Appearance.typeScale.titleSmall
                 font.variableAxes: ({
-                        "wght": 650,
-                        "wdth": 100
-                    })
+                                        "wght": 650,
+                                        "wdth": 100
+                                    })
             }
 
             Repeater {

@@ -53,152 +53,146 @@ Scope {
         component: PanelWindow {
             id: wallpaperMenu
 
-        implicitWidth: 1120
-        implicitHeight: 330
-        color: "transparent"
-        screen: root.focusedScreen
-        visible: root.showing || root._isAnimatingOut
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "quickshell:wallpaper-menu"
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-        exclusionMode: ExclusionMode.Ignore
+            implicitWidth: 1120
+            implicitHeight: 330
+            color: "transparent"
+            screen: root.focusedScreen
+            visible: root.showing || root._isAnimatingOut
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.namespace: "quickshell:wallpaper-menu"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            exclusionMode: ExclusionMode.Ignore
 
-        HyprlandFocusGrab {
-            windows: [wallpaperMenu]
-            active: root.showing
-            onCleared: {
-                if (root.showing)
-                    Qt.callLater(() => root.showing = false);
-            }
-        }
-
-        Connections {
-            target: root
-
-            function onShowingChanged() {
-                // El contenido es lazy+async: en la primera apertura el item
-                // aún no existe aquí; onLoaded lo enfoca al completarse.
-                // Si ya existe (reapertura rápida), diferir un frame.
-                if (root.showing)
-                    Qt.callLater(() => contentLoader.item?.requestFocus?.());
-            }
-        }
-
-        Shortcut {
-            sequence: "Escape"
-            onActivated: root.showing = false
-        }
-
-        Item {
-            id: animatedContainer
-
-            anchors.fill: parent
-
-            opacity: 0.0
-            scale: 0.92
-            transformOrigin: Item.Bottom
-
-            ParallelAnimation {
-                id: openAnim
-
-                OpacityAnimator {
-                    target: animatedContainer
-                    to: 1.0
-                    duration: root.animDuration
-                    easing.type: Easing.OutCubic
+            HyprlandFocusGrab {
+                windows: [wallpaperMenu]
+                active: root.showing
+                onCleared: {
+                    if (root.showing)
+                        Qt.callLater(() => root.showing = false);
                 }
-                SpringAnimation {
-                    target: animatedContainer
-                    property: "scale"
-                    to: 1.0
-                    spring: Appearance.motion.springBouncy.spring
-                    damping: Appearance.motion.springBouncy.damping
-                    mass: Appearance.motion.springBouncy.mass
-                    epsilon: Appearance.motion.springBouncy.epsilon
-                }
-            }
-
-            ParallelAnimation {
-                id: closeAnim
-
-                OpacityAnimator {
-                    target: animatedContainer
-                    to: 0.0
-                    duration: root.animDuration
-                    easing.type: Easing.Bezier
-                    easing.bezierCurve: Appearance.motion.emphasized
-                }
-                ScaleAnimator {
-                    target: animatedContainer
-                    to: 0.92
-                    duration: root.animDuration
-                    easing.type: Easing.OutCubic
-                }
-
-                onFinished: {
-                    if (!root.showing)
-                        root._isAnimatingOut = false;
-                }
-            }
-
-            function playOpen() {
-                closeAnim.stop();
-                if (Appearance.motion.reduced) {
-                    openAnim.stop();
-                    animatedContainer.opacity = 1.0;
-                    animatedContainer.scale = 1.0;
-                } else {
-                    openAnim.start();
-                }
-            }
-
-            Component.onCompleted: {
-                if (root.showing)
-                    animatedContainer.playOpen();
             }
 
             Connections {
                 target: root
 
                 function onShowingChanged() {
-                    if (root.showing) {
-                        animatedContainer.playOpen();
-                    } else {
-                        openAnim.stop();
-                        closeAnim.start();
-                    }
-                }
-            }
-
-            PopupBackground {
-                anchors.fill: parent
-            }
-
-            Loader {
-                id: contentLoader
-
-                anchors.fill: parent
-                anchors.margins: 18
-                active: root.showing || root._isAnimatingOut
-                asynchronous: true
-                sourceComponent: menuComp
-                onLoaded: {
-                    // Carga asíncrona: el foco solo se puede pedir aquí,
-                    // cuando el item ya existe y la ventana está visible.
+                    // El contenido es lazy+async: en la primera apertura el item
+                    // aún no existe aquí; onLoaded lo enfoca al completarse.
+                    // Si ya existe (reapertura rápida), diferir un frame.
                     if (root.showing)
                         Qt.callLater(() => contentLoader.item?.requestFocus?.());
                 }
             }
 
-            Component {
-                id: menuComp
+            Shortcut {
+                sequence: "Escape"
+                onActivated: root.showing = false
+            }
 
-                WallpaperMenuContent {
+            Item {
+                id: animatedContainer
+
+                anchors.fill: parent
+
+                opacity: 0.0
+                scale: 0.92
+                transformOrigin: Item.Bottom
+
+                ParallelAnimation {
+                    id: openAnim
+
+                    OpacityAnimator {
+                        target: animatedContainer
+                        to: 1.0
+                        duration: root.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+                    SpringAnimation {
+                        target: animatedContainer
+                        property: "scale"
+                        to: 1.0
+                        spring: Appearance.motion.springBouncy.spring
+                        damping: Appearance.motion.springBouncy.damping
+                        mass: Appearance.motion.springBouncy.mass
+                        epsilon: Appearance.motion.springBouncy.epsilon
+                    }
+                }
+
+                ParallelAnimation {
+                    id: closeAnim
+
+                    OpacityAnimator {
+                        target: animatedContainer
+                        to: 0.0
+                        duration: root.animDuration
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: Appearance.motion.emphasized
+                    }
+                    ScaleAnimator {
+                        target: animatedContainer
+                        to: 0.92
+                        duration: root.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+
+                    onFinished: {
+                        if (!root.showing)
+                            root._isAnimatingOut = false;
+                    }
+                }
+
+                function playOpen() {
+                    closeAnim.stop();
+                    openAnim.start();
+                }
+
+                Component.onCompleted: {
+                    if (root.showing)
+                        animatedContainer.playOpen();
+                }
+
+                Connections {
+                    target: root
+
+                    function onShowingChanged() {
+                        if (root.showing) {
+                            animatedContainer.playOpen();
+                        } else {
+                            openAnim.stop();
+                            closeAnim.start();
+                        }
+                    }
+                }
+
+                PopupBackground {
                     anchors.fill: parent
-                    onHideRequested: root.showing = false
+                }
+
+                Loader {
+                    id: contentLoader
+
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    active: root.showing || root._isAnimatingOut
+                    asynchronous: true
+                    sourceComponent: menuComp
+                    onLoaded: {
+                        // Carga asíncrona: el foco solo se puede pedir aquí,
+                        // cuando el item ya existe y la ventana está visible.
+                        if (root.showing)
+                            Qt.callLater(() => contentLoader.item?.requestFocus?.());
+                    }
+                }
+
+                Component {
+                    id: menuComp
+
+                    WallpaperMenuContent {
+                        anchors.fill: parent
+                        onHideRequested: root.showing = false
+                    }
                 }
             }
-        }
         }
     }
 }

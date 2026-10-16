@@ -15,7 +15,6 @@ BarItem {
     scale: pressed ? 0.92 : (hovered ? 1.05 : 1.0)
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping

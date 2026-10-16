@@ -1,10 +1,10 @@
 pragma Singleton
 
 import qs.Core.Services
+import qs.Core.Modules
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Core.Modules
 
 Singleton {
     id: root
@@ -19,14 +19,6 @@ Singleton {
     readonly property TypeScale typeScale: TypeScale {}
     readonly property Motion motion: Motion {}
     readonly property Spacing spacing: Spacing {}
-
-    // Reducir movimiento: las duraciones del esquema colapsan a 1ms (los
-    // bucles infinitos —indeterminado, respiraciones— se apagan donde viven).
-    readonly property bool reduceMotion: ConfigService.configs.appearance.reduceMotion ?? false
-
-    // Sombras decorativas: cada MultiEffect de sombra es un pass offscreen.
-    // En false, las de adorno no se instancian (máscaras/blur no afectados).
-    readonly property bool shadows: ConfigService.configs.appearance.shadows ?? true
 
     FileView {
         path: Directories.state + "/quickshell/generated/colors.json"
@@ -88,11 +80,36 @@ Singleton {
         property real blur: 0.85
         property int offsetY: 6
     }
-    readonly property Elevation elevation1: Elevation { opacity: 0.08; blur: 0.4; offsetY: 2 }   // cards
-    readonly property Elevation elevation2: Elevation { opacity: 0.18; blur: 0.85; offsetY: 6 }  // popups
-    readonly property Elevation elevation3: Elevation { opacity: 0.18; blur: 0.5; offsetY: 2 }   // media
-    readonly property Elevation elevation4: Elevation { opacity: 0.20; blur: 0.8; offsetY: 4 }   // dialogs
-    readonly property Elevation elevation5: Elevation { opacity: 0.22; blur: 0.9; offsetY: 3 }   // sheets
+
+    readonly property Elevation elevation1: Elevation {
+        opacity: 0.08
+        blur: 0.4
+        offsetY: 2
+    }   // cards
+
+    readonly property Elevation elevation2: Elevation {
+        opacity: 0.18
+        blur: 0.85
+        offsetY: 6
+    }  // popups
+
+    readonly property Elevation elevation3: Elevation {
+        opacity: 0.18
+        blur: 0.5
+        offsetY: 2
+    }   // media
+
+    readonly property Elevation elevation4: Elevation {
+        opacity: 0.20
+        blur: 0.8
+        offsetY: 4
+    }   // dialogs
+
+    readonly property Elevation elevation5: Elevation {
+        opacity: 0.22
+        blur: 0.9
+        offsetY: 3
+    }   // sheets
 
     // Escala de spacing M3 (márgenes y separaciones): un solo mando para
     // la densidad de la shell.
@@ -136,37 +153,48 @@ Singleton {
         property real epsilon: 0.005
     }
 
-    // Esquema de motion M3 (duraciones; los easings se migran aparte).
-    // Con reduceMotion colapsan a 1ms (los bucles se apagan donde viven).
+    // Esquema de motion M3 (duraciones fijas; animaciones sobrias por
+    // diseño, sin interruptor de movimiento reducido).
     component Motion: QtObject {
-        readonly property bool reduced: ConfigService.configs.appearance.reduceMotion ?? false
-        property int short1: reduced ? 1 : 50
-        property int short2: reduced ? 1 : 100
-        property int short3: reduced ? 1 : 150
-        property int short4: reduced ? 1 : 200
-        property int medium1: reduced ? 1 : 250
-        property int medium2: reduced ? 1 : 300
-        property int medium3: reduced ? 1 : 350
-        property int long1: reduced ? 1 : 450
+        property int short1: 50
+        property int short2: 100
+        property int short3: 150
+        property int short4: 200
+        property int medium1: 250
+        property int medium2: 300
+        property int medium3: 350
+        property int long1: 450
         // Curvas M3 para Easing.Bezier (easing.bezierCurve).
         property var standard: [0.2, 0.0, 0.0, 1.0]
         property var emphasized: [0.05, 0.7, 0.1, 1.0]
 
         // Suave Standard (paneles, hovers): ~0.35s, overshoot <1%.
         readonly property SpringParams springSoft: SpringParams {
-            spring: 2.0; damping: 0.32; mass: 1.0; epsilon: 0.005
+            spring: 2.0
+            damping: 0.32
+            mass: 1.0
+            epsilon: 0.005
         }
         // Entradas Expressive (aperturas): un overshoot ~10%, ~0.45s.
         readonly property SpringParams springBouncy: SpringParams {
-            spring: 3.5; damping: 0.28; mass: 1.0; epsilon: 0.005
+            spring: 3.5
+            damping: 0.28
+            mass: 1.0
+            epsilon: 0.005
         }
         // Micro-interacciones (botones, switches): ~0.29s, overshoot ~1.5%.
         readonly property SpringParams springSnappy: SpringParams {
-            spring: 5.0; damping: 0.45; mass: 1.0; epsilon: 0.005
+            spring: 5.0
+            damping: 0.45
+            mass: 1.0
+            epsilon: 0.005
         }
         // Tamaños en layout: casi crítico, sin rebote visible, ~0.25s.
         readonly property SpringParams springSize: SpringParams {
-            spring: 4.0; damping: 0.5; mass: 1.0; epsilon: 0.25
+            spring: 4.0
+            damping: 0.5
+            mass: 1.0
+            epsilon: 0.25
         }
     }
 
@@ -174,7 +202,8 @@ Singleton {
 
         readonly property string sans: ConfigService.configs.appearance.fontSans ?? "Google Sans Flex"
 
-        readonly property string mono: ConfigService.configs.appearance.monospace ?? "JetBrains Mono Nerd Font"
+        readonly property string mono: ConfigService.configs.appearance.monospace
+                                       ?? "JetBrains Mono Nerd Font"
 
         readonly property string reading: ConfigService.configs.appearance.reading ?? "Google Sans Flex"
 
@@ -189,15 +218,15 @@ Singleton {
 
     component VariableAxes: QtObject {
         property var main: ({
-                "wght": 490,
-                "wdth": 100
-            })
+                                "wght": 490,
+                                "wdth": 100
+                            })
         property var numbers: ({
-                "wght": 450
-            })
+                                   "wght": 450
+                               })
         property var title: ({ // Slightly bold weight for title
-                "wght": 550 // Weight (Lowered to compensate for increased grade)
-            })
+                                 "wght": 550 // Weight (Lowered to compensate for increased grade)
+                             })
     }
 
     component PixelSize: QtObject {

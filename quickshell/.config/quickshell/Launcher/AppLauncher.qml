@@ -29,8 +29,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import M3Shapes
@@ -127,15 +127,17 @@ Scope {
         component: PanelWindow {
             id: launcher
 
-
             visible: scope.shown
+            anchors {
+                top: true
+                bottom: true
+                left: true
+                right: true
+            }
 
-            anchors.top: true
-            anchors.bottom: true
-            anchors.left: true
-            anchors.right: true
             color: "transparent"
             exclusiveZone: -1
+            exclusionMode: ExclusionMode.Ignore
 
             MouseArea {
                 anchors.fill: parent
@@ -152,8 +154,6 @@ Scope {
             WlrLayershell.namespace: "quickshell:launcher"
             WlrLayershell.layer: WlrLayer.Overlay
 
-
-
             // ---------- menús: distintos, misma base (ver MenuModes.js) ----------
             // Cada menú tiene su carácter selector (pfx). Teclearlo cambia de menú.
             readonly property var modes: MenuModes.defs()
@@ -164,13 +164,20 @@ Scope {
 
             function modeLabel(id) {
                 switch (id) {
-                case "todo": return tr("launcher.tab_all", "Todo");
-                case "system": return tr("launcher.tab_system", "Sistema");
-                case "files": return tr("launcher.tab_files", "Archivos");
-                case "web": return tr("launcher.tab_web", "Web");
-                case "emoji": return tr("launcher.tab_emoji", "Emojis");
-                case "calc": return tr("launcher.tab_calc", "Calc");
-                default: return tr("launcher.tab_clipboard", "Clipboard");
+                case "todo":
+                    return tr("launcher.tab_all", "Todo");
+                case "system":
+                    return tr("launcher.tab_system", "Sistema");
+                case "files":
+                    return tr("launcher.tab_files", "Archivos");
+                case "web":
+                    return tr("launcher.tab_web", "Web");
+                case "emoji":
+                    return tr("launcher.tab_emoji", "Emojis");
+                case "calc":
+                    return tr("launcher.tab_calc", "Calc");
+                default:
+                    return tr("launcher.tab_clipboard", "Clipboard");
                 }
             }
 
@@ -189,25 +196,39 @@ Scope {
             // Forma-identidad por modo (hero + badges de chips).
             function modeShape(modeId) {
                 switch (modeId) {
-                case "system": return MaterialShape.Cookie6Sided;
-                case "files": return MaterialShape.Bun;
-                case "web": return MaterialShape.Oval;
-                case "emoji": return MaterialShape.Flower;
-                case "calc": return MaterialShape.Diamond;
-                case "clip": return MaterialShape.Clover4Leaf;
-                default: return MaterialShape.Circle;
+                case "system":
+                    return MaterialShape.Cookie6Sided;
+                case "files":
+                    return MaterialShape.Bun;
+                case "web":
+                    return MaterialShape.Oval;
+                case "emoji":
+                    return MaterialShape.Flower;
+                case "calc":
+                    return MaterialShape.Diamond;
+                case "clip":
+                    return MaterialShape.Clover4Leaf;
+                default:
+                    return MaterialShape.Circle;
                 }
             }
 
             function modeIcon(modeId) {
                 switch (modeId) {
-                case "system": return "settings";
-                case "files": return "folder";
-                case "web": return "public";
-                case "emoji": return "mood";
-                case "calc": return "calculate";
-                case "clip": return "content_paste";
-                default: return "apps";
+                case "system":
+                    return "settings";
+                case "files":
+                    return "folder";
+                case "web":
+                    return "public";
+                case "emoji":
+                    return "mood";
+                case "calc":
+                    return "calculate";
+                case "clip":
+                    return "content_paste";
+                default:
+                    return "apps";
                 }
             }
 
@@ -428,7 +449,11 @@ Scope {
             // Apertura de ficheros/carpetas con comprobación + aviso.
             // Lógica en FileMenu.js (openCommand); aquí solo textos y lanzamiento.
             function openPath(path) {
-                launcher.runShell(FileMenu.openCommand(path, tr("launcher.tab_files", "Archivos"), tr("launcher.file_missing", "El archivo ya no existe") + ": " + path, tr("launcher.file_open_failed", "No se pudo abrir") + ": " + path));
+                launcher.runShell(FileMenu.openCommand(path, tr("launcher.tab_files", "Archivos"), tr(
+                                                           "launcher.file_missing",
+                                                           "El archivo ya no existe") + ": " + path, tr(
+                                                           "launcher.file_open_failed", "No se pudo abrir")
+                                                       + ": " + path));
             }
 
             // Estado de navegación: false = escribiendo en el campo (las
@@ -479,9 +504,9 @@ Scope {
                     const workDir = live ? live.workingDirectory : it.workingDirectory;
                     if (runInTerm && cmd.length > 0) {
                         Quickshell.execDetached({
-                            command: ["xdg-terminal-exec", "-e"].concat(cmd),
-                            workingDirectory: workDir
-                        });
+                                                    command: ["xdg-terminal-exec", "-e"].concat(cmd),
+                                                    workingDirectory: workDir
+                                                });
                     } else if (live) {
                         live.execute();
                     } else if (cmd.length > 0) {
@@ -552,7 +577,8 @@ Scope {
             function isUrl(q) {
                 if (/\s/.test(q))
                     return false;
-                return q.startsWith("http://") || q.startsWith("https://") || (/^[a-z0-9-]+(\.[a-z0-9-]+)+/.test(q) && q.indexOf(" ") < 0);
+                return q.startsWith("http://") || q.startsWith("https://") || (
+                            /^[a-z0-9-]+(\.[a-z0-9-]+)+/.test(q) && q.indexOf(" ") < 0);
             }
 
             // ---------- resultados ----------
@@ -652,7 +678,20 @@ Scope {
             // agresivos a propósito: un substring en el comentario no debe
             // ganar a un fuzzy en el nombre ("stem" -> Steam, no "sistema").
             function todoFilter(q, apps) {
-                return Services.FuzzySearch.filterItemsMulti(q, apps, e => [{ text: e.name, weight: 1 }, { text: e.comment || "", weight: 0.25 }, { text: e.id || "", weight: 0.2 }]).slice(0, 30);
+                return Services.FuzzySearch.filterItemsMulti(q, apps, e => [
+                {
+                    text: e.name,
+                    weight: 1
+                },
+                {
+                    text: e.comment || "",
+                    weight: 0.25
+                },
+                {
+                    text: e.id || "",
+                    weight: 0.2
+                }
+                ]).slice(0, 30);
             }
 
             // Orden visual congelado al desfijar: la app se queda donde está y
@@ -732,11 +771,18 @@ Scope {
                 if (info.parentId !== "") {
                     const parent = SystemMenuRegistry.sectionInfo(info.parentId);
                     out.push({
-                        kind: "menuback", title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
-                        sub: tr("launcher.back_subtitle", "Volver a la sección anterior"), iconName: "arrow_back",
-                        appIcon: "", ch: "", imagePath: "", cat: "",
-                        shell: "", isSubmenu: false, section: info.parentId
-                    });
+                                 kind: "menuback",
+                                 title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
+                                 sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
+                                 iconName: "arrow_back",
+                                 appIcon: "",
+                                 ch: "",
+                                 imagePath: "",
+                                 cat: "",
+                                 shell: "",
+                                 isSubmenu: false,
+                                 section: info.parentId
+                             });
                 }
                 return out.concat(SystemMenuRegistry.sectionResultItems(id));
             }
@@ -751,7 +797,20 @@ Scope {
                 if (q === "")
                     return sectionItems(scope.menuSection);
                 // Pesos: título 1.0 > subtítulo 0.25 > sección 0.1 (el nombre manda).
-                return Services.FuzzySearch.filterItemsMulti(q, systemPool(), it => [{ text: it.title, weight: 1 }, { text: it.sub, weight: 0.25 }, { text: it.cat, weight: 0.1 }]);
+                return Services.FuzzySearch.filterItemsMulti(q, systemPool(), it => [
+                {
+                    text: it.title,
+                    weight: 1
+                },
+                {
+                    text: it.sub,
+                    weight: 0.25
+                },
+                {
+                    text: it.cat,
+                    weight: 0.1
+                }
+                ]);
             }
 
             // ---------- emojis vía EmojiService ----------
@@ -814,16 +873,37 @@ Scope {
                 const snap = Services.ClipboardService.snapshot;
                 for (let i = 0; i < snap.length; i++) {
                     const e = snap[i];
-                    out.push({ kind: "clip", title: e.text.length > 90 ? e.text.slice(0, 90) + "…" : e.text,
-                               sub: e.isImage ? tr("launcher.clip_image_subtitle", "Imagen · Enter copia · preview →") : tr("launcher.clip_text_subtitle", "Texto · Enter copia · Supr borra"),
-                               iconName: e.isImage ? "image" : "content_paste", appIcon: "", ch: "",
-                               imagePath: "", cat: cat, cid: e.cid, isImage: e.isImage, fullText: e.text });
+                    out.push({
+                                 kind: "clip",
+                                 title: e.text.length > 90 ? e.text.slice(0, 90) + "…" : e.text,
+                                 sub: e.isImage ? tr("launcher.clip_image_subtitle",
+                                                     "Imagen · Enter copia · preview →") : tr(
+                                                      "launcher.clip_text_subtitle",
+                                                      "Texto · Enter copia · Supr borra"),
+                                 iconName: e.isImage ? "image" : "content_paste",
+                                 appIcon: "",
+                                 ch: "",
+                                 imagePath: "",
+                                 cat: cat,
+                                 cid: e.cid,
+                                 isImage: e.isImage,
+                                 fullText: e.text
+                             });
                 }
                 if (q === "")
                     return out;
                 // Título 1.0 + texto completo (acotado) 0.25: encuentra contenido
                 // más allá de los 90 caracteres visibles del título.
-                return Services.FuzzySearch.filterItemsMulti(q, out, it => [{ text: it.title, weight: 1 }, { text: (it.fullText || "").slice(0, 200), weight: 0.25 }]);
+                return Services.FuzzySearch.filterItemsMulti(q, out, it => [
+                {
+                    text: it.title,
+                    weight: 1
+                },
+                {
+                    text: (it.fullText || "").slice(0, 200),
+                    weight: 0.25
+                }
+                ]);
             }
 
             // Resultados de archivos: mapeo (FileMenu) + fuzzy. El orden base
@@ -835,7 +915,16 @@ Scope {
                     return out;
                 // Nombre 1.0 > ruta 0.25. nameFirst conserva el boost extra de
                 // prefijo-de-nombre (ya rankeado primero por el motor).
-                const matches = Services.FuzzySearch.filterItemsMulti(q, out, it => [{ text: it.title, weight: 1 }, { text: it.sub, weight: 0.25 }]);
+                const matches = Services.FuzzySearch.filterItemsMulti(q, out, it => [
+                {
+                    text: it.title,
+                    weight: 1
+                },
+                {
+                    text: it.sub,
+                    weight: 0.25
+                }
+                ]);
                 return FileMenu.nameFirst(matches, q);
             }
 
@@ -845,7 +934,20 @@ Scope {
                 // el anterior en vuelo se ignora al mostrar).
                 const fresh = calcState.forQuery === q ? calcState.result : "";
                 if (fresh !== "")
-                    return CalcCache.set(q, [{ kind: "calc", title: q.trim() + " = " + fresh, sub: tr("launcher.calc_copy_hint", "Enter copia el resultado"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: fresh }]);
+                    return CalcCache.set(q, [
+                                             {
+                                                 kind: "calc",
+                                                 title: q.trim() + " = " + fresh,
+                                                 sub: tr("launcher.calc_copy_hint",
+                                                         "Enter copia el resultado"),
+                                                 iconName: "calculate",
+                                                 appIcon: "",
+                                                 ch: "",
+                                                 imagePath: "",
+                                                 cat: cat,
+                                                 result: fresh
+                                             }
+                                         ]);
                 // Sin resultado fresco y query pendiente de evaluar: aguantar
                 // lo anterior (misma identidad de array = listModel no cambia
                 // = ni swap ni parpadeo) en vez de flashear el placeholder por
@@ -857,21 +959,78 @@ Scope {
                 if (cached)
                     return cached;
                 if ((q || "").trim() !== "" && calcState.busy)
-                    return [{ kind: "calc", title: tr("launcher.calc_busy_title", "Calculando…"), sub: "qalc", iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
-                return [{ kind: "calc", title: tr("launcher.calc_empty_title", "Escribe una operación"), sub: tr("launcher.calc_empty_subtitle", "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"), iconName: "calculate", appIcon: "", ch: "", imagePath: "", cat: cat, result: "" }];
+                    return [
+                                {
+                                    kind: "calc",
+                                    title: tr("launcher.calc_busy_title", "Calculando…"),
+                                    sub: "qalc",
+                                    iconName: "calculate",
+                                    appIcon: "",
+                                    ch: "",
+                                    imagePath: "",
+                                    cat: cat,
+                                    result: ""
+                                }
+                            ];
+                return [
+                            {
+                                kind: "calc",
+                                title: tr("launcher.calc_empty_title", "Escribe una operación"),
+                                sub: tr("launcher.calc_empty_subtitle",
+                                        "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"),
+                                iconName: "calculate",
+                                appIcon: "",
+                                ch: "",
+                                imagePath: "",
+                                cat: cat,
+                                result: ""
+                            }
+                        ];
             }
 
             function webResults(q) {
                 const cat = tr("launcher.category_web", "Web");
                 if (q === "")
-                    return [{ kind: "web", title: tr("launcher.web_empty_title", "Escribe para buscar"), sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat, url: "" }];
+                    return [
+                                {
+                                    kind: "web",
+                                    title: tr("launcher.web_empty_title", "Escribe para buscar"),
+                                    sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"),
+                                    iconName: "search",
+                                    appIcon: "",
+                                    ch: "",
+                                    imagePath: "",
+                                    cat: cat,
+                                    url: ""
+                                }
+                            ];
                 const out = [];
                 if (launcher.isUrl(q)) {
                     const url = (q.startsWith("http") ? q : "https://" + q);
-                    out.push({ kind: "web", title: "Abrir " + url, sub: tr("launcher.web_open_subtitle", "Abrir URL en navegador"), iconName: "open_in_new", appIcon: "", ch: "", imagePath: "", cat: cat, url: url });
+                    out.push({
+                                 kind: "web",
+                                 title: "Abrir " + url,
+                                 sub: tr("launcher.web_open_subtitle", "Abrir URL en navegador"),
+                                 iconName: "open_in_new",
+                                 appIcon: "",
+                                 ch: "",
+                                 imagePath: "",
+                                 cat: cat,
+                                 url: url
+                             });
                 }
-                out.push({ kind: "web", title: tr("launcher.web_search_prefix", "Buscar “") + q + tr("launcher.web_search_suffix", "”"), sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"), iconName: "search", appIcon: "", ch: "", imagePath: "", cat: cat,
-                           url: "https://duckduckgo.com/?q=" + encodeURIComponent(q) + "&ia=web" });
+                out.push({
+                             kind: "web",
+                             title: tr("launcher.web_search_prefix", "Buscar “") + q + tr(
+                                        "launcher.web_search_suffix", "”"),
+                             sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"),
+                             iconName: "search",
+                             appIcon: "",
+                             ch: "",
+                             imagePath: "",
+                             cat: cat,
+                             url: "https://duckduckgo.com/?q=" + encodeURIComponent(q) + "&ia=web"
+                         });
                 return out;
             }
 
@@ -971,7 +1130,8 @@ Scope {
                                 // mismo SIGSEGV que con el toggle por IPC.
                                 // Modo todo: ScriptModel vivo de DesktopEntries.
                                 // Resto de modos: array plano de `results`.
-                                listModel: !scope.shown ? null : (launcher.activeMode === "todo" ? appModel : launcher.results)
+                                listModel: !scope.shown ? null : (launcher.activeMode === "todo" ? appModel :
+                                                                                                   launcher.results)
                                 activeMode: launcher.activeMode
                                 // Generación del filtro (ver filterEpoch): distingue
                                 // nueva búsqueda (ir arriba) de refresco de datos
@@ -1002,14 +1162,19 @@ Scope {
                             EmptyState {
                                 anchors.centerIn: parent
                                 visible: resultList.count === 0 && launcher.showEmpty
-                                iconSource: Quickshell.iconPath("search-none-symbolic", true) || Quickshell.iconPath("edit-find-symbolic", true)
+                                iconSource: Quickshell.iconPath("search-none-symbolic", true)
+                                            || Quickshell.iconPath("edit-find-symbolic", true)
                                 iconSize: 48
                                 title: {
                                     if (launcher.activeMode === "clip")
-                                        return Services.ClipboardService.error !== "" ? Services.ClipboardService.error : launcher.tr("launcher.clipboard_empty", "Portapapeles vacío");
+                                        return Services.ClipboardService.error !== ""
+                                                ? Services.ClipboardService.error : launcher.tr(
+                                                      "launcher.clipboard_empty", "Portapapeles vacío");
                                     if (launcher.activeMode === "files" && fileSearch.failed)
-                                        return launcher.tr("launcher.files_fd_missing", "Búsqueda no disponible (¿fd instalado?)");
-                                    if (launcher.activeMode === "todo" && launcher.query === "" && launcher.appCount === 0)
+                                        return launcher.tr("launcher.files_fd_missing",
+                                                           "Búsqueda no disponible (¿fd instalado?)");
+                                    if (launcher.activeMode === "todo" && launcher.query === ""
+                                            && launcher.appCount === 0)
                                         return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
                                     return launcher.tr("launcher.empty_no_results", "Sin resultados");
                                 }
@@ -1032,22 +1197,22 @@ Scope {
                             clipText: preview.clipText
                             previewError: preview.previewError
                             metaText: preview.metaText
-                            fileTooLargeText: tr("launcher.file_too_large", "Archivo demasiado grande para previsualizar")
+                            fileTooLargeText: tr("launcher.file_too_large",
+                                                 "Archivo demasiado grande para previsualizar")
                         }
                     }
 
                     // Barra de ayuda
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
-                        text: tr("launcher.footer_hint", "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
+                        text: tr("launcher.footer_hint",
+                                 "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
                         font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                         opacity: Appearance.opacity.hintStrong
                     }
                 }
             }
-
-
         }
     }
 }

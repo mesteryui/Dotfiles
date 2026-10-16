@@ -9,6 +9,7 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
     Layout.alignment: Qt.AlignHCenter
+
     spacing: 2
 
     property bool compact: false
@@ -52,7 +53,8 @@ ColumnLayout {
                 text: WeatherService.data.temp
                 color: Appearance.md3.on_surface_variant
                 opacity: 0.95
-                font.pixelSize: root.compact ? Appearance.typeScale.titleSmall : Appearance.font.pixelSize.large
+                font.pixelSize: root.compact ? Appearance.typeScale.titleSmall :
+                                               Appearance.font.pixelSize.large
                 font.variableAxes: Appearance.font.variableAxes.title
                 font.family: Appearance.font.sans
             }
@@ -71,8 +73,8 @@ ColumnLayout {
         font.weight: root.compact ? Font.DemiBold : Font.Bold
         // Números tabulares: el ancho no salta al cambiar de minuto.
         font.features: ({
-                "tnum": 1
-            })
+                            "tnum": 1
+                        })
         lineHeight: 1.0
 
         text: TimeService.timeString()

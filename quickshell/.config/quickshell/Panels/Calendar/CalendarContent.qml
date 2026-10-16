@@ -201,8 +201,9 @@ Item {
                 height: (monthGrid.height - 10) / 6
 
                 readonly property bool isToday: {
-                    const today = root.todayDate
-                    return model.day === today.getDate() && model.month === today.getMonth() && model.year === today.getFullYear();
+                    const today = root.todayDate;
+                    return model.day === today.getDate() && model.month === today.getMonth() && model.year
+                            === today.getFullYear();
                 }
 
                 readonly property bool isCurrentMonth: model.month === monthGrid.month
@@ -221,7 +222,8 @@ Item {
                     radius: Appearance.shape.full
                     anchors.centerIn: parent
 
-                    color: delegateItem.isToday ? Appearance.md3.primary : delegateItem.isSelected ? Appearance.md3.primary_container : "transparent"
+                    color: delegateItem.isToday ? Appearance.md3.primary : delegateItem.isSelected
+                                                  ? Appearance.md3.primary_container : "transparent"
 
                     border.width: delegateItem.isSelected && !delegateItem.isToday ? 1 : 0
                     border.color: Appearance.md3.primary
@@ -239,7 +241,9 @@ Item {
 
                         anchors.fill: parent
                         radius: parent.radius
-                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
+                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected
+                                                      ? Appearance.md3.on_primary_container :
+                                                        Appearance.md3.on_surface
                         opacity: 0
 
                         Behavior on opacity {
@@ -257,7 +261,11 @@ Item {
                         font.family: Services.ConfigService.configs.appearance.fontSans
                         font.pixelSize: Appearance.typeScale.bodySmall
                         font.bold: delegateItem.isToday || delegateItem.isSelected
-                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected ? Appearance.md3.on_primary_container : delegateItem.isCurrentMonth ? Appearance.md3.on_surface : Appearance.md3.on_surface_variant
+                        color: delegateItem.isToday ? Appearance.md3.on_primary : delegateItem.isSelected
+                                                      ? Appearance.md3.on_primary_container :
+                                                        delegateItem.isCurrentMonth
+                                                        ? Appearance.md3.on_surface :
+                                                          Appearance.md3.on_surface_variant
                         opacity: delegateItem.isCurrentMonth ? 1.0 : 0.38
                     }
                 }

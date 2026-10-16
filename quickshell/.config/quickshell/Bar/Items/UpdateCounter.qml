@@ -30,9 +30,11 @@ BarItem {
 
         // 'loading' construye el popup en segundo plano, en los huecos
         // entre frames, sin bloquear el hilo de UI al crear la barra.
-        // 'active' (el original) fuerza carga síncrona inmediata y
-        // bloqueante — mala idea para algo que no se ve hasta el click.
-        loading: true
+        // Solo cuando hay algo que mostrar (visible) o el usuario va a
+        // abrirlo (hover/press): en reposo sin updates no cuesta RAM.
+        // OJO: aquí vale `hovered`, no `hoveredChanged` (la señal siempre
+        // es truthy y cargaba eager en arranque).
+        loading: root.visible || root.hovered || root.pressed
 
         component: UpdateList {
             id: popup

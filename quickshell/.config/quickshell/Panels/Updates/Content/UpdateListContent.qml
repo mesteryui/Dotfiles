@@ -6,11 +6,9 @@ import QtQuick
 Item {
     id: root
 
-    signal updateRequested()
+    signal updateRequested
 
-    implicitHeight: header.implicitHeight
-                  + packages.implicitHeight
-                  + footer.implicitHeight
+    implicitHeight: header.implicitHeight + packages.implicitHeight + footer.implicitHeight
 
     // ── Cabecera ─────────────────────────────────────────────
     UpdateListHeader {

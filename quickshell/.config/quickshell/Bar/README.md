@@ -8,21 +8,8 @@
   flotantes `floatingMargin: 3`, laterales de contenido
   `contentMargin: 6`. `exclusiveZone = barHeight` siempre (solo reserva
   el alto de la barra). `position` top/bottom, `height` (def. 36).
-- `MainBar.qml` — ordena con `BarRegistry.sectionModules("left"|
-  "center"|"right")` y crea componentes estáticos (un `Loader`
-  con `source:url` no resuelve `qs.*`, por eso no se usa).
-- `BarRegistry.qml` — singleton: 14 tipos canónicos (`launcher`,
-  `workspaces`, `submap`, `weather`, `mpris`, `updates`, `clock`,
-  `tray`, `network`, `bluetooth`, `battery`, `volume`, `caffeine`,
-  `notifications`) + `defaultSections` (left/center/right/sideTop/
-  sideCenter/sideBottom, idéntico a los defaults de `ConfigService`).
-  `normalizeId` acepta alias (`clock/timedate/time`, `mpris/media/
-  player`, `tray/systray`, `wifi/network`, `bt`, `bat`, `vol`,
-  `submap/hyprlandsubmap/focus`, `updates/updatecounter/update`,
-  `notif/notification`). `isModuleActive` oculta `submap` sin submapa
-  y `updates` a cero. `registerModule`/`unregisterModule` para
-  extensiones. `faceFile()`/`variantFaceFile()` son API informativa
-  (no para `Loader.source`).
+- `MainBar.qml` — contenido: 3 zonas (left/center/right) con
+  componentes directos de `Items/`.
 - `Content/` — popups de cada módulo (11): `Battery`, `Caffeine`,
   `Clock`, `HyprlandSubmap`, `Network`, `Notifications`, `Player`,
   `UpdateCounter`, `Volume`, `Weather`, `WorkspaceButton`.
@@ -43,8 +30,4 @@
 - `ScreenCorner.qml` — esquina (`Shape`, `cornerRadius`, `fillColor`,
   `mirrorX`/`mirrorY`).
 
-Config: `ConfigService.configs.bar.{position,height,barType,
-workspaceButtonType,layout}`; el orden vive en `bar.layout`
-(`left,center,right,sideTop,sideCenter,sideBottom`; side* reservado
-para el futuro SideBar vertical). Un string suelto se acepta como
-lista de un elemento; ids desconocidos se omiten con aviso.
+Config: `ConfigService.configs.bar.{position,height,workspaceButtonType,barType}`.

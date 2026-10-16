@@ -14,7 +14,8 @@ BarItem {
     LazyLoader {
         id: weatherCharge
 
-        loading: root.hoveredChanged
+        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy).
+        loading: root.hovered
 
         WeatherPopup {
             id: popupWindow

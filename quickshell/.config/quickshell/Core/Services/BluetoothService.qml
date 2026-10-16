@@ -16,7 +16,9 @@ Singleton {
     // Propiedad intermedia para que el binding a .state de cada device funcione
     readonly property list<BluetoothDevice> devices: currentAdapter?.devices.values ?? []
 
-    readonly property BluetoothDevice connectedDevice: devices.find(d => d.state === BluetoothDeviceState.Connected) ?? null
+    readonly property BluetoothDevice connectedDevice: devices.find(d => d.state
+                                                                         === BluetoothDeviceState.Connected)
+                                                       ?? null
 
     readonly property bool isConnected: connectedDevice !== null
 

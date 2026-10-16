@@ -49,6 +49,7 @@ Rectangle {
     // State layer de fila completa
     M3StateLayer {
         id: rowStateLayer
+
         anchors.fill: parent
         radius: parent.radius
         tint: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
@@ -113,7 +114,8 @@ Rectangle {
                 StyledText {
                     visible: root.appName !== ""
                     text: root.appName
-                    color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                    color: root.current ? Appearance.md3.on_secondary_container :
+                                          Appearance.md3.on_surface_variant
                     font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
                     font.bold: true
@@ -130,7 +132,8 @@ Rectangle {
                             return Services.NotificationData.formatRelative(root.historyEpoch);
                         return root.time;
                     }
-                    color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                    color: root.current ? Appearance.md3.on_secondary_container :
+                                          Appearance.md3.on_surface_variant
                     font.pixelSize: Appearance.typeScale.labelSmall
                     font.family: Appearance.font.sans
                     opacity: Appearance.opacity.hintStrong
@@ -152,7 +155,8 @@ Rectangle {
             StyledText {
                 text: root.body
                 visible: text !== ""
-                color: root.current ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                color: root.current ? Appearance.md3.on_secondary_container :
+                                      Appearance.md3.on_surface_variant
                 font.family: Appearance.font.sans
                 font.pixelSize: Appearance.typeScale.bodyMedium
                 wrapMode: Text.WordWrap

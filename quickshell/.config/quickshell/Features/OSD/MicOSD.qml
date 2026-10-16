@@ -1,5 +1,5 @@
-import QtQuick
 import qs.Core.Services
+import QtQuick
 import M3Shapes
 
 PercentageOSD {
@@ -21,12 +21,15 @@ PercentageOSD {
 
     // Enlazamos las propiedades requeridas por PercentageOSD con las del AudioService
     percentage: AudioService.micVolume
+
     icon: AudioService.micMaterialIcon
 
     // Morph continuo: Circle → Cookie9Sided (energía sonora).
     // Silenciado: ClamShell (boca cerrada) + error.
     continuousMorph: true
+
     soundMorphFrom: MaterialShape.Circle
+
     soundMorphTo: MaterialShape.Cookie9Sided
 
     // Silenciado: contenedor ClamShell + error (ver PercentageOSD).

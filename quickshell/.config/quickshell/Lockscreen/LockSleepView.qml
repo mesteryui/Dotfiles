@@ -20,36 +20,45 @@ Item {
 
     signal wakeUp
 
-// Respiración de la pastilla de despertar (Sunny↔VerySunny):
-// invita a tocarla. Solo corre dormido.
-property int wakeBreathShape: MaterialShape.Sunny
+    // Respiración de la pastilla de despertar (Sunny↔VerySunny):
+    // invita a tocarla. Solo corre dormido.
+    property int wakeBreathShape: MaterialShape.Sunny
 
-Timer {
-    id: breathTimer
-    interval: 1600
-    running: !isAwake
-    repeat: true
-    onTriggered: wakeBreathShape = wakeBreathShape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
-}
+    Timer {
+        id: breathTimer
 
-Component.onDestruction: {
-    breathTimer.stop()
-}
+        interval: 1600
+        running: !isAwake
+        repeat: true
+        onTriggered: wakeBreathShape = wakeBreathShape === MaterialShape.Sunny ? MaterialShape.VerySunny :
+                                                                                 MaterialShape.Sunny
+    }
+
+    Component.onDestruction: {
+        breathTimer.stop();
+    }
 
     anchors.fill: parent
     // Por encima de LockDragArea (z:1): los botones del MPRIS y la pastilla
     // reciben sus clics primero; el fondo transparente deja pasar el
     // resto a LockDragArea para despertar. Si sleepView quedase por debajo,
     // ningún z interno del MPRIS podría rescatar los clics.
+
     z: 2
     // Mientras se arrastra, la vista dormida se atenúa y el panel de
     // auth asoma siguiendo al dedo (misma dirección del swipe).
+
     opacity: isAwake ? 0 : Math.max(0, 1 - dragDy / 220)
+
     visible: opacity > 0
 
     Behavior on opacity {
         enabled: !dragging
-        NumberAnimation { duration: stageDuration; easing.type: Easing.OutCubic }
+
+        NumberAnimation {
+            duration: stageDuration
+            easing.type: Easing.OutCubic
+        }
     }
 
     ColumnLayout {
@@ -68,6 +77,7 @@ Component.onDestruction: {
 
             RowLayout {
                 id: batteryRow
+
                 anchors.centerIn: parent
                 spacing: 6
 
@@ -105,6 +115,7 @@ Component.onDestruction: {
 
             RowLayout {
                 id: notifRow
+
                 anchors.centerIn: parent
                 spacing: 6
 
@@ -114,7 +125,8 @@ Component.onDestruction: {
                     color: Appearance.md3.primary
                 }
                 StyledText {
-                    text: NotificationData.history.count + " " + I18nService.getTranslation("lockscreen.notifications_unread", "sin leer")
+                    text: NotificationData.history.count + " " + I18nService.getTranslation(
+                              "lockscreen.notifications_unread", "sin leer")
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.on_surface_variant
@@ -141,7 +153,8 @@ Component.onDestruction: {
         id: wakePill
 
         Accessible.role: Accessible.Button
-        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
+        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint",
+                                                    "Desliza hacia arriba o pulsa una tecla")
 
         z: 2
         anchors {
@@ -152,7 +165,8 @@ Component.onDestruction: {
         implicitWidth: wakeRow.implicitWidth + 32
         implicitHeight: 48
         radius: Appearance.shape.full
-        color: dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+        color: dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(
+                                 Appearance.md3.surface_container_high, 0.72)
         border.width: 1
         border.color: dragDy > 70 ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
@@ -161,16 +175,23 @@ Component.onDestruction: {
 
             Behavior on y {
                 enabled: !dragging
-                NumberAnimation { duration: stageDuration; easing.type: Easing.OutCubic }
+
+                NumberAnimation {
+                    duration: stageDuration
+                    easing.type: Easing.OutCubic
+                }
             }
         }
 
         Behavior on color {
-            ColorAnimation { duration: 180 }
+            ColorAnimation {
+                duration: 180
+            }
         }
 
         RowLayout {
             id: wakeRow
+
             anchors.centerIn: parent
             spacing: Appearance.spacing.s
 
@@ -189,6 +210,7 @@ Component.onDestruction: {
 
                     MaterialIcon {
                         id: swipeArrow
+
                         anchors.centerIn: parent
                         icon: "keyboard_arrow_up"
                         size: 20
@@ -200,13 +222,26 @@ Component.onDestruction: {
                     loops: Animation.Infinite
                     running: !isAwake && !dragging
 
-                    NumberAnimation { from: 0; to: -4; duration: 700; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: -4; to: 0; duration: 700; easing.type: Easing.InOutSine }
+                    NumberAnimation {
+                        from: 0
+                        to: -4
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        from: -4
+                        to: 0
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
                 }
             }
 
             StyledText {
-                text: dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock", "Suelta para desbloquear") : I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
+                text: dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock",
+                                                               "Suelta para desbloquear") :
+                                    I18nService.getTranslation("lockscreen.wake_hint",
+                                                               "Desliza hacia arriba o pulsa una tecla")
                 color: dragDy > 70 ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium

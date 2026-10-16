@@ -18,7 +18,6 @@ BarItem {
     scale: pressed ? 0.92 : (hovered ? 1.05 : 1.0)
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping
@@ -34,14 +33,16 @@ BarItem {
     }
 
     onClicked: {
-        const w = popupLoader.item
-        if (w) w.visible = !w.visible
+        const w = popupLoader.item;
+        if (w)
+            w.visible = !w.visible;
     }
 
     LazyLoader {
         id: popupLoader
 
-        loading: wrapper.hoveredChanged || wrapper.pressed
+        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy).
+        loading: wrapper.hovered || wrapper.pressed
         component: CalendarPopupWindow {
             id: popup
 

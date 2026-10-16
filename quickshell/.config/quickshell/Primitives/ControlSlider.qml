@@ -31,10 +31,13 @@ RowLayout {
     // foco viene del teclado. El panel dueño lo pone a false con el ratón
     // (vía mouseUsed) y a true con cualquier tecla (Keys.onPressed en la
     // instancia). Por defecto true para no cambiar paneles existentes.
+
     property bool keyboardMode: true
 
     signal moved(real val)
+
     signal iconClicked
+
     signal mouseUsed
 
     function adjust(delta) {
@@ -89,7 +92,9 @@ RowLayout {
         visible: root.iconName !== ""
         icon: root.iconName
         size: Appearance.font.pixelSize.large
-        color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : (iconArea.containsMouse ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
+        color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : (iconArea.containsMouse
+                                                                                   ? Appearance.md3.primary :
+                                                                                     Appearance.md3.on_surface_variant)
 
         Behavior on color {
             ColorAnimation {
@@ -172,16 +177,23 @@ RowLayout {
         MaterialShape {
             id: thumb
 
-            x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0, Math.min(1, root.displayValue())) - width / 2))
+            x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0,
+                                                                                                              Math.min(1,
+                                                                                                                       root.displayValue(
+                                                                                                                           ))) - width
+                                    / 2))
             anchors.verticalCenter: parent.verticalCenter
-            width: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode) ? 20 : 16)
+            width: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode)
+                                             ? 20 : 16)
             height: width
             fromShape: MaterialShape.Circle
             toShape: MaterialShape.Cookie4Sided
             morphProgress: Math.max(0, Math.min(1, root.displayValue()))
             animationDuration: Appearance.motion.short4
             color: root.accentColor
-            strokeColor: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : Appearance.md3.surface_container_low
+            strokeColor: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary :
+                                                                   Appearance.md3.surface_container_low
+
             strokeWidth: 2
 
             Behavior on x {
@@ -190,7 +202,6 @@ RowLayout {
                 }
             }
             Behavior on width {
-                enabled: !Appearance.motion.reduced
                 SpringAnimation {
                     spring: Appearance.motion.springSnappy.spring
                     damping: Appearance.motion.springSnappy.damping
@@ -215,7 +226,8 @@ RowLayout {
             height: 26
             radius: Appearance.shape.full
             color: Appearance.md3.primary_container
-            x: Math.max(0, Math.min(sliderTrackContainer.width - width, thumb.x + thumb.width / 2 - width / 2))
+            x: Math.max(0, Math.min(sliderTrackContainer.width - width, thumb.x + thumb.width / 2 - width
+                                    / 2))
             y: -30
 
             StyledText {

@@ -33,18 +33,20 @@ Rectangle {
 
     // ── Computed ─────────────────────────────────────────────────────────────
     radius: surfaceRadius
-    color: active
-        ? Qt.tint(baseColor, Qt.alpha(Appearance.md3.on_surface, 0.08))
-        : baseColor
+    color: active ? Qt.tint(baseColor, Qt.alpha(Appearance.md3.on_surface, 0.08)) : baseColor
 
     border.width: highlighted ? 1 : 0
     border.color: Appearance.md3.outline
 
     // ── Animaciones ──────────────────────────────────────────────────────────
     Behavior on color {
-        ColorAnimation { duration: Appearance.motion.short3 }
+        ColorAnimation {
+            duration: Appearance.motion.short3
+        }
     }
     Behavior on border.width {
-        NumberAnimation { duration: Appearance.motion.short2 }
+        NumberAnimation {
+            duration: Appearance.motion.short2
+        }
     }
 }

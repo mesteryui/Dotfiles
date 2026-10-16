@@ -130,7 +130,8 @@ Item {
                     implicitWidth: 46
                     implicitHeight: 46
                     radius: Appearance.shape.small
-                    color: root.charging ? Appearance.md3.primary_container : Appearance.md3.surface_container_highest
+                    color: root.charging ? Appearance.md3.primary_container :
+                                           Appearance.md3.surface_container_highest
 
                     MaterialIcon {
                         anchors.centerIn: parent
@@ -153,9 +154,9 @@ Item {
                             font.pixelSize: Appearance.font.pixelSize.huge
                             font.bold: true
                             font.features: ({
-                                    "tnum": 1,
-                                    "lnum": 1
-                                })
+                                                "tnum": 1,
+                                                "lnum": 1
+                                            })
                             color: Appearance.md3.on_surface
                         }
 
@@ -203,7 +204,8 @@ Item {
                     required property var modelData
 
                     readonly property bool selected: PowerProfiles.profile === modelData
-                    readonly property bool profileDisabled: modelData === PowerProfile.Performance && !PowerProfiles.hasPerformanceProfile
+                    readonly property bool profileDisabled: modelData === PowerProfile.Performance &&
+                                                            !PowerProfiles.hasPerformanceProfile
 
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -237,7 +239,8 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             icon: root.profileIcon(profileButton.modelData)
                             size: 24
-                            color: profileButton.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                            color: profileButton.selected ? Appearance.md3.on_primary_container :
+                                                            Appearance.md3.on_surface_variant
                         }
 
                         StyledText {
@@ -248,7 +251,8 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             maximumLineCount: 1
-                            color: profileButton.selected ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                            color: profileButton.selected ? Appearance.md3.on_primary_container :
+                                                            Appearance.md3.on_surface_variant
                         }
                     }
 

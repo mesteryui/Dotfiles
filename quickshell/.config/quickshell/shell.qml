@@ -27,7 +27,9 @@ ShellRoot {
 
     // watchFiles en false en uso diario: en true cualquier toque
     // a un QML recarga toda la shell (útil en dev, ruido en prod).
-    settings.watchFiles: true
+    // En false además se sueltan los watchers inotify de todo el árbol.
+    // Actívalo solo para desarrollar (qs -p recarga el módulo editado).
+    settings.watchFiles: false
 
     Component.onCompleted: {
         Qt.application.organization = "shinro";

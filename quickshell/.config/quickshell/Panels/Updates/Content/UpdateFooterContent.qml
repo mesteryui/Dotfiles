@@ -11,7 +11,9 @@ Item {
 
     signal updateRequested
 
-    readonly property bool btnEnabled: !Services.UpdatesTracking.updating && !Services.UpdatesTracking.checking && Services.UpdatesTracking.updateCount > 0
+    readonly property bool btnEnabled: !Services.UpdatesTracking.updating &&
+                                       !Services.UpdatesTracking.checking
+                                       && Services.UpdatesTracking.updateCount > 0
 
     // Botón — Wrapper
     Item {
@@ -65,12 +67,18 @@ Item {
                     duration: 1000
                     loops: Animation.Infinite
                     onRunningChanged: if (!running)
-                        btnIcon.rotation = 0
+                                          btnIcon.rotation = 0
                 }
             }
 
             Text {
-                text: Services.UpdatesTracking.updating ? Services.I18nService.getTranslation("updates.updating") : Services.UpdatesTracking.checking ? Services.I18nService.getTranslation("updates.checking") : Services.I18nService.getTranslation("updates.update_all")
+                text: Services.UpdatesTracking.updating ? Services.I18nService.getTranslation(
+                                                              "updates.updating") :
+                                                          Services.UpdatesTracking.checking
+                                                          ? Services.I18nService.getTranslation(
+                                                                "updates.checking") :
+                                                            Services.I18nService.getTranslation(
+                                                                "updates.update_all")
                 font.pixelSize: Appearance.typeScale.bodySmall
                 font.weight: Font.Medium
                 font.family: Services.ConfigService.configs.appearance.fontSans

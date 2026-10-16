@@ -1,1 +1,1 @@
-current={{colors.primary.default.hex_stripped}}
+{{colors.primary.default.hex | replace: "#", ""}}

@@ -29,9 +29,9 @@ pragma Singleton
 // describe lo suyo con entradas shell()/ipc()/submenu().
 
 import qs.Core.Services as Services
+import "Base/ShellUtils.js" as ShellUtils
 import QtQuick
 import Quickshell
-import "Base/ShellUtils.js" as ShellUtils
 
 Singleton {
     id: root
@@ -53,10 +53,14 @@ Singleton {
     // funciones se llaman desde bindings que leen la caché, QML avisaría
     // "Binding loop detected" aunque convergiera.
     property var _memo: ({
-        sectionsKey: "", sectionsVal: [],
-        poolKey: "", poolVal: [], poolRefs: [],
-        sectionRev: "", sectionCache: ({})
-    })
+                             sectionsKey: "",
+                             sectionsVal: [],
+                             poolKey: "",
+                             poolVal: [],
+                             poolRefs: [],
+                             sectionRev: "",
+                             sectionCache: ({})
+                         })
 
     function memoKey() {
         return MenuStore.revision + "|" + Services.I18nService.language;
@@ -78,7 +82,9 @@ Singleton {
         for (let k = 0; k < customs.length; k++) {
             if (seen[customs[k].sectionId])
                 continue;
-            out.push(Object.assign({}, customs[k], { title: sectionTitle(customs[k]) }));
+            out.push(Object.assign({}, customs[k], {
+                                       title: sectionTitle(customs[k])
+                                   }));
             seen[customs[k].sectionId] = true;
         }
         root._memo.sectionsKey = key;
@@ -97,7 +103,12 @@ Singleton {
         for (let i = 0; i < all.length; i++)
             if (all[i].sectionId === sectionId)
                 return all[i];
-        return { sectionId: "main", title: tr("sysmenu.section_main", "Sistema"), iconName: "tune", parentId: "" };
+        return {
+            sectionId: "main",
+            title: tr("sysmenu.section_main", "Sistema"),
+            iconName: "tune",
+            parentId: ""
+        };
     }
 
     // Entradas unificadas de una sección ([] si no hay).
@@ -129,7 +140,11 @@ Singleton {
             root._memo.sectionRev = rev;
             root._memo.sectionCache = {};
         }
-        root._memo.sectionCache[sectionId] = { key: key, src: statics, val: out };
+        root._memo.sectionCache[sectionId] = {
+            key: key,
+            src: statics,
+            val: out
+        };
         return out;
     }
 
@@ -174,11 +189,11 @@ Singleton {
         // Ojo: el redescubrimiento es asíncrono (Process ls); los nuevos
         // providers aparecen solos al terminar vía revision. Este resumen
         // describe el estado previo + si se lanzó el escaneo.
-        return (started ? "rescanning" : "already-scanning")
-            + " menus=" + ids.length + " rev=" + MenuStore.revision
-            + " errors=" + MenuStore.loadErrors
-            + (MenuStore.lastError !== "" ? " lastError=" + MenuStore.lastError : "")
-            + " [" + ids.join(",") + "]";
+        return (started ? "rescanning" : "already-scanning") + " menus=" + ids.length + " rev=" + MenuStore.revision
+                + " errors=" + MenuStore.loadErrors + (MenuStore.lastError !== "" ? " lastError="
+                                                                                    + MenuStore.lastError :
+                                                                                    "") + " [" + ids.join(
+                    ",") + "]";
     }
 
     // Miga de pan desde la raíz hasta la sección (para el breadcrumb).
@@ -190,7 +205,10 @@ Singleton {
         const out = [];
         let cur = byId[sectionId] || byId["main"];
         while (cur) {
-            out.unshift({ sectionId: cur.sectionId, title: cur.title });
+            out.unshift({
+                            sectionId: cur.sectionId,
+                            title: cur.title
+                        });
             cur = cur.parentId ? byId[cur.parentId] : null;
         }
         return out;
@@ -214,10 +232,15 @@ Singleton {
     function toResultItem(entry, sectionLabel) {
         const kind = (entry && entry.action && entry.action.kind) || "";
         return {
-            kind: "system", title: tr(entry.titleKey, entry.titleFallback), sub: tr(entry.subtitleKey, entry.subtitleFallback),
-            iconName: entry.iconName, appIcon: "", ch: "",
+            kind: "system",
+            title: tr(entry.titleKey, entry.titleFallback),
+            sub: tr(entry.subtitleKey, entry.subtitleFallback),
+            iconName: entry.iconName,
+            appIcon: "",
+            ch: "",
             imagePath: entry.previewPath ? ShellUtils.fileUrl(entry.previewPath) : "",
-            cat: sectionLabel, shell: shellOf(entry),
+            cat: sectionLabel,
+            shell: shellOf(entry),
             isSubmenu: kind === "section",
             section: kind === "section" ? entry.action.targetSectionId : ""
         };

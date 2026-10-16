@@ -13,9 +13,12 @@ BaseOSD {
     type: "specialKeys"
 
     property string osdIcon: "keyboard"
+
     property string osdText: ""
+
     property color activeColor: Appearance.md3.on_surface
     // Forma-identidad por tecla: Diamond(CapsLock) · Cookie4Sided(NumLock) · Circle(desactivado).
+
     property int keyShape: MaterialShape.Circle
 
     Connections {
@@ -23,7 +26,9 @@ BaseOSD {
 
         function onCapsLockOnChanged() {
             const capsActive = KeyboardThings.capsLockOn;
-            keyOSD.osdText = I18nService.getTranslation("osd.caps_lock.label", "Bloq Mayús %1").arg(capsActive ? I18nService.getTranslation("osd.caps_lock.activated", "Activado") : I18nService.getTranslation("osd.caps_lock.deactivated", "Desactivado"));
+            keyOSD.osdText = I18nService.getTranslation("osd.caps_lock.label", "Bloq Mayús %1").arg(
+                        capsActive ? I18nService.getTranslation("osd.caps_lock.activated", "Activado") :
+                                     I18nService.getTranslation("osd.caps_lock.deactivated", "Desactivado"));
             keyOSD.keyShape = capsActive ? MaterialShape.Diamond : MaterialShape.Circle;
             keyOSD.show();
         }
@@ -59,15 +64,26 @@ BaseOSD {
                 anchors.centerIn: parent
                 icon: keyOSD.osdIcon
                 size: 28
-                color: keyOSD.keyShape !== MaterialShape.Circle ? Appearance.md3.primary : Appearance.md3.on_surface
+                color: keyOSD.keyShape !== MaterialShape.Circle ? Appearance.md3.primary :
+                                                                  Appearance.md3.on_surface
 
                 // Pulso sutil cuando una tecla está activa.
                 SequentialAnimation on scale {
                     loops: Animation.Infinite
                     running: keyOSD.keyShape !== MaterialShape.Circle
 
-                    NumberAnimation { from: 1; to: 1.1; duration: 500; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: 1.1; to: 1; duration: 500; easing.type: Easing.InOutSine }
+                    NumberAnimation {
+                        from: 1
+                        to: 1.1
+                        duration: 500
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        from: 1.1
+                        to: 1
+                        duration: 500
+                        easing.type: Easing.InOutSine
+                    }
                 }
             }
         }

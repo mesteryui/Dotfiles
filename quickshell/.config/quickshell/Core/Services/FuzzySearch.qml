@@ -21,48 +21,48 @@ Singleton {
     id: root
 
     /**
-     * Matchea una sola query contra un solo string.
-     * Útil para casos puntuales (ej: resaltar un único item ya conocido).
-     *
-     * @param query string tipeado por el usuario
-     * @param text string contra el que se compara
-     * @return { matched: bool, score: real, indices: list<int> }
-     */
+    * Matchea una sola query contra un solo string.
+    * Útil para casos puntuales (ej: resaltar un único item ya conocido).
+    *
+    * @param query string tipeado por el usuario
+    * @param text string contra el que se compara
+    * @return { matched: bool, score: real, indices: list<int> }
+    */
     function match(query, text) {
         return FuzzyMatch.fuzzyMatch(query, text);
     }
 
     /**
-     * Filtra y ordena por relevancia una lista de items.
-     *
-     * @param query string tipeado por el usuario
-     * @param items array de items (cualquier forma: objetos, strings, model roles)
-     * @param getText function(item) -> string, el campo a matchear
-     * @return array de { item, score, indices }, ordenado de más a menos relevante.
-     *         Si querés solo los items (sin metadata), mapealo vos:
-     *         Services.FuzzySearch.filter(q, items, getText).map(r => r.item)
-     */
+    * Filtra y ordena por relevancia una lista de items.
+    *
+    * @param query string tipeado por el usuario
+    * @param items array de items (cualquier forma: objetos, strings, model roles)
+    * @param getText function(item) -> string, el campo a matchear
+    * @return array de { item, score, indices }, ordenado de más a menos relevante.
+    *         Si querés solo los items (sin metadata), mapealo vos:
+    *         Services.FuzzySearch.filter(q, items, getText).map(r => r.item)
+    */
     function filter(query, items, getText) {
         return FuzzyMatch.filterFuzzy(query, items, getText);
     }
 
     /**
-     * Igual que filter(), pero matchea contra varios campos por item y se
-     * queda con el mejor score ponderado entre ellos. Pensado para casos
-     * como keybinds o apps, donde querés que la búsqueda encuentre tanto
-     * por nombre como por descripción.
-     *
-     * @param getTexts function(item) -> array de string | {text, weight} | [text, weight].
-     *   string pesa 1 (compat). Ejemplo apps: nombre 1, comentario 0.5, id 0.3.
-     */
+    * Igual que filter(), pero matchea contra varios campos por item y se
+    * queda con el mejor score ponderado entre ellos. Pensado para casos
+    * como keybinds o apps, donde querés que la búsqueda encuentre tanto
+    * por nombre como por descripción.
+    *
+    * @param getTexts function(item) -> array de string | {text, weight} | [text, weight].
+    *   string pesa 1 (compat). Ejemplo apps: nombre 1, comentario 0.5, id 0.3.
+    */
     function filterMulti(query, items, getTexts) {
         return FuzzyMatch.filterFuzzyMulti(query, items, getTexts);
     }
 
     /**
-     * Devuelve solo los items (sin score/indices), ya ordenados. Azúcar
-     * sintáctico para el caso más común: bindear directo a un model.
-     */
+    * Devuelve solo los items (sin score/indices), ya ordenados. Azúcar
+    * sintáctico para el caso más común: bindear directo a un model.
+    */
     function filterItems(query, items, getText) {
         return FuzzyMatch.filterFuzzy(query, items, getText).map(r => r.item);
     }
@@ -72,9 +72,9 @@ Singleton {
     }
 
     /**
-     * Parte un string en segmentos {text, matched} según los indices de un
-     * match previo, para poder resaltar en la UI (negrita, color, etc.).
-     */
+    * Parte un string en segmentos {text, matched} según los indices de un
+    * match previo, para poder resaltar en la UI (negrita, color, etc.).
+    */
     function highlightSegments(text, indices) {
         return FuzzyMatch.highlightSegments(text, indices);
     }

@@ -19,11 +19,11 @@ Item {
     // clic rápido `pressed` ya cayó cuando `onClicked` pide el item.
     property bool menuOpen: false
 
-    function showMenu()
-    {
+    function showMenu() {
         itemContainer.menuOpen = true;
-        const w = loader.item
-        if (w) w.visible = !w.visible
+        const w = loader.item;
+        if (w)
+            w.visible = !w.visible;
     }
 
     Connections {
@@ -58,8 +58,12 @@ Item {
             anchor.item: itemContainer
             anchor.margins.top: 38
             anchor.margins.bottom: 38
-            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Right
-            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top : Edges.Bottom) | Edges.Left
+            anchor.edges: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top :
+                                                                                     Edges.Bottom)
+                          | Edges.Right
+            anchor.gravity: (Services.ConfigService.configs.bar.position == "bottom" ? Edges.Top :
+                                                                                       Edges.Bottom)
+                            | Edges.Left
         }
     }
     Item {
@@ -92,7 +96,6 @@ Item {
         scale: mouseManagement.pressed ? 1.25 : hoverHandler.hovered ? 1.10 : 1.0
 
         Behavior on scale {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping
@@ -100,40 +103,39 @@ Item {
                 epsilon: 0.005
             }
         }
-}
+    }
 
-MouseArea {
-    id: mouseManagement
+    MouseArea {
+        id: mouseManagement
 
-    anchors.fill: parent
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    hoverEnabled: false
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        hoverEnabled: false
 
-    onClicked: mouse => {
-    if (!itemContainer.modelData) return;
-    const isRight = mouse.button === Qt.RightButton;
-    const needsMenu = isRight || itemContainer.modelData.onlyMenu;
-    if (needsMenu && itemContainer.modelData.hasMenu)
-    {
-        itemContainer.showMenu();
-    } else if (!isRight) {
-    itemContainer.modelData.activate();
-}
-}
-}
+        onClicked: mouse => {
+            if (!itemContainer.modelData)
+                return;
+            const isRight = mouse.button === Qt.RightButton;
+            const needsMenu = isRight || itemContainer.modelData.onlyMenu;
+            if (needsMenu && itemContainer.modelData.hasMenu) {
+                itemContainer.showMenu();
+            } else if (!isRight) {
+                itemContainer.modelData.activate();
+            }
+        }
+    }
 
-HoverHandler {
-    id: hoverHandler
-}
+    HoverHandler {
+        id: hoverHandler
+    }
 
-WheelHandler {
-    onWheel: event => {
-    if (!itemContainer.modelData) return;
-    const isHorizontal = event.angleDelta.x !== 0;
-    itemContainer.modelData.scroll(
-        isHorizontal ? Qt.Horizontal : Qt.Vertical,
-        isHorizontal ? event.angleDelta.x : event.angleDelta.y
-    );
-}
-}
+    WheelHandler {
+        onWheel: event => {
+            if (!itemContainer.modelData)
+                return;
+            const isHorizontal = event.angleDelta.x !== 0;
+            itemContainer.modelData.scroll(isHorizontal ? Qt.Horizontal : Qt.Vertical, isHorizontal
+                                           ? event.angleDelta.x : event.angleDelta.y);
+        }
+    }
 }

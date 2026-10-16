@@ -1,2 +1,2 @@
 -- configs/animation.lua
-require("configs.animations.caelestia")
+require("configs.animations.shinro")

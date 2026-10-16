@@ -49,26 +49,26 @@ Singleton {
         }
 
         root.historyModel.insert(0, {
-            historyId: historyId,
-            summary: n.summary,
-            body: n.body,
-            appName: n.appName,
-            urgency: n.urgency,
-            time: Qt.formatDateTime(new Date(), "HH:mm"),
-            historyEpoch: Math.floor(Date.now() / 1000),
-            icon: resolvedIcon || ""
-        });
+                                     historyId: historyId,
+                                     summary: n.summary,
+                                     body: n.body,
+                                     appName: n.appName,
+                                     urgency: n.urgency,
+                                     time: Qt.formatDateTime(new Date(), "HH:mm"),
+                                     historyEpoch: Math.floor(Date.now() / 1000),
+                                     icon: resolvedIcon || ""
+                                 });
 
         // Retenemos el objeto vivo mientras siga en el historial: sin esto,
         // Quickshell destruye la notificación al descartarse/expirar y el
         // handle image://qsimage/... detrás de n.image queda huérfano
         // (el WARN "unknown handle" que veías en consola).
         root.retainedForHistory = [...root.retainedForHistory,
-            {
-                historyId: historyId,
-                notification: n
-            }
-        ];
+                                   {
+                                       historyId: historyId,
+                                       notification: n
+                                   }
+                ];
 
         n.tracked = true;
 
@@ -127,8 +127,6 @@ Singleton {
         id: props
 
         property bool dnd
-
-
 
         reloadableId: "notifications"
     }

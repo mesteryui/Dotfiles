@@ -23,7 +23,8 @@ Scope {
             // Gatillado a active: con Exclusive incondicional la ventana
             // cacheada oculta competía por el foco Wayland y disparaba
             // spam enable/disableSurface de text-input.
-            WlrLayershell.keyboardFocus: PolkitService.active ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: PolkitService.active ? WlrKeyboardFocus.Exclusive :
+                                                                WlrKeyboardFocus.None
             WlrLayershell.layer: WlrLayer.Overlay
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:polkitDialog"

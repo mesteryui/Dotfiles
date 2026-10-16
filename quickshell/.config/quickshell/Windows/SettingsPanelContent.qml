@@ -50,28 +50,32 @@ Item {
             SettingsSidebarTab {
                 iconName: "palette"
                 title: Services.I18nService.getTranslation("settings.tabs.interface.title", "Interfaz")
-                description: Services.I18nService.getTranslation("settings.tabs.interface.description", "Apariencia")
+                description: Services.I18nService.getTranslation("settings.tabs.interface.description",
+                                                                 "Apariencia")
                 selected: root.currentTab === 0
                 onClicked: root.currentTab = 0
             }
             SettingsSidebarTab {
                 iconName: "display_settings"
                 title: Services.I18nService.getTranslation("settings.tabs.screen.title", "Pantalla")
-                description: Services.I18nService.getTranslation("settings.tabs.screen.description", "Bloqueo y luz")
+                description: Services.I18nService.getTranslation("settings.tabs.screen.description",
+                                                                 "Bloqueo y luz")
                 selected: root.currentTab === 1
                 onClicked: root.currentTab = 1
             }
             SettingsSidebarTab {
                 iconName: "partly_cloudy_day"
                 title: Services.I18nService.getTranslation("settings.tabs.environment.title", "Entorno")
-                description: Services.I18nService.getTranslation("settings.tabs.environment.description", "Clima y avisos")
+                description: Services.I18nService.getTranslation("settings.tabs.environment.description",
+                                                                 "Clima y avisos")
                 selected: root.currentTab === 2
                 onClicked: root.currentTab = 2
             }
             SettingsSidebarTab {
                 iconName: "settings"
                 title: Services.I18nService.getTranslation("settings.tabs.system.title", "Sistema")
-                description: Services.I18nService.getTranslation("settings.tabs.system.description", "Idioma y updates")
+                description: Services.I18nService.getTranslation("settings.tabs.system.description",
+                                                                 "Idioma y updates")
                 selected: root.currentTab === 3
                 onClicked: root.currentTab = 3
             }
@@ -92,34 +96,26 @@ Item {
             // ── PESTAÑA 0: INTERFAZ ──
             TabFlickable {
                 SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.interface.appearance.title", "Apariencia")
+                    title: Services.I18nService.getTranslation("settings.interface.appearance.title",
+                                                               "Apariencia")
 
                     SettingsSwitchRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.dark_mode", "Modo oscuro")
-                        stateText: Services.ConfigService.configs.appearance.darkMode ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        label: Services.I18nService.getTranslation("settings.interface.appearance.dark_mode",
+                                                                   "Modo oscuro")
+                        stateText: Services.ConfigService.configs.appearance.darkMode
+                                   ? Services.I18nService.getTranslation("settings.common.activated",
+                                                                         "Activado") :
+                                     Services.I18nService.getTranslation("settings.common.deactivated",
+                                                                         "Desactivado")
                         iconName: "dark_mode"
                         checked: Services.ConfigService.configs.appearance.darkMode
-                        onToggled: Services.ConfigService.configs.appearance.darkMode = !Services.ConfigService.configs.appearance.darkMode
-                    }
-
-                    SettingsSwitchRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.reduce_motion", "Reducir movimiento")
-                        stateText: Services.ConfigService.configs.appearance.reduceMotion ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
-                        iconName: "motion_photos_off"
-                        checked: Services.ConfigService.configs.appearance.reduceMotion
-                        onToggled: Services.ConfigService.configs.appearance.reduceMotion = !Services.ConfigService.configs.appearance.reduceMotion
-                    }
-
-                    SettingsSwitchRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.shadows", "Sombras decorativas")
-                        stateText: Services.ConfigService.configs.appearance.shadows ?? true ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
-                        iconName: "ev_shadow"
-                        checked: Services.ConfigService.configs.appearance.shadows ?? true
-                        onToggled: Services.ConfigService.configs.appearance.shadows = !(Services.ConfigService.configs.appearance.shadows ?? true)
+                        onToggled: Services.ConfigService.configs.appearance.darkMode =
+                                   !Services.ConfigService.configs.appearance.darkMode
                     }
 
                     SettingsDropdownRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
+                        label: Services.I18nService.getTranslation(
+                                   "settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
                         iconName: "palette"
                         value: Services.ConfigService.configs.appearance.matugen.type
                         choicesModel: [
@@ -164,22 +160,26 @@ Item {
                     }
 
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_sans", "Fuente principal (sans)")
+                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_sans",
+                                                                   "Fuente principal (sans)")
                         value: Services.ConfigService.configs.appearance.fontSans
                         onEdited: text => Services.ConfigService.configs.appearance.fontSans = text
                     }
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_mono", "Fuente monoespaciada")
+                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_mono",
+                                                                   "Fuente monoespaciada")
                         value: Services.ConfigService.configs.appearance.monospace
                         onEdited: text => Services.ConfigService.configs.appearance.monospace = text
                     }
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_reading", "Fuente de lectura")
+                        label: Services.I18nService.getTranslation(
+                                   "settings.interface.appearance.font_reading", "Fuente de lectura")
                         value: Services.ConfigService.configs.appearance.reading
                         onEdited: text => Services.ConfigService.configs.appearance.reading = text
                     }
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.interface.appearance.font_expressive", "Fuente expresiva")
+                        label: Services.I18nService.getTranslation(
+                                   "settings.interface.appearance.font_expressive", "Fuente expresiva")
                         value: Services.ConfigService.configs.appearance.expressive
                         onEdited: text => Services.ConfigService.configs.appearance.expressive = text
                     }
@@ -189,17 +189,20 @@ Item {
                     title: Services.I18nService.getTranslation("settings.interface.bar.title", "Barra")
 
                     SettingsDropdownRow {
-                        label: Services.I18nService.getTranslation("settings.interface.bar.position", "Posición")
+                        label: Services.I18nService.getTranslation("settings.interface.bar.position",
+                                                                   "Posición")
                         iconName: "swap_vert"
                         value: Services.ConfigService.configs.bar.position
                         choicesModel: [
                             {
                                 value: "top",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.position_top", "Arriba")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.position_top", "Arriba")
                             },
                             {
                                 value: "bottom",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.position_bottom", "Abajo")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.position_bottom", "Abajo")
                             }
                         ]
                         onChosen: val => Services.ConfigService.configs.bar.position = val
@@ -211,49 +214,59 @@ Item {
                         iconName: "height"
                         value: root.toSlider(Services.ConfigService.configs.bar.height, 24, 64)
                         valueText: Services.ConfigService.configs.bar.height + " px"
-                        onMoved: val => Services.ConfigService.configs.bar.height = root.fromSlider(val, 24, 64)
+                        onMoved: val => Services.ConfigService.configs.bar.height = root.fromSlider(val, 24,
+                                                                                                    64)
                     }
 
                     SettingsDropdownRow {
-                        label: Services.I18nService.getTranslation("settings.interface.bar.workspace_style", "Estilo de espacios de trabajo")
+                        label: Services.I18nService.getTranslation("settings.interface.bar.workspace_style",
+                                                                   "Estilo de espacios de trabajo")
                         iconName: "tag"
                         value: Services.ConfigService.configs.bar.workspaceButtonType
                         choicesModel: [
                             {
                                 value: "numbers",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.workspace_style_numbers", "Números")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.workspace_style_numbers", "Números")
                             },
                             {
                                 value: "kanji",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.workspace_style_kanji", "Kanji")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.workspace_style_kanji", "Kanji")
                             },
                             {
                                 value: "circles",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.workspace_style_circles", "Círculos")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.workspace_style_circles", "Círculos")
                             }
                         ]
                         onChosen: val => Services.ConfigService.configs.bar.workspaceButtonType = val
                     }
                     SettingsDropdownRow {
-                        label: Services.I18nService.getTranslation("settings.interface.bar.type", "Tipo de barra")
+                        label: Services.I18nService.getTranslation("settings.interface.bar.type",
+                                                                   "Tipo de barra")
                         iconName: "web_asset"
                         value: Services.ConfigService.configs.bar.barType
                         choicesModel: [
                             {
                                 value: "floating",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.type_floating", "Flotante")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.type_floating", "Flotante")
                             },
                             {
                                 value: "full_hug",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.type_full_hug", "Completa (Full hug)")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.type_full_hug", "Completa (Full hug)")
                             },
                             {
                                 value: "partial_hug",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.type_partial_hug", "Parcial (Partial hug)")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.type_partial_hug", "Parcial (Partial hug)")
                             },
                             {
                                 value: "no_floating",
-                                text: Services.I18nService.getTranslation("settings.interface.bar.type_no_floating", "No flotante")
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.type_no_floating", "No flotante")
                             }
                         ]
                         onChosen: val => Services.ConfigService.configs.bar.barType = val
@@ -267,34 +280,46 @@ Item {
             // ── PESTAÑA 1: PANTALLA ──
             TabFlickable {
                 SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.screen.lockscreen.title", "Pantalla de bloqueo")
+                    title: Services.I18nService.getTranslation("settings.screen.lockscreen.title",
+                                                               "Pantalla de bloqueo")
 
                     SettingsSwitchRow {
-                        label: Services.I18nService.getTranslation("settings.screen.lockscreen.use_wallpaper", "Usar fondo de pantalla")
-                        stateText: Services.ConfigService.configs.lockscreen.useWallpaper ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        label: Services.I18nService.getTranslation("settings.screen.lockscreen.use_wallpaper",
+                                                                   "Usar fondo de pantalla")
+                        stateText: Services.ConfigService.configs.lockscreen.useWallpaper
+                                   ? Services.I18nService.getTranslation("settings.common.activated",
+                                                                         "Activado") :
+                                     Services.I18nService.getTranslation("settings.common.deactivated",
+                                                                         "Desactivado")
                         iconName: "wallpaper"
                         checked: Services.ConfigService.configs.lockscreen.useWallpaper
-                        onToggled: Services.ConfigService.configs.lockscreen.useWallpaper = !Services.ConfigService.configs.lockscreen.useWallpaper
+                        onToggled: Services.ConfigService.configs.lockscreen.useWallpaper =
+                                   !Services.ConfigService.configs.lockscreen.useWallpaper
                     }
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.screen.lockscreen.blur_level", "Nivel de desenfoque")
+                        label: Services.I18nService.getTranslation("settings.screen.lockscreen.blur_level",
+                                                                   "Nivel de desenfoque")
                         iconName: "blur_on"
                         value: root.toSlider(Services.ConfigService.configs.lockscreen.blurLevel, 0.0, 3.0)
                         valueText: Services.ConfigService.configs.lockscreen.blurLevel.toFixed(1) + "x"
-                        onMoved: val => Services.ConfigService.configs.lockscreen.blurLevel = root.fromSlider(val, 0.0, 3.0, 2)
+                        onMoved: val => Services.ConfigService.configs.lockscreen.blurLevel = root.fromSlider(
+                                            val, 0.0, 3.0, 2)
                     }
                 }
 
                 SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.screen.night_light.title", "Luz nocturna")
+                    title: Services.I18nService.getTranslation("settings.screen.night_light.title",
+                                                               "Luz nocturna")
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.screen.night_light.temperature", "Temperatura de color")
+                        label: Services.I18nService.getTranslation("settings.screen.night_light.temperature",
+                                                                   "Temperatura de color")
                         iconName: "thermostat"
-                        value: root.toSlider(Services.ConfigService.configs.nightLight.temperature, 1000, 6500)
+                        value: root.toSlider(Services.ConfigService.configs.nightLight.temperature, 1000,
+                                             6500)
                         valueText: Services.ConfigService.configs.nightLight.temperature + " K"
                         onMoved: val => {
                             const k = root.fromSlider(val, 1000, 6500);
@@ -308,7 +333,8 @@ Item {
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.screen.night_light.gamma", "Gamma")
+                        label: Services.I18nService.getTranslation("settings.screen.night_light.gamma",
+                                                                   "Gamma")
                         iconName: "exposure"
                         value: root.toSlider(Services.ConfigService.configs.nightLight.gamma, 0, 100)
                         valueText: Services.ConfigService.configs.nightLight.gamma + "%"
@@ -332,15 +358,22 @@ Item {
                     title: Services.I18nService.getTranslation("settings.environment.weather.title", "Clima")
 
                     SettingsSwitchRow {
-                        label: Services.I18nService.getTranslation("settings.environment.weather.auto_location", "Ubicación automática")
-                        stateText: Services.ConfigService.configs.weather.autoLocation ? Services.I18nService.getTranslation("settings.common.activated", "Activado") : Services.I18nService.getTranslation("settings.common.deactivated", "Desactivado")
+                        label: Services.I18nService.getTranslation(
+                                   "settings.environment.weather.auto_location", "Ubicación automática")
+                        stateText: Services.ConfigService.configs.weather.autoLocation
+                                   ? Services.I18nService.getTranslation("settings.common.activated",
+                                                                         "Activado") :
+                                     Services.I18nService.getTranslation("settings.common.deactivated",
+                                                                         "Desactivado")
                         iconName: "my_location"
                         checked: Services.ConfigService.configs.weather.autoLocation
-                        onToggled: Services.ConfigService.configs.weather.autoLocation = !Services.ConfigService.configs.weather.autoLocation
+                        onToggled: Services.ConfigService.configs.weather.autoLocation =
+                                   !Services.ConfigService.configs.weather.autoLocation
                     }
 
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.environment.weather.city", "Ciudad")
+                        label: Services.I18nService.getTranslation("settings.environment.weather.city",
+                                                                   "Ciudad")
                         value: Services.ConfigService.configs.weather.city
                         onEdited: text => Services.ConfigService.configs.weather.city = text
                         enabled: !Services.ConfigService.configs.weather.autoLocation
@@ -349,24 +382,29 @@ Item {
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.environment.weather.refresh_rate", "Frecuencia de actualización")
+                        label: Services.I18nService.getTranslation("settings.environment.weather.refresh_rate",
+                                                                   "Frecuencia de actualización")
                         iconName: "refresh"
                         value: root.toSlider(Services.ConfigService.configs.weather.reloadTime, 1, 60)
                         valueText: Services.ConfigService.configs.weather.reloadTime + " min"
-                        onMoved: val => Services.ConfigService.configs.weather.reloadTime = root.fromSlider(val, 1, 60)
+                        onMoved: val => Services.ConfigService.configs.weather.reloadTime = root.fromSlider(
+                                            val, 1, 60)
                     }
                 }
 
                 SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.environment.notifications.title", "Notificaciones")
+                    title: Services.I18nService.getTranslation("settings.environment.notifications.title",
+                                                               "Notificaciones")
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.environment.notifications.timeout", "Tiempo de espera")
+                        label: Services.I18nService.getTranslation(
+                                   "settings.environment.notifications.timeout", "Tiempo de espera")
                         iconName: "notifications"
                         value: root.toSlider(Services.ConfigService.configs.notifications.timeout, 1, 30)
                         valueText: Services.ConfigService.configs.notifications.timeout + " s"
-                        onMoved: val => Services.ConfigService.configs.notifications.timeout = root.fromSlider(val, 1, 30)
+                        onMoved: val => Services.ConfigService.configs.notifications.timeout = root.fromSlider(
+                                            val, 1, 30)
                     }
                 }
                 Item {
@@ -380,45 +418,45 @@ Item {
                     title: Services.I18nService.getTranslation("settings.system.language.title", "Idioma")
 
                     SettingsDropdownRow {
-                        label: Services.I18nService.getTranslation("settings.system.language.selection", "Seleccion de idiomas")
+                        label: Services.I18nService.getTranslation("settings.system.language.selection",
+                                                                   "Seleccion de idiomas")
                         iconName: "translate"
                         value: Services.ConfigService.configs.language
-                        choicesModel: [
-                            {
-                                "value": "es_ES",
-                                "text": Services.I18nService.getTranslation("settings.system.language.es", "Español de España")
-                            },
-                            {
-                                "value": "en_US",
-                                "text": Services.I18nService.getTranslation("settings.system.language.en", "Ingles de EEUU")
-                            },
-                            {
-                                "value": "eo",
-                                "text": Services.I18nService.getTranslation("settings.system.language.eo", "Esperanto")
-                            },
-                            {
-                                "value": "auto",
-                                "text": "Auto"
-                            }
-                        ]
+                        choicesModel: {
+                            // Dependencia explícita para re-traducir al cambiar idioma.
+                            const langWatch = Services.I18nService.language;
+                            const list = Services.I18nService.available.map(code => ({
+                                "value": code,
+                                "text": Services.I18nService.languageName(code)
+                            }));
+                            list.push({
+                                          "value": "auto",
+                                          "text": "Auto"
+                                      });
+                            return list;
+                        }
                         onChosen: val => Services.ConfigService.configs.language = val
                     }
                 }
 
                 SettingsSectionCard {
-                    title: Services.I18nService.getTranslation("settings.system.updates.title", "Actualizaciones")
+                    title: Services.I18nService.getTranslation("settings.system.updates.title",
+                                                               "Actualizaciones")
 
                     ControlSlider {
                         Layout.fillWidth: true
-                        label: Services.I18nService.getTranslation("settings.system.updates.check_frequency", "Frecuencia de comprobación")
+                        label: Services.I18nService.getTranslation("settings.system.updates.check_frequency",
+                                                                   "Frecuencia de comprobación")
                         iconName: "update"
                         value: root.toSlider(Services.ConfigService.configs.updates.countTime, 5, 180)
                         valueText: Services.ConfigService.configs.updates.countTime + " min"
-                        onMoved: val => Services.ConfigService.configs.updates.countTime = root.fromSlider(val, 5, 180)
+                        onMoved: val => Services.ConfigService.configs.updates.countTime = root.fromSlider(val,
+                                                                                                           5, 180)
                     }
 
                     SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.system.updates.command", "Comando")
+                        label: Services.I18nService.getTranslation("settings.system.updates.command",
+                                                                   "Comando")
                         value: Services.ConfigService.configs.updates.command
                         onEdited: text => Services.ConfigService.configs.updates.command = text
                     }

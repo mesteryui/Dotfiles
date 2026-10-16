@@ -1,10 +1,9 @@
 pragma ComponentBehavior: Bound
 
+import "DdcUtils.js" as DdcUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
-
-import "DdcUtils.js" as DdcUtils
 
 // Un monitor físico: interno (sysfs/backlight, rápido y reactivo) o
 // externo HDMI (DDC/CI, lento: lectura ~1s, escritura con debounce).
@@ -99,7 +98,8 @@ QtObject {
         if (pct <= 0)
             Quickshell.execDetached(["brightnessctl", "-d", monitor.backlightDevice, "s", "1", "--quiet"]);
         else
-            Quickshell.execDetached(["brightnessctl", "-d", monitor.backlightDevice, "s", pct + "%", "--quiet"]);
+            Quickshell.execDetached(["brightnessctl", "-d", monitor.backlightDevice, "s", pct + "%",
+                                     "--quiet"]);
     }
 
     function refresh() {
@@ -116,7 +116,8 @@ QtObject {
                     monitor.supported = true;
                     monitor.ready = true;
                 } else {
-                    console.warn("[Brightness] sin VCP 10 en " + monitor.screenName + " (bus " + monitor.busNum + ")");
+                    console.warn("[Brightness] sin VCP 10 en " + monitor.screenName + " (bus "
+                                 + monitor.busNum + ")");
                     monitor.supported = false;
                 }
             }
@@ -125,7 +126,8 @@ QtObject {
         onExited: code => {
             // ddcutil ausente (127) o bus caído: degradado, no spam.
             if (code !== 0 && !monitor.ready) {
-                console.warn("[Brightness] DDC no disponible en " + monitor.screenName + " (exit " + code + ")");
+                console.warn("[Brightness] DDC no disponible en " + monitor.screenName + " (exit " + code
+                             + ")");
                 monitor.supported = false;
             }
         }
@@ -152,7 +154,9 @@ QtObject {
     }
 
     property int rawValue: 0
+
     property bool _brightLoaded: false
+
     property bool _maxLoaded: false
 
     function _syncFromSysfs() {

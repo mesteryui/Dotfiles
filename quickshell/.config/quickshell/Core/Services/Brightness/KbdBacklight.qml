@@ -1,11 +1,10 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import "DdcUtils.js" as DdcUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
-
-import "DdcUtils.js" as DdcUtils
 
 // Retroiluminación del teclado (p. ej. asus::kbd_backlight, 4 niveles).
 // Niveles discretos: las teclas mueven ±1 nivel; el slider mapea 0..1.
@@ -66,13 +65,14 @@ Singleton {
         }
     }
 
-    // Caza cambios externos (teclas Fn de firmware): una lectura por segundo
+    // Caza cambios externos (teclas Fn de firmware): una lectura cada 5s
     // es despreciable y sin cambios no emite ninguna señal. Así el OSD sale
     // aunque el firmware se coma las teclas y los binds no lleguen a correr.
+    // (Antes 1s: impedía deep-sleep por un reload sysfs constante.)
     Timer {
         id: driftTimer
 
-        interval: 1000
+        interval: 5000
         repeat: true
         running: root.supported
         onTriggered: {

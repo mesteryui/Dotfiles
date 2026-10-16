@@ -2,14 +2,16 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 
 Singleton {
     id: root
 
     property string splashPhrase: ""
 
-    property list<string> splashPrases: ["Advance with clarity. The path is built by motion.", "Direction over speed. Let precision guide the core.", "Carbon foundations, golden execution.", "Stripped of clutter. Focused on the horizon.", "Every trace leaves a path. Make yours deliberate.", "Quiet the interface. Amplify the intent."]
+    property list<string> splashPrases: ["Advance with clarity. The path is built by motion.",
+        "Direction over speed. Let precision guide the core.", "Carbon foundations, golden execution.",
+        "Stripped of clutter. Focused on the horizon.", "Every trace leaves a path. Make yours deliberate.",
+        "Quiet the interface. Amplify the intent."]
 
     enum Modes {
         HYPR,
@@ -18,33 +20,28 @@ Singleton {
 
     property int mode: RandomPhraseses.Modes.CUSTOM
 
-    Process {
-        id: splashProc
+    Connections {
+        target: HyprlandIpc
+        ignoreUnknownSignals: true
 
-        command: ["hyprctl", "splash"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.splashPhrase = text.trim();
-            }
+        function onReplyReceived(command, reply) {
+            if (command !== "splash")
+                return;
+            root.splashPhrase = reply.trim();
         }
 
-        // qmllint disable signal-handler-parameters
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.warn("[RandomPhrases] hyprctl splash falló:", exitCode);
-            }
+        function onRequestFailed(command, reason) {
+            if (command !== "splash")
+                return;
+            console.warn("[RandomPhrases] splash falló:", reason);
         }
-        // qmllint enable signal-handler-parameters
     }
 
     function obtainPhrase() {
         if (mode === RandomPhraseses.Modes.HYPR) {
-            if (splashProc.running) {
-                splashProc.running = false;
-                Qt.callLater(() => splashProc.running = true);
-            } else {
-                splashProc.running = true;
-            }
+            // Mismos bytes que `hyprctl splash`, por el socket y sin fork.
+            // Si se llama dos veces seguidas, HyprlandIpc encola; gana la última.
+            HyprlandIpc.send("splash");
         } else if (mode === RandomPhraseses.Modes.CUSTOM) {
             root.splashPhrase = root.splashPrases[Math.floor(Math.random() * root.splashPrases.length)];
         }

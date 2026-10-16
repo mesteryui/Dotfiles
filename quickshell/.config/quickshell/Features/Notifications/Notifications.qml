@@ -1,6 +1,6 @@
+import qs.Core.Services
 import QtQuick
 import Quickshell
-import qs.Core.Services
 
 Scope {
     id: root
@@ -10,24 +10,26 @@ Scope {
     // atado a centerOpen). Los popups por pantalla se quedan directos.
     LazyLoader {
         id: centerLoader
+
         loading: NotificationService.centerOpen
         component: centerComp
     }
 
-    Component {
-        id: centerComp
+        Component {
+            id: centerComp
 
-        NotificationCenter {
-            visible: NotificationService.centerOpen
-            historyModel: NotificationData.history
+            NotificationCenter {
+                visible: NotificationService.centerOpen
+                historyModel: NotificationData.history
+            }
+        }
+        Variants {
+            model: Quickshell.screens
+            delegate: NotificationPopups {
+                required property ShellScreen modelData
+
+                screen: modelData
+                trackedNotifications: NotificationService.server.trackedNotifications
+            }
         }
     }
-    Variants {
-        model: Quickshell.screens
-        delegate: NotificationPopups {
-            required property ShellScreen modelData
-            screen: modelData
-            trackedNotifications: NotificationService.server.trackedNotifications
-        }
-    }
-}

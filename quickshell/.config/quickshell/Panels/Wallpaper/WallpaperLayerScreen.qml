@@ -1,9 +1,10 @@
 pragma ComponentBehavior: Bound
+
+import qs.Core
+import qs.Core.Services as Services
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import qs.Core
-import qs.Core.Services as Services
 
 // Una ventana de fondo estático por pantalla (la crea WallpaperLayer).
 // Transición en dos fases (idéntica siempre): fundido a negro rápido
@@ -56,6 +57,7 @@ PanelWindow {
         // a 1920 y el compositor lo estira a 3840 físicos = imagen blanda.
         // Sin esto un wallhaven de 17MB se decodifica entero (~30MB de
         // textura por cara, x2 en fundido). Patrón igual que lockscreen.
+
         readonly property real targetScale: Math.max(1, Math.ceil(Screen.devicePixelRatio))
         sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
         sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
@@ -63,10 +65,13 @@ PanelWindow {
 
     WallpaperImage {
         id: imgA
+
         opacity: 1
     }
+
     WallpaperImage {
         id: imgB
+
         opacity: 0
     }
 
@@ -77,6 +82,7 @@ PanelWindow {
         id: fadeOut
 
         property Image targetImage
+
         property: "opacity"
         to: 0
         duration: Appearance.motion.short4
@@ -91,6 +97,7 @@ PanelWindow {
         id: fadeIn
 
         property Image targetImage
+
         property: "opacity"
         to: 1
         duration: Appearance.motion.long1
@@ -110,6 +117,7 @@ PanelWindow {
         id: zoomIn
 
         property Image targetImage
+
         property: "scale"
         to: 1
         duration: Appearance.motion.long1
@@ -121,7 +129,9 @@ PanelWindow {
     // Se guarda el item para desconectar de verdad (si no, las conexiones
     // obsoletas se acumulan en los Image, que viven siempre).
     property int readyToken: 0
+
     property var readyItem: null
+
     property var readyHandler: null
 
     function clearReadyWait() {
@@ -135,11 +145,164 @@ PanelWindow {
     }
 
     function setHiddenSource(img, src) {
-        img.source = src !== "" ? Qt.resolvedUrl(src) : "";
+        // El fundido siempre trabaja con imagen estatica: un video se
+        // representa por su frame (poster mientras carga el reproductor y
+        // fallback si falla). Se pide el frame aqui para que exista ASAP.
+        if (Services.WallpaperService.isVideo(src))
+            Services.VideoFrameService.ensureFrame(src);
+        const eff = Services.WallpaperService.staticSourceFor(src);
+        img.source = eff !== "" ? Qt.resolvedUrl(eff) : "";
     }
 
-    // Soltar un fichero de imagen sobre el fondo lo pone como wallpaper
-    // (pasa por validación + persistencia + crossfade de applyBg).
+    // Capa de video (opcional): solo existe mientras el fondo objetivo es
+    // un video con soporte. Carga aislada por URL (nunca tipo estatico):
+    // si QtMultimedia falta o el archivo falla, solo este Loader da Error
+    // y queda el poster estatico del fundido. La shell nunca rompe.
+    readonly property bool isVideoTarget: Services.WallpaperService.isVideo(root.source)
+    readonly property bool videoEnabled: root.isVideoTarget && Services.VideoSupport.available
+
+    // Sonda lazy: solo un fondo vídeo carga QtMultimedia al proceso. El
+    // arranque estático nunca llega aquí.
+    onIsVideoTargetChanged: {
+        if (root.isVideoTarget)
+            Services.VideoSupport.ensureProbed();
+    }
+
+    // Gracia de descarga: al bloquear o entrar en juego el reproductor se
+    // pausa (frame congelado) 1.5s por si es breve; pasado ese tiempo el
+    // Loader se desactiva y el pipeline GStreamer se libera (~20MB). Al
+    // desbloquear se recarga y reanuda solo. Sin esto, un vídeo pausado
+    // retenía decodificador + buffers indefinidamente aunque tapado.
+    Timer {
+        id: unloadGrace
+
+        interval: 1500
+        repeat: false
+        // Al expirar, el binding de `active` descarga el Loader en este
+        // mismo tick: se para ordenado ANTES para soltar el decodificador
+        // con los objetos aún vivos (ver stop()).
+        onTriggered: {
+            if (!root.wantPlaying && videoLoader.item && typeof videoLoader.item.stop === "function")
+                videoLoader.item.stop();
+        }
+    }
+    onWantPlayingChanged: {
+        if (root.wantPlaying) {
+            unloadGrace.stop();
+        } else if (root.videoEnabled) {
+            unloadGrace.restart();
+        }
+    }
+    onVideoEnabledChanged: {
+        if (!root.videoEnabled) {
+            unloadGrace.stop();
+            // Cambio vídeo→estático: parada ordenada antes de que el
+            // binding de `active` desmonte el reproductor.
+            if (videoLoader.item && typeof videoLoader.item.stop === "function")
+                videoLoader.item.stop();
+        }
+    }
+
+    Loader {
+        id: videoLoader
+
+        anchors.fill: parent
+        active: root.videoEnabled && (root.wantPlaying || unloadGrace.running)
+        asynchronous: true
+        // Fundido solo con imagen real: mientras el reproductor abre el
+        // archivo se ve el poster estatico del fundido. En pausa breve (modo
+        // juego, <1.5s) se conserva el ultimo frame congelado; pasada la
+        // gracia el Loader se descarga y se vuelve al poster: por eso se
+        // usa hasVideo y no isPlaying.
+        opacity: status === Loader.Ready && (item?.hasVideo ?? false) ? 1 : 0
+        source: "AnimatedWallpaperPlayer.qml"
+        onStatusChanged: {
+            if (status === Loader.Error)
+                console.warn("[Wallpaper] no se pudo reproducir el video, uso poster estatico: "
+                             + root.source);
+        }
+        // Asignación inmediata al cargar (sin esperar al Binding): cubre
+        // la primera puesta del fondo.
+        onLoaded: {
+            if (videoLoader.item) {
+                videoLoader.item.videoSource = Qt.resolvedUrl(root.source);
+                videoLoader.item.playing = root.wantPlaying;
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Appearance.motion.long1
+                easing.type: Easing.Bezier
+                easing.bezierCurve: Appearance.motion.standard
+            }
+        }
+    }
+
+    // Fuente reactiva para el reproductor (cubre cambios video->video sin
+    // recargar el Loader).
+    Binding {
+        target: videoLoader.item
+        property: "videoSource"
+        value: root.videoEnabled ? Qt.resolvedUrl(root.source) : ""
+        when: videoLoader.status === Loader.Ready
+    }
+
+    // Intención de reproducción en un solo sitio (binding + onLoaded +
+    // vigilante la comparten): pausa en modo juego y bajo la pantalla de
+    // bloqueo (ahí el vídeo queda totalmente tapado: decodificar es 100%
+    // desperdicio). Al desbloquear reanuda solo.
+    readonly property bool wantPlaying: !Services.GameMode.enabled && !Services.LockState.locked
+
+    // Pausa en modo juego y en bloqueo: el video se congela en el ultimo
+    // frame y reanuda solo al salir.
+    Binding {
+        target: videoLoader.item
+        property: "playing"
+        value: root.wantPlaying
+        when: videoLoader.status === Loader.Ready
+    }
+
+    // Vigilante de reproducción: si el backend se queda clavado en pausa
+    // (o un Binding se pierde entre recargas), re-emite play. Solo corre
+    // con vídeo activo Y con intención de reproducir: en bloqueo/juego no
+    // despierta el backend cada 3s. Nunca reproduce en modo juego ni
+    // bloqueado.
+    Timer {
+        interval: 3000
+        repeat: true
+        running: root.videoEnabled && root.wantPlaying
+        onTriggered: {
+            if (!root.wantPlaying)
+                return;
+            const p = videoLoader.item;
+            if (p && typeof p.play === "function" && !p.isPlaying)
+                p.play();
+        }
+    }
+
+    Connections {
+        // El poster pudo intentar cargar antes de que el frame existiera
+        // (Image no reintenta solo). Si la cara visible aun no esta lista
+        // cuando el frame termina, se recarga (aqui el contexto es
+        // imperativo: "" -> frame fuerza la recarga sin romper bindings).
+        // La espera de fundido pendiente (beginFade) sigue conectada y
+        // completa la transicion al llegar a Ready.
+        target: Services.VideoFrameService
+
+        function onFrameReady(videoPath) {
+            if (videoPath !== root.source || !root.isVideoTarget)
+                return;
+            const front = root.frontIsA ? imgA : imgB;
+            if (front.status !== Image.Ready) {
+                front.source = "";
+                root.setHiddenSource(front, root.source);
+            }
+        }
+    }
+
+    // Soltar un fichero de imagen o video sobre el fondo lo pone como
+    // wallpaper (pasa por validacion + persistencia + crossfade de applyBg).
     function handleDrop(drop) {
         let raw = "";
         if (drop.hasUrls && drop.urls.length > 0)
@@ -149,7 +312,7 @@ PanelWindow {
         if (raw === "")
             return;
         const path = decodeURIComponent(raw.replace(/^file:\/\//, "")).trim();
-        if (Services.WallpaperService.validImage(path))
+        if (Services.WallpaperService.validAny(path))
             Services.WallpaperService.apply(path);
     }
 
@@ -192,10 +355,16 @@ PanelWindow {
     }
 
     onSourceChanged: root.applyBg()
-    Component.onCompleted: root.applyBg()
+
+    Component.onCompleted: {
+        if (root.isVideoTarget)
+            Services.VideoSupport.ensureProbed();
+        root.applyBg();
+    }
 
     // Petición pendiente mientras se apaga el actual.
     property string pendingSrc: ""
+
     property bool hasPending: false
 
     // Carga inicial + cambios: los handlers onXChanged no se disparan
@@ -228,6 +397,11 @@ PanelWindow {
         // Arranque: sin transición, puesta directa.
         if (root.isInitialLoad) {
             root.isInitialLoad = false;
+            fadeIn.stop();
+            zoomIn.stop();
+            fadeOut.stop();
+            root.clearReadyWait();
+            root.hasPending = false;
             const first = root.frontIsA ? imgB : imgA;
             const prev = root.frontIsA ? imgA : imgB;
             root.setHiddenSource(first, src);

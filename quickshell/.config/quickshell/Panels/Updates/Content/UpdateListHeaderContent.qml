@@ -19,11 +19,10 @@ Item {
 
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
-            icon: Services.UpdatesTracking.failed   ? "warning"          :
-                  Services.UpdatesTracking.checking ? "sync"             :
-                                                      "system_update_alt"
-            color: Services.UpdatesTracking.failed  ? Appearance.md3.error
-                                                    : Appearance.md3.on_surface
+            icon: Services.UpdatesTracking.failed ? "warning" : Services.UpdatesTracking.checking ? "sync" :
+                                                                                                    "system_update_alt"
+
+            color: Services.UpdatesTracking.failed ? Appearance.md3.error : Appearance.md3.on_surface
             size: 20
         }
 
@@ -36,16 +35,13 @@ Item {
                     return Services.I18nService.getTranslation("updates.checking");
                 if (Services.UpdatesTracking.updateCount === 0)
                     return Services.I18nService.getTranslation("updates.up_to_date");
-                const key = Services.UpdatesTracking.updateCount === 1
-                    ? "updates.count_singular"
-                    : "updates.count_plural";
-                return Services.UpdatesTracking.updateCount + " "
-                     + Services.I18nService.getTranslation(key);
+                const key = Services.UpdatesTracking.updateCount === 1 ? "updates.count_singular" :
+                                                                         "updates.count_plural";
+                return Services.UpdatesTracking.updateCount + " " + Services.I18nService.getTranslation(key);
             }
             font.pixelSize: Appearance.typeScale.bodyMedium
             font.variableAxes: Appearance.font.variableAxes.title
-            color: Services.UpdatesTracking.failed ? Appearance.md3.error
-                                                   : Appearance.md3.on_surface
+            color: Services.UpdatesTracking.failed ? Appearance.md3.error : Appearance.md3.on_surface
         }
     }
 

@@ -1,7 +1,8 @@
 // M3Card — Material 3 Expressive Container Card.
+// Sin sombra: las cards internas van planas; la elevación con sombra
+// queda reservada a ventanas flotantes (popups, dialogs, toasts).
 import qs.Core
 import QtQuick
-import QtQuick.Effects
 
 Item {
     id: root
@@ -13,7 +14,6 @@ Item {
     property color color: Appearance.md3.surface_container_high
     property int padding: 0
     property bool clickable: false
-    property bool shadowEnabled: true
 
     // Referencia al único hijo de contenido real (el Layout/Item que se
     // pasa vía "content"). Se asume un único hijo raíz, como se usa en
@@ -33,7 +33,6 @@ Item {
     scale: root.clickable ? (cardArea.pressed ? 0.98 : (cardArea.containsMouse ? 1.015 : 1.0)) : 1.0
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSoft.spring
             damping: Appearance.motion.springSoft.damping
@@ -56,30 +55,14 @@ Item {
         }
     }
 
-    // Sombra tonal M3 (gateada: sin pass offscreen si está desactivada).
-    // source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-    MultiEffect {
-        id: cardShadow
-        anchors.fill: _bg
-        visible: root.shadowEnabled && Appearance.shadows
-        shadowEnabled: root.shadowEnabled && Appearance.shadows
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: Appearance.elevation1.opacity
-        shadowBlur: Appearance.elevation1.blur
-        shadowVerticalOffset: Appearance.elevation1.offsetY
-        shadowHorizontalOffset: 0
-        z: -1
-        Component.onCompleted: cardShadow.source = _bg
-    }
-
     // Capa de estado para cards clicables
     Rectangle {
         anchors.fill: parent
         radius: root.radius
         visible: root.clickable
         color: Appearance.md3.on_surface
-        opacity: cardArea.pressed ? Appearance.state.pressed : (cardArea.containsMouse ? Appearance.state.hovered : 0.0)
+        opacity: cardArea.pressed ? Appearance.state.pressed : (cardArea.containsMouse
+                                                                ? Appearance.state.hovered : 0.0)
 
         Behavior on opacity {
             NumberAnimation {

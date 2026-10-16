@@ -30,7 +30,8 @@ Rectangle {
     implicitHeight: 30
 
     radius: root.itemRadius
-    color: root.clickable && root.hovered ? Qt.tint(root.backgroundColor, Qt.alpha(Appearance.md3.on_surface, 0.08)) : root.backgroundColor
+    color: root.clickable && root.hovered ? Qt.tint(root.backgroundColor, Qt.alpha(Appearance.md3.on_surface,
+                                                                                   0.08)) : root.backgroundColor
 
     Behavior on color {
         ColorAnimation {

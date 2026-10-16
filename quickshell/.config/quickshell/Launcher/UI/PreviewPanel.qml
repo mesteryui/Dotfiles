@@ -55,7 +55,8 @@ Rectangle {
             // Decodificar acotado: más rápido y menos memoria.
             sourceSize.width: 680
             sourceSize.height: 600
-            visible: root.cur && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(root.cur) && root.previewOk))
+            visible: root.cur && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(root.cur)
+                                                                        && root.previewOk))
             source: {
                 if (!root.cur)
                     return "";
@@ -73,7 +74,10 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 96
             Layout.preferredHeight: 96
-            visible: root.cur && ((root.cur.imagePath || "") === "") && !(ItemKinds.hasLivePreview(root.cur) && root.previewOk) && !(ItemKinds.hasTextPreview(root.cur) && root.previewText !== "") && !ItemKinds.isClipText(root.cur)
+            visible: root.cur && ((root.cur.imagePath || "") === "") && !(ItemKinds.hasLivePreview(root.cur)
+                                                                          && root.previewOk) && !(
+                         ItemKinds.hasTextPreview(root.cur) && root.previewText !== "") &&
+                     !ItemKinds.isClipText(root.cur)
 
             AppIcon {
                 anchors.fill: parent
@@ -161,7 +165,8 @@ Rectangle {
             wrapMode: Text.Wrap
             maximumLineCount: 3
             elide: Text.ElideRight
-            visible: root.metaText !== "" && root.cur && root.cur.kind === "file" && root.cur.media === "audio"
+            visible: root.metaText !== "" && root.cur && root.cur.kind === "file" && root.cur.media
+                     === "audio"
             text: root.metaText
             font.family: Appearance.font.mono
             font.pixelSize: Appearance.typeScale.labelSmall
@@ -198,7 +203,8 @@ Rectangle {
                 width: parent.width
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                text: root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText || root.cur.title) || "") : "")
+                text: root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText
+                                                                           || root.cur.title) || "") : "")
                 font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface
             }

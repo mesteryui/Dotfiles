@@ -29,6 +29,7 @@ ColumnLayout {
     ControlSlider {
         id: volumeSliderItem
         Layout.fillWidth: true
+
         iconName: Services.AudioService.materialIcon
         value: Services.AudioService.volume ?? 0
         accentColor: Appearance.md3.primary
@@ -67,6 +68,7 @@ ColumnLayout {
     ControlSlider {
         id: brightnessSliderItem
         Layout.fillWidth: true
+
         visible: root.focused !== null && root.focused.supported && root.focused.ready
         // Roundtrip lento (spawn + sysfs/DDC): eco local al arrastrar.
         liveEcho: true

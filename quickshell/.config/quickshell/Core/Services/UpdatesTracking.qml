@@ -58,7 +58,67 @@ Singleton {
     }
 
     function update() {
+        // Sin comando no hay nada que lanzar: evita abrir un terminal
+        // vacío si la config quedó en blanco.
+        if (root.updateArgs().length === 0) {
+            console.warn("[Updates] comando vacío, no se lanza actualización");
+            return;
+        }
         updateProcess.running = true;
+    }
+
+    // Parseo del comando configurable (Settings → updates.command)
+    // respetando comillas simples/dobles y `\` de escape, en vez de un
+    // split(" ") ciego que rompía args con espacios y cambiaba el
+    // significado del comando.
+    function updateArgs() {
+        const out = [];
+        let cur = "";
+        let quote = "";
+        let escaped = false;
+        let has = false;
+        const src = String(ConfigService.configs.updates.command ?? "");
+        for (let i = 0; i < src.length; i++) {
+            const c = src[i];
+            if (escaped) {
+                cur += c;
+                escaped = false;
+                has = true;
+                continue;
+            }
+            if (c === "\\" && quote !== "'") {
+                escaped = true;
+                continue;
+            }
+            if (quote !== "") {
+                if (c === quote)
+                    quote = "";
+                else
+                    cur += c;
+                has = true;
+                continue;
+            }
+            if (c === "'" || c === '"') {
+                quote = c;
+                has = true;
+                continue;
+            }
+            if (c === " " || c === "\t" || c === "\n") {
+                if (has) {
+                    out.push(cur);
+                    cur = "";
+                    has = false;
+                }
+                continue;
+            }
+            cur += c;
+            has = true;
+        }
+        if (escaped)
+            cur += "\\";
+        if (has)
+            out.push(cur);
+        return out;
     }
 
     PersistentProperties {
@@ -67,7 +127,6 @@ Singleton {
         reloadableId: "updatePersistence"
 
         property int updateCount: 0
-
     }
 
     Timer {
@@ -106,6 +165,7 @@ Singleton {
 
     Connections {
         target: ConfigService.configs.updates
+
         function onCountTimeChanged() {
             pollTimer.restart();
         }
@@ -147,10 +207,10 @@ Singleton {
                 const parts = line.split(" ");
                 if (parts.length >= 4) {
                     root.packagesToUpdate.append({
-                        name: parts[0],
-                        oldVersion: parts[1],
-                        newVersion: parts[3]
-                    });
+                                                     name: parts[0],
+                                                     oldVersion: parts[1],
+                                                     newVersion: parts[3]
+                                                 });
                 }
             }
         }
@@ -176,9 +236,10 @@ Singleton {
 
     Process {
         id: updateProcess
-        // Separa el comando de la config por espacios y expande los argumentos dentro del array base
+        // El comando de la config se parsea con updateArgs() (respeta
+        // comillas) y se expande como argv, sin pasar por shell.
 
-        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...ConfigService.configs.updates.command.split(" ").filter(s => s !== "")]
+        command: ["xdg-terminal-exec", "--app-id=local.floating", "-e", ...root.updateArgs()]
 
         onRunningChanged: {
             root.updating = running;

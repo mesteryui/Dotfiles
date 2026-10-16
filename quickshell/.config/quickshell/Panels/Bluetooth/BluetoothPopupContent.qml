@@ -77,6 +77,7 @@ Item {
     }
 
     implicitWidth: 300
+
     implicitHeight: mainColumn.implicitHeight
 
     ColumnLayout {
@@ -110,12 +111,14 @@ Item {
             Layout.fillWidth: true
             visible: Services.BluetoothService.available
             label: root.tr("panel.bluetooth", "Bluetooth")
-            stateText: Services.BluetoothService.enabled ? root.tr("panel.on", "Activado") : root.tr("panel.off", "Desactivado")
+            stateText: Services.BluetoothService.enabled ? root.tr("panel.on", "Activado") : root.tr(
+                                                               "panel.off", "Desactivado")
             iconName: Services.BluetoothService.enabled ? "bluetooth" : "bluetooth_disabled"
             active: Services.BluetoothService.enabled
             onToggled: {
                 if (Services.BluetoothService.currentAdapter)
-                    Services.BluetoothService.currentAdapter.enabled = !Services.BluetoothService.currentAdapter.enabled;
+                    Services.BluetoothService.currentAdapter.enabled =
+                            !Services.BluetoothService.currentAdapter.enabled;
             }
         }
 
@@ -151,7 +154,10 @@ Item {
                     MaterialIcon {
                         icon: Icons.getBluetoothDeviceMaterialSymbol(modelData?.icon ?? "")
                         size: 20
-                        color: connected ? Appearance.md3.on_secondary_container : (root.deviceConnected(modelData) ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
+                        color: connected ? Appearance.md3.on_secondary_container : (root.deviceConnected(
+                                                                                        modelData)
+                                                                                    ? Appearance.md3.primary :
+                                                                                      Appearance.md3.on_surface_variant)
                     }
 
                     ColumnLayout {
@@ -163,15 +169,21 @@ Item {
                             text: root.deviceName(modelData)
                             font.pixelSize: Appearance.typeScale.titleSmall
                             font.weight: Font.Medium
-                            color: connected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                            color: connected ? Appearance.md3.on_secondary_container :
+                                               Appearance.md3.on_surface
                             elide: Text.ElideRight
                         }
 
                         StyledText {
                             Layout.fillWidth: true
-                            text: (root.deviceConnected(modelData) ? root.tr("panel.connected", "Conectado") : root.tr("panel.disconnected", "Desconectado")) + (root.batteryPct(modelData) >= 0 ? " · " + root.batteryPct(modelData) + "%" : "")
+                            text: (root.deviceConnected(modelData) ? root.tr("panel.connected", "Conectado") :
+                                                                     root.tr("panel.disconnected",
+                                                                             "Desconectado")) + (
+                                      root.batteryPct(modelData) >= 0 ? " · " + root.batteryPct(modelData)
+                                                                        + "%" : "")
                             font.pixelSize: Appearance.typeScale.labelSmall
-                            color: connected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                            color: connected ? Appearance.md3.on_secondary_container :
+                                               Appearance.md3.on_surface_variant
                             elide: Text.ElideRight
                         }
                     }
@@ -196,7 +208,8 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
             horizontalAlignment: Text.AlignHCenter
-            visible: Services.BluetoothService.available && root.pairedDevices().length === 0 && root.unpairedDevices().length === 0
+            visible: Services.BluetoothService.available && root.pairedDevices().length === 0
+                     && root.unpairedDevices().length === 0
             text: root.tr("panel.bluetooth_empty", "Sin dispositivos emparejados")
             font.pixelSize: Appearance.typeScale.titleSmall
             color: Appearance.md3.on_surface_variant
@@ -206,7 +219,11 @@ Item {
         AnimatedTextButton {
             Layout.alignment: Qt.AlignHCenter
             visible: Services.BluetoothService.available && Services.BluetoothService.enabled
-            text: (Services.BluetoothService.currentAdapter?.discovering ?? false) ? root.tr("panel.bluetooth_scanning", "Buscando…") : root.tr("panel.bluetooth_scan", "Buscar")
+            text: (Services.BluetoothService.currentAdapter?.discovering ?? false) ? root.tr(
+                                                                                         "panel.bluetooth_scanning",
+                                                                                         "Buscando…") :
+                                                                                     root.tr("panel.bluetooth_scan",
+                                                                                             "Buscar")
             onClicked: {
                 const adapter = Services.BluetoothService.currentAdapter;
                 if (!adapter)
@@ -303,7 +320,8 @@ Item {
         AnimatedTextButton {
             Layout.alignment: Qt.AlignHCenter
             text: root.tr("panel.bluetooth_manager", "Abrir gestor")
-            onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "bluetui"])
+            onClicked: Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e",
+                                                "bluetui"])
         }
     }
 }

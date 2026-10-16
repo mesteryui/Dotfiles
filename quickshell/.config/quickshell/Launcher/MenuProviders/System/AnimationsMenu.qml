@@ -6,10 +6,10 @@
 import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Launcher
+import "../../Base/ShellUtils.js" as ShellUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "../../Base/ShellUtils.js" as ShellUtils
 
 MenuDefinition {
     id: root
@@ -46,19 +46,25 @@ MenuDefinition {
     function shellFor(value) {
         const v = ShellUtils.shellEscape(value);
         const cfg = ShellUtils.shellEscape(root.configHome);
-        return "sed -i 's|\\(require(\".*\\.\\)[^\".]*|\\1" + v + "|' '" + cfg + "/hypr/configs/animations/../animation.lua' && "
-            + "hyprctl reload && notify-send 'Hyprland Animations' 'Animacion cambiada a " + v + "'";
+        // El valor también cae dentro de un `s|...|...|` de sed: `|`/`&`/`\`
+        // en el nombre romperían/alterarían la expresión, así que llevan
+        // escape propio de reemplazo sed ADEMÁS del escape shell. El resto
+        // de usos (rutas, notify) sigue con el escape shell normal.
+        const vSed = ShellUtils.shellEscape(String(value).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/&/g,
+                                                                                                               "\\&"));
+        return "sed -i 's|\\(require(\".*\\.\\)[^\".]*|\\1" + vSed + "|' '" + cfg
+                + "/hypr/configs/animations/../animation.lua' && "
+                + "hyprctl reload && notify-send 'Hyprland Animations' 'Animacion cambiada a " + v + "'";
     }
 
     function refresh() {
         if (animProc.running)
             return;
         const cfg = ShellUtils.shellEscape(root.configHome);
-        animProc.command = ["sh", "-c",
-            "f='" + cfg + "/hypr/configs/animations/../animation.lua'; "
-            + "cur=$(grep 'require(' \"$f\" 2>/dev/null | sed 's/.*\\.//;s/\").*//' | tr -d '[:space:]'); "
-            + "echo \"CURRENT\t$cur\"; "
-            + "find '" + cfg + "/hypr/configs/animations' -maxdepth 1 -type f -printf '%f\\n' 2>/dev/null | sort"];
+        animProc.command = ["sh", "-c", "f='" + cfg + "/hypr/configs/animations/../animation.lua'; "
+                            + "cur=$(grep 'require(' \"$f\" 2>/dev/null | sed 's/.*\\.//;s/\").*//' | tr -d '[:space:]'); "
+                            + "echo \"CURRENT\t$cur\"; " + "find '" + cfg
+                            + "/hypr/configs/animations' -maxdepth 1 -type f -printf '%f\\n' 2>/dev/null | sort"];
         animProc.running = true;
     }
 
@@ -68,43 +74,46 @@ MenuDefinition {
     // Trabajadores en `helpers` (la raíz es QtObject y no admite
     // hijos declarativos). Acumulan en _found/_current y al terminar
     // reasignan `entries` entero.
-    helpers: [ Process {
-        id: animProc
+    helpers: [
+        Process {
+            id: animProc
 
-        stdout: SplitParser {
-            onRead: data => {
-                const line = data.trim();
-                if (line === "")
-                    return;
-                if (line.startsWith("CURRENT\t")) {
-                    root._current = line.slice(8).trim();
-                    return;
+            stdout: SplitParser {
+                onRead: data => {
+                    const line = data.trim();
+                    if (line === "")
+                        return;
+                    if (line.startsWith("CURRENT\t")) {
+                        root._current = line.slice(8).trim();
+                        return;
+                    }
+                    const name = line.replace(/\.[^.]+$/, "");
+                    if (name !== "")
+                        root._found.push(name);
                 }
-                const name = line.replace(/\.[^.]+$/, "");
-                if (name !== "")
-                    root._found.push(name);
             }
-        }
-        onRunningChanged: {
-            if (running) {
-                root._found = [];
-                root._current = "";
+            onRunningChanged: {
+                if (running) {
+                    root._found = [];
+                    root._current = "";
+                }
             }
-        }
-        // qmllint disable signal-handler-parameters
-        onExited: {
-            const out = [];
-            const subBase = root.tr("sysmenu.dynamic_animations", "Animación de Hyprland");
-            const badgeCur = root.tr("sysmenu.badge_current", "Actual");
-            for (let i = 0; i < root._found.length; i++) {
-                const name = root._found[i];
-                const isCur = name === root._current;
-                // Sin subtitleKey (ver FastfetchMenu): el badge vive en el texto.
-                const sub = (isCur ? "● " + badgeCur + " · " : "") + subBase;
-                out.push(root.shell("anim-" + name, root.pretty(name), sub, "animation", root.shellFor(name), {}));
+            // qmllint disable signal-handler-parameters
+            onExited: {
+                const out = [];
+                const subBase = root.tr("sysmenu.dynamic_animations", "Animación de Hyprland");
+                const badgeCur = root.tr("sysmenu.badge_current", "Actual");
+                for (let i = 0; i < root._found.length; i++) {
+                    const name = root._found[i];
+                    const isCur = name === root._current;
+                    // Sin subtitleKey (ver FastfetchMenu): el badge vive en el texto.
+                    const sub = (isCur ? "● " + badgeCur + " · " : "") + subBase;
+                    out.push(root.shell("anim-" + name, root.pretty(name), sub, "animation", root.shellFor(
+                                            name), {}));
+                }
+                root.entries = out;
             }
-            root.entries = out;
+            // qmllint enable signal-handler-parameters
         }
-        // qmllint enable signal-handler-parameters
-    } ]
+    ]
 }

@@ -120,7 +120,8 @@ PopupWindow {
                             StyledText {
                                 Layout.fillWidth: true
                                 text: itemDelegate.modelData?.text ?? ""
-                                color: itemMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface
+                                color: itemMouse.containsMouse ? Appearance.md3.on_primary :
+                                                                 Appearance.md3.on_surface
                                 font.pixelSize: Appearance.typeScale.bodySmall
                                 elide: Text.ElideRight
 
@@ -141,11 +142,14 @@ PopupWindow {
 
                             // Checkbox / radio
                             Rectangle {
-                                visible: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
+                                visible: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None)
+                                         !== QsMenuButtonType.None
                                 Layout.preferredWidth: 16
                                 Layout.preferredHeight: 16
-                                radius: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None) === QsMenuButtonType.Radio ? 8 : 4
-                                color: (itemDelegate.modelData?.checkState ?? Qt.Unchecked) === Qt.Checked ? Appearance.md3.primary : "transparent"
+                                radius: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None)
+                                        === QsMenuButtonType.Radio ? 8 : 4
+                                color: (itemDelegate.modelData?.checkState ?? Qt.Unchecked) === Qt.Checked
+                                       ? Appearance.md3.primary : "transparent"
                                 border.color: Appearance.md3.outline
                                 border.width: 1
                             }
@@ -156,7 +160,8 @@ PopupWindow {
 
                             anchors.fill: parent
                             hoverEnabled: true
-                            enabled: (itemDelegate.modelData?.enabled ?? false) && !(itemDelegate.modelData?.isSeparator ?? false)
+                            enabled: (itemDelegate.modelData?.enabled ?? false) && !(itemDelegate.modelData
+                                                                                     ?.isSeparator ?? false)
                             onClicked: {
                                 const entry = itemDelegate.modelData;
                                 if (!entry)

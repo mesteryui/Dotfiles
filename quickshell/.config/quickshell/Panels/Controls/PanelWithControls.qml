@@ -28,6 +28,7 @@ Scope {
 
     LazyLoader {
         id: controlsLoader
+
         loading: scope.shown
 
         component: PanelWindow {
@@ -49,10 +50,14 @@ Scope {
             // Medido: sin esto el panel quedaba 10px de más a izquierda y
             // abajo en full_hug (las líneas también reservan zona).
             readonly property bool barAtBottom: ConfigService.configs.bar.position === "bottom"
-            readonly property string barType: GameMode.enabled ? "no_floating" : ConfigService.configs.bar.barType
+
+            readonly property string barType: GameMode.enabled ? "no_floating" :
+                                                                 ConfigService.configs.bar.barType
             // Separación mínima (6px) en todos los límites, haya o no
             // elementos: la barra flotante suma sus 3px de margen exterior.
+
             readonly property int edgeGap: 6
+
             readonly property int barClear: (barType === "floating" ? 3 : 0) + edgeGap
 
             anchors {
@@ -147,9 +152,9 @@ Scope {
             // "ShaderEffect: 'source' does not have a matching property" del primer frame.
             MultiEffect {
                 id: panelShadow
+
                 anchors.fill: bg
-                visible: Appearance.shadows
-                shadowEnabled: Appearance.shadows
+                shadowEnabled: true
                 shadowColor: Appearance.md3.shadow ?? "#000000"
                 shadowOpacity: Appearance.elevation4.opacity
                 shadowBlur: Appearance.elevation4.blur

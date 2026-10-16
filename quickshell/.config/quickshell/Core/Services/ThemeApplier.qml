@@ -8,7 +8,8 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    // Fuente para matugen: el wallpaper estático persistido.
+    // Fuente para matugen: el wallpaper persistido (imagen directa) o el
+    // frame estatico si es un video (matugen no lee video).
     readonly property string currentWallpaper: Persistent.persistence.currentWallpaper
     readonly property string matugenMode: ConfigService.configs.appearance.darkMode ? "dark" : "light"
     readonly property string matugenType: ConfigService.configs.appearance.matugen.type
@@ -46,6 +47,29 @@ Singleton {
         }
     }
 
+    // Frame confirmado para el video en curso ("": aun extrayendose).
+    // Tras reiniciar, el frame en disco se reconfirma via frameReady sin
+    // reescribir nada (el script es idempotente).
+    property string confirmedVideo: ""
+    property string confirmedFrame: ""
+
+    // Fuente efectiva para matugen. "" = aun no lista (frame en curso; al
+    // terminar, frameReady re-invoca la generacion). Se consulta tambien el
+    // mapa del servicio (no solo el handler propio) para no quedarse
+    // esperando si una entrega de senal se pierde entre recargas.
+    function resolveThemeSource(wallpaperPath: string): string {
+        if (wallpaperPath === "")
+            return "";
+        if (!WallpaperService.isVideo(wallpaperPath))
+            return wallpaperPath;
+        VideoFrameService.ensureFrame(wallpaperPath);
+        if (root.confirmedVideo === wallpaperPath && root.confirmedFrame !== "")
+            return root.confirmedFrame;
+        if (VideoFrameService.confirmed[wallpaperPath] !== undefined)
+            return VideoFrameService.frameFor(wallpaperPath);
+        return "";
+    }
+
     // Entrada en vuelo (para marcar last* al terminar con éxito).
     property string currentWallpaperReq: ""
     property string currentMode: ""
@@ -69,7 +93,8 @@ Singleton {
                 const next = root.pending;
                 root.hasPending = false;
                 root.pending = "";
-                if (!(ok && next === root.lastWallpaper && root.matugenMode === root.lastMode && root.matugenType === root.lastType))
+                if (!(ok && next === root.lastWallpaper && root.matugenMode === root.lastMode
+                      && root.matugenType === root.lastType))
                     root.startGenerate(next);
             }
         }
@@ -90,23 +115,29 @@ Singleton {
     }
 
     function updateMatugenColors(wallpaperPath: string) {
-        if (wallpaperPath === "")
+        // Los videos generan con su frame ("" = aun extrayendose; al
+        // terminar, frameReady re-invoca esto). Desde aqui todo va en
+        // espacio resuelto (src): imagen o frame confirmado.
+        const src = root.resolveThemeSource(wallpaperPath);
+        if (src === "")
             return;
         // Dedup: misma entrada ya generada y nada en vuelo ni en espera.
-        if (root.hasGenerated && !proc.running && !root.hasPending && wallpaperPath === root.lastWallpaper && root.matugenMode === root.lastMode && root.matugenType === root.lastType)
+        if (root.hasGenerated && !proc.running && !root.hasPending && src === root.lastWallpaper && root.matugenMode
+                === root.lastMode && root.matugenType === root.lastType)
             return;
         // En vuelo: encola sin matar (ver nota arriba). Si es la misma
         // entrada que vuela o que espera, no hay nada que hacer.
         if (proc.running) {
-            if (wallpaperPath === root.currentWallpaperReq && root.matugenMode === root.currentMode && root.matugenType === root.currentType)
+            if (src === root.currentWallpaperReq && root.matugenMode === root.currentMode && root.matugenType
+                    === root.currentType)
                 return;
-            if (root.hasPending && wallpaperPath === root.pending)
+            if (root.hasPending && src === root.pending)
                 return;
-            root.pending = wallpaperPath;
+            root.pending = src;
             root.hasPending = true;
             return;
         }
-        root.startGenerate(wallpaperPath);
+        root.startGenerate(src);
     }
 
     function startGenerate(wallpaperPath: string) {
@@ -114,7 +145,10 @@ Singleton {
         root.currentMode = root.matugenMode;
         root.currentType = root.matugenType;
         // Prioridad baja: no roba CPU al compositor durante la transición.
-        proc.command = ["nice", "-n", "15", "matugen", "image", wallpaperPath, "--source-color-index", "0", "-t", root.matugenType, "-m", root.matugenMode];
+        // Dos pasadas: config.toml (núcleo: terminal, shell, prompt) y apps.toml
+        // (apps GTK, Thunar, carpetas...). Si falla la primera no se corre la
+        // segunda; el exit code refleja ambas.
+        proc.command = ["sh", "-c", "nice -n 15 matugen image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\" && nice -n 15 matugen -c \"$HOME/.config/matugen/apps.toml\" image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\"", "matugen-theme", wallpaperPath, root.matugenType, root.matugenMode];
         root.generationStarted();
         proc.running = true;
         root.genWatchdog.restart();
@@ -130,5 +164,19 @@ Singleton {
         }
 
         target: WallpaperService
+    }
+
+    Connections {
+        // Solo el fondo actual dispara generacion: los frames que pide el
+        // menu (miniaturas) no deben regenerar el tema.
+        function onFrameReady(videoPath: string, framePath: string) {
+            if (videoPath === root.currentWallpaper) {
+                root.confirmedVideo = videoPath;
+                root.confirmedFrame = framePath;
+                root.updateMatugenColors(videoPath);
+            }
+        }
+
+        target: VideoFrameService
     }
 }

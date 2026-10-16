@@ -6,10 +6,10 @@
 import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Launcher
+import "../../Base/ShellUtils.js" as ShellUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "../../Base/ShellUtils.js" as ShellUtils
 
 MenuDefinition {
     id: root
@@ -46,21 +46,21 @@ MenuDefinition {
     function shellFor(value) {
         const v = ShellUtils.shellEscape(value);
         const cfg = ShellUtils.shellEscape(root.configHome);
-        return "ln -sf '" + cfg + "/fastfetch/layouts/" + v + "' '" + cfg + "/fastfetch/layouts/../config.jsonc' && "
-            + "notify-send 'Fastfetch Theme' 'Tema de fastfetch cambiado a: " + v + "'";
+        return "ln -sf '" + cfg + "/fastfetch/layouts/" + v + "' '" + cfg
+                + "/fastfetch/layouts/../config.jsonc' && "
+                + "notify-send 'Fastfetch Theme' 'Tema de fastfetch cambiado a: " + v + "'";
     }
 
     function refresh() {
         if (ffProc.running)
             return;
         const cfg = ShellUtils.shellEscape(root.configHome);
-        ffProc.command = ["sh", "-c",
-            "d='" + cfg + "/fastfetch/layouts'; "
-            + "cur=$(readlink \"$d/../config.jsonc\" 2>/dev/null); cur=${cur##*/}; "
-            + "echo \"CURRENT\t$cur\"; "
-            + "for f in \"$d\"/*; do [ -f \"$f\" ] || continue; n=${f##*/}; b=${n%.*}; "
-            + "p=\"$d/../previews/$b.png\"; [ -f \"$p\" ] || p=; "
-            + "echo \"ENTRY\t$n\t$p\"; done | sort"];
+        ffProc.command = ["sh", "-c", "d='" + cfg + "/fastfetch/layouts'; "
+                          + "cur=$(readlink \"$d/../config.jsonc\" 2>/dev/null); cur=${cur##*/}; "
+                          + "echo \"CURRENT\t$cur\"; "
+                          + "for f in \"$d\"/*; do [ -f \"$f\" ] || continue; n=${f##*/}; b=${n%.*}; "
+                          + "p=\"$d/../previews/$b.png\"; [ -f \"$p\" ] || p=; "
+                          + "echo \"ENTRY\t$n\t$p\"; done | sort"];
         ffProc.running = true;
     }
 
@@ -70,51 +70,57 @@ MenuDefinition {
     // Trabajadores en `helpers` (la raíz es QtObject y no admite
     // hijos declarativos). Acumulan en _found/_current y al terminar
     // reasignan `entries` entero.
-    helpers: [ Process {
-        id: ffProc
+    helpers: [
+        Process {
+            id: ffProc
 
-        stdout: SplitParser {
-            onRead: data => {
-                const line = data.trim();
-                if (line === "")
-                    return;
-                if (line.startsWith("CURRENT\t")) {
-                    root._current = line.slice(8).trim();
-                    return;
+            stdout: SplitParser {
+                onRead: data => {
+                    const line = data.trim();
+                    if (line === "")
+                        return;
+                    if (line.startsWith("CURRENT\t")) {
+                        root._current = line.slice(8).trim();
+                        return;
+                    }
+                    if (!line.startsWith("ENTRY\t"))
+                        return;
+                    const parts = line.slice(6).split("\t");
+                    const file = parts[0] || "";
+                    const prev = parts[1] || "";
+                    if (file !== "")
+                        root._found.push({
+                                             file: file,
+                                             preview: prev
+                                         });
                 }
-                if (!line.startsWith("ENTRY\t"))
-                    return;
-                const parts = line.slice(6).split("\t");
-                const file = parts[0] || "";
-                const prev = parts[1] || "";
-                if (file !== "")
-                    root._found.push({ file: file, preview: prev });
             }
-        }
-        onRunningChanged: {
-            if (running) {
-                root._found = [];
-                root._current = "";
+            onRunningChanged: {
+                if (running) {
+                    root._found = [];
+                    root._current = "";
+                }
             }
-        }
-        // qmllint disable signal-handler-parameters
-        onExited: {
-            const out = [];
-            const subBase = root.tr("sysmenu.dynamic_fastfetch", "Tema de fastfetch");
-            const badgeCur = root.tr("sysmenu.badge_current", "Actual");
-            for (let i = 0; i < root._found.length; i++) {
-                const f = root._found[i];
-                const isCur = f.file === root._current;
-                // Sin subtitleKey: el subtítulo lleva el badge vivo y el
-                // Registry prefiere la clave (lo traduciría sin badge).
-                const sub = (isCur ? "● " + badgeCur + " · " : "") + subBase;
-                const opts = {};
-                if (f.preview !== "")
-                    opts.preview = f.preview;
-                out.push(root.shell("ff-" + f.file, root.pretty(f.file), sub, "terminal", root.shellFor(f.file), opts));
+            // qmllint disable signal-handler-parameters
+            onExited: {
+                const out = [];
+                const subBase = root.tr("sysmenu.dynamic_fastfetch", "Tema de fastfetch");
+                const badgeCur = root.tr("sysmenu.badge_current", "Actual");
+                for (let i = 0; i < root._found.length; i++) {
+                    const f = root._found[i];
+                    const isCur = f.file === root._current;
+                    // Sin subtitleKey: el subtítulo lleva el badge vivo y el
+                    // Registry prefiere la clave (lo traduciría sin badge).
+                    const sub = (isCur ? "● " + badgeCur + " · " : "") + subBase;
+                    const opts = {};
+                    if (f.preview !== "")
+                        opts.preview = f.preview;
+                    out.push(root.shell("ff-" + f.file, root.pretty(f.file), sub, "terminal", root.shellFor(
+                                            f.file), opts));
+                }
+                root.entries = out;
             }
-            root.entries = out;
+            // qmllint enable signal-handler-parameters
         }
-        // qmllint enable signal-handler-parameters
-    } ]
+    ]
 }

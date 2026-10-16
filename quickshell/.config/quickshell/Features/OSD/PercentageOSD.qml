@@ -34,10 +34,21 @@ BaseOSD {
 
     // Nivel recortado a [0,1] para el morph manual (el volumen puede pasar de 1.0).
     property real clampedLevel: Math.min(1, Math.max(0, root.percentage))
-    property int discreteShape: root.alert ? MaterialShape.ClamShell : root.percentage < 0.34 ? root.shapeLow : root.percentage < 0.67 ? root.shapeMid : root.shapeHigh
+    property int discreteShape: root.alert ? MaterialShape.ClamShell : root.percentage < 0.34 ? root.shapeLow :
+                                                                                                root.percentage
+                                                                                                < 0.67 ? root.shapeMid :
+                                                                                                         root.shapeHigh
     // Cuando alert y continuousMorph, forzamos ClamShell sin interpolar.
-    property int effectiveMorphFrom: root.alert ? MaterialShape.ClamShell : (root.continuousMorph ? (root.type === "brightness" ? root.morphFrom : root.soundMorphFrom) : root.discreteShape)
-    property int effectiveMorphTo: root.alert ? MaterialShape.ClamShell : (root.continuousMorph ? (root.type === "brightness" ? root.morphTo : root.soundMorphTo) : root.discreteShape)
+    property int effectiveMorphFrom: root.alert ? MaterialShape.ClamShell : (root.continuousMorph ? (root.type
+                                                                                                     === "brightness"
+                                                                                                     ? root.morphFrom :
+                                                                                                       root.soundMorphFrom) :
+                                                                                                    root.discreteShape)
+    property int effectiveMorphTo: root.alert ? MaterialShape.ClamShell : (root.continuousMorph ? (root.type
+                                                                                                   === "brightness"
+                                                                                                   ? root.morphTo :
+                                                                                                     root.soundMorphTo) :
+                                                                                                  root.discreteShape)
 
     implicitWidth: 340
     implicitHeight: 58
@@ -73,8 +84,18 @@ BaseOSD {
                     loops: Animation.Infinite
                     running: root.alert
 
-                    NumberAnimation { from: 1; to: 1.1; duration: 700; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: 1.1; to: 1; duration: 700; easing.type: Easing.InOutSine }
+                    NumberAnimation {
+                        from: 1
+                        to: 1.1
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        from: 1.1
+                        to: 1
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
                 }
             }
         }

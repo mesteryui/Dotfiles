@@ -17,6 +17,7 @@ ColumnLayout {
     signal chosen(string value)
 
     property bool open: false
+
     property int activeIndex: 0
 
     onOpenChanged: {
@@ -30,6 +31,10 @@ ColumnLayout {
     }
 
     onValueChanged: {
+        if (!dropRow.open)
+            dropRow.syncIndex();
+    }
+    onChoicesModelChanged: {
         if (!dropRow.open)
             dropRow.syncIndex();
     }
@@ -51,7 +56,9 @@ ColumnLayout {
         radius: Appearance.shape.extraSmall
         color: "transparent"
         border.width: dropRow.open || dropField.activeFocus ? 2 : 1
-        border.color: dropRow.open || dropField.activeFocus ? Appearance.md3.primary : Appearance.md3.outline_variant
+        border.color: dropRow.open || dropField.activeFocus ? Appearance.md3.primary :
+                                                              Appearance.md3.outline_variant
+
         activeFocusOnTab: true
 
         Accessible.role: Accessible.ComboBox
@@ -65,6 +72,7 @@ ColumnLayout {
         }
 
         Keys.onSpacePressed: dropRow.open = !dropRow.open
+
         Keys.onReturnPressed: {
             if (dropRow.open) {
                 const o = dropRow.choicesModel[dropRow.activeIndex];
@@ -75,6 +83,7 @@ ColumnLayout {
                 dropRow.open = true;
             }
         }
+
         Keys.onEnterPressed: {
             if (dropRow.open) {
                 const o = dropRow.choicesModel[dropRow.activeIndex];
@@ -85,7 +94,9 @@ ColumnLayout {
                 dropRow.open = true;
             }
         }
+
         Keys.onEscapePressed: dropRow.open = false
+
         Keys.onUpPressed: {
             if (!dropRow.open) {
                 dropRow.open = true;
@@ -93,6 +104,7 @@ ColumnLayout {
                 dropRow.activeIndex--;
             }
         }
+
         Keys.onDownPressed: {
             if (!dropRow.open) {
                 dropRow.open = true;
@@ -228,7 +240,8 @@ ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: 2
                             radius: Appearance.shape.small
-                            tint: menuRow._selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                            tint: menuRow._selected ? Appearance.md3.on_secondary_container :
+                                                      Appearance.md3.on_surface
                             hovered: menuArea.pressed || menuArea.containsMouse || menuRow._focused
                             pressed: menuArea.pressed
                         }
@@ -252,7 +265,8 @@ ColumnLayout {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: menuRow._hasModelData ? (menuRow.modelData.text ?? "") : ""
                                 font.pixelSize: Appearance.typeScale.bodyLarge
-                                color: menuRow._selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                                color: menuRow._selected ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.on_surface
                                 elide: Text.ElideRight
                             }
                         }

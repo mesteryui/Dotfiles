@@ -28,6 +28,7 @@ RowLayout {
         radius: Appearance.shape.full
         border.width: 2
         border.color: Appearance.md3.primary
+
         Image {
             id: faceImage
 
@@ -73,7 +74,10 @@ RowLayout {
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
         radius: Appearance.shape.full
-        color: powerArea.pressed ? Qt.alpha(Appearance.md3.error_container, 0.9) : (powerArea.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.4) : Appearance.md3.surface_container_high)
+        color: powerArea.pressed ? Qt.alpha(Appearance.md3.error_container, 0.9) : (powerArea.containsMouse
+                                                                                    ? Qt.alpha(
+                                                                                          Appearance.md3.error_container,
+                                                                                          0.4) : Appearance.md3.surface_container_high)
         border.width: (activeFocus && host.keyboardMode) ? 2 : 0
         border.color: Appearance.md3.primary
         activeFocusOnTab: true
@@ -100,7 +104,6 @@ RowLayout {
             }
         }
         Behavior on scale {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping

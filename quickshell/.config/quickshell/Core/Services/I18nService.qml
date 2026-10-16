@@ -1,74 +1,70 @@
 pragma Singleton
 
 import QtQuick
+import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
 
 Singleton {
     id: root
 
-    // Idioma configurado. "auto" significa adaptar al idioma del sistema.
+    // Idioma configurado. "auto" = usar el locale del sistema si está
+    // entre los disponibles, si no en_US. Manual fuera de lista -> en_US.
     property string userDefinedLang: ConfigService.configs.language
 
     // Locale del sistema
     readonly property string systemLang: Qt.locale().name
 
-    // Candidato antes de comprobar si existe el archivo de traducción.
-    // Normaliza variantes ("es", "es-ES", "es_MX") al nombre de archivo
-    // ("es_ES") para no caer a en_US cuando Qt no devuelve el locale
-    // completo. Igual para inglés ("en", "en_GB" → "en_US").
+    // Directorio con los locales: cada *.json aporta un código disponible.
+    FolderListModel {
+        id: localeDir
+
+        folder: Qt.resolvedUrl("../i18n")
+        nameFilters: ["*.json"]
+        showDirs: false
+        showDotAndDotDot: false
+        sortField: FolderListModel.Name
+    }
+
+    // Códigos disponibles según ficheros presentes. Se completa sola al
+    // añadir/quitar json; en_US siempre presente como referencia.
+    readonly property list<string> available: {
+        var out = [];
+        for (let i = 0; i < localeDir.count; i++) {
+            let n = localeDir.get(i, "fileName");
+            if (n && String(n).endsWith(".json")) {
+                const code = String(n).slice(0, -5);
+                if (code !== "" && !out.includes(code))
+                    out.push(code);
+            }
+        }
+        if (!out.includes("en_US"))
+            out.push("en_US");
+        return out.sort();
+    }
+
+    // Candidato validado contra `available`. Sin alias: solo se normaliza
+    // "-" a "_" (p. ej. "es-ES" -> "es_ES") por formato, no por familia.
     readonly property string candidateLang: {
-        const raw = (userDefinedLang === "auto" || userDefinedLang === "") ? systemLang : userDefinedLang;
-        const norm = raw.replace(/-/g, "_");
-        if (norm === "es" || norm.startsWith("es_"))
-            return "es_ES";
-        if (norm === "en" || norm.startsWith("en_"))
-            return "en_US";
-        return norm;
+        const normSys = root.systemLang.replace(/-/g, "_");
+        const rawUser = root.userDefinedLang || "";
+        if (rawUser === "auto" || rawUser === "")
+            return root.available.includes(normSys) ? normSys : "en_US";
+        const normUser = rawUser.replace(/-/g, "_");
+        return root.available.includes(normUser) ? normUser : "en_US";
     }
 
     // Idioma resuelto (lo consumen los bindings para re-traducir la UI)
     property string language: "en_US"
+
     readonly property var locale: Qt.locale(language)
 
-    // Diccionario con las traducciones cargadas
+    // Diccionario con las traducciones cargadas. Si el candidato no está
+    // en `available`, `candidateLang` ya es "en_US", así que basta un solo
+    // FileView sin fallback adicional.
     property var translations: ({})
-    // Fallback inglés por clave: si el idioma cargado (p. ej. eo) no trae
-    // una clave, se usa el valor de en_US antes que el default inline
-    // (que suele estar en español y enmascaraba los huecos).
-    property var fallbackTranslations: ({})
-
-    // El fallback inglés solo se carga si el candidato no ES inglés:
-    // entonces `translations` ya es en_US y leerlo dos veces es redundante.
-    readonly property bool needFallbackFile: root.candidateLang !== "en_US"
 
     readonly property string candidatePath: Quickshell.shellPath("Core/i18n/" + root.candidateLang + ".json")
-    readonly property string fallbackPath: Quickshell.shellPath("Core/i18n/en_US.json")
-
-    FileView {
-        id: fallbackFile
-
-        path: root.needFallbackFile ? root.fallbackPath : ""
-        blockLoading: true
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            try {
-                root.fallbackTranslations = JSON.parse(fallbackFile.text());
-            } catch (e) {
-                console.error("I18n fallback error:", e);
-                root.fallbackTranslations = ({});
-            }
-        }
-        onLoadFailed: error => {
-            // path "" = descargado a propósito (candidato inglés), no es error.
-            if (fallbackFile.path === "")
-                return;
-            console.error("I18n error: missing fallback file:", fallbackFile.path);
-            root.fallbackTranslations = ({});
-        }
-    }
 
     FileView {
         id: fileManagement
@@ -87,16 +83,19 @@ Singleton {
                 root.translations = ({});
             }
             root.language = root.candidateLang;
-            console.info("[I18n] system=" + root.systemLang + " candidate=" + root.candidateLang + " -> " + root.language);
+            console.info("[I18n] system=" + root.systemLang + " candidate=" + root.candidateLang + " -> "
+                         + root.language);
         }
         onLoadFailed: error => {
-            // Sin flag useFallback: se vacía y la cadena de getTranslation
-            // (translations → fallbackTranslations → default) resuelve al
-            // inglés vivo, que sigue actualizándose si se edita en_US.json.
+            // `candidateLang` ya está validado contra `available`: fuera de
+            // lista => "en_US" y `candidatePath` apunta directo al inglés.
+            // Este fallo solo es transitorio (borrado entre listado y carga
+            // o en_US.json ausente). Al actualizarse `available` se recarga solo.
             root.translations = ({});
             root.language = "en_US";
             if (root.candidateLang !== "en_US")
-                console.warn("I18n: no translation file for '" + root.candidateLang + "', using English fallback");
+                console.warn("I18n: no translation file for '" + root.candidateLang
+                             + "', using English fallback");
         }
     }
 
@@ -115,9 +114,21 @@ Singleton {
         const hit = root._lookup(root.translations, key);
         if (hit !== undefined && hit !== null)
             return hit;
-        const fb = root._lookup(root.fallbackTranslations, key);
-        if (fb !== undefined && fb !== null)
-            return fb;
         return default_key;
+    }
+
+    // Nombre legible para el desplegable de idioma. Conocidos via
+    // traducción, resto tal cual el código del fichero.
+    function languageName(code: string): string {
+        switch (code) {
+        case "es_ES":
+            return root.getTranslation("settings.system.language.es", "Español de España");
+        case "en_US":
+            return root.getTranslation("settings.system.language.en", "Ingles de EEUU");
+        case "eo":
+            return root.getTranslation("settings.system.language.eo", "Esperanto");
+        default:
+            return code;
+        }
     }
 }

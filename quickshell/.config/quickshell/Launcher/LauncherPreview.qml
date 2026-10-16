@@ -37,11 +37,13 @@ QtObject {
     property string previewError: ""
 
     function previewFailedMessage() {
-        return Services.I18nService.getTranslation("launcher.clip_preview_failed", "No se pudo generar la vista previa de esta imagen");
+        return Services.I18nService.getTranslation("launcher.clip_preview_failed",
+                                                   "No se pudo generar la vista previa de esta imagen");
     }
 
     // Selección pendiente de asentar (ver schedule()).
     property int pendingIndex: -1
+
     property var pendingItem
 
     // Vecinos del item actual (los pone AppLauncher desde
@@ -51,6 +53,7 @@ QtObject {
 
     // Metadatos del tema de audio actual (título/artista/álbum/duración).
     property string metaPath: ""
+
     property string metaText: ""
 
     function _fmtDur(secStr) {
@@ -118,7 +121,8 @@ QtObject {
             const cids = [];
             for (let i = 0; i < root.neighbors.length; i++) {
                 const n = root.neighbors[i];
-                if (n && n.kind === "clip" && n.isImage && n.cid !== root.previewCid && root.failedCids.indexOf(n.cid) < 0)
+                if (n && n.kind === "clip" && n.isImage && n.cid !== root.previewCid && root.failedCids.indexOf(
+                            n.cid) < 0)
                     cids.push(n.cid);
             }
             if (cids.length > 0)
@@ -127,7 +131,8 @@ QtObject {
             const pairs = [];
             for (let j = 0; j < root.neighbors.length; j++) {
                 const f = root.neighbors[j];
-                if (f && f.kind === "file" && (f.media === "audio" || f.media === "video" || f.media === "pdf") && f.path !== root.previewFile)
+                if (f && f.kind === "file" && (f.media === "audio" || f.media === "video" || f.media
+                                               === "pdf") && f.path !== root.previewFile)
                     pairs.push([f.path, f.media]);
             }
             if (pairs.length > 0)
@@ -174,11 +179,20 @@ QtObject {
         }
         // Ya visible para este mismo item: no recargar (evita parpadeo).
         if (item && root.previewOk) {
-            if ((item.kind === "clip" && item.isImage && item.cid === root.previewCid)
-                || (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media === "pdf") && item.path === root.previewFile))
+            if ((item.kind === "clip" && item.isImage && item.cid === root.previewCid) || (item.kind
+                                                                                           === "file" && (
+                                                                                               item.media
+                                                                                               === "audio"
+                                                                                               || item.media
+                                                                                               === "video"
+                                                                                               || item.media
+                                                                                               === "pdf")
+                                                                                           && item.path
+                                                                                           === root.previewFile))
                 return;
         }
-        if (item && item.kind === "file" && item.media === "text" && item.path === root.previewFile && root.previewText !== "")
+        if (item && item.kind === "file" && item.media === "text" && item.path === root.previewFile && root.previewText
+                !== "")
             return;
         root.previewOk = false;
         root.previewCid = "";
@@ -212,7 +226,8 @@ QtObject {
             // hay algo que enseñar.
             root.clipTextCid = item.cid;
             root.clipText = Services.ClipboardService.requestText(item.cid);
-        } else if (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media === "pdf")) {
+        } else if (item.kind === "file" && (item.media === "audio" || item.media === "video" || item.media
+                                            === "pdf")) {
             root.previewFile = item.path;
             FilePreviewService.request(item.path, item.media);
         } else if (item.kind === "file" && item.media === "text") {
@@ -223,10 +238,12 @@ QtObject {
 
     property Connections clipboardConn: Connections {
         target: Services.ClipboardService
+
         function onPreviewReady(cid) {
             if (cid === root.previewCid)
                 root.previewOk = true;
         }
+
         function onPreviewFailed(cid) {
             if (cid === root.previewCid && !root.previewOk) {
                 if (root.failedCids.indexOf(cid) < 0)
@@ -234,6 +251,7 @@ QtObject {
                 root.previewError = root.previewFailedMessage();
             }
         }
+
         function onTextReady(cid) {
             if (cid === root.clipTextCid)
                 root.clipText = Services.ClipboardService.textContent;
@@ -242,16 +260,19 @@ QtObject {
 
     property Connections filePreviewConn: Connections {
         target: FilePreviewService
+
         function onReady(path, image) {
             if (path === root.previewFile && image !== "") {
                 root.previewPath = image;
                 root.previewOk = true;
             }
         }
+
         function onTextReady(path, text) {
             if (path === root.previewFile)
                 root.previewText = text;
         }
+
         function onMetaReady(path, title, artist, album, duration) {
             if (path === root.metaPath)
                 root.metaText = root._composeMeta(title, artist, album, duration);

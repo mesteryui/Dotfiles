@@ -1,3 +1,4 @@
+# Ryoku palette -> btop. Rendered by matugen; do not edit.
 # Matugen template for btop
 
 
@@ -87,3 +88,8 @@ theme[download_end]="{{colors.tertiary.default.hex}}"
 theme[upload_start]="{{colors.secondary.default.hex}}"
 theme[upload_mid]="{{colors.primary.default.hex}}"
 theme[upload_end]="{{colors.tertiary.default.hex}}"
+
+# Process box color gradient
+theme[process_start]="{{colors.secondary.default.hex}}"
+theme[process_mid]="{{colors.primary.default.hex}}"
+theme[process_end]="{{colors.tertiary.default.hex}}"

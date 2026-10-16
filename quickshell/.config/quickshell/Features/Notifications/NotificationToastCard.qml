@@ -107,7 +107,10 @@ Item {
                         id: toastIconBg
 
                         anchors.fill: parent
-                        shape: root.isCritical ? MaterialShape.Boom : (root.notification.urgency === NotificationUrgency.Low ? MaterialShape.Circle : MaterialShape.Cookie4Sided)
+                        shape: root.isCritical ? MaterialShape.Boom : (root.notification.urgency
+                                                                       === NotificationUrgency.Low
+                                                                       ? MaterialShape.Circle :
+                                                                         MaterialShape.Cookie4Sided)
                         animationDuration: Appearance.motion.medium2
                         color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
 
@@ -117,15 +120,26 @@ Item {
                             loops: Animation.Infinite
                             running: root.isCritical
 
-                            NumberAnimation { from: 1; to: 1.08; duration: 800; easing.type: Easing.InOutSine }
-                            NumberAnimation { from: 1.08; to: 1; duration: 800; easing.type: Easing.InOutSine }
+                            NumberAnimation {
+                                from: 1
+                                to: 1.08
+                                duration: 800
+                                easing.type: Easing.InOutSine
+                            }
+                            NumberAnimation {
+                                from: 1.08
+                                to: 1
+                                duration: 800
+                                easing.type: Easing.InOutSine
+                            }
                         }
 
                         MaterialIcon {
                             anchors.centerIn: parent
                             icon: "notifications"
                             size: 24
-                            color: root.isCritical ? Appearance.md3.on_error : Appearance.md3.on_primary_container
+                            color: root.isCritical ? Appearance.md3.on_error :
+                                                     Appearance.md3.on_primary_container
                             visible: notifIcon.source.toString() === ""
                         }
                     }
@@ -160,7 +174,8 @@ Item {
 
                         StyledText {
                             text: root.notification.appName || "Sistema"
-                            color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
+                            color: root.isCritical ? Appearance.md3.on_error_container :
+                                                     Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
                             font.pixelSize: Appearance.typeScale.labelSmall
                             font.weight: Font.Medium
@@ -201,7 +216,8 @@ Item {
                             iconSize: 14
                             implicitWidth: 24
                             implicitHeight: 24
-                            iconColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface_variant
+                            iconColor: root.isCritical ? Appearance.md3.on_error_container :
+                                                         Appearance.md3.on_surface_variant
                             baseColor: "transparent"
                             onClicked: root.notification.dismiss()
                         }
@@ -225,7 +241,8 @@ Item {
                         Layout.fillWidth: true
                         text: root.notification.body
                         visible: text !== ""
-                        color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.90) : Appearance.md3.on_surface_variant
+                        color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.90) :
+                                                 Appearance.md3.on_surface_variant
                         font.family: Appearance.font.sans
                         font.pixelSize: Appearance.typeScale.labelMedium
                         wrapMode: Text.WordWrap
@@ -271,9 +288,12 @@ Item {
                                 fontWeight: Font.Medium
                                 paddingHorizontal: 20
 
-                                baseColor: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
-                                textColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
-                                overlayColor: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_primary_container
+                                baseColor: root.isCritical ? Appearance.md3.error :
+                                                             Appearance.md3.primary_container
+                                textColor: root.isCritical ? Appearance.md3.on_error_container :
+                                                             Appearance.md3.on_primary_container
+                                overlayColor: root.isCritical ? Appearance.md3.on_error_container :
+                                                                Appearance.md3.on_primary_container
 
                                 border.width: root.isCritical ? 1 : 0
                                 border.color: Appearance.md3.error
@@ -297,10 +317,16 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 32
                     radius: Appearance.shape.full
-                    color: root.isCritical ? Qt.alpha(Appearance.md3.surface, 0.5) : Appearance.md3.surface_container_highest
+                    color: root.isCritical ? Qt.alpha(Appearance.md3.surface, 0.5) :
+                                             Appearance.md3.surface_container_highest
 
                     border.width: replyInput.activeFocus ? 2 : 1
-                    border.color: replyInput.activeFocus ? (root.isCritical ? Appearance.md3.error : Appearance.md3.primary) : (root.isCritical ? Qt.alpha(Appearance.md3.error, 0.4) : Qt.alpha(Appearance.md3.outline_variant, 0.5))
+                    border.color: replyInput.activeFocus ? (root.isCritical ? Appearance.md3.error :
+                                                                              Appearance.md3.primary) : (
+                                                               root.isCritical ? Qt.alpha(Appearance.md3.error,
+                                                                                          0.4) : Qt.alpha(
+                                                                                     Appearance.md3.outline_variant,
+                                                                                     0.5))
 
                     Behavior on border.width {
                         NumberAnimation {
@@ -340,8 +366,11 @@ Item {
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: replyInput.text === "" && !replyInput.activeFocus
-                            text: root.notification.inlineReplyPlaceholder !== "" ? root.notification.inlineReplyPlaceholder : Services.I18nService.getTranslation("notifications.reply", "Responder…")
-                            color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.6) : Appearance.md3.on_surface_variant
+                            text: root.notification.inlineReplyPlaceholder !== ""
+                                  ? root.notification.inlineReplyPlaceholder :
+                                    Services.I18nService.getTranslation("notifications.reply", "Responder…")
+                            color: root.isCritical ? Qt.alpha(Appearance.md3.on_error_container, 0.6) :
+                                                     Appearance.md3.on_surface_variant
                             font.family: Appearance.font.sans
                             font.pixelSize: Appearance.typeScale.labelMedium
                         }
@@ -372,9 +401,9 @@ Item {
     // "ShaderEffect: 'source' does not have a matching property"
     MultiEffect {
         id: cardShadow
+
         anchors.fill: card
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
+        shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowOpacity: root.isCritical ? 0.25 : 0.16
         shadowBlur: 0.6

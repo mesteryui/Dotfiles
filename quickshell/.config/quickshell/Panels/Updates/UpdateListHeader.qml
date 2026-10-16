@@ -25,8 +25,14 @@ Item {
         gradient: Gradient {
             orientation: Gradient.Vertical
 
-            GradientStop { position: 0.0; color: "transparent" }
-            GradientStop { position: 1.0; color: Qt.tint(Appearance.md3.surface, Qt.alpha(Appearance.md3.primary, 0.08)) }
+            GradientStop {
+                position: 0.0
+                color: "transparent"
+            }
+            GradientStop {
+                position: 1.0
+                color: Qt.tint(Appearance.md3.surface, Qt.alpha(Appearance.md3.primary, 0.08))
+            }
         }
     }
 

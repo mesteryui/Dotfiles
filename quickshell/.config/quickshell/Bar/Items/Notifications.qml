@@ -38,7 +38,8 @@ BarItem {
     LazyLoader {
         id: popupLoader
 
-        loading: root.hoveredChanged || root.pressed
+        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy).
+        loading: root.hovered || root.pressed
         component: NotificationPopupWindow {
             anchorItem: root
         }
@@ -60,6 +61,7 @@ BarItem {
 
         // Debajo del icono, centrado; si la barra está abajo, encima.
         property bool barAtBottom: Services.ConfigService.configs.bar.position === "bottom"
+
         x: (parent.width - width) / 2
         y: barAtBottom ? -height - 8 : parent.height + 8
         text: {

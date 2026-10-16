@@ -28,9 +28,9 @@ BarPopupWindow {
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
     MultiEffect {
         id: panelShadow
+
         anchors.fill: bg
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
+        shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowBlur: 0.85
         shadowVerticalOffset: 6

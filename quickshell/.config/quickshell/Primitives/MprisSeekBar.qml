@@ -44,7 +44,8 @@ ColumnLayout {
         const s = totalSec % 60;
 
         if (h > 0) {
-            return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+            return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2,
+                                                                                                            "0");
         }
         return m + ":" + String(s).padStart(2, "0");
     }
@@ -58,7 +59,8 @@ ColumnLayout {
 
         readonly property real totalLength: root.length ?? 0
 
-        readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.position / totalLength)) : 0.0
+        readonly property real progressRatio: totalLength > 0 ? Math.min(1.0, Math.max(0.0, root.position
+                                                                                       / totalLength)) : 0.0
 
         // Ratio bajo el dedo mientras se arrastra (-1 si no).
         property real dragRatio: -1
@@ -68,10 +70,12 @@ ColumnLayout {
 
         // Geometría de la onda M3E (fill ondulado opt-in).
         readonly property real waveAmp: 2
+
         readonly property real waveLen: 16
         // Path SVG de la cinta: superior izq→der, inferior der→izq, cierre.
         // Solo depende del ancho/alto del track (redimensiones), no del
         // progreso: no se reconstruye por frame.
+
         function wavePath(): string {
             const w = trackBg.width;
             const h = trackBg.height;
@@ -97,7 +101,7 @@ ColumnLayout {
 
         SequentialAnimation on indetPhase {
             loops: Animation.Infinite
-            running: indetSeg.visible && !Appearance.motion.reduced
+            running: indetSeg.visible
 
             NumberAnimation {
                 from: 0
@@ -109,7 +113,8 @@ ColumnLayout {
 
         // Lo que se pinta: en arrastre sigue al dedo (como end-4),
         // si no al progreso real. Sin duración conocida no hay fill.
-        readonly property real displayRatio: totalLength > 0 ? (seekArea.pressed && dragRatio >= 0 ? dragRatio : progressRatio) : 0.0
+        readonly property real displayRatio: totalLength > 0 ? (seekArea.pressed && dragRatio >= 0
+                                                                ? dragRatio : progressRatio) : 0.0
 
         // Pista base (Capsule track).
         // Spec M3 progress-indicators: grosor 4dp, esquinas 50%,
@@ -138,7 +143,8 @@ ColumnLayout {
             // Con wavy fallido (path vacío) se muestra el plano.
             Rectangle {
                 visible: !root.wavy || trackContainer.wavePath() === ""
-                width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio >= 0.999 ? 0 : 4))
+                width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio
+                                                                                  >= 0.999 ? 0 : 4))
                 height: parent.height
                 radius: parent.radius
                 color: Appearance.md3.primary
@@ -162,7 +168,8 @@ ColumnLayout {
             // redimensiones) y el clip la limita al fill.
             Item {
                 visible: root.wavy && trackContainer.totalLength > 0
-                width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio >= 0.999 ? 0 : 4))
+                width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio
+                                                                                  >= 0.999 ? 0 : 4))
                 height: trackBg.height + 2 * trackContainer.waveAmp + 2
                 anchors.verticalCenter: parent.verticalCenter
                 clip: true
@@ -176,6 +183,7 @@ ColumnLayout {
                         fillColor: Appearance.md3.primary
                         strokeWidth: -1
                         strokeColor: "transparent"
+
                         PathSvg {
                             path: trackContainer.wavePath()
                         }
@@ -206,8 +214,7 @@ ColumnLayout {
                 height: parent.height
                 radius: parent.radius
                 color: Appearance.md3.primary
-                // Con movimiento reducido: segmento estático centrado.
-                x: Appearance.motion.reduced ? (trackBg.width - width) / 2 : (-width + trackContainer.indetPhase * (trackBg.width + width))
+                x: -width + trackContainer.indetPhase * (trackBg.width + width)
             }
         }
 
@@ -215,12 +222,14 @@ ColumnLayout {
         Rectangle {
             id: seekBubble
 
-            visible: root.showBubble && seekArea.pressed && trackContainer.dragRatio >= 0 && trackContainer.totalLength > 0
+            visible: root.showBubble && seekArea.pressed && trackContainer.dragRatio >= 0
+                     && trackContainer.totalLength > 0
             width: bubbleText.implicitWidth + 20
             height: 26
             radius: Appearance.shape.full
             color: Appearance.md3.primary_container
-            x: Math.max(0, Math.min(trackContainer.width - width, trackContainer.width * trackContainer.displayRatio - width / 2))
+            x: Math.max(0, Math.min(trackContainer.width - width, trackContainer.width
+                                    * trackContainer.displayRatio - width / 2))
             y: -30
 
             StyledText {
@@ -239,7 +248,8 @@ ColumnLayout {
         MaterialShape {
             id: seekThumb
 
-            x: Math.max(0, Math.min(trackContainer.width - width, trackContainer.width * trackContainer.displayRatio - width / 2))
+            x: Math.max(0, Math.min(trackContainer.width - width, trackContainer.width
+                                    * trackContainer.displayRatio - width / 2))
             anchors.verticalCenter: parent.verticalCenter
             width: seekArea.pressed ? 18 : 14
             height: width
@@ -257,7 +267,6 @@ ColumnLayout {
                 }
             }
             Behavior on scale {
-                enabled: !Appearance.motion.reduced
                 SpringAnimation {
                     spring: Appearance.motion.springSnappy.spring
                     damping: Appearance.motion.springSnappy.damping
@@ -273,7 +282,6 @@ ColumnLayout {
                 }
             }
             Behavior on width {
-                enabled: !Appearance.motion.reduced
                 SpringAnimation {
                     spring: Appearance.motion.springSnappy.spring
                     damping: Appearance.motion.springSnappy.damping
@@ -327,12 +335,14 @@ ColumnLayout {
         StyledText {
             // Durante el arrastre muestra la posición del dedo (igual que
             // la burbuja), si no la posición real de reproducción.
-            text: (seekArea.pressed && trackContainer.dragRatio >= 0 && trackContainer.totalLength > 0) ? root.formatTime(trackContainer.dragRatio * trackContainer.totalLength) : root.formatTime(root.position)
+            text: (seekArea.pressed && trackContainer.dragRatio >= 0 && trackContainer.totalLength > 0)
+                  ? root.formatTime(trackContainer.dragRatio * trackContainer.totalLength) : root.formatTime(
+                        root.position)
             font.pixelSize: Appearance.typeScale.labelSmall
             font.family: Appearance.font.mono
             font.features: ({
-                    "tnum": 1
-                })
+                                "tnum": 1
+                            })
             color: Appearance.md3.on_surface_variant
         }
 
@@ -343,12 +353,13 @@ ColumnLayout {
         StyledText {
             // Sin duración conocida: directo no buscable → "LIVE";
             // buscable aún sin total (cambio de pista) → "0:00".
-            text: trackContainer.totalLength > 0 ? root.formatTime(root.length) : (root.canSeek ? "0:00" : "LIVE")
+            text: trackContainer.totalLength > 0 ? root.formatTime(root.length) : (root.canSeek ? "0:00" :
+                                                                                                  "LIVE")
             font.pixelSize: Appearance.typeScale.labelSmall
             font.family: Appearance.font.mono
             font.features: ({
-                    "tnum": 1
-                })
+                                "tnum": 1
+                            })
             color: Appearance.md3.on_surface_variant
         }
     }

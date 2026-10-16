@@ -20,8 +20,16 @@ Item {
 
         Repeater {
             model: [
-                { icon: "power_settings_new", cmd: ["systemctl", "poweroff"], name: "Apagar" },
-                { icon: "restart_alt", cmd: ["systemctl", "reboot"], name: "Reiniciar" }
+                {
+                    icon: "power_settings_new",
+                    cmd: ["systemctl", "poweroff"],
+                    name: "Apagar"
+                },
+                {
+                    icon: "restart_alt",
+                    cmd: ["systemctl", "reboot"],
+                    name: "Reiniciar"
+                }
             ]
 
             delegate: Rectangle {
@@ -30,7 +38,8 @@ Item {
                 implicitWidth: 44
                 implicitHeight: 44
                 radius: Appearance.shape.full
-                color: powerMouse.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.5) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+                color: powerMouse.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.5) : Qt.alpha(
+                                                      Appearance.md3.surface_container_high, 0.72)
                 border.width: 1
                 border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
 
@@ -46,6 +55,7 @@ Item {
 
                 MouseArea {
                     id: powerMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -54,6 +64,7 @@ Item {
 
                 Process {
                     id: powerProc
+
                     function start(cmd) {
                         powerProc.command = cmd;
                         powerProc.running = true;

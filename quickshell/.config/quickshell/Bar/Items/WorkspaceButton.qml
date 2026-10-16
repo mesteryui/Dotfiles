@@ -25,7 +25,6 @@ Item {
 
     scale: mouseArea.pressed ? 0.85 : 1.0
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping

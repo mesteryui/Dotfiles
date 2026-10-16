@@ -4,32 +4,32 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 
 /**
- * HyprlandKeybinds
- * ------------------
- * Reads `hyprctl binds -j` and turns it into cheatsheet-ready data:
- *
- *   - keybinds          : raw array as returned by hyprctl
- *   - keybindCategories : ordered list of category names (derived from the
- *                          "Category: actual description" convention)
- *   - groupedKeybinds    : { categoryName: [ { mods, keyLabel, label, searchText }, ... ] }
- *
- * Only binds with `has_description: true` are surfaced — undocumented binds
- * (window rules, internal submap plumbing, etc.) are intentionally skipped,
- * matching hyprctl's own `has_description` flag rather than guessing from
- * an empty string.
- *
- * Categorization convention (defined on the Hyprland side):
- *   hl.bind(..., { description = "Ventanas: Cerrar ventana" })
- * Everything before the FIRST ":" is the category, the rest is the label.
- * No ":" → category "General" (always shown last).
- * Known categories are shown in `categoryOrder`; unknown ones keep
- * first-seen order in between; "General" always goes last.
- *
- * Re-parses automatically whenever Hyprland reloads its config.
- */
+* HyprlandKeybinds
+* ------------------
+* Reads `j/binds` from Hyprland's socket (via HyprlandIpc, no fork)
+* and turns it into cheatsheet-ready data:
+*
+*   - keybinds          : raw array as returned by Hyprland
+*   - keybindCategories : ordered list of category names (derived from the
+*                          "Category: actual description" convention)
+*   - groupedKeybinds    : { categoryName: [ { mods, keyLabel, label, searchText }, ... ] }
+*
+* Only binds with `has_description: true` are surfaced — undocumented binds
+* (window rules, internal submap plumbing, etc.) are intentionally skipped,
+* matching hyprctl's own `has_description` flag rather than guessing from
+* an empty string.
+*
+* Categorization convention (defined on the Hyprland side):
+*   hl.bind(..., { description = "Ventanas: Cerrar ventana" })
+* Everything before the FIRST ":" is the category, the rest is the label.
+* No ":" → category "General" (always shown last).
+* Known categories are shown in `categoryOrder`; unknown ones keep
+* first-seen order in between; "General" always goes last.
+*
+* Re-parses automatically whenever Hyprland reloads its config.
+*/
 
 Singleton {
     id: root
@@ -37,14 +37,15 @@ Singleton {
     property var keybinds: []
     property var keybindCategories: []
     property var groupedKeybinds: ({})
-    // true si la última lectura falló (hyprctl ausente o JSON roto).
+    // true si la última lectura falló (socket caído o JSON roto).
     // La cheatsheet lo distingue del "vacío real".
     property bool failed: false
 
     /// Preferred display order for known categories.
     /// Debe coincidir con los prefijos "Categoría: ..." de la config de Hyprland.
     /// "General" (sin prefijo) siempre va la última, la pongas donde la pongas.
-    readonly property var categoryOrder: ["Ventanas", "Scrolling", "Espacios", "Apps", "Sistema", "Multimedia", "Redimensionar", "Submapas"]
+    readonly property var categoryOrder: ["Ventanas", "Scrolling", "Espacios", "Apps", "Sistema", "Multimedia",
+        "Redimensionar", "Submapas"]
 
     // Hyprland's internal MODS bitmask (independent of X11's numbering).
     // Ordered so the decoded label list reads naturally: Super Ctrl Alt Shift.
@@ -84,39 +85,39 @@ Singleton {
     ]
 
     readonly property var specialKeyNames: ({
-            "RETURN": "Enter",
-            "KP_ENTER": "Enter",
-            "ESCAPE": "Esc",
-            "GRAVE": "`",
-            "MINUS": "-",
-            "EQUAL": "=",
-            "BACKSPACE": "⌫",
-            "TAB": "Tab",
-            "SPACE": "Space",
-            "LEFT": "←",
-            "RIGHT": "→",
-            "UP": "↑",
-            "DOWN": "↓",
-            "PRINT": "PrtSc",
-            "DELETE": "Del",
-            "PAGE_UP": "PgUp",
-            "PAGE_DOWN": "PgDn",
-            "HOME": "Home",
-            "END": "End",
-            "SUPER_L": "Super",
-            "SUPER_R": "Super",
-            "XF86AudioRaiseVolume": "Vol +",
-            "XF86AudioLowerVolume": "Vol -",
-            "XF86AudioMute": "Mute",
-            "XF86AudioMicMute": "Mic Mute",
-            "XF86AudioPlay": "Play",
-            "XF86AudioNext": "Next",
-            "XF86AudioPrev": "Prev",
-            "XF86MonBrightnessUp": "Bright +",
-            "XF86MonBrightnessDown": "Bright -",
-            "XF86KbdBrightnessUp": "Kbd +",
-            "XF86KbdBrightnessDown": "Kbd -"
-        })
+                                                "RETURN": "Enter",
+                                                "KP_ENTER": "Enter",
+                                                "ESCAPE": "Esc",
+                                                "GRAVE": "`",
+                                                "MINUS": "-",
+                                                "EQUAL": "=",
+                                                "BACKSPACE": "⌫",
+                                                "TAB": "Tab",
+                                                "SPACE": "Space",
+                                                "LEFT": "←",
+                                                "RIGHT": "→",
+                                                "UP": "↑",
+                                                "DOWN": "↓",
+                                                "PRINT": "PrtSc",
+                                                "DELETE": "Del",
+                                                "PAGE_UP": "PgUp",
+                                                "PAGE_DOWN": "PgDn",
+                                                "HOME": "Home",
+                                                "END": "End",
+                                                "SUPER_L": "Super",
+                                                "SUPER_R": "Super",
+                                                "XF86AudioRaiseVolume": "Vol +",
+                                                "XF86AudioLowerVolume": "Vol -",
+                                                "XF86AudioMute": "Mute",
+                                                "XF86AudioMicMute": "Mic Mute",
+                                                "XF86AudioPlay": "Play",
+                                                "XF86AudioNext": "Next",
+                                                "XF86AudioPrev": "Prev",
+                                                "XF86MonBrightnessUp": "Bright +",
+                                                "XF86MonBrightnessDown": "Bright -",
+                                                "XF86KbdBrightnessUp": "Kbd +",
+                                                "XF86KbdBrightnessDown": "Kbd -"
+                                            })
 
     function prettyModName(raw) {
         switch (raw) {
@@ -192,12 +193,13 @@ Singleton {
             let keyLabel = root.formatKeyLabel(b);
 
             cats[category].push({
-                mods: mods,
-                keyLabel: keyLabel,
-                label: label,
-                repeat: !!b.repeat,
-                searchText: (category + " " + label + " " + mods.join(" ") + " " + keyLabel).toLowerCase()
-            });
+                                    mods: mods,
+                                    keyLabel: keyLabel,
+                                    label: label,
+                                    repeat: !!b.repeat,
+                                    searchText: (category + " " + label + " " + mods.join(" ") + " "
+                                                 + keyLabel).toLowerCase()
+                                });
         }
 
         root.keybindCategories = order.slice().sort((a, b) => {
@@ -219,46 +221,49 @@ Singleton {
     }
 
     function refresh() {
-        getKeybinds.running = true;
+        root.failed = false;
+        // antes: `hyprctl binds -j` en un Process. Ahora son los mismos
+        // bytes (`j/binds`) escritos al socket por HyprlandIpc, sin fork.
+        // La respuesta JSON llega a onReplyReceived (puede venir en
+        // varios chunks: ~47KB; HyprlandIpc la acumula hasta el cierre).
+        HyprlandIpc.send("j/binds");
     }
+
+    Component.onCompleted: root.refresh()
 
     Connections {
         target: Hyprland
+        ignoreUnknownSignals: true
 
-        function onRawEvent(event: HyprlandEvent) {
+        function onRawEvent(event) {
             if (event.name === "configreloaded")
                 root.refresh();
         }
     }
 
-    Process {
-        id: getKeybinds
+    Connections {
+        target: HyprlandIpc
+        ignoreUnknownSignals: true
 
-        running: true
-        command: ["hyprctl", "binds", "-j"]
-
-        onRunningChanged: {
-            if (running)
-                root.failed = false;
-        }
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.keybinds = JSON.parse(text);
-                    root.rebuildGroups();
-                } catch (e) {
-                    console.error("[HyprlandKeybinds] Error parsing keybinds:", e);
-                    root.failed = true;
-                }
+        function onReplyReceived(command, reply) {
+            if (command !== "j/binds")
+                return;
+            try {
+                root.keybinds = JSON.parse(reply);
+                root.rebuildGroups();
+            } catch (e) {
+                console.error("[HyprlandKeybinds] Error parsing keybinds:", e);
+                root.failed = true;
             }
         }
-        // qmllint disable signal-handler-parameters
-        onExited: exitCode => {
-            // hyprctl ausente o error: sin datos NUNCA es "vacío real".
-            if (exitCode !== 0 && root.keybinds.length === 0)
+
+        function onRequestFailed(command, reason) {
+            if (command !== "j/binds")
+                return;
+            console.warn("[HyprlandKeybinds] j/binds falló:", reason);
+            // Hyprland ausente o error: sin datos NUNCA es "vacío real".
+            if (root.keybinds.length === 0)
                 root.failed = true;
         }
-        // qmllint enable signal-handler-parameters
     }
 }

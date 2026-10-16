@@ -70,14 +70,17 @@ Item {
                 implicitWidth: 72
                 implicitHeight: 72
                 radius: Appearance.shape.large
-                color: Services.AudioService.muted ? Appearance.md3.surface_container_highest : Appearance.md3.primary_container
+                color: Services.AudioService.muted ? Appearance.md3.surface_container_highest :
+                                                     Appearance.md3.primary_container
                 border.width: activeFocus ? 2 : 0
                 border.color: Appearance.md3.primary
                 activeFocusOnTab: true
 
                 Accessible.role: Accessible.Button
                 Accessible.name: Services.AudioService.muted ? "Activar sonido" : "Silenciar"
-                Accessible.description: Services.AudioService.muted ? "Silenciado" : Math.round(Services.AudioService.volume * 100) + "%"
+                Accessible.description: Services.AudioService.muted ? "Silenciado" : Math.round(
+                                                                          Services.AudioService.volume * 100)
+                                                                      + "%"
 
                 Keys.onReturnPressed: Services.AudioService.toggleMuted()
                 Keys.onEnterPressed: Services.AudioService.toggleMuted()
@@ -89,7 +92,8 @@ Item {
                     anchors.centerIn: parent
                     icon: Services.AudioService.materialIcon
                     size: 36
-                    color: Services.AudioService.muted ? Appearance.md3.on_surface_variant : Appearance.md3.on_primary_container
+                    color: Services.AudioService.muted ? Appearance.md3.on_surface_variant :
+                                                         Appearance.md3.on_primary_container
                 }
 
                 Rectangle {
@@ -109,6 +113,7 @@ Item {
 
                 MouseArea {
                     id: bigButtonMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -123,7 +128,8 @@ Item {
                 spacing: 2
 
                 StyledText {
-                    text: Services.AudioService.muted ? "Silenciado" : Math.round(Services.AudioService.volume * 100) + "%"
+                    text: Services.AudioService.muted ? "Silenciado" : Math.round(
+                                                            Services.AudioService.volume * 100) + "%"
                     font.pixelSize: Appearance.font.pixelSize.hugeass
                     font.bold: true
                     color: Appearance.md3.on_surface
@@ -143,6 +149,7 @@ Item {
         ControlSlider {
             id: volumeSlider
             Layout.fillWidth: true
+
             iconName: Services.AudioService.materialIcon
             value: Services.AudioService.volume
             accentColor: Appearance.md3.primary
@@ -173,6 +180,7 @@ Item {
 
             Repeater {
                 id: sinkRepeater
+
                 model: Services.AudioService.sinks
 
                 delegate: Rectangle {
@@ -194,7 +202,8 @@ Item {
                     Accessible.role: Accessible.RadioButton
                     Accessible.checked: sinkRow.selected
                     Accessible.name: Services.AudioService.deviceLabel(sinkRow.modelData)
-                    Accessible.description: sinkRow.selected ? "Salida seleccionada" : "Salida disponible. Enter para seleccionar."
+                    Accessible.description: sinkRow.selected ? "Salida seleccionada" :
+                                                               "Salida disponible. Enter para seleccionar."
 
                     Keys.onReturnPressed: Services.AudioService.setSink(sinkRow.modelData)
                     Keys.onEnterPressed: Services.AudioService.setSink(sinkRow.modelData)
@@ -215,7 +224,8 @@ Item {
                     M3StateLayer {
                         anchors.fill: parent
                         radius: parent.radius
-                        tint: sinkRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        tint: sinkRow.selected ? Appearance.md3.on_secondary_container :
+                                                 Appearance.md3.on_surface
                         hovered: sinkRow.activeFocus || sinkMouse.containsMouse
                     }
 
@@ -228,14 +238,16 @@ Item {
                         MaterialIcon {
                             icon: "speaker"
                             size: Appearance.font.pixelSize.large
-                            color: sinkRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                            color: sinkRow.selected ? Appearance.md3.on_secondary_container :
+                                                      Appearance.md3.on_surface_variant
                         }
 
                         StyledText {
                             Layout.fillWidth: true
                             text: Services.AudioService.deviceLabel(sinkRow.modelData)
                             elide: Text.ElideRight
-                            color: sinkRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                            color: sinkRow.selected ? Appearance.md3.on_secondary_container :
+                                                      Appearance.md3.on_surface
                         }
 
                         MaterialIcon {
@@ -248,6 +260,7 @@ Item {
 
                     MouseArea {
                         id: sinkMouse
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -278,6 +291,7 @@ Item {
         ControlSlider {
             id: micSlider
             Layout.fillWidth: true
+
             iconName: Services.AudioService.micMaterialIcon
             value: Services.AudioService.micVolume
             accentColor: Appearance.md3.primary
@@ -300,6 +314,7 @@ Item {
 
             Repeater {
                 id: sourceRepeater
+
                 model: Services.AudioService.sources
 
                 delegate: Rectangle {
@@ -321,7 +336,8 @@ Item {
                     Accessible.role: Accessible.RadioButton
                     Accessible.checked: sourceRow.selected
                     Accessible.name: Services.AudioService.deviceLabel(sourceRow.modelData)
-                    Accessible.description: sourceRow.selected ? "Micrófono seleccionado" : "Micrófono disponible. Enter para seleccionar."
+                    Accessible.description: sourceRow.selected ? "Micrófono seleccionado" :
+                                                                 "Micrófono disponible. Enter para seleccionar."
 
                     Keys.onReturnPressed: Services.AudioService.setSource(sourceRow.modelData)
                     Keys.onEnterPressed: Services.AudioService.setSource(sourceRow.modelData)
@@ -342,7 +358,8 @@ Item {
                     M3StateLayer {
                         anchors.fill: parent
                         radius: parent.radius
-                        tint: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        tint: sourceRow.selected ? Appearance.md3.on_secondary_container :
+                                                   Appearance.md3.on_surface
                         hovered: sourceRow.activeFocus || sourceMouse.containsMouse
                     }
 
@@ -355,14 +372,16 @@ Item {
                         MaterialIcon {
                             icon: "mic"
                             size: Appearance.font.pixelSize.large
-                            color: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                            color: sourceRow.selected ? Appearance.md3.on_secondary_container :
+                                                        Appearance.md3.on_surface_variant
                         }
 
                         StyledText {
                             Layout.fillWidth: true
                             text: Services.AudioService.deviceLabel(sourceRow.modelData)
                             elide: Text.ElideRight
-                            color: sourceRow.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                            color: sourceRow.selected ? Appearance.md3.on_secondary_container :
+                                                        Appearance.md3.on_surface
                         }
 
                         MaterialIcon {
@@ -375,6 +394,7 @@ Item {
 
                     MouseArea {
                         id: sourceMouse
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor

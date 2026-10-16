@@ -8,19 +8,19 @@ import M3Shapes
 Rectangle {
     id: root
 
-    property string label:     ""
+    property string label: ""
     property string stateText: ""
-    property string iconName:  ""
-    property bool   active:    false
-    property bool   enable:    true
+    property string iconName: ""
+    property bool active: false
+    property bool enable: true
     // Patrón focus-visible (ver ControlSlider): el anillo de foco solo se
     // muestra en modo teclado. Por defecto true para no cambiar usos existentes.
-    property bool   keyboardMode: true
+    property bool keyboardMode: true
 
-    signal toggled()
+    signal toggled
     signal mouseUsed
 
-    implicitWidth:  140
+    implicitWidth: 140
     implicitHeight: root.stateText !== "" ? 72 : 48
 
     activeFocusOnTab: true
@@ -31,24 +31,38 @@ Rectangle {
     Accessible.name: root.label
     Accessible.description: root.stateText
 
-    Keys.onReturnPressed: { if (root.enable) root.toggled(); }
-    Keys.onEnterPressed: { if (root.enable) root.toggled(); }
-    Keys.onSpacePressed: { if (root.enable) root.toggled(); }
+    Keys.onReturnPressed: {
+        if (root.enable)
+            root.toggled();
+    }
+    Keys.onEnterPressed: {
+        if (root.enable)
+            root.toggled();
+    }
+    Keys.onSpacePressed: {
+        if (root.enable)
+            root.toggled();
+    }
 
     radius: Appearance.shape.large
-    color: root.active
-        ? Appearance.md3.primary_container
-        : Appearance.md3.surface_container_high
+    color: root.active ? Appearance.md3.primary_container : Appearance.md3.surface_container_high
     opacity: root.enable ? 1.0 : Appearance.state.disabled
     border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
     border.color: Appearance.md3.primary
 
     scale: hoverArea.pressed ? 0.96 : (hoverArea.containsMouse ? 1.02 : 1.0)
 
-    Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
-    Behavior on opacity { OpacityAnimator { duration: Appearance.motion.short3 } }
+    Behavior on color {
+        ColorAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
+    Behavior on opacity {
+        OpacityAnimator {
+            duration: Appearance.motion.short3
+        }
+    }
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping
@@ -62,9 +76,15 @@ Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
-        opacity: hoverArea.pressed ? Appearance.state.pressed : (hoverArea.containsMouse || (root.activeFocus && root.keyboardMode) ? Appearance.state.hovered : 0.0)
+        opacity: hoverArea.pressed ? Appearance.state.pressed : (hoverArea.containsMouse || (root.activeFocus
+                                                                                             && root.keyboardMode)
+                                                                 ? Appearance.state.hovered : 0.0)
 
-        Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Appearance.motion.short2
+            }
+        }
     }
 
     RowLayout {
@@ -82,7 +102,11 @@ Rectangle {
             color: root.active ? Appearance.md3.primary : Appearance.md3.surface_container_highest
             animationDuration: Appearance.motion.short3
 
-            Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.motion.short3
+                }
+            }
 
             MaterialIcon {
                 anchors.centerIn: parent
@@ -90,7 +114,11 @@ Rectangle {
                 size: root.stateText !== "" ? Appearance.font.pixelSize.large : Appearance.typeScale.bodyLarge
                 color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
 
-                Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Appearance.motion.short3
+                    }
+                }
             }
         }
 
@@ -108,7 +136,11 @@ Rectangle {
                 color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface
                 elide: Text.ElideRight
 
-                Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Appearance.motion.short3
+                    }
+                }
             }
 
             StyledText {
@@ -121,7 +153,11 @@ Rectangle {
                 color: root.active ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                 elide: Text.ElideRight
 
-                Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Appearance.motion.short3
+                    }
+                }
             }
         }
     }
@@ -141,4 +177,3 @@ Rectangle {
         onClicked: root.toggled()
     }
 }
-

@@ -3,7 +3,6 @@ import qs.Core.Services
 import qs.Primitives
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import QtQuick.Layouts
 import M3Shapes
 
@@ -47,7 +46,9 @@ Item {
     // (Cookie4Sided↔Puffy), igual que el estado vacío de notificaciones.
     property int breathShape: MaterialShape.Cookie4Sided
     // Flash de éxito al validar la huella (Heart breve antes de desbloquear).
+
     property bool wasScanning: false
+
     property bool successFlash: false
 
     onIsFingerprintActiveChanged: {
@@ -65,15 +66,17 @@ Item {
 
     Timer {
         id: flashTimer
+
         interval: 600
         onTriggered: root.successFlash = false
     }
 
     Timer {
         interval: 900
-        running: root.isPrimary && root.isFingerprintActive && !root.authFailed && !Appearance.motion.reduced
+        running: root.isPrimary && root.isFingerprintActive && !root.authFailed
         repeat: true
-        onTriggered: root.breathShape = root.breathShape === MaterialShape.Cookie4Sided ? MaterialShape.Puffy : MaterialShape.Cookie4Sided
+        onTriggered: root.breathShape = root.breathShape === MaterialShape.Cookie4Sided ? MaterialShape.Puffy :
+                                                                                          MaterialShape.Cookie4Sided
     }
 
     function triggerShake() {
@@ -143,8 +146,11 @@ Item {
 
         anchors.fill: parent
         radius: Appearance.shape.full
-        color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.55) : Qt.alpha(Appearance.md3.surface_container_high, 0.78)
-        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline_variant, 0.55))
+        color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.55) : Qt.alpha(
+                                     Appearance.md3.surface_container_high, 0.78)
+        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary :
+                                                                                       Qt.alpha(Appearance.md3.outline_variant,
+                                                                                                0.55))
         border.width: password.activeFocus || root.authFailed ? 2 : 1
 
         Behavior on color {
@@ -172,9 +178,15 @@ Item {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
-                shape: root.successFlash ? MaterialShape.Heart : root.authFailed ? MaterialShape.Boom : (root.isPrimary && root.isFingerprintActive) ? root.breathShape : MaterialShape.Circle
+                shape: root.successFlash ? MaterialShape.Heart : root.authFailed ? MaterialShape.Boom : (
+                                                                                       root.isPrimary
+                                                                                       && root.isFingerprintActive)
+                                                                                   ? root.breathShape :
+                                                                                     MaterialShape.Circle
                 animationDuration: Appearance.motion.medium3
-                color: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.16) : Qt.alpha(Appearance.md3.primary, root.isFingerprintActive || password.activeFocus ? 0.18 : 0.10)
+                color: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.16) : Qt.alpha(
+                                             Appearance.md3.primary, root.isFingerprintActive
+                                             || password.activeFocus ? 0.18 : 0.10)
 
                 Behavior on color {
                     ColorAnimation {
@@ -186,9 +198,15 @@ Item {
                     id: statusIcon
 
                     anchors.centerIn: parent
-                    icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (root.isFingerprintActive ? "fingerprint" : "lock_open"))
+                    icon: root.authFailed ? "lock" : (root.isAuthenticating ? "lock_clock" : (
+                                                                                  root.isFingerprintActive
+                                                                                  ? "fingerprint" :
+                                                                                    "lock_open"))
                     size: 24
-                    color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive || password.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant)
+                    color: root.authFailed ? Appearance.md3.error : (root.isFingerprintActive
+                                                                     || password.activeFocus
+                                                                     ? Appearance.md3.primary :
+                                                                       Appearance.md3.on_surface_variant)
 
                     Behavior on color {
                         ColorAnimation {
@@ -207,8 +225,10 @@ Item {
                 // Un solo mensaje aquí: el prompt PAM o "Contraseña...".
                 // El error va en la pastilla de estado y la huella en su
                 // propia pastilla, para no duplicar textos.
-                placeholderText: root.promptText.length > 0 ? root.promptText : I18nService.getTranslation("lockscreen.password", "Contraseña...")
-                placeholderTextColor: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.8) : Qt.alpha(Appearance.md3.on_surface_variant, 0.8)
+                placeholderText: root.promptText.length > 0 ? root.promptText : I18nService.getTranslation(
+                                                                  "lockscreen.password", "Contraseña...")
+                placeholderTextColor: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.8) : Qt.alpha(
+                                                            Appearance.md3.on_surface_variant, 0.8)
                 color: Appearance.md3.on_surface
                 background: null
                 verticalAlignment: TextInput.AlignVCenter
@@ -281,6 +301,7 @@ Item {
 
                 MouseArea {
                     id: passwordMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: root.togglePasswordVisibility()
@@ -288,20 +309,5 @@ Item {
                 }
             }
         }
-    }
-
-    // Elevación MD3: source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property"
-    MultiEffect {
-        id: passwordShadow
-        anchors.fill: passwordBg
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: 0.18
-        shadowBlur: 0.8
-        shadowVerticalOffset: 2
-        shadowHorizontalOffset: 0
-        Component.onCompleted: passwordShadow.source = passwordBg
     }
 }

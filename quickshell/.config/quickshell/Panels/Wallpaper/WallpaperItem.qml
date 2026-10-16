@@ -27,7 +27,6 @@ Item {
     z: isSelected ? 10 : (100 - Math.abs(ListView.view.currentIndex - index))
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSoft.spring
             damping: Appearance.motion.springSoft.damping
@@ -48,7 +47,8 @@ Item {
 
         anchors.fill: parent
         radius: delegateRoot.surfaceRadius
-        color: delegateRoot.isSelected ? Appearance.md3.surface_container_highest : Appearance.md3.surface_container_low
+        color: delegateRoot.isSelected ? Appearance.md3.surface_container_highest :
+                                         Appearance.md3.surface_container_low
     }
 
     // ── Contenido de la Tarjeta ─────────────────────────────────────────────
@@ -58,6 +58,10 @@ Item {
         hovered: mouse.containsMouse
         radius: delegateRoot.surfaceRadius
         filePath: delegateRoot.filePath
+        // Ventana de cercanía para pedir frames de vídeo solo cerca del
+        // viewport (ver WallpaperItemContent.isNear).
+        delegateIndex: delegateRoot.index
+        listCurrentIndex: ListView.view ? ListView.view.currentIndex : -1
     }
 
     // ── Captura de Interacción ──────────────────────────────────────────────

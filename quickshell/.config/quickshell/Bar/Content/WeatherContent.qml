@@ -5,12 +5,16 @@ import QtQuick
 
 Item {
     implicitWidth: contentRow.width + 2
+
     Row {
         id: contentRow
+
         spacing: 6
         anchors.centerIn: parent
+
         MaterialIcon {
             id: weatherIcon
+
             anchors.verticalCenter: parent.verticalCenter
             size: Appearance.font.pixelSize.larger
             color: Appearance.md3.on_surface
@@ -19,8 +23,8 @@ Item {
         }
 
         /*StyledText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: WeatherService.temperature
+        anchors.verticalCenter: parent.verticalCenter
+        text: WeatherService.temperature
         }*/
     }
 }

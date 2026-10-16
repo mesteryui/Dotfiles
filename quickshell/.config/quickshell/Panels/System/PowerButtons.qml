@@ -114,7 +114,6 @@ Scope {
                 opacity: root.show ? 1 : 0
 
                 Behavior on scale {
-                    enabled: !Appearance.motion.reduced
                     SpringAnimation {
                         spring: Appearance.motion.springSoft.spring
                         damping: Appearance.motion.springSoft.damping
@@ -201,7 +200,9 @@ Scope {
                         buttonText: Services.I18nService.getTranslation("power.logout")
                         buttonIcon: "logout"
                         buttonShape: MaterialShape.Arrow
-                        command: "hyprctl dispatch 'hl.dsp.exit()'"
+                        // Mismos bytes que `hyprctl dispatch 'hl.dsp.exit()'`,
+                        // por el socket y sin fork (ver GenericButton).
+                        hyprlandIpcCommand: "dispatch hl.dsp.exit()"
                         KeyNavigation.left: lockBtn
                         KeyNavigation.right: shutdownBtn
                         Layout.alignment: Qt.AlignCenter

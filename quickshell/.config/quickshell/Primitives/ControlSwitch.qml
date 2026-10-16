@@ -15,7 +15,7 @@ Item {
     property bool enable: true
     property bool showIcon: true
 
-    signal toggled()
+    signal toggled
 
     implicitWidth: 52
     implicitHeight: 32
@@ -25,13 +25,26 @@ Item {
     Accessible.checked: root.checked
     Accessible.name: "switch"
 
-    Keys.onSpacePressed: { if (root.interactive && root.enable) root.toggled(); }
-    Keys.onReturnPressed: { if (root.interactive && root.enable) root.toggled(); }
-    Keys.onEnterPressed: { if (root.interactive && root.enable) root.toggled(); }
+    Keys.onSpacePressed: {
+        if (root.interactive && root.enable)
+            root.toggled();
+    }
+    Keys.onReturnPressed: {
+        if (root.interactive && root.enable)
+            root.toggled();
+    }
+    Keys.onEnterPressed: {
+        if (root.interactive && root.enable)
+            root.toggled();
+    }
 
     opacity: root.enable ? 1.0 : Appearance.state.disabled
 
-    Behavior on opacity { NumberAnimation { duration: Appearance.motion.short3 } }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
 
     // Track
     Rectangle {
@@ -43,8 +56,16 @@ Item {
         border.width: root.checked ? 0 : 2
         border.color: Appearance.md3.outline
 
-        Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
-        Behavior on border.width { NumberAnimation { duration: Appearance.motion.short3 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.motion.short3
+            }
+        }
+        Behavior on border.width {
+            NumberAnimation {
+                duration: Appearance.motion.short3
+            }
+        }
     }
 
     // Anillo de foco visible (solo interactivo + teclado).
@@ -72,7 +93,6 @@ Item {
         y: (32 - height) / 2
 
         Behavior on x {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping
@@ -81,7 +101,6 @@ Item {
             }
         }
         Behavior on width {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping
@@ -90,7 +109,6 @@ Item {
             }
         }
         Behavior on height {
-            enabled: !Appearance.motion.reduced
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping
@@ -98,7 +116,11 @@ Item {
                 epsilon: 0.25
             }
         }
-        Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.motion.short3
+            }
+        }
 
         MaterialIcon {
             anchors.centerIn: parent
@@ -115,11 +137,18 @@ Item {
         height: 40
         radius: width / 2
         color: root.checked ? Appearance.md3.primary : Appearance.md3.on_surface
-        opacity: root.interactive && root.enable ? (switchMouse.pressed ? Appearance.state.pressed : (switchMouse.containsMouse ? Appearance.state.hovered : 0.0)) : 0.0
+        opacity: root.interactive && root.enable ? (switchMouse.pressed ? Appearance.state.pressed : (
+                                                                              switchMouse.containsMouse
+                                                                              ? Appearance.state.hovered :
+                                                                                0.0)) : 0.0
         x: thumb.x + thumb.width / 2 - width / 2
         y: thumb.y + thumb.height / 2 - height / 2
 
-        Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Appearance.motion.short2
+            }
+        }
     }
 
     MouseArea {

@@ -5,10 +5,10 @@
 // (Extraído de AppLauncher.qml para partir sus ~1400 líneas.)
 pragma ComponentBehavior: Bound
 
+import "FileMenu.js" as FileMenu
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "FileMenu.js" as FileMenu
 
 QtObject {
     id: root
@@ -101,7 +101,11 @@ QtObject {
                 // nombre (si no, split("/").pop() daría "").
                 const clean = isDir ? line.slice(0, -1) : line;
                 const name = clean.split("/").pop();
-                root.buffer.append({ path: line, name: name, isDir: isDir });
+                root.buffer.append({
+                                       path: line,
+                                       name: name,
+                                       isDir: isDir
+                                   });
             }
         }
         onRunningChanged: {
@@ -129,7 +133,11 @@ QtObject {
             const out = [];
             for (let i = 0; i < root.buffer.count; i++) {
                 const e = root.buffer.get(i);
-                out.push({ path: e.path, name: e.name, isDir: e.isDir });
+                out.push({
+                             path: e.path,
+                             name: e.name,
+                             isDir: e.isDir
+                         });
             }
             // Ordenado y estable (ver FileMenu.sortSnapshot).
             FileMenu.sortSnapshot(out);

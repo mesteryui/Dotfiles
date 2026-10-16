@@ -14,10 +14,10 @@
 
 pragma Singleton
 
+import "Base/ShellUtils.js" as ShellUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "Base/ShellUtils.js" as ShellUtils
 
 Singleton {
     id: root
@@ -111,37 +111,48 @@ Singleton {
     // Escape común (ver Base/ShellUtils.js, única implementación en Launcher).
 
     function trimSnippet() {
-        return "; d='" + root.cacheDir + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -t \"$d\" | tail -n +61 | (cd \"$d\" && xargs -r rm -f); fi";
+        return "; d='" + root.cacheDir
+                + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -t \"$d\" | tail -n +61 | (cd \"$d\" && xargs -r rm -f); fi";
     }
 
     function extractShell(path, kind) {
         const p = ShellUtils.shellEscape(path);
-        const key = "$(echo -n '" + p + "|'$(stat -c '%Y %s' '" + p + "' 2>/dev/null) | sha256sum | cut -c1-16)";
+        const key = "$(echo -n '" + p + "|'$(stat -c '%Y %s' '" + p
+              + "' 2>/dev/null) | sha256sum | cut -c1-16)";
         const base = root.cacheDir + "/" + key;
         // pdftoppm añade la extensión él mismo (-singlefile): el OUT final
         // es .png; audio/video generan el .jpg.
         const out = kind === "pdf" ? base + ".png" : base + ".jpg";
         let extract = "";
         if (kind === "audio")
-            extract = "ffmpeg -y -v error -i '" + p + "' -an -vf scale=512:-1 -vcodec mjpeg \"" + out + "\" 2>/dev/null";
+            extract = "ffmpeg -y -v error -i '" + p + "' -an -vf scale=512:-1 -vcodec mjpeg \"" + out
+                    + "\" 2>/dev/null";
         else if (kind === "pdf")
             extract = "pdftoppm -png -f 1 -l 1 -singlefile -r 72 '" + p + "' \"" + base + "\" 2>/dev/null";
         else
             extract = "ffmpegthumbnailer -i '" + p + "' -o \"" + out + "\" -s 384 2>/dev/null";
-        return "mkdir -p '" + root.cacheDir + "' && OUT=" + out + " && ([ -s \"$OUT\" ] || " + extract + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
+        return "mkdir -p '" + root.cacheDir + "' && OUT=" + out + " && ([ -s \"$OUT\" ] || " + extract
+                + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
     }
 
     property string textReqPath: ""
+
     property string textAcc: ""
+
     property bool textRestart: false
 
     // Último resultado de metadatos (para servir de caché inmediata si se
     // vuelve al mismo tema sin salir del modo).
     property string metaDonePath: ""
+
     property var metaDone: null
+
     property string metaReqPath: ""
+
     property string metaAcc: ""
+
     property bool metaRestart: false
+
     property string pendingMetaPath: ""
 
     // Metadatos del tema (tags + duración). Emite metaReady siempre (con
@@ -150,7 +161,8 @@ Singleton {
         if (!path)
             return;
         if (path === root.metaDonePath && root.metaDone) {
-            root.metaReady(path, root.metaDone.title, root.metaDone.artist, root.metaDone.album, root.metaDone.duration);
+            root.metaReady(path, root.metaDone.title, root.metaDone.artist, root.metaDone.album,
+                           root.metaDone.duration);
             return;
         }
         // Igual que el texto: superseder matando (el onExited del muerto
@@ -169,7 +181,8 @@ Singleton {
         root.metaAcc = "";
         root.pendingMetaPath = "";
         root.metaRestart = false;
-        metaProc.command = ["sh", "-c", "ffprobe -v error -print_format json -show_format '" + ShellUtils.shellEscape(path) + "' 2>/dev/null"];
+        metaProc.command = ["sh", "-c", "ffprobe -v error -print_format json -show_format '"
+                            + ShellUtils.shellEscape(path) + "' 2>/dev/null"];
         metaProc.running = true;
         root.metaWatchdog.restart();
     }
@@ -177,7 +190,12 @@ Singleton {
     // Las claves de tags varían en mayúsculas según el contenedor
     // (TITLE/title/TIT2...): se normaliza a minúsculas.
     function parseMeta(jsonText) {
-        const info = { title: "", artist: "", album: "", duration: "" };
+        const info = {
+            title: "",
+            artist: "",
+            album: "",
+            duration: ""
+        };
         try {
             const json = JSON.parse(jsonText);
             const tags = (json && json.format && json.format.tags) || {};
@@ -189,8 +207,7 @@ Singleton {
             info.album = norm["album"] || "";
             const d = parseFloat(json && json.format && json.format.duration);
             info.duration = isNaN(d) ? "" : String(Math.round(d));
-        } catch (e) {
-        }
+        } catch (e) {}
         return info;
     }
 
@@ -208,7 +225,8 @@ Singleton {
             return;
         }
         textRestart = false;
-        textProc.command = ["sh", "-c", "f='" + p + "'; sz=$(stat -c %s \"$f\" 2>/dev/null || echo 0); if [ \"$sz\" -gt 204800 ]; then echo 'QSTEXT_TOO_BIG'; else head -c 6000 \"$f\" 2>/dev/null; fi"];
+        textProc.command = ["sh", "-c", "f='" + p
+                            + "'; sz=$(stat -c %s \"$f\" 2>/dev/null || echo 0); if [ \"$sz\" -gt 204800 ]; then echo 'QSTEXT_TOO_BIG'; else head -c 6000 \"$f\" 2>/dev/null; fi"];
         textProc.running = true;
         root.textWatchdog.restart();
     }
@@ -293,7 +311,12 @@ Singleton {
                 root.metaReady(donePath, info.title, info.artist, info.album, info.duration);
             } else {
                 root.metaDonePath = donePath;
-                root.metaDone = { title: "", artist: "", album: "", duration: "" };
+                root.metaDone = {
+                    title: "",
+                    artist: "",
+                    album: "",
+                    duration: ""
+                };
                 root.metaReady(donePath, "", "", "", "");
             }
         }

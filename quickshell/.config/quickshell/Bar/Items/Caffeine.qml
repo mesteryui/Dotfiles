@@ -9,7 +9,8 @@ BarItem {
     id: root
 
     clickable: true
-    backgroundColor: Services.IdleInhibitedService.inhibited ? Appearance.md3.primary_container : Appearance.md3.surface_container_high
+    backgroundColor: Services.IdleInhibitedService.inhibited ? Appearance.md3.primary_container :
+                                                               Appearance.md3.surface_container_high
 
     onClicked: Services.IdleInhibitedService.toggle()
 
@@ -22,9 +23,11 @@ BarItem {
 
         // Debajo del icono, centrado; si la barra está abajo, encima.
         readonly property bool barAtBottom: Services.ConfigService.configs.bar.position === "bottom"
+
         x: (parent.width - width) / 2
         y: barAtBottom ? -height - 8 : parent.height + 8
-        text: Services.IdleInhibitedService.inhibited ? "Cafeína activada (suspensión inhibida)" : "Cafeína desactivada"
+        text: Services.IdleInhibitedService.inhibited ? "Cafeína activada (suspensión inhibida)" :
+                                                        "Cafeína desactivada"
         visible: root.hovered
         delay: 500
         timeout: 5000

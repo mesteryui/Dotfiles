@@ -33,154 +33,164 @@ ColumnLayout {
             boundsBehavior: Flickable.StopAtBounds
             interactive: contentWidth > width
 
-        // Rueda vertical -> desplazamiento horizontal.
-        WheelHandler {
-            orientation: Qt.Vertical
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-            onWheel: event => {
-                const d = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y;
-                const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
-                modeScroller.contentX = Math.min(maxX, Math.max(0, modeScroller.contentX - d));
+            // Rueda vertical -> desplazamiento horizontal.
+            WheelHandler {
+                orientation: Qt.Vertical
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                onWheel: event => {
+                    const d = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y;
+                    const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
+                    modeScroller.contentX = Math.min(maxX, Math.max(0, modeScroller.contentX - d));
+                }
             }
-        }
 
-        Row {
-            id: modeRow
+            Row {
+                id: modeRow
 
-            spacing: 6
-            height: 32
+                spacing: 6
+                height: 32
 
-            Repeater {
-                id: modeRepeater
+                Repeater {
+                    id: modeRepeater
 
-                model: controller.modes
-                delegate: Rectangle {
-                    id: chipRect
+                    model: controller.modes
+                    delegate: Rectangle {
+                        id: chipRect
 
-                    required property var modelData
-                    required property int index
+                        required property var modelData
+                        required property int index
 
-                    property bool isActive: controller.activeMode === modelData.modeId
+                        property bool isActive: controller.activeMode === modelData.modeId
 
-                    // Ancho según contenido: sin aplastamiento.
-                    width: Math.max(64, chipRow.implicitWidth + 26)
-                    height: 30
-                    // Spec M3 assist-chip: contenedor small (8dp).
-                    radius: Appearance.shape.small
-                    color: isActive ? Appearance.md3.secondary_container : "transparent"
-                    border.width: isActive ? 0 : 1
-                    border.color: Appearance.md3.outline_variant
+                        // Ancho según contenido: sin aplastamiento.
+                        width: Math.max(64, chipRow.implicitWidth + 26)
+                        height: 30
+                        // Spec M3 assist-chip: contenedor small (8dp).
+                        radius: Appearance.shape.small
+                        color: isActive ? Appearance.md3.secondary_container : "transparent"
+                        border.width: isActive ? 0 : 1
+                        border.color: Appearance.md3.outline_variant
 
-                    Row {
-                        id: chipRow
+                        Row {
+                            id: chipRow
 
-                        anchors.centerIn: parent
-                        spacing: 6
+                            anchors.centerIn: parent
+                            spacing: 6
 
-                        // Check de filter-chip M3: solo en el modo activo.
-                        MaterialIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            icon: "check"
-                            size: 16
-                            color: Appearance.md3.on_secondary_container
-                            visible: chipRect.isActive
+                            // Check de filter-chip M3: solo en el modo activo.
+                            MaterialIcon {
+                                anchors.verticalCenter: parent.verticalCenter
+                                icon: "check"
+                                size: 16
+                                color: Appearance.md3.on_secondary_container
+                                visible: chipRect.isActive
+                            }
+
+                            // Badge expresivo con la forma-identidad del modo.
+                            Item {
+                                anchors.verticalCenter: parent.verticalCenter
+                                implicitWidth: 22
+                                implicitHeight: 22
+
+                                MaterialShape {
+                                    anchors.fill: parent
+                                    shape: controller.modeShape(modelData.modeId)
+                                    animationDuration: Appearance.motion.medium2
+                                    color: chipRect.isActive ? Appearance.md3.primary :
+                                                               Appearance.md3.surface_container_highest
+
+                                    MaterialIcon {
+                                        anchors.centerIn: parent
+                                        icon: controller.modeIcon(modelData.modeId)
+                                        size: 12
+                                        color: chipRect.isActive ? Appearance.md3.on_primary :
+                                                                   Appearance.md3.on_surface_variant
+                                    }
+                                }
+                            }
+
+                            StyledText {
+                                id: chipText
+
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Math.min(implicitWidth, parent.parent.width - 50)
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                                // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
+                                text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " :
+                                                                       "") + controller.modeLabel(
+                                          modelData.modeId)
+                                font.pixelSize: Appearance.typeScale.labelMedium
+                                color: chipRect.isActive ? Appearance.md3.on_secondary_container :
+                                                           Appearance.md3.on_surface_variant
+                            }
                         }
 
-                        // Badge expresivo con la forma-identidad del modo.
-                        Item {
-                            anchors.verticalCenter: parent.verticalCenter
-                            implicitWidth: 22
-                            implicitHeight: 22
-
-                            MaterialShape {
-                                anchors.fill: parent
-                                shape: controller.modeShape(modelData.modeId)
-                                animationDuration: Appearance.motion.medium2
-                                color: chipRect.isActive ? Appearance.md3.primary : Appearance.md3.surface_container_highest
-
-                                MaterialIcon {
-                                    anchors.centerIn: parent
-                                    icon: controller.modeIcon(modelData.modeId)
-                                    size: 12
-                                    color: chipRect.isActive ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (modelData.modeId === "todo") {
+                                    pickTodo();
+                                } else if (modelData.modeId === "system") {
+                                    pickSystem();
+                                } else {
+                                    pickMode(modelData.selectorChar);
                                 }
                             }
                         }
-
-                        StyledText {
-                            id: chipText
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: Math.min(implicitWidth, parent.parent.width - 50)
-                            horizontalAlignment: Text.AlignHCenter
-                            elide: Text.ElideRight
-                            // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
-                            text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " : "") + controller.modeLabel(modelData.modeId)
-                            font.pixelSize: Appearance.typeScale.labelMedium
-                            color: chipRect.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
-                        }
                     }
+                }
+            }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (modelData.modeId === "todo") {
-                                pickTodo();
-                            } else if (modelData.modeId === "system") {
-                                pickSystem();
-                            } else {
-                                pickMode(modelData.selectorChar);
+            // Mantiene visible el chip activo al cambiar de modo.
+            Connections {
+                target: launcher
+
+                function onActiveModeChanged() {
+                    Qt.callLater(() => {
+                        let x = 0;
+                        for (let i = 0; i < modeRepeater.count; i++) {
+                            const item = modeRepeater.itemAt(i);
+                            if (controller.modes[i].modeId === controller.activeMode) {
+                                const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
+                                if (x < modeScroller.contentX)
+                                    modeScroller.contentX = x;
+                                else if (x + (item ? item.width : 0) > modeScroller.contentX
+                                         + modeScroller.width)
+                                    modeScroller.contentX = Math.min(maxX, Math.max(0, x + (item ? item.width :
+                                                                                                   0) - modeScroller.width));
+                                break;
                             }
+                            x += (item ? item.width : 0) + modeRow.spacing;
                         }
+                    });
+                }
+            }
+
+            // Fade trailing: pista de scroll horizontal (spec tabs
+            // scrollables). Solo con desborde pendiente a la derecha.
+            Rectangle {
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: 32
+                visible: modeScroller.contentWidth > modeScroller.width + 1 && modeScroller.contentX < (
+                             modeScroller.contentWidth - modeScroller.width - 1)
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+
+                    GradientStop {
+                        position: 0.0
+                        color: "transparent"
+                    }
+                    GradientStop {
+                        position: 1.0
+                        color: Appearance.md3.surface
                     }
                 }
             }
         }
-
-        // Mantiene visible el chip activo al cambiar de modo.
-        Connections {
-            target: launcher
-            function onActiveModeChanged() {
-                Qt.callLater(() => {
-                    let x = 0;
-                    for (let i = 0; i < modeRepeater.count; i++) {
-                        const item = modeRepeater.itemAt(i);
-                        if (controller.modes[i].modeId === controller.activeMode) {
-                            const maxX = Math.max(0, modeScroller.contentWidth - modeScroller.width);
-                            if (x < modeScroller.contentX)
-                                modeScroller.contentX = x;
-                            else if (x + (item ? item.width : 0) > modeScroller.contentX + modeScroller.width)
-                                modeScroller.contentX = Math.min(maxX, Math.max(0, x + (item ? item.width : 0) - modeScroller.width));
-                            break;
-                        }
-                        x += (item ? item.width : 0) + modeRow.spacing;
-                    }
-                });
-            }
-        }
-
-        // Fade trailing: pista de scroll horizontal (spec tabs
-        // scrollables). Solo con desborde pendiente a la derecha.
-        Rectangle {
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: 32
-            visible: modeScroller.contentWidth > modeScroller.width + 1 && modeScroller.contentX < (modeScroller.contentWidth - modeScroller.width - 1)
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                GradientStop {
-                    position: 0.0
-                    color: "transparent"
-                }
-                GradientStop {
-                    position: 1.0
-                    color: Appearance.md3.surface
-                }
-            }
-        }
-    }
     }
 
     Flow {
@@ -212,7 +222,8 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: modelData.icon || "circle"
                         size: 14
-                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container :
+                                                        Appearance.md3.on_surface_variant
                     }
                     StyledText {
                         id: groupChipText
@@ -221,7 +232,8 @@ ColumnLayout {
                         // Sin conteo: chips compactos de una fila.
                         text: modelData.label
                         font.pixelSize: Appearance.typeScale.labelMedium
-                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                        color: parent.parent.isActive ? Appearance.md3.on_secondary_container :
+                                                        Appearance.md3.on_surface_variant
                     }
                 }
 
@@ -261,7 +273,8 @@ ColumnLayout {
                     anchors.centerIn: parent
                     text: (index > 0 ? "› " : "") + modelData.title
                     font.pixelSize: Appearance.typeScale.labelMedium
-                    color: parent.isLast ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                    color: parent.isLast ? Appearance.md3.on_primary_container :
+                                           Appearance.md3.on_surface_variant
                 }
 
                 MouseArea {

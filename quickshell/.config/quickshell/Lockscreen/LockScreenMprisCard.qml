@@ -2,7 +2,6 @@ import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell.Widgets
 
@@ -17,12 +16,16 @@ Item {
     opacity: visible ? 1 : 0
 
     property real mprisPosition: 0
-    readonly property real trackLength: (MprisService.activePlayer && MprisService.activePlayer.length) ? MprisService.activePlayer.length : 0
+
+    readonly property real trackLength: (MprisService.activePlayer && MprisService.activePlayer.length)
+                                        ? MprisService.activePlayer.length : 0
 
     // Posición optimista post-seek (igual que Panels/MediaPlayer/MprisSubwindow):
     // el player aplica el seek de forma asíncrona; mientras tanto manda lo pedido.
     property real seekTarget: -1
+
     property double seekTargetUntil: 0
+
     readonly property real effectivePosition: root.seekTarget >= 0 ? root.seekTarget : root.mprisPosition
 
     Timer {
@@ -33,7 +36,8 @@ Item {
     }
 
     onMprisPositionChanged: {
-        if (root.seekTarget >= 0 && (root.mprisPosition >= root.seekTarget - 1.0 || Date.now() >= root.seekTargetUntil))
+        if (root.seekTarget >= 0 && (root.mprisPosition >= root.seekTarget - 1.0 || Date.now()
+                                     >= root.seekTargetUntil))
             root.seekTarget = -1;
     }
 
@@ -96,7 +100,8 @@ Item {
                     id: mprisArt
 
                     anchors.fill: parent
-                    source: (MprisService.activeTrack && MprisService.activeTrack.artUrl) ? MprisService.activeTrack.artUrl : ""
+                    source: (MprisService.activeTrack && MprisService.activeTrack.artUrl)
+                            ? MprisService.activeTrack.artUrl : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     cache: true
@@ -123,7 +128,8 @@ Item {
 
                 StyledText {
                     Layout.fillWidth: true
-                    text: (MprisService.activeTrack && MprisService.activeTrack.title) ? MprisService.activeTrack.title : ""
+                    text: (MprisService.activeTrack && MprisService.activeTrack.title)
+                          ? MprisService.activeTrack.title : ""
                     color: Appearance.md3.on_surface
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.DemiBold
@@ -132,7 +138,8 @@ Item {
                 }
                 StyledText {
                     Layout.fillWidth: true
-                    text: (MprisService.activeTrack && MprisService.activeTrack.artist) ? MprisService.activeTrack.artist : ""
+                    text: (MprisService.activeTrack && MprisService.activeTrack.artist)
+                          ? MprisService.activeTrack.artist : ""
                     color: Appearance.md3.on_surface_variant
                     font.pixelSize: Appearance.typeScale.labelMedium
                     elide: Text.ElideRight
@@ -147,7 +154,8 @@ Item {
                     wavy: true
                     position: root.effectivePosition
                     length: root.trackLength
-                    canSeek: (MprisService.activePlayer?.canSeek || MprisService.activePlayer?.canControl) ?? false
+                    canSeek: (MprisService.activePlayer?.canSeek || MprisService.activePlayer?.canControl)
+                             ?? false
                     onSeekRequested: newPosition => root.requestSeek(newPosition)
                 }
 
@@ -192,20 +200,5 @@ Item {
                 }
             }
         }
-    }
-
-    // Elevación MD3: source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property"
-    MultiEffect {
-        id: mprisShadow
-        anchors.fill: mprisBg
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
-        shadowColor: Appearance.md3.shadow
-        shadowOpacity: Appearance.elevation4.opacity
-        shadowBlur: Appearance.elevation4.blur
-        shadowVerticalOffset: Appearance.elevation4.offsetY
-        shadowHorizontalOffset: 0
-        Component.onCompleted: mprisShadow.source = mprisBg
     }
 }

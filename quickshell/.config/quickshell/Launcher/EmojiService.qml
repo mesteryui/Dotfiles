@@ -22,12 +22,12 @@
 
 pragma Singleton
 
-import QtQuick
-import Quickshell
-import Quickshell.Io
 import qs.Core.Modules
 import qs.Core.Services
 import "EmojiCustom.js" as EmojiCustom
+import QtQuick
+import Quickshell
+import Quickshell.Io
 
 Singleton {
     id: root
@@ -66,34 +66,56 @@ Singleton {
     property int customCount: 0
 
     function sourceInfo() {
-        return "custom=" + root.customCount + " lib=" + root.libCount
-            + " symbols=" + root.symbolCount
-            + " status=" + root.libStatus + (root.libVersion !== "" ? "(" + root.libVersion + ")" : "")
-            + " total=" + root.base.length;
+        return "custom=" + root.customCount + " lib=" + root.libCount + " symbols=" + root.symbolCount
+                + " status=" + root.libStatus + (root.libVersion !== "" ? "(" + root.libVersion + ")" : "")
+                + " total=" + root.base.length;
     }
 
     // ---- grupos (pocos y amplios, para que los chips quepan en una fila) ----
     readonly property var groupMeta: [
-        { id: "caras", label: "Caras", icon: "sentiment_satisfied" },
-        { id: "gente", label: "Gente", icon: "waving_hand" },
-        { id: "cosas", label: "Cosas", icon: "inventory_2" },
-        { id: "simbolos", label: "Símbolos", icon: "grade" }
+        {
+            id: "caras",
+            label: "Caras",
+            icon: "sentiment_satisfied"
+        },
+        {
+            id: "gente",
+            label: "Gente",
+            icon: "waving_hand"
+        },
+        {
+            id: "cosas",
+            label: "Cosas",
+            icon: "inventory_2"
+        },
+        {
+            id: "simbolos",
+            label: "Símbolos",
+            icon: "grade"
+        }
     ]
 
     // Alias de grupos antiguos (por si tecleas `g:tech` de memoria) y
     // normalización de acentos (`g:símbolos` vale igual que `g:simbolos`).
     readonly property var groupAlias: ({
-        "smileys": "caras",
-        "gestures": "gente", "hearts": "gente",
-        "objects": "cosas", "food": "cosas", "activity": "cosas",
-        "tech": "cosas", "nature": "cosas", "travel": "cosas",
-        "symbols": "simbolos", "arrows": "simbolos", "effects": "simbolos"
-    })
+                                           "smileys": "caras",
+                                           "gestures": "gente",
+                                           "hearts": "gente",
+                                           "objects": "cosas",
+                                           "food": "cosas",
+                                           "activity": "cosas",
+                                           "tech": "cosas",
+                                           "nature": "cosas",
+                                           "travel": "cosas",
+                                           "symbols": "simbolos",
+                                           "arrows": "simbolos",
+                                           "effects": "simbolos"
+                                       })
 
     function normGroup(g) {
         let n = String(g || "").toLowerCase();
-        n = n.replace(/[áàä]/g, "a").replace(/[éèë]/g, "e").replace(/[íìï]/g, "i")
-             .replace(/[óòö]/g, "o").replace(/[úùü]/g, "u").replace(/ñ/g, "n");
+        n = n.replace(/[áàä]/g, "a").replace(/[éèë]/g, "e").replace(/[íìï]/g, "i").replace(/[óòö]/g, "o").replace(
+                    /[úùü]/g, "u").replace(/ñ/g, "n");
         return root.groupAlias[n] || n;
     }
 
@@ -110,14 +132,29 @@ Singleton {
         const recents = root.recentList();
         const favs = root.favoriteList();
         if (recents.length > 0)
-            out.push({ id: "recent", label: "Recientes", icon: "history", count: recents.length });
+            out.push({
+                         id: "recent",
+                         label: "Recientes",
+                         icon: "history",
+                         count: recents.length
+                     });
         if (favs.length > 0)
-            out.push({ id: "fav", label: "Favoritos", icon: "star", count: favs.length });
+            out.push({
+                         id: "fav",
+                         label: "Favoritos",
+                         icon: "star",
+                         count: favs.length
+                     });
         for (let m = 0; m < root.groupMeta.length; m++) {
             const meta = root.groupMeta[m];
             const c = counts[meta.id] || 0;
             if (c > 0)
-                out.push({ id: meta.id, label: meta.label, icon: meta.icon, count: c });
+                out.push({
+                             id: meta.id,
+                             label: meta.label,
+                             icon: meta.icon,
+                             count: c
+                         });
         }
         return out;
     }
@@ -150,10 +187,20 @@ Singleton {
             if (!ch || seen[ch])
                 continue;
             seen[ch] = true;
-            items.push({ ch: ch, name: e.name || "", kw: e.kw || "", group: e.group || "", src: 0 });
+            items.push({
+                           ch: ch,
+                           name: e.name || "",
+                           kw: e.kw || "",
+                           group: e.group || "",
+                           src: 0
+                       });
             custom++;
         }
-        return { items: items, seen: seen, custom: custom };
+        return {
+            items: items,
+            seen: seen,
+            custom: custom
+        };
     }
 
     function applyLibExtras(items, seen) {
@@ -221,7 +268,9 @@ Singleton {
     property alias store: emojiStore
     // Recientes acotados: tope en memoria/disco y caducidad. No tiene
     // sentido persistirlos meses ni sin límite.
+
     property int maxRecents: 12
+
     property int recentsTtlSec: 2592000 // 30 días
 
     function recentList() {
@@ -311,6 +360,7 @@ Singleton {
     // escrituras/recargas sin cambiar el formato del JSON.
     Timer {
         id: writeTimer
+
         interval: 100
         repeat: false
         onTriggered: emojiFile.writeAdapter()
@@ -318,6 +368,7 @@ Singleton {
 
     Timer {
         id: reloadTimer
+
         interval: 100
         repeat: false
         onTriggered: emojiFile.reload()
@@ -325,6 +376,7 @@ Singleton {
 
     FileView {
         id: emojiFile
+
         watchChanges: true
         path: Directories.state + "/quickshell/emoji.json"
         onFileChanged: reloadTimer.restart()
@@ -342,6 +394,7 @@ Singleton {
 
         JsonAdapter {
             id: emojiStore
+
             property list<string> recents: []
             property double recentsStamp: 0
             property list<string> favorites: []
@@ -381,6 +434,7 @@ Singleton {
 
     Process {
         id: libProc
+
         command: ["python3", root.dumpScript, "--all"]
         stdout: SplitParser {
             onRead: data => {
@@ -435,7 +489,13 @@ Singleton {
             if (!ch || !name || root.byChar[ch])
                 continue;
             root.byChar[ch] = true;
-            const entry = { ch: ch, name: name, kw: kw !== "" ? kw : name.toLowerCase(), group: group, src: 1 };
+            const entry = {
+                ch: ch,
+                name: name,
+                kw: kw !== "" ? kw : name.toLowerCase(),
+                group: group,
+                src: 1
+            };
             fresh.push(entry);
             root.base.push(entry);
             if (inSymbols)
@@ -468,7 +528,7 @@ Singleton {
     function codepoints(ch) {
         const out = [];
         const s = String(ch);
-        for (let i = 0; i < s.length;) {
+        for (let i = 0; i < s.length; ) {
             const cp = s.codePointAt(i);
             out.push("U+" + cp.toString(16).toUpperCase().padStart(4, "0"));
             i += cp > 0xFFFF ? 2 : 1;
@@ -616,7 +676,10 @@ Singleton {
                 boost += Math.max(1, 5 - Math.floor(ri / 3));
             // Lo tuyo antes que lo generado a igual score.
             boost += (1 - Math.min(1, pool[i].src)) * 0.5;
-            scored.push({ it: pool[i], score: s + boost });
+            scored.push({
+                            it: pool[i],
+                            score: s + boost
+                        });
         }
         scored.sort((a, b) => {
             if (b.score !== a.score)
@@ -641,12 +704,20 @@ Singleton {
         else if (rec)
             badge += "↻ ";
         return {
-            kind: "emoji", title: raw.ch + "  " + raw.name,
+            kind: "emoji",
+            title: raw.ch + "  " + raw.name,
             sub: badge + kw + (grp !== "" ? " · " + root.groupLabel(grp) : ""),
-            iconName: "", appIcon: "", ch: raw.ch, imagePath: "",
-            cat: catLabel, name: raw.name || "", keywords: kw, group: grp,
+            iconName: "",
+            appIcon: "",
+            ch: raw.ch,
+            imagePath: "",
+            cat: catLabel,
+            name: raw.name || "",
+            keywords: kw,
+            group: grp,
             codepoints: root.codepoints(raw.ch),
-            isFavorite: fav, isRecent: rec
+            isFavorite: fav,
+            isRecent: rec
         };
     }
 
@@ -660,7 +731,11 @@ Singleton {
     // acota a 50 entradas. La caché vive en CAMPOS de un objeto JS que
     // solo se mutan (reasignar notificaría y estas funciones se llaman
     // desde bindings: ver SystemMenuRegistry._memo).
-    property var _qmemo: ({ rev: -1, map: ({}), keys: [] })
+    property var _qmemo: ({
+                              rev: -1,
+                              map: ({}),
+                              keys: []
+                          })
 
     function queryItems(query, catLabel, limit) {
         const rev = root.revision;

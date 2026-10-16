@@ -35,6 +35,7 @@ Scope {
 
     LazyLoader {
         id: settingsLoader
+
         loading: scope.shown
 
         component: FloatingWindow {
@@ -74,9 +75,9 @@ Scope {
             // "ShaderEffect: 'source' does not have a matching property" ──
             MultiEffect {
                 id: panelShadow
+
                 anchors.fill: bg
-                visible: Appearance.shadows
-                shadowEnabled: Appearance.shadows
+                shadowEnabled: true
                 shadowColor: Appearance.md3.shadow
                 shadowOpacity: Appearance.elevation4.opacity
                 shadowBlur: Appearance.elevation4.blur

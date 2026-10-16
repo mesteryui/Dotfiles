@@ -14,7 +14,7 @@ Item {
     property bool checked: false
     property bool enable: true
 
-    signal toggled()
+    signal toggled
 
     Layout.fillWidth: true
     // Spec M3 list-item de dos líneas (siempre hay stateText): 72dp.
@@ -27,13 +27,26 @@ Item {
     Accessible.name: switchRow.label
     Accessible.description: switchRow.stateText
 
-    Keys.onSpacePressed: { if (switchRow.enable) switchRow.toggled(); }
-    Keys.onReturnPressed: { if (switchRow.enable) switchRow.toggled(); }
-    Keys.onEnterPressed: { if (switchRow.enable) switchRow.toggled(); }
+    Keys.onSpacePressed: {
+        if (switchRow.enable)
+            switchRow.toggled();
+    }
+    Keys.onReturnPressed: {
+        if (switchRow.enable)
+            switchRow.toggled();
+    }
+    Keys.onEnterPressed: {
+        if (switchRow.enable)
+            switchRow.toggled();
+    }
 
     opacity: switchRow.enable ? 1.0 : Appearance.state.disabled
 
-    Behavior on opacity { NumberAnimation { duration: Appearance.motion.short3 } }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
 
     // State layer de fila: pastilla redondeada al contenedor de la
     // tarjeta (el rectángulo a sangre no queda bien aquí).

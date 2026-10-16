@@ -52,8 +52,8 @@ openEmoji/openSystem/openMenu/reloadMenus), `dashboard` (toggle),
 Conventions: tokens vía `Appearance.md3` (+ `base16`, `palette`;
 nunca hardcodear), opacidades de estado vía `Appearance.state`
 (`hovered 0.08` / `pressed 0.12` / `disabled 0.38`), formas vía
-`Appearance.shape`, motion vía `Appearance.motion` (respeta
-`reduceMotion`), spacing vía `Appearance.spacing`, fuentes vía
+`Appearance.shape`, motion vía `Appearance.motion` (duraciones y springs
+fijos, sobrios por diseño), spacing vía `Appearance.spacing`, fuentes vía
 `Appearance.font`/`typeScale`. Selección: selected →
 `secondary_container` fill (`M3SelectionFill`) +
 `on_secondary_container` contenido; hover/press → state layer

@@ -12,8 +12,23 @@ _G.Colors = require("colors")
 _G.DefaultMonitor = "eDP-1"
 _G.helper = require("configs.some_funcs")
 
+-- optional(mod): carga un drop-in solo si existe y degrada con pcall si está
+-- roto, en vez de tumbar toda la config al overlay "has errors" / emergency
+-- mode. Patrón de Ryoku (ryoku/hyprland/hyprland.lua): Hyprland reporta hasta
+-- el require() con pcall de un módulo inexistente, así que se sondea la ruta
+-- antes. Reservar require() duro para lo crítico (colors, some_funcs, env);
+-- todo lo demás va por aquí.
+local function optional(mod)
+	if package.searchpath == nil or package.searchpath(mod, package.path) then
+		local ok, err = pcall(require, mod)
+		if not ok then
+			print("shinro: optional config module '" .. mod .. "' failed to load: " .. tostring(err))
+		end
+	end
+end
+
 -- Carga de configuraciones de menús/lanzadores
-require("configs.walker_menu")
+optional("configs.walker_menu")
 
 -- --- ENTORNO Y SEGURIDAD ---
 require("configs.env")
@@ -25,23 +40,23 @@ hl.on("hyprland.start", function()
 end)
 
 -- --- HARDWARE & MONITORES ---
-require("configs.monitors")
-require("configs.workspaces")
-require("configs.devices")
-require("configs.gestures")
+optional("configs.monitors")
+optional("configs.workspaces")
+optional("configs.devices")
+optional("configs.gestures")
 
 -- --- ESTÉTICA & COLORES ---
-require("configs.appearance")
-require("configs.animation")
+optional("configs.appearance")
+optional("configs.animation")
 
 -- --- REGLAS DE VENTANAS Y CAPAS ---
-require("configs.windowrules")
-require("configs.layerrules")
+optional("configs.windowrules")
+optional("configs.layerrules")
 
 -- --- FUNCIONALIDAD & ATAJOS ---
-require("configs.submaps")
-require("configs.keybinds")
-require("configs.auto-exec")
+optional("configs.submaps")
+optional("configs.keybinds")
+optional("configs.auto-exec")
 
 -- --- OTROS ---
-require("configs.miscelanea")
+optional("configs.miscelanea")

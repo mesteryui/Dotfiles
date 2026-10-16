@@ -8,6 +8,7 @@ singleton ConfigService 1.0 ConfigService.qml
 singleton DistroService 1.0 DistroService.qml
 singleton FuzzySearch 1.0 FuzzySearch.qml
 singleton GameMode 1.0 GameMode.qml
+singleton HyprlandIpc 1.0 HyprlandIpc.qml
 singleton HyprlandKeybinds 1.0 HyprlandKeybinds.qml
 singleton HyprlandSubmap 1.0 HyprlandSubmap.qml
 singleton Hyprsunset 1.0 Hyprsunset.qml
@@ -25,5 +26,7 @@ singleton SystemInfoService 1.0 SystemInfoService.qml
 singleton ThemeApplier 1.0 ThemeApplier.qml
 singleton TimeService 1.0 TimeService.qml
 singleton UpdatesTracking 1.0 UpdatesTracking.qml
+singleton VideoFrameService 1.0 VideoFrameService.qml
+singleton VideoSupport 1.0 VideoSupport.qml
 singleton WallpaperService 1.0 WallpaperService.qml
 singleton WeatherService 1.0 WeatherService.qml

@@ -47,7 +47,8 @@ BaseOSD {
                 anchors.centerIn: parent
                 icon: root.osdIcon
                 size: 28
-                color: root.alert ? Appearance.md3.error : root.highlighted ? Appearance.md3.primary : Appearance.md3.on_surface
+                color: root.alert ? Appearance.md3.error : root.highlighted ? Appearance.md3.primary :
+                                                                              Appearance.md3.on_surface
 
                 // Pulso solo en alerta; el resaltado (modo juego) queda
                 // estático en primary para no marear.
@@ -55,8 +56,18 @@ BaseOSD {
                     loops: Animation.Infinite
                     running: root.alert
 
-                    NumberAnimation { from: 1; to: 1.1; duration: 600; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: 1.1; to: 1; duration: 600; easing.type: Easing.InOutSine }
+                    NumberAnimation {
+                        from: 1
+                        to: 1.1
+                        duration: 600
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        from: 1.1
+                        to: 1
+                        duration: 600
+                        easing.type: Easing.InOutSine
+                    }
                 }
             }
         }

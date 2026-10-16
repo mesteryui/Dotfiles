@@ -31,8 +31,11 @@ Item {
     property alias passwordField: authView.passwordField
 
     signal validatePassword(string password)
+
     signal togglePasswordVisibility
+
     signal wakeUp
+
     signal sleepRequested
 
     function triggerShake() {
@@ -77,7 +80,11 @@ Item {
 
         Behavior on opacity {
             enabled: !dragArea.dragging
-            NumberAnimation { duration: root.stageDuration; easing.type: Easing.OutCubic }
+
+            NumberAnimation {
+                duration: root.stageDuration
+                easing.type: Easing.OutCubic
+            }
         }
     }
 

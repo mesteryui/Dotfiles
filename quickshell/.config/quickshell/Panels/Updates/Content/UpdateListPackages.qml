@@ -10,20 +10,25 @@ import QtQuick.Controls.Material
 Item {
     id: root
 
-    implicitHeight: Math.min(
-        Services.UpdatesTracking.packagesToUpdate.count * 44 + 16,
-        44 * 5 + 16
-    )
+    implicitHeight: Math.min(Services.UpdatesTracking.packagesToUpdate.count * 44 + 16, 44 * 5 + 16)
 
     // ── Background: líneas divisoras ─────────────────────────
     Rectangle {
-        anchors { top: parent.top; left: parent.left; right: parent.right }
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
         height: 1
         color: Appearance.md3.outline_variant
         z: 2
     }
     Rectangle {
-        anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
         height: 1
         color: Appearance.md3.outline_variant
         z: 2
@@ -32,8 +37,7 @@ Item {
     // ── Content ──────────────────────────────────────────────
     StyledText {
         anchors.centerIn: parent
-        visible: Services.UpdatesTracking.updateCount === 0
-            && !Services.UpdatesTracking.checking
+        visible: Services.UpdatesTracking.updateCount === 0 && !Services.UpdatesTracking.checking
         text: Services.I18nService.getTranslation("updates.list_empty")
         font.pixelSize: Appearance.typeScale.bodySmall
         color: Appearance.md3.on_surface_variant

@@ -18,7 +18,7 @@ Rectangle {
     property int fontWeight: Font.Normal
     property int paddingHorizontal: 24
 
-    signal clicked()
+    signal clicked
 
     implicitWidth: textLabel.implicitWidth + paddingHorizontal
     implicitHeight: buttonHeight
@@ -30,14 +30,15 @@ Rectangle {
             duration: Appearance.motion.short3
         }
     }
+
     color: root.baseColor
+
     opacity: enabled ? 1.0 : Appearance.state.disabled
 
     // Added scaling effect like the MPRIS buttons and Action chips
     scale: mouseArea.pressed ? 0.94 : (mouseArea.containsMouse ? 1.04 : 1.0)
 
     Behavior on scale {
-        enabled: !Appearance.motion.reduced
         SpringAnimation {
             spring: Appearance.motion.springSnappy.spring
             damping: Appearance.motion.springSnappy.damping
@@ -46,16 +47,29 @@ Rectangle {
         }
     }
 
-    Behavior on color { ColorAnimation { duration: Appearance.motion.short3 } }
-    Behavior on opacity { NumberAnimation { duration: Appearance.motion.short3 } }
+    Behavior on color {
+        ColorAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: root.overlayColor
-        opacity: mouseArea.pressed ? Appearance.state.pressed : (mouseArea.containsMouse ? Appearance.state.hovered : 0)
+        opacity: mouseArea.pressed ? Appearance.state.pressed : (mouseArea.containsMouse
+                                                                 ? Appearance.state.hovered : 0)
 
-        Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Appearance.motion.short2
+            }
+        }
     }
 
     StyledText {

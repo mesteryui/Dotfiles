@@ -72,7 +72,8 @@ PanelWindow {
     // Borrar la notificación actualmente seleccionada con 'Delete' o 'Supr'
     Shortcut {
         sequence: "Delete"
-        enabled: root.visible && (root.historyModel ? root.historyModel.count : 0) > 0 && historyList.currentIndex >= 0
+        enabled: root.visible && (root.historyModel ? root.historyModel.count : 0) > 0
+                 && historyList.currentIndex >= 0
         onActivated: root.historyModel.remove(historyList.currentIndex)
     }
 
@@ -138,14 +139,21 @@ PanelWindow {
                     implicitHeight: 40
                     activeFocusOnTab: true
 
-                    readonly property int dndShape: NotificationData.dnd ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+                    readonly property int dndShape: NotificationData.dnd ? MaterialShape.Cookie4Sided :
+                                                                           MaterialShape.Circle
+
                     readonly property bool dndOn: NotificationData.dnd
 
                     Accessible.role: Accessible.Button
                     Accessible.checkable: true
                     Accessible.checked: dndToggle.dndOn
                     Accessible.name: I18nService.getTranslation("notifications.dnd", "No molestar")
-                    Accessible.description: dndToggle.dndOn ? I18nService.getTranslation("notifications.dnd_on", "No molestar activado") : I18nService.getTranslation("notifications.dnd_off", "No molestar desactivado")
+                    Accessible.description: dndToggle.dndOn ? I18nService.getTranslation(
+                                                                  "notifications.dnd_on",
+                                                                  "No molestar activado") :
+                                                              I18nService.getTranslation(
+                                                                  "notifications.dnd_off",
+                                                                  "No molestar desactivado")
 
                     Keys.onReturnPressed: NotificationData.toggleDnd()
                     Keys.onEnterPressed: NotificationData.toggleDnd()
@@ -172,7 +180,8 @@ PanelWindow {
 
                         anchors.fill: parent
                         shape: dndToggle.dndShape
-                        color: dndToggle.dndOn ? Appearance.md3.secondary_container : Appearance.md3.surface_container_highest
+                        color: dndToggle.dndOn ? Appearance.md3.secondary_container :
+                                                 Appearance.md3.surface_container_highest
                         animationDuration: Appearance.motion.medium2
 
                         Behavior on color {
@@ -187,9 +196,11 @@ PanelWindow {
                     MaterialShape {
                         anchors.fill: dndContainer
                         shape: dndToggle.dndShape
-                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container :
+                                                 Appearance.md3.on_surface
                         animationDuration: Appearance.motion.medium2
-                        opacity: dndMouse.pressed ? 0.12 : (dndMouse.containsMouse || dndToggle.activeFocus) ? 0.08 : 0
+                        opacity: dndMouse.pressed ? 0.12 : (dndMouse.containsMouse || dndToggle.activeFocus) ? 0.08 :
+                                                                                                               0
 
                         Behavior on opacity {
                             NumberAnimation {
@@ -204,7 +215,8 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: dndToggle.dndOn ? "do_not_disturb_on" : "do_not_disturb_off"
                         size: Appearance.font.pixelSize.large
-                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                        color: dndToggle.dndOn ? Appearance.md3.on_secondary_container :
+                                                 Appearance.md3.on_surface_variant
 
                         Behavior on color {
                             ColorAnimation {
@@ -244,7 +256,8 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: Appearance.shape.full
-                        color: clearAllButton.activeFocus ? Appearance.md3.primary_container : Appearance.md3.secondary_container
+                        color: clearAllButton.activeFocus ? Appearance.md3.primary_container :
+                                                            Appearance.md3.secondary_container
                         border.width: clearAllButton.activeFocus ? 2 : 0
                         border.color: Appearance.md3.primary
 
@@ -276,7 +289,8 @@ PanelWindow {
                             MaterialIcon {
                                 text: "delete_sweep"
                                 size: Appearance.typeScale.bodyLarge
-                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
+                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container :
+                                                                    Appearance.md3.on_secondary_container
                             }
 
                             StyledText {
@@ -284,7 +298,8 @@ PanelWindow {
                                 font.family: Appearance.font.sans
                                 font.pixelSize: Appearance.typeScale.labelMedium
                                 font.bold: true
-                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container : Appearance.md3.on_secondary_container
+                                color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container :
+                                                                    Appearance.md3.on_secondary_container
                             }
                         }
                     }
@@ -350,14 +365,16 @@ PanelWindow {
                 titleSize: Appearance.font.pixelSize.large
                 titleColor: Appearance.md3.on_surface
                 titleEmphasis: true
-                subtitle: I18nService.getTranslation("notifications.empty_subtitle", "Las nuevas notificaciones aparecerán aquí")
+                subtitle: I18nService.getTranslation("notifications.empty_subtitle",
+                                                     "Las nuevas notificaciones aparecerán aquí")
             }
 
             // --- Pie sutil con atajos de teclado ---
             StyledText {
                 Layout.fillWidth: true
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
-                text: I18nService.getTranslation("notifications.hint", "N no molestar · D borrar todo · Supr eliminar")
+                text: I18nService.getTranslation("notifications.hint",
+                                                 "N no molestar · D borrar todo · Supr eliminar")
                 color: Appearance.md3.on_surface_variant
                 opacity: Appearance.opacity.hint
                 font.family: Appearance.font.sans
@@ -371,9 +388,9 @@ PanelWindow {
     // "ShaderEffect: 'source' does not have a matching property"
     MultiEffect {
         id: panelShadow
+
         anchors.fill: panelBg
-        visible: Appearance.shadows
-        shadowEnabled: Appearance.shadows
+        shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowOpacity: Appearance.elevation5.opacity
         shadowBlur: Appearance.elevation5.blur

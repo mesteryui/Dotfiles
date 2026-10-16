@@ -69,9 +69,9 @@ Singleton {
 
     function _enqueue(cmd, key) {
         _queue.push({
-            cmd: cmd,
-            key: key ?? ""
-        });
+                        cmd: cmd,
+                        key: key ?? ""
+                    });
         _pump();
     }
 
@@ -87,6 +87,10 @@ Singleton {
     }
 
     function send(cmd, key) {
+        // Conexión lazy: el primer uso real (toggle, slider, IPC) la
+        // establece. Sin esto el arranque conectaba siempre, con reintentos
+        // perpetuos aunque el daemon no exista o nunca se use la función.
+        root.ensureConnected();
         if (!socket.connected) {
             // Sin conexión los mutadores (key vacía: sets, reset) se guardan
             // en orden para reproducirlos al conectar; los gets de
@@ -107,6 +111,13 @@ Singleton {
 
     // --- Sincronización completa del estado ---
     function syncState() {
+        // Sin conexión solo se intenta conectar: al conectar, el handler
+        // ya lanza su propio syncState. Encolar aquí crecería la cola en
+        // cada apertura del panel sin daemon (3 entradas por apertura).
+        if (!socket.connected) {
+            root.ensureConnected();
+            return;
+        }
         syncing = true;
         _enqueue("identity get", "identity");
         _enqueue("temperature", "temperature");
@@ -247,8 +258,8 @@ Singleton {
                 if (!isNaN(Number(reply)))
                     root.gammaPct = Math.round(Number(reply));
                 break;
-            // key === "" -> confirmaciones "ok" de comandos mutadores,
-            // no requieren acción (ya aplicamos el estado optimista).
+                // key === "" -> confirmaciones "ok" de comandos mutadores,
+                // no requieren acción (ya aplicamos el estado optimista).
             }
         }
 
@@ -260,7 +271,8 @@ Singleton {
 
     // Reintento de conexión mientras el daemon no esté disponible.
     // Backoff: intentos rápidos (~30 s) tras una caída para reconectar
-    // enseguida; si nunca hubo daemon, tick lento para no spamear.
+    // enseguida; si nunca hubo daemon, tick lento (60s) para no impedir
+    // deep-sleep spameando connects.
     Timer {
         id: reconnectTimer
 
@@ -271,12 +283,24 @@ Singleton {
             if (socket.connected || root.socketPath === "")
                 return;
             root._connectAttempts += 1;
-            reconnectTimer.interval = root._connectAttempts < 15 ? 2000 : 30000;
+            reconnectTimer.interval = root._connectAttempts < 15 ? 2000 : 60000;
             socket.connected = true;
         }
     }
 
-    Component.onCompleted: socket.connected = true
+    Component.onCompleted: {
+        // NADA aquí a propósito: la conexión es lazy (ver ensureConnected).
+        // Conectar al arrancar mantenía socket + reintentos + driftGuard
+        // activos para quien no tiene el daemon o no usa luz nocturna.
+    }
+
+    // Establece la conexión al daemon bajo demanda (primer toggle, slider,
+    // IPC o apertura del centro de control). Idempotente.
+    function ensureConnected() {
+        if (root.socketPath === "" || socket.connected)
+            return;
+        socket.connected = true;
+    }
 
     // --- Debounce para sliders (evita saturar la cola al arrastrar) ---
     property int _pendingTemperature: -1
@@ -315,11 +339,11 @@ Singleton {
     // no empuja notificaciones a los clientes del socket, así que sin esto
     // el estado de la UI puede quedar desactualizado silenciosamente durante
     // horas). No corre mientras hay una sync o un comando en vuelo para no
-    // pisarlos.
+    // pisarlos. 60s en vez de 30s: la mitad de wakeups, staleness máx 1min.
     Timer {
         id: driftGuardTimer
 
-        interval: 30000
+        interval: 60000
         repeat: true
         running: root.available
         onTriggered: {
@@ -349,7 +373,8 @@ Singleton {
     // calcular el clamp client-side, así el server es la fuente de verdad).
     function adjustTemperature(deltaKelvin) {
         identity = false;
-        const cmd = deltaKelvin >= 0 ? `temperature +${deltaKelvin}` : `temperature -${Math.abs(deltaKelvin)}`;
+        const cmd = deltaKelvin >= 0 ? `temperature +${deltaKelvin}` : `temperature -${Math.abs(deltaKelvin)
+                                       }`;
         send(cmd); // set, sin key -> reply "ok" se ignora
         send("temperature", "temperature"); // confirma el valor real post-clamp
     }
@@ -447,12 +472,12 @@ Singleton {
     // -> {"temperature":6000,"gamma":100,"identity":true,"active":false,"available":true}
     function statusSnapshot(): string {
         return JSON.stringify({
-            temperature: temperature,
-            gamma: gammaPct,
-            identity: identity,
-            active: nightLightActive,
-            available: available
-        });
+                                  temperature: temperature,
+                                  gamma: gammaPct,
+                                  identity: identity,
+                                  active: nightLightActive,
+                                  available: available
+                              });
     }
 
     IpcHandler {

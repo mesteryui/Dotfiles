@@ -1,6 +1,6 @@
+import qs.Core.Modules
 import QtQuick
 import Quickshell
-import qs.Core.Modules
 
 // Capa de fondo estática: una ventana por pantalla, siempre visible.
 // Sin proveedores externos: no hay nada que ocultar ni restaurar.

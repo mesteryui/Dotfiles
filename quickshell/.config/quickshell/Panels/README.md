@@ -22,7 +22,10 @@ files only fill it.
 - `Wallpaper/` — `WallpaperMenu.qml` (`Scope` + IPC
   `ui.wallpaperMenu` + `LazyLoader`) + `WallpaperItem.qml` +
   `WallpaperLayer.qml` + `WallpaperLayerScreen.qml` + `Content/`
-  (`WallpaperMenuContent`, `WallpaperItemContent`).
+  (`WallpaperMenuContent`, `WallpaperItemContent`) + vídeo opcional:
+  `AnimatedWallpaperPlayer.qml` (único con `import QtMultimedia`, carga
+  aislada por `Loader`), frames vía `VideoFrameService` + script
+  `scripts/extract-wallpaper-frame.sh`, disponibilidad en `VideoSupport`.
 - `Updates/` — `UpdateList.qml` + `UpdateListHeader.qml` +
   `UpdateListFooter.qml` + `Content/` (`UpdateListContent`,
   `UpdateListHeaderContent`, `UpdateFooterContent`,

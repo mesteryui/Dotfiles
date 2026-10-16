@@ -1,13 +1,12 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import qs.Core.Services as CoreServices
+import "DdcUtils.js" as DdcUtils
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
-import qs.Core.Services as CoreServices
-
-import "DdcUtils.js" as DdcUtils
+import Quickshell.Io
 
 // Fachada multi-monitor: un BrightnessMonitor por pantalla (ver
 // BrightnessMonitor.qml) + API maestra compatible con el servicio antiguo
@@ -83,8 +82,8 @@ Singleton {
             }
             if (!found) {
                 const m = monitorComp.createObject(root, {
-                    modelData: screens[s]
-                });
+                                                       modelData: screens[s]
+                                                   });
                 if (m) {
                     root.monitors.push(m);
                     changed = true;
@@ -108,6 +107,7 @@ Singleton {
 
     // --- API maestra (compatible con el servicio mono-monitor) ---
     readonly property real brightness: (root.focusedMonitor?.brightness ?? root.monitors[0]?.brightness) ?? 0
+
     readonly property bool ready: root.monitors.some(m => m.ready)
 
     // Enfocado por defecto (estilo end-4/caelestia): mismo % en todas
@@ -122,6 +122,7 @@ Singleton {
 
     Connections {
         target: CoreServices.ConfigService
+
         function onReadyChanged() {
             if (CoreServices.ConfigService.ready)
                 root.syncAll = CoreServices.ConfigService.configs.brightness.syncAll ?? false;
@@ -171,6 +172,7 @@ Singleton {
     // Hotplug a prueba de balas: handler de propiedad propia (siempre
     // dispara) en vez de depender del nombre de la señal de Quickshell.
     readonly property int screenCount: Quickshell.screens.length
+
     onScreenCountChanged: {
         root.syncMonitors();
         if (root.detectReady && !root._detecting)
@@ -211,7 +213,8 @@ Singleton {
     Process {
         id: backlightProc
 
-        command: ["sh", "-c", 'for d in /sys/class/backlight/*; do [ -d "$d" ] || continue; echo "$(basename "$d")|$(readlink "$d")"; done']
+        command: ["sh", "-c",
+            'for d in /sys/class/backlight/*; do [ -d "$d" ] || continue; echo "$(basename "$d")|$(readlink "$d")"; done']
         stdout: StdioCollector {
             onStreamFinished: {
                 root.backlightDevices = DdcUtils.parseBacklightList(text);
@@ -239,7 +242,8 @@ Singleton {
             // 127 = ddcutil no instalado: HDMI sin soporte, interno intacto.
             if (code === 127 && !root._ddcWarned) {
                 root._ddcWarned = true;
-                console.info("[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
+                console.info(
+                            "[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
             }
             root.detectReady = true;
             root._detecting = false;
@@ -294,7 +298,9 @@ Singleton {
             }
             const monitor = root.getMonitor(query);
             if (!monitor)
-                return "Invalid monitor: " + query + " (try active/all/" + root.monitors.map(m => m.screenName).join(", ") + ")";
+                return "Invalid monitor: " + query + " (try active/all/" + root.monitors.map(m
+                                                                                             => m.screenName).join(
+                            ", ") + ")";
             const r = DdcUtils.parseSetValue(value, monitor.brightness);
             if (!r.ok)
                 return "Invalid value: " + r.error;
@@ -307,21 +313,21 @@ Singleton {
             for (let i = 0; i < root.monitors.length; i++) {
                 const m = root.monitors[i];
                 arr.push({
-                    screen: m.screenName,
-                    typeofInit: typeof m.initBrightness,
-                    brightness: m.brightness,
-                    ready: m.ready,
-                    supported: m.supported,
-                    backend: m.isDdc ? ("ddc:" + m.busNum) : ("bl:" + m.backlightDevice)
-                });
+                             screen: m.screenName,
+                             typeofInit: typeof m.initBrightness,
+                             brightness: m.brightness,
+                             ready: m.ready,
+                             supported: m.supported,
+                             backend: m.isDdc ? ("ddc:" + m.busNum) : ("bl:" + m.backlightDevice)
+                         });
             }
             return JSON.stringify({
-                count: root.monitors.length,
-                detectReady: root.detectReady,
-                ddc: root.ddcMonitors,
-                bl: root.backlightDevices,
-                mons: arr
-            });
+                                      count: root.monitors.length,
+                                      detectReady: root.detectReady,
+                                      ddc: root.ddcMonitors,
+                                      bl: root.backlightDevices,
+                                      mons: arr
+                                  });
         }
 
         function toggleSync(): string {

@@ -10,9 +10,9 @@ MenuDefinition {
     iconName: "sports_esports"
     parentId: "main"
 
-    entries: [
-        shell("game-steam", "Steam", "steam-setup", "sports_esports",
-            "kitty --class=local.floating -e steam-setup",
-            { titleKey: "sysmenu.game_steam_title", subtitleKey: "sysmenu.game_steam_subtitle" })
-    ]
+    entries: [shell("game-steam", "Steam", "steam-setup", "sports_esports",
+                    "kitty --class=local.floating -e steam-setup", {
+                        titleKey: "sysmenu.game_steam_title",
+                        subtitleKey: "sysmenu.game_steam_subtitle"
+                    })]
 }

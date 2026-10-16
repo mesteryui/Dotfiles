@@ -59,7 +59,8 @@ ColumnLayout {
             implicitWidth: 36
             implicitHeight: 36
             radius: Appearance.shape.full
-            color: Services.NotificationData.dnd ? Appearance.md3.secondary_container : Appearance.md3.surface_container_high
+            color: Services.NotificationData.dnd ? Appearance.md3.secondary_container :
+                                                   Appearance.md3.surface_container_high
 
             Accessible.role: Accessible.Button
             Accessible.checkable: true
@@ -70,7 +71,8 @@ ColumnLayout {
                 anchors.centerIn: parent
                 icon: Services.NotificationData.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
                 size: Appearance.font.pixelSize.large
-                color: Services.NotificationData.dnd ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                color: Services.NotificationData.dnd ? Appearance.md3.on_secondary_container :
+                                                       Appearance.md3.on_surface_variant
             }
 
             MouseArea {

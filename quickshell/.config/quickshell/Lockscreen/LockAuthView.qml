@@ -4,7 +4,6 @@ import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import M3Shapes
@@ -36,7 +35,7 @@ Item {
         passwordInput.triggerShake();
     }
 
-// Saludo según la hora (lee del reloj único TimeService).
+    // Saludo según la hora (lee del reloj único TimeService).
 
     anchors.fill: parent
     z: 1
@@ -46,16 +45,26 @@ Item {
     // Slide desde abajo: parte de +60px y sube a 0
     transform: Translate {
         id: authSlide
+
         y: isAwake ? 0 : 60 - Math.min(60, dragDy * 0.5)
+
         Behavior on y {
             enabled: !dragging
-            NumberAnimation { duration: stageDuration; easing.type: Easing.OutCubic }
+
+            NumberAnimation {
+                duration: stageDuration
+                easing.type: Easing.OutCubic
+            }
         }
     }
 
     Behavior on opacity {
         enabled: !dragging
-        NumberAnimation { duration: stageDuration; easing.type: Easing.OutCubic }
+
+        NumberAnimation {
+            duration: stageDuration
+            easing.type: Easing.OutCubic
+        }
     }
 
     ColumnLayout {
@@ -74,7 +83,8 @@ Item {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 shape: MaterialShape.Circle
-                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(
+                                                     Appearance.md3.surface_container_high, 0.72)
                 strokeWidth: 1
                 strokeColor: Qt.alpha(Appearance.md3.outline_variant, 0.5)
                 animationDuration: Appearance.motion.short3
@@ -90,6 +100,7 @@ Item {
 
                 MouseArea {
                     id: downMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -97,7 +108,9 @@ Item {
                 }
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Rectangle {
                 Layout.preferredHeight: 36
@@ -109,8 +122,10 @@ Item {
 
                 RowLayout {
                     id: authBatteryRow
+
                     anchors.centerIn: parent
                     spacing: 6
+
                     MaterialIcon {
                         icon: BatteryService.materialIcon
                         size: 20
@@ -126,12 +141,16 @@ Item {
             }
         }
 
-        Item { Layout.fillHeight: true; Layout.preferredHeight: 8 }
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredHeight: 8
+        }
 
         // Reloj compacto estilo Pixel (encima del avatar)
         LockScreenClock {
             id: authClock
             Layout.alignment: Qt.AlignHCenter
+
             compact: true
         }
 
@@ -181,6 +200,7 @@ Item {
 
                     Image {
                         id: faceImage
+
                         anchors.fill: parent
                         source: Quickshell.env("HOME") + "/.face"
                         fillMode: Image.PreserveAspectCrop
@@ -192,21 +212,6 @@ Item {
                         visible: status === Image.Ready
                     }
                 }
-            }
-
-            // Sombra: source se asigna en onCompleted para evitar warning
-            // "ShaderEffect: 'source' does not have a matching property"
-            MultiEffect {
-                id: avatarShadow
-                anchors.fill: avatarBg
-                visible: Appearance.shadows
-                shadowEnabled: Appearance.shadows
-                shadowColor: Appearance.md3.shadow
-                shadowOpacity: Appearance.elevation5.opacity
-                shadowBlur: Appearance.elevation5.blur
-                shadowVerticalOffset: Appearance.elevation5.offsetY
-                shadowHorizontalOffset: 0
-                Component.onCompleted: avatarShadow.source = avatarBg
             }
         }
 
@@ -250,8 +255,10 @@ Item {
 
             RowLayout {
                 id: fpRow
+
                 anchors.centerIn: parent
                 spacing: 6
+
                 MaterialIcon {
                     icon: "fingerprint"
                     size: 16
@@ -296,7 +303,8 @@ Item {
             implicitHeight: statusText.implicitHeight + 12
             radius: Appearance.shape.full
             visible: authFailed || KeyboardThings.capsLockOn
-            color: authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container, 0.55)
+            color: authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container,
+                                                                                          0.55)
             border.width: 1
             border.color: authFailed ? Appearance.md3.error : Qt.alpha(Appearance.md3.tertiary, 0.5)
 
@@ -304,14 +312,19 @@ Item {
                 id: statusText
 
                 anchors.centerIn: parent
-                text: authFailed ? I18nService.getTranslation("lockscreen.incorrect_password", "Contraseña incorrecta") : I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
+                text: authFailed ? I18nService.getTranslation("lockscreen.incorrect_password",
+                                                              "Contraseña incorrecta") :
+                                   I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
                 color: authFailed ? Appearance.md3.on_error_container : Appearance.md3.on_tertiary_container
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium
             }
         }
 
-        Item { Layout.fillHeight: true; Layout.preferredHeight: 8 }
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredHeight: 8
+        }
 
         // MPRIS — solo pantalla primaria
         LockScreenMprisCard {
@@ -358,11 +371,12 @@ Item {
             }
         }
 
-        Item { Layout.preferredHeight: 14 }
+        Item {
+            Layout.preferredHeight: 14
+        }
     }
 
     LockPowerButtons {
         anchors.fill: parent
     }
-
 }

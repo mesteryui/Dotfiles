@@ -12,7 +12,8 @@ Variants {
     model: Quickshell.screens
 
     // Propiedad visual puente: dictamina el estado actual
-    readonly property string activeBarType: GameMode.enabled ? "no_floating" : ConfigService.configs.bar.barType
+    readonly property string activeBarType: GameMode.enabled ? "no_floating" :
+                                                               ConfigService.configs.bar.barType
 
     // Contrato de 4 modos (compartido con Bar.qml, sin cambios visuales):
     // "floating" = píldora flotante (Bar.qml pone márgenes/radio; aquí no se dibuja
@@ -21,6 +22,7 @@ Variants {
     // NOTA: isFloating aquí significa full_hug (nombre histórico), distinto del
     // isFloating de Bar.qml que significa "floating".
     readonly property bool isFloating: activeBarType === "full_hug"
+
     readonly property bool isPartial: activeBarType === "partial_hug"
 
     delegate: Scope {
@@ -55,7 +57,9 @@ Variants {
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
             // full_hug: siempre. partial_hug: solo si la barra está arriba. no_floating: nunca.
-            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "top"))
+            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
+                                                                        && ConfigService.configs.bar.position
+                                                                        === "top"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -75,7 +79,9 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "top"))
+            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
+                                                                        && ConfigService.configs.bar.position
+                                                                        === "top"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -97,7 +103,9 @@ Variants {
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
             // full_hug: siempre. partial_hug: solo si la barra está abajo. no_floating: nunca.
-            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "bottom"))
+            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
+                                                                           && ConfigService.configs.bar.position
+                                                                           === "bottom"))
 
             ScreenCorner {
                 anchors.fill: parent
@@ -118,7 +126,9 @@ Variants {
             implicitWidth: screenScope.cornerRadius
             implicitHeight: screenScope.cornerRadius
             color: "transparent"
-            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial && ConfigService.configs.bar.position === "bottom"))
+            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
+                                                                           && ConfigService.configs.bar.position
+                                                                           === "bottom"))
 
             ScreenCorner {
                 anchors.fill: parent

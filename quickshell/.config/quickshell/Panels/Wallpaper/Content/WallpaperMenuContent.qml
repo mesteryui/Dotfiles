@@ -16,6 +16,10 @@ Item {
 
     signal hideRequested
 
+    // Sonda lazy de vídeo: el menú lista vídeos (filtros según soporte),
+    // así que abrirlo sí justifica cargar QtMultimedia. El arranque no.
+    Component.onCompleted: Services.VideoSupport.ensureProbed()
+
     // El modelo es el FolderListModel del servicio: sin capa intermedia.
     // (Antes había un array filtrado por búsqueda, pero la barra de
     // búsqueda no existe: código muerto eliminado.)
@@ -31,7 +35,8 @@ Item {
             spacing: Appearance.spacing.m
 
             StyledText {
-                text: Services.I18nService?.getTranslation("wallpaper.title", "Fondos de Pantalla") ?? "Fondos de Pantalla"
+                text: Services.I18nService?.getTranslation("wallpaper.title", "Fondos de Pantalla")
+                      ?? "Fondos de Pantalla"
                 font.pixelSize: Appearance.font.pixelSize.huge
                 font.weight: Font.Bold
                 font.family: Appearance.font.sans
@@ -50,7 +55,8 @@ Item {
                     id: countText
 
                     anchors.centerIn: parent
-                    text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / " + wallpaperList.count
+                    text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / "
+                          + wallpaperList.count
                     font.pixelSize: Appearance.typeScale.labelSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.primary
@@ -185,7 +191,9 @@ Item {
             StyledText {
                 anchors.centerIn: parent
                 visible: wallpaperList.count === 0
-                text: Services.I18nService?.getTranslation("wallpaper.no_results", "No se encontraron fondos") ?? "No se encontraron fondos"
+                text: Services.I18nService?.getTranslation("wallpaper.no_results",
+                                                           "No se encontraron fondos")
+                      ?? "No se encontraron fondos"
                 font.pixelSize: Appearance.typeScale.bodyLarge
                 color: Appearance.md3.on_surface_variant
             }
@@ -195,7 +203,8 @@ Item {
     function applyCurrentWallpaper() {
         if (!wallpaperList.currentItem)
             return;
-        const fileName = Services.WallpaperService.wallpaperList.get(wallpaperList.currentIndex, "fileName") ?? "";
+        const fileName = Services.WallpaperService.wallpaperList.get(wallpaperList.currentIndex, "fileName")
+              ?? "";
         if (fileName !== "") {
             Services.WallpaperService.apply(fileName);
             root.hideRequested();

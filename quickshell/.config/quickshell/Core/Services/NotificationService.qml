@@ -32,12 +32,15 @@ Singleton {
         function toggle(): void {
             root.centerOpen = !root.centerOpen;
         }
+
         function show(): void {
             root.centerOpen = true;
         }
+
         function hide(): void {
             root.centerOpen = false;
         }
+
         function dndToggle() {
             NotificationData.toggleDnd();
         }

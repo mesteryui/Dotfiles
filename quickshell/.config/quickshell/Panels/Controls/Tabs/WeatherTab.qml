@@ -39,6 +39,7 @@ Item {
             left: parent.left
             right: parent.right
         }
+
         spacing: Appearance.spacing.s
 
         // ══ HOY: resumen + detalles en una sola tarjeta ═══════════
@@ -62,7 +63,8 @@ Item {
 
                         MaterialIcon {
                             anchors.centerIn: parent
-                            icon: Icons.getWeatherIcon(Services.WeatherService.data.wCode, Services.WeatherService.data.isDay)
+                            icon: Icons.getWeatherIcon(Services.WeatherService.data.wCode,
+                                                       Services.WeatherService.data.isDay)
                             font.pixelSize: 42
                             color: Appearance.md3.primary
                         }
@@ -74,6 +76,7 @@ Item {
 
                         RowLayout {
                             spacing: Appearance.spacing.s
+
                             StyledText {
                                 text: Services.WeatherService.data.temp
                                 color: Appearance.md3.on_surface
@@ -81,7 +84,9 @@ Item {
                                 font.weight: Font.Medium
                             }
                             StyledText {
-                                text: Services.I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(Services.WeatherService.data.tempFeelsLike)
+                                text: Services.I18nService.getTranslation("weather.feels_like",
+                                                                          "Sensación %1").arg(
+                                          Services.WeatherService.data.tempFeelsLike)
                                 color: Appearance.md3.on_surface_variant
                                 font.pixelSize: Appearance.typeScale.labelMedium
                                 Layout.alignment: Qt.AlignVCenter
@@ -97,7 +102,10 @@ Item {
                         }
 
                         StyledText {
-                            text: Services.I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(Services.WeatherService.data.tempMax).arg(Services.WeatherService.data.tempMin)
+                            text: Services.I18nService.getTranslation("weather.max_min",
+                                                                      "Máx %1 · Mín %2").arg(
+                                      Services.WeatherService.data.tempMax).arg(
+                                      Services.WeatherService.data.tempMin)
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: Appearance.typeScale.labelMedium
                             font.weight: Font.Medium
@@ -121,6 +129,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "air"
                             size: Appearance.typeScale.bodyLarge
@@ -129,8 +138,10 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
-                                text: Services.WeatherService.data.wind + " " + Services.WeatherService.data.windDir
+                                text: Services.WeatherService.data.wind + " "
+                                      + Services.WeatherService.data.windDir
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 font.weight: Font.Medium
                                 color: Appearance.md3.on_surface
@@ -147,6 +158,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "water_drop"
                             size: Appearance.typeScale.bodyLarge
@@ -155,6 +167,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.humidity
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -172,6 +185,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "compress"
                             size: Appearance.typeScale.bodyLarge
@@ -180,6 +194,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.press
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -198,6 +213,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "visibility"
                             size: Appearance.typeScale.bodyLarge
@@ -206,6 +222,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.visib
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -223,6 +240,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "rainy"
                             size: Appearance.typeScale.bodyLarge
@@ -231,15 +249,18 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
-                                text: Services.WeatherService.data.precip + " · " + Services.WeatherService.data.precipProb
+                                text: Services.WeatherService.data.precip + " · "
+                                      + Services.WeatherService.data.precipProb
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 font.weight: Font.Medium
                                 color: Appearance.md3.on_surface
                                 elide: Text.ElideRight
                             }
                             StyledText {
-                                text: Services.I18nService.getTranslation("weather.precipitation", "Precipitación")
+                                text: Services.I18nService.getTranslation("weather.precipitation",
+                                                                          "Precipitación")
                                 font.pixelSize: Appearance.typeScale.labelSmall
                                 color: Appearance.md3.on_surface_variant
                             }
@@ -249,6 +270,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "light_mode"
                             size: Appearance.typeScale.bodyLarge
@@ -257,6 +279,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: String(Services.WeatherService.data.uv)
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -274,6 +297,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "wb_twilight"
                             size: Appearance.typeScale.bodyLarge
@@ -282,6 +306,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.sunrise
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -299,6 +324,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "bedtime"
                             size: Appearance.typeScale.bodyLarge
@@ -307,6 +333,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.sunset
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -324,6 +351,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "eco"
                             size: Appearance.typeScale.bodyLarge
@@ -332,14 +360,18 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
-                                text: Services.WeatherService.data.aqi >= 0 ? Services.WeatherService.data.aqi + " · " + root.aqiLabel(Services.WeatherService.data.aqiLevel) : "--"
+                                text: Services.WeatherService.data.aqi >= 0
+                                      ? Services.WeatherService.data.aqi + " · " + root.aqiLabel(
+                                            Services.WeatherService.data.aqiLevel) : "--"
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 font.weight: Font.Medium
                                 color: Appearance.md3.on_surface
                             }
                             StyledText {
-                                text: Services.I18nService.getTranslation("weather.aqi_title", "Calidad del aire")
+                                text: Services.I18nService.getTranslation("weather.aqi_title",
+                                                                          "Calidad del aire")
                                 font.pixelSize: Appearance.typeScale.labelSmall
                                 color: Appearance.md3.on_surface_variant
                             }
@@ -349,6 +381,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Appearance.spacing.s
+
                         MaterialIcon {
                             icon: "schedule"
                             size: Appearance.typeScale.bodyLarge
@@ -357,6 +390,7 @@ Item {
                         ColumnLayout {
                             spacing: 0
                             Layout.fillWidth: true
+
                             StyledText {
                                 text: Services.WeatherService.data.lastRefresh
                                 font.pixelSize: Appearance.typeScale.titleSmall
@@ -391,12 +425,14 @@ Item {
 
         Repeater {
             id: dayRepeater
+
             model: Services.WeatherService.data.hourlyByDay
 
             delegate: M3Card {
                 required property var modelData
                 required property int index
                 Layout.fillWidth: true
+
                 padding: 12
                 color: Appearance.md3.surface_container_high
 
@@ -480,6 +516,7 @@ Item {
 
                         Row {
                             id: hourRow
+
                             spacing: 6
                             height: parent.height
 
@@ -488,6 +525,7 @@ Item {
 
                                 delegate: Rectangle {
                                     required property var modelData
+
                                     width: 54
                                     height: 92
                                     radius: Appearance.shape.small
@@ -527,7 +565,8 @@ Item {
                                         StyledText {
                                             text: modelData.precipProb > 0 ? modelData.precipProb + "%" : "—"
                                             font.pixelSize: Appearance.typeScale.labelSmall
-                                            color: modelData.precipProb > 20 ? Appearance.md3.tertiary : Appearance.md3.on_surface_variant
+                                            color: modelData.precipProb > 20 ? Appearance.md3.tertiary :
+                                                                               Appearance.md3.on_surface_variant
                                             horizontalAlignment: Text.AlignHCenter
                                             width: parent.width
                                         }
@@ -550,7 +589,9 @@ Item {
             StyledText {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                text: Services.WeatherService.isError ? Services.WeatherService.errorMessage : Services.I18nService.getTranslation("weather.loading", "Cargando previsión…")
+                text: Services.WeatherService.isError ? Services.WeatherService.errorMessage :
+                                                        Services.I18nService.getTranslation("weather.loading",
+                                                                                            "Cargando previsión…")
                 font.pixelSize: Appearance.typeScale.titleSmall
                 color: Appearance.md3.on_surface_variant
                 horizontalAlignment: Text.AlignHCenter

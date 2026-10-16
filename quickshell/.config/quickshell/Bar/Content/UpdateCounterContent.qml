@@ -24,9 +24,12 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             size: 20
             renderType: Text.QtRendering
-            icon: root.service.updating ? "downloading" : root.service.checking ? "sync" : root.service.failed ? "warning" : "system_update_alt"
+            icon: root.service.updating ? "downloading" : root.service.checking ? "sync" : root.service.failed
+                                                                                  ? "warning" :
+                                                                                    "system_update_alt"
 
-            color: root.service.failed ? Appearance.md3.error : root.service.updating ? Appearance.md3.primary : Appearance.md3.on_surface
+            color: root.service.failed ? Appearance.md3.error : root.service.updating ? Appearance.md3.primary :
+                                                                                        Appearance.md3.on_surface
 
             // Rotación animada mientras sincroniza
             RotationAnimation on rotation {

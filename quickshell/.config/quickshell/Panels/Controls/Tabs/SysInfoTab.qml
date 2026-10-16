@@ -16,34 +16,38 @@ Item {
 
     // Formateador de memoria en MiB/GiB con precisión decimal
     function fmtMem(mib) {
-        const val = mib ?? 0
-        return val >= 1024
-            ? (val / 1024).toFixed(1) + " GiB"
-            : val + " MiB"
+        const val = mib ?? 0;
+        return val >= 1024 ? (val / 1024).toFixed(1) + " GiB" : val + " MiB";
     }
 
     // Color de estado M3 Expressive según porcentaje de uso
     function getUsageColor(val, defaultColor) {
-        const usage = val ?? 0
-        if (usage > 0.85) return Appearance.md3.error
-        if (usage > 0.70) return Appearance.md3.tertiary
-        return defaultColor || Appearance.md3.primary
+        const usage = val ?? 0;
+        if (usage > 0.85)
+            return Appearance.md3.error;
+        if (usage > 0.70)
+            return Appearance.md3.tertiary;
+        return defaultColor || Appearance.md3.primary;
     }
 
     // Color de estado M3 Expressive según temperatura de CPU
     function getTempColor(temp) {
-        const t = temp ?? 0
-        if (t > 80) return Appearance.md3.error
-        if (t > 65) return Appearance.md3.tertiary
-        return Appearance.md3.on_tertiary_container
+        const t = temp ?? 0;
+        if (t > 80)
+            return Appearance.md3.error;
+        if (t > 65)
+            return Appearance.md3.tertiary;
+        return Appearance.md3.on_tertiary_container;
     }
 
     // Etiqueta de estado de temperatura (para la tarjeta propia).
     function getTempStatus(temp) {
-        const t = temp ?? 0
-        if (t > 80) return Services.I18nService.getTranslation("panel.temp_hot", "Alta")
-        if (t > 65) return Services.I18nService.getTranslation("panel.temp_warm", "Elevada")
-        return Services.I18nService.getTranslation("panel.temp_normal", "Normal")
+        const t = temp ?? 0;
+        if (t > 80)
+            return Services.I18nService.getTranslation("panel.temp_hot", "Alta");
+        if (t > 65)
+            return Services.I18nService.getTranslation("panel.temp_warm", "Elevada");
+        return Services.I18nService.getTranslation("panel.temp_normal", "Normal");
     }
 
     ColumnLayout {
@@ -86,7 +90,8 @@ Item {
                         MaterialIcon {
                             icon: "memory"
                             size: Appearance.typeScale.bodyLarge
-                            color: root.getUsageColor(Services.SystemInfoService.cpuUsage, Appearance.md3.primary)
+                            color: root.getUsageColor(Services.SystemInfoService.cpuUsage,
+                                                      Appearance.md3.primary)
                             Layout.alignment: Qt.AlignVCenter
                         }
 
@@ -111,7 +116,8 @@ Item {
                                 id: coresLabel
 
                                 anchors.centerIn: parent
-                                text: (Services.SystemInfoService.cpuCores ?? 0) + " " + Services.I18nService.getTranslation("panel.cores", "núcleos")
+                                text: (Services.SystemInfoService.cpuCores ?? 0) + " " + Services.I18nService.getTranslation(
+                                          "panel.cores", "núcleos")
                                 font.pixelSize: Appearance.typeScale.labelSmall
                                 color: Appearance.md3.on_surface_variant
                             }
@@ -121,7 +127,8 @@ Item {
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.cpuUsage ?? 0
-                        accentColor: root.getUsageColor(Services.SystemInfoService.cpuUsage, Appearance.md3.primary)
+                        accentColor: root.getUsageColor(Services.SystemInfoService.cpuUsage,
+                                                        Appearance.md3.primary)
                         implicitHeight: 6
                     }
                 }
@@ -152,7 +159,8 @@ Item {
                         MaterialIcon {
                             icon: "developer_board"
                             size: Appearance.typeScale.bodyLarge
-                            color: root.getUsageColor(Services.SystemInfoService.memUsage, Appearance.md3.primary)
+                            color: root.getUsageColor(Services.SystemInfoService.memUsage,
+                                                      Appearance.md3.primary)
                             Layout.alignment: Qt.AlignVCenter
                         }
 
@@ -169,7 +177,8 @@ Item {
                             text: Services.SystemInfoService.memUsagePct ?? "0%"
                             font.pixelSize: Appearance.typeScale.titleSmall
                             font.weight: Font.Bold
-                            color: root.getUsageColor(Services.SystemInfoService.memUsage, Appearance.md3.primary)
+                            color: root.getUsageColor(Services.SystemInfoService.memUsage,
+                                                      Appearance.md3.primary)
                             Layout.alignment: Qt.AlignVCenter
                         }
                     }
@@ -177,12 +186,14 @@ Item {
                     M3ProgressBar {
                         Layout.fillWidth: true
                         value: Services.SystemInfoService.memUsage ?? 0
-                        accentColor: root.getUsageColor(Services.SystemInfoService.memUsage, Appearance.md3.primary)
+                        accentColor: root.getUsageColor(Services.SystemInfoService.memUsage,
+                                                        Appearance.md3.primary)
                         implicitHeight: 6
                     }
 
                     StyledText {
-                        text: root.fmtMem(Services.SystemInfoService.memUsedMiB) + " / " + root.fmtMem(Services.SystemInfoService.memTotalMiB)
+                        text: root.fmtMem(Services.SystemInfoService.memUsedMiB) + " / " + root.fmtMem(
+                                  Services.SystemInfoService.memTotalMiB)
                         font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
@@ -199,7 +210,11 @@ Item {
                 color: Appearance.md3.surface_container_high
                 opacity: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? 1.0 : 0.50
 
-                Behavior on opacity { NumberAnimation { duration: Appearance.motion.medium2 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Appearance.motion.medium2
+                    }
+                }
 
                 ColumnLayout {
                     anchors.left: parent.left
@@ -227,9 +242,10 @@ Item {
                         }
 
                         StyledText {
-                            text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
-                                ? Math.round((Services.SystemInfoService.swapUsage ?? 0) * 100) + "%"
-                                : "—"
+                            text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? Math.round((
+                                                                                                      Services.SystemInfoService.swapUsage
+                                                                                                      ?? 0) * 100)
+                                                                                       + "%" : "—"
                             font.pixelSize: Appearance.typeScale.titleSmall
                             font.weight: Font.Bold
                             color: Appearance.md3.secondary
@@ -245,9 +261,13 @@ Item {
                     }
 
                     StyledText {
-                        text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0
-                            ? root.fmtMem(Services.SystemInfoService.swapUsedMiB) + " / " + root.fmtMem(Services.SystemInfoService.swapTotalMiB)
-                            : Services.I18nService.getTranslation("panel.off", "Desactivada")
+                        text: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? root.fmtMem(
+                                                                                       Services.SystemInfoService.swapUsedMiB)
+                                                                                   + " / " + root.fmtMem(
+                                                                                       Services.SystemInfoService.swapTotalMiB) :
+                                                                                   Services.I18nService.getTranslation(
+                                                                                       "panel.off",
+                                                                                       "Desactivada")
                         font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                         elide: Text.ElideRight
@@ -332,7 +352,8 @@ Item {
                     MaterialIcon {
                         icon: "hard_drive"
                         size: Appearance.font.pixelSize.large
-                        color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                        color: root.getUsageColor(Services.SystemInfoService.diskUsage,
+                                                  Appearance.md3.primary)
                         Layout.alignment: Qt.AlignVCenter
                     }
 
@@ -353,10 +374,13 @@ Item {
                             }
 
                             StyledText {
-                                text: (Services.SystemInfoService.diskUsed ?? "0G") + " / " + (Services.SystemInfoService.diskTotal ?? "0G") + " (" + (Services.SystemInfoService.diskUsagePct ?? "0%") + ")"
+                                text: (Services.SystemInfoService.diskUsed ?? "0G") + " / " + (
+                                          Services.SystemInfoService.diskTotal ?? "0G") + " (" + (
+                                          Services.SystemInfoService.diskUsagePct ?? "0%") + ")"
                                 font.pixelSize: Appearance.typeScale.labelMedium
                                 font.weight: Font.Bold
-                                color: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                                color: root.getUsageColor(Services.SystemInfoService.diskUsage,
+                                                          Appearance.md3.primary)
                                 Layout.alignment: Qt.AlignBottom
                             }
                         }
@@ -364,7 +388,8 @@ Item {
                         M3ProgressBar {
                             Layout.fillWidth: true
                             value: Services.SystemInfoService.diskUsage ?? 0
-                            accentColor: root.getUsageColor(Services.SystemInfoService.diskUsage, Appearance.md3.primary)
+                            accentColor: root.getUsageColor(Services.SystemInfoService.diskUsage,
+                                                            Appearance.md3.primary)
                             implicitHeight: 6
                         }
                     }

@@ -10,8 +10,7 @@
   `s 8`, `m 12`, `l 16`, `xl 24`); `font` + `typeScale` (label/
   body/title/headline); `motion` (duraciones short/medium/long +
   curvas `standard`/`emphasized` + springs `springSoft/Bouncy/Snappy`,
-  con `reduced` si `configs.appearance.reduceMotion`); `shadows` y
-  `reduceMotion` salen de `configs.appearance`.
+  fijos y sobrios por diseño, sin interruptores).
 - `Modules/` — `Directories` (rutas config/state), `Icons`, `Persistent`
   (persistencia con debounce), `Screens`.
 - `Services/` — singletons (ver `qmldir`, módulo `qs.Core.Services`):
@@ -24,7 +23,8 @@
   `LockState`, `MprisService`, `NetworkService`, `NotificationData` +
   `NotificationService`, `PolkitService`, `RandomPhraseses`,
   `SystemInfoService`, `ThemeApplier` (`init()`), `TimeService`,
-  `UpdatesTracking`, `WallpaperService`, `WeatherService`
+  `UpdatesTracking`, `VideoFrameService` (frames de vídeo) +
+  `VideoSupport` (sonda QtMultimedia), `WallpaperService`, `WeatherService`
   (+ `WeatherFormat.js` puro). Submódulo `Brightness/` (módulo
   `qs.Core.Services.Brightness`): singletons `BrightnessService`,
   `KbdBacklight` + `BrightnessMonitor` + `DdcUtils.js`.

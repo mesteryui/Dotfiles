@@ -21,7 +21,8 @@ Singleton {
     readonly property var locale: I18nService.locale
 
     // Barra: "mar 14:32".
-    readonly property string barText: root.date.toLocaleDateString(root.locale, "ddd") + " " + root.timeString()
+    readonly property string barText: root.date.toLocaleDateString(root.locale, "ddd") + " " + root.timeString(
+                                          )
 
     function timeString(fmt) {
         return root.date.toLocaleTimeString(root.locale, fmt || "hh:mm");

@@ -12,12 +12,12 @@ import Quickshell.Io
 import Quickshell.Wayland
 
 /**
- * Cheatsheet (Scope ligero + LazyLoader interno).
- * El IpcHandler/GlobalShortcut y el hideTimer viven en el scope para
- * responder antes de cargar; la PanelWindow fullscreen solo se instancia
- * al abrir. El fade-out se conserva: el loader sigue activo mientras
- * hideTimer corre, aunque active ya sea false.
- */
+* Cheatsheet (Scope ligero + LazyLoader interno).
+* El IpcHandler/GlobalShortcut y el hideTimer viven en el scope para
+* responder antes de cargar; la PanelWindow fullscreen solo se instancia
+* al abrir. El fade-out se conserva: el loader sigue activo mientras
+* hideTimer corre, aunque active ya sea false.
+*/
 Scope {
     id: scope
 
@@ -34,8 +34,13 @@ Scope {
     }
 
     onActiveChanged: {
-        if (!active)
+        if (!active) {
             hideTimer.restart();
+        } else if (Services.HyprlandKeybinds.failed || Services.HyprlandKeybinds.keybinds.length === 0) {
+            // Reintento al abrir: si la lectura de arranque falló (socket
+            // no listo), el error persistía hasta el próximo configreloaded.
+            Services.HyprlandKeybinds.refresh();
+        }
     }
 
     IpcHandler {
@@ -65,6 +70,7 @@ Scope {
 
     LazyLoader {
         id: cheatsheetLoader
+
         loading: scope.isVisible
 
         component: PanelWindow {

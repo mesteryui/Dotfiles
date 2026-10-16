@@ -1,11 +1,11 @@
-import Quickshell
-import Quickshell.Hyprland
-import QtQuick
 import qs.Core.Services
-import Quickshell.Wayland
 import qs.Shared.Background
 import qs.Core
+import QtQuick
 import QtQuick.Effects
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
 
 // Scope ligero: el Ipc/GlobalShortcut vive aquí para responder antes de
 // cargar. La PanelWindow pesada solo se instancia al abrir (ahorro en arranque).
@@ -69,9 +69,9 @@ Scope {
             // "ShaderEffect: 'source' does not have a matching property" del primer frame.
             MultiEffect {
                 id: panelShadow
+
                 anchors.fill: bg
-                visible: Appearance.shadows
-                shadowEnabled: Appearance.shadows
+                shadowEnabled: true
                 shadowColor: Appearance.md3.shadow
                 shadowBlur: 0.85
                 shadowVerticalOffset: 6

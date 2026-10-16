@@ -77,7 +77,8 @@ Item {
                     }
 
                     StyledText {
-                        text: I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(WeatherService.data.tempFeelsLike)
+                        text: I18nService.getTranslation("weather.feels_like", "Sensación %1").arg(
+                                  WeatherService.data.tempFeelsLike)
                         color: Appearance.md3.on_surface_variant
                         font.pixelSize: Appearance.typeScale.labelMedium
                         Layout.alignment: Qt.AlignVCenter
@@ -94,7 +95,8 @@ Item {
 
                 // Mínima / máxima de hoy (humedad y viento solo en la rejilla)
                 StyledText {
-                    text: I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(WeatherService.data.tempMax).arg(WeatherService.data.tempMin)
+                    text: I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(
+                              WeatherService.data.tempMax).arg(WeatherService.data.tempMin)
                     color: Appearance.md3.on_surface
                     font.pixelSize: Appearance.typeScale.labelMedium
                     font.weight: Font.Medium
@@ -127,6 +129,7 @@ Item {
         GridLayout {
             id: detailsGrid
             Layout.fillWidth: true
+
             columns: 3
             rowSpacing: 8
             columnSpacing: 8
@@ -135,6 +138,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "air"
                     size: 20
@@ -143,6 +147,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.wind + " " + WeatherService.data.windDir
                         color: Appearance.md3.on_surface
@@ -160,6 +165,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "water_drop"
                     size: 20
@@ -168,6 +174,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.humidity
                         color: Appearance.md3.on_surface
@@ -185,6 +192,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "compress"
                     size: 20
@@ -193,6 +201,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.press
                         color: Appearance.md3.on_surface
@@ -210,6 +219,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "visibility"
                     size: 20
@@ -218,6 +228,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.visib
                         color: Appearance.md3.on_surface
@@ -235,6 +246,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "rainy"
                     size: 20
@@ -243,6 +255,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.precip
                         color: Appearance.md3.on_surface
@@ -260,6 +273,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "umbrella"
                     size: 20
@@ -268,6 +282,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.precipProb
                         color: Appearance.md3.on_surface
@@ -285,6 +300,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "light_mode"
                     size: 20
@@ -293,6 +309,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: String(WeatherService.data.uv)
                         color: Appearance.md3.on_surface
@@ -310,6 +327,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "wb_twilight"
                     size: 20
@@ -318,6 +336,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.sunrise
                         color: Appearance.md3.on_surface
@@ -335,6 +354,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "bedtime"
                     size: 20
@@ -343,6 +363,7 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
                         text: WeatherService.data.sunset
                         color: Appearance.md3.on_surface
@@ -360,6 +381,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Appearance.spacing.s
+
                 MaterialIcon {
                     icon: "eco"
                     size: 20
@@ -368,8 +390,10 @@ Item {
                 ColumnLayout {
                     spacing: 0
                     Layout.fillWidth: true
+
                     StyledText {
-                        text: WeatherService.data.aqi >= 0 ? WeatherService.data.aqi + " · " + root.aqiLabel(WeatherService.data.aqiLevel) : "--"
+                        text: WeatherService.data.aqi >= 0 ? WeatherService.data.aqi + " · " + root.aqiLabel(
+                                                                 WeatherService.data.aqiLevel) : "--"
                         color: Appearance.md3.on_surface
                         font.pixelSize: Appearance.typeScale.labelMedium
                         font.weight: Font.Medium

@@ -4,7 +4,6 @@
 //   expresivo con halo Sunny + respiración (centro de notificaciones).
 import qs.Core
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell.Widgets
 import M3Shapes
@@ -17,25 +16,37 @@ ColumnLayout {
     // Icono: o bien fuente del sistema (launcher: "search-none-symbolic")...
     property url iconSource: ""
     // ...o bien símbolo Material.
+
     property string iconName: ""
+
     property int iconSize: 48
+
     property color iconColor: Appearance.md3.on_surface_variant
+
     property real iconOpacity: 1.0
 
     // Halo expresivo con respiración (solo notificaciones).
     property bool expressive: false
 
     property string title: ""
+
     property int titleSize: Appearance.typeScale.titleSmall
+
     property color titleColor: Appearance.md3.on_surface_variant
     // Títulos con énfasis M3 (ejes variables title en vez de main).
+
     property bool titleEmphasis: false
+
     property string subtitle: ""
+
     property int subtitleSize: Appearance.typeScale.labelMedium
+
     property color subtitleColor: Appearance.md3.on_surface_variant
 
     property string actionText: ""
+
     property bool actionVisible: false
+
     signal actionClicked
 
     // --- Icono plano / fuente del sistema ---
@@ -81,25 +92,12 @@ ColumnLayout {
             }
         }
 
-        MultiEffect {
-            id: haloShadow
-
-            anchors.fill: haloShape
-            visible: Appearance.shadows
-            shadowEnabled: Appearance.shadows
-            shadowColor: Appearance.md3.shadow
-            shadowOpacity: 0.15
-            shadowBlur: 0.5
-            shadowVerticalOffset: 2
-            z: -1
-            Component.onCompleted: haloShadow.source = haloShape
-        }
-
         Timer {
             interval: 1600
-            running: root.expressive && root.visible && !Appearance.motion.reduced
+            running: root.expressive && root.visible
             repeat: true
-            onTriggered: haloShape.shape = haloShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
+            onTriggered: haloShape.shape = haloShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny :
+                                                                                     MaterialShape.Sunny
         }
     }
 
@@ -108,7 +106,8 @@ ColumnLayout {
         visible: root.title !== ""
         text: root.title
         font.pixelSize: root.titleSize
-        font.variableAxes: root.titleEmphasis ? Appearance.font.variableAxes.title : Appearance.font.variableAxes.main
+        font.variableAxes: root.titleEmphasis ? Appearance.font.variableAxes.title :
+                                                Appearance.font.variableAxes.main
         color: root.titleColor
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap

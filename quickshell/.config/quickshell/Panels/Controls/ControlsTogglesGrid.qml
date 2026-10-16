@@ -19,13 +19,25 @@ GridLayout {
     columnSpacing: 8
     uniformCellWidths: true
 
+    // Estado real de luz nocturna al abrir: la conexión al daemon es lazy
+    // (no existe hasta el primer uso), así que se establece y sincroniza
+    // aquí. El toggle vive en este mismo panel: para cuando el usuario lo
+    // mire, el estado ya convergió.
+    Component.onCompleted: {
+        Services.Hyprsunset.ensureConnected();
+        Services.Hyprsunset.syncState();
+    }
+
     // WiFi
     ControlToggle {
         id: wifiToggleItem
         Layout.fillWidth: true
+
         iconName: host.wifiEnabled ? "wifi" : "wifi_off"
         label: Services.I18nService.getTranslation("panel.wifi", "WiFi")
-        stateText: host.wifiEnabled ? Services.I18nService.getTranslation("panel.connected", "Conectado") : Services.I18nService.getTranslation("panel.disconnected", "Desconectado")
+        stateText: host.wifiEnabled ? Services.I18nService.getTranslation("panel.connected", "Conectado") :
+                                      Services.I18nService.getTranslation("panel.disconnected",
+                                                                          "Desconectado")
         active: host.wifiEnabled
         enable: Networking.wifiHardwareEnabled
         keyboardMode: host.keyboardMode
@@ -45,9 +57,14 @@ GridLayout {
     ControlToggle {
         id: btToggle
         Layout.fillWidth: true
+
         iconName: host.btEnabled ? "bluetooth" : "bluetooth_disabled"
         label: Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
-        stateText: !host.btEnabled ? Services.I18nService.getTranslation("panel.off", "Desactivado") : (Services.BluetoothService.connectedBatteryPct >= 0 ? Services.I18nService.getTranslation("panel.on", "Activado") + " · " + Services.BluetoothService.connectedBatteryPct + "%" : Services.I18nService.getTranslation("panel.on", "Activado"))
+        stateText: !host.btEnabled ? Services.I18nService.getTranslation("panel.off", "Desactivado") : (
+                                         Services.BluetoothService.connectedBatteryPct >= 0
+                                         ? Services.I18nService.getTranslation("panel.on", "Activado")
+                                           + " · " + Services.BluetoothService.connectedBatteryPct + "%" :
+                                           Services.I18nService.getTranslation("panel.on", "Activado"))
         active: host.btEnabled
         enable: host.btAdapter !== null
         keyboardMode: host.keyboardMode
@@ -70,9 +87,13 @@ GridLayout {
     ControlToggle {
         id: cafeToggle
         Layout.fillWidth: true
+
         iconName: "local_cafe"
         label: Services.I18nService.getTranslation("panel.caffeine", "Cafeína")
-        stateText: Services.IdleInhibitedService.inhibited ? Services.I18nService.getTranslation("panel.caffeine_on", "Activada") : Services.I18nService.getTranslation("panel.caffeine_off", "Desactivada")
+        stateText: Services.IdleInhibitedService.inhibited ? Services.I18nService.getTranslation(
+                                                                 "panel.caffeine_on", "Activada") :
+                                                             Services.I18nService.getTranslation(
+                                                                 "panel.caffeine_off", "Desactivada")
         active: Services.IdleInhibitedService.inhibited
         keyboardMode: host.keyboardMode
         onToggled: Services.IdleInhibitedService.toggle()
@@ -91,9 +112,13 @@ GridLayout {
     ControlToggle {
         id: dndToggle
         Layout.fillWidth: true
+
         iconName: Services.NotificationData.dnd ? "bedtime" : "notifications"
         label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
-        stateText: Services.NotificationData.dnd ? Services.I18nService.getTranslation("panel.dnd_on", "Activado") : Services.I18nService.getTranslation("panel.dnd_off", "Desactivado")
+        stateText: Services.NotificationData.dnd ? Services.I18nService.getTranslation("panel.dnd_on",
+                                                                                       "Activado") :
+                                                   Services.I18nService.getTranslation("panel.dnd_off",
+                                                                                       "Desactivado")
         active: Services.NotificationData.dnd
         keyboardMode: host.keyboardMode
         onToggled: Services.NotificationData.toggleDnd()
@@ -110,9 +135,13 @@ GridLayout {
     ControlToggle {
         id: nightToggle
         Layout.fillWidth: true
+
         iconName: Services.Hyprsunset.nightLightActive ? "bedtime" : "bedtime"
         label: Services.I18nService.getTranslation("panel.night_light", "Luz nocturna")
-        stateText: Services.Hyprsunset.nightLightActive ? Services.I18nService.getTranslation("panel.on", "Activado") : Services.I18nService.getTranslation("panel.off", "Desactivado")
+        stateText: Services.Hyprsunset.nightLightActive ? Services.I18nService.getTranslation("panel.on",
+                                                                                              "Activado") :
+                                                          Services.I18nService.getTranslation("panel.off",
+                                                                                              "Desactivado")
         active: Services.Hyprsunset.nightLightActive
         keyboardMode: host.keyboardMode
         onToggled: Services.Hyprsunset.toggleNightLight()
@@ -129,9 +158,11 @@ GridLayout {
     ControlToggle {
         id: gameToggleItem
         Layout.fillWidth: true
+
         iconName: "gamepad"
         label: Services.I18nService.getTranslation("panel.game_mode", "Modo de Juego")
-        stateText: Services.GameMode.enabled ? Services.I18nService.getTranslation("panel.on", "Activado") : Services.I18nService.getTranslation("panel.off", "Desactivado")
+        stateText: Services.GameMode.enabled ? Services.I18nService.getTranslation("panel.on", "Activado") :
+                                               Services.I18nService.getTranslation("panel.off", "Desactivado")
         active: Services.GameMode.enabled
         keyboardMode: host.keyboardMode
         onToggled: Services.GameMode.toggle()

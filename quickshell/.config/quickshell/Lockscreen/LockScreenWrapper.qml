@@ -24,6 +24,7 @@ FocusScope {
     // La etapa de contraseña solo existe cuando isAwake=true: PAM arranca
     // al despertar y se aborta al volver a dormir (ver onIsAwakeChanged).
     property bool isAwake: false
+
     property string _pendingKeyText: ""
 
     // ── Estado interno ────────────────────────────────────────────
@@ -37,7 +38,8 @@ FocusScope {
     // (fprintd escaneando el dedo). Se usa para el icono de huella —
     // el campo de contraseña sigue habilitado, el usuario puede escribir
     // en cualquier momento como alternativa.
-    readonly property bool isFingerprintActive: AuthService.active && !AuthService.awaitingResponse && !root.isAuthenticating
+    readonly property bool isFingerprintActive: AuthService.active && !AuthService.awaitingResponse &&
+                                                !root.isAuthenticating
 
     // ── Estado MPRIS (posición centralizada y throttled en el servicio) ──
     // Este wrapper se apunta al crearse (uno por pantalla: el servicio
@@ -109,6 +111,7 @@ FocusScope {
         revealScaleAnim.start();
         MprisService.positionClients += 1;
     }
+
     Component.onDestruction: {
         MprisService.positionClients -= 1;
     }
@@ -141,7 +144,8 @@ FocusScope {
                 return;
             }
             const isPrintable = event.text.length > 0 && event.text.charCodeAt(0) >= 32;
-            const isEditKey = event.key === Qt.Key_Backspace || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space || event.key === Qt.Key_Tab;
+            const isEditKey = event.key === Qt.Key_Backspace || event.key === Qt.Key_Return || event.key
+                  === Qt.Key_Enter || event.key === Qt.Key_Space || event.key === Qt.Key_Tab;
             if (!isPrintable && !isEditKey)
                 return;
             root.isAwake = true;
@@ -149,7 +153,8 @@ FocusScope {
                 root._pendingKeyText += event.text;
             event.accepted = true;
         } else {
-            if (event.key === Qt.Key_Escape && !root.isAuthenticating && content.passwordField.text.length === 0) {
+            if (event.key === Qt.Key_Escape && !root.isAuthenticating && content.passwordField.text.length
+                    === 0) {
                 root.isAwake = false;
                 event.accepted = true;
             }
@@ -183,6 +188,7 @@ FocusScope {
 
     Timer {
         id: wakeTimer
+
         interval: 50
         onTriggered: {
             content.passwordField.forceActiveFocus();

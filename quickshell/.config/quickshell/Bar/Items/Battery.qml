@@ -12,7 +12,9 @@ BarItem {
     LazyLoader {
         id: loader
 
-        loading: root.hoveredChanged
+        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy:
+        // cargaba eager en arranque). Carga async al primer hover.
+        loading: root.hovered
         component: BatteryPopupWindow {
             id: popupWindow
         }

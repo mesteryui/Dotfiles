@@ -6,19 +6,20 @@ import QtQuick
 import QtQuick.Layouts
 
 /**
- * CheatsheetKeybindRow
- * ---------------------
- * One row inside a CheatsheetCategoryCard:
- *   [Super] + [Shift] + [Q]   Close active window
- *
- * `bind` is one entry from HyprlandKeybinds.groupedKeybinds[category]:
- *   { mods: string[], keyLabel: string, label: string, repeat: bool, searchText: string }
- */
+* CheatsheetKeybindRow
+* ---------------------
+* One row inside a CheatsheetCategoryCard:
+*   [Super] + [Shift] + [Q]   Close active window
+*
+* `bind` is one entry from HyprlandKeybinds.groupedKeybinds[category]:
+*   { mods: string[], keyLabel: string, label: string, repeat: bool, searchText: string }
+*/
 Item {
     id: root
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: (bind.mods.length > 0 ? bind.mods.join(" + ") + " + " : "") + bind.keyLabel + ": " + bind.label
+    Accessible.name: (bind.mods.length > 0 ? bind.mods.join(" + ") + " + " : "") + bind.keyLabel + ": "
+                     + bind.label
 
     required property var bind
     /// Set to true by the parent when this row is the keyboard-focused item.

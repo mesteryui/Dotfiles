@@ -177,24 +177,6 @@ Item {
                     }
                 }
 
-                // Sombra tonal para dar profundidad Material You (sigue la silueta).
-                // source declarativo: evita el warning del primer frame
-                // "ShaderEffect: 'source' does not have a matching property"
-                // que aparece cuando source es null al crear el MultiEffect
-                // (el patrón onCompleted retrasa la asignación un frame).
-                MultiEffect {
-                    id: artShadow
-                    anchors.fill: artShapeBg
-                    source: artShapeBg
-                    visible: Appearance.shadows
-                    shadowEnabled: Appearance.shadows
-                    shadowColor: Appearance.md3.shadow
-                    shadowOpacity: Appearance.elevation3.opacity
-                    shadowBlur: Appearance.elevation3.blur
-                    shadowVerticalOffset: Appearance.elevation3.offsetY
-                    z: -1
-                }
-
                 // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
                 // Declarada ANTES de artImage para que maskSource nunca apunte
                 // a un item sin textura en el primer frame (warning
@@ -251,6 +233,7 @@ Item {
                     // con onCompleted el primer frame usa máscara nula.
                     layer.effect: MultiEffect {
                         id: artMaskEffect
+
                         maskEnabled: true
                         maskSource: artMaskShape
                     }
@@ -297,7 +280,8 @@ Item {
                 // Título de la pista
                 StyledText {
                     Layout.fillWidth: true
-                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.empty", "Nada reproduciendo")
+                    text: root.player?.trackTitle ?? Services.I18nService.getTranslation("media.empty",
+                                                                                         "Nada reproduciendo")
                     font.pixelSize: Appearance.font.pixelSize.large
                     font.weight: Font.DemiBold
                     font.family: Appearance.font.sans
@@ -327,7 +311,9 @@ Item {
                     color: Qt.alpha(Appearance.md3.on_surface_variant, 0.75)
                     elide: Text.ElideRight
                     maximumLineCount: 1
-                    visible: text !== "" && text !== (root.player?.trackTitle ?? "") && text !== (root.player?.trackArtist ?? "")
+                    visible: text !== "" && text !== (root.player?.trackTitle ?? "") && text !== (root.player
+                                                                                                  ?.trackArtist
+                                                                                                  ?? "")
                 }
             }
         }
@@ -405,7 +391,10 @@ Item {
                 implicitHeight: 56
 
                 Accessible.role: Accessible.Button
-                Accessible.name: playPauseHero.playing ? Services.I18nService.getTranslation("media.pause", "Pausar") : Services.I18nService.getTranslation("media.play", "Reproducir")
+                Accessible.name: playPauseHero.playing ? Services.I18nService.getTranslation("media.pause",
+                                                                                             "Pausar") :
+                                                         Services.I18nService.getTranslation("media.play",
+                                                                                             "Reproducir")
 
                 readonly property bool playing: Services.MprisService.isPlaying
 
@@ -416,22 +405,9 @@ Item {
 
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
-                    color: heroMouse.enabled ? Appearance.md3.primary : Appearance.md3.surface_container_highest
+                    color: heroMouse.enabled ? Appearance.md3.primary :
+                                               Appearance.md3.surface_container_highest
                     animationDuration: Appearance.motion.long1
-                }
-
-                // Sombra: source declarativo (ver artShadow arriba).
-                MultiEffect {
-                    id: heroShadow
-                    anchors.fill: heroBg
-                    source: heroBg
-                    visible: Appearance.shadows
-                    shadowEnabled: Appearance.shadows
-                    shadowColor: Appearance.md3.shadow
-                    shadowOpacity: Appearance.elevation3.opacity
-                    shadowBlur: Appearance.elevation3.blur
-                    shadowVerticalOffset: Appearance.elevation3.offsetY
-                    z: -1
                 }
 
                 // Capa de estado (hover/press) — misma silueta que el fondo
@@ -442,7 +418,8 @@ Item {
                     shape: playPauseHero.heroShape
                     color: Appearance.md3.on_primary
                     animationDuration: Appearance.motion.long1
-                    opacity: heroMouse.pressed ? Appearance.state.pressed : (heroMouse.containsMouse ? Appearance.state.hovered : 0)
+                    opacity: heroMouse.pressed ? Appearance.state.pressed : (heroMouse.containsMouse
+                                                                             ? Appearance.state.hovered : 0)
 
                     Behavior on opacity {
                         NumberAnimation {
@@ -569,7 +546,8 @@ Item {
                                 implicitWidth: chipContent.implicitWidth + 24
                                 implicitHeight: 34
                                 radius: Appearance.shape.full
-                                color: chipItem.isActive ? Appearance.md3.secondary_container : Appearance.md3.surface_container_low
+                                color: chipItem.isActive ? Appearance.md3.secondary_container :
+                                                           Appearance.md3.surface_container_low
                                 border.width: chipItem.isActive ? 0 : 1
                                 border.color: Appearance.md3.outline_variant
 
@@ -582,7 +560,8 @@ Item {
                                 M3StateLayer {
                                     anchors.fill: parent
                                     radius: parent.radius
-                                    tint: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface
+                                    tint: chipItem.isActive ? Appearance.md3.on_secondary_container :
+                                                              Appearance.md3.on_surface
                                     hovered: chipMouse.containsMouse
                                     pressed: chipMouse.pressed
                                 }
@@ -604,7 +583,8 @@ Item {
                                         font.family: Appearance.font.sans
                                         font.pixelSize: Appearance.typeScale.labelMedium
                                         font.weight: chipItem.isActive ? Font.Medium : Font.Normal
-                                        color: chipItem.isActive ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant
+                                        color: chipItem.isActive ? Appearance.md3.on_secondary_container :
+                                                                   Appearance.md3.on_surface_variant
 
                                         Behavior on color {
                                             ColorAnimation {

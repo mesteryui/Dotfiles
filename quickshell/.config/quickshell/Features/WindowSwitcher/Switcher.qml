@@ -47,6 +47,7 @@ Scope {
     // destruye al cerrar, su visible va atado a scope.shown.
     LazyLoader {
         id: switcherLoader
+
         loading: scope.shown
         component: PanelWindow {
             id: root
@@ -81,16 +82,19 @@ Scope {
                 if (!toplevel)
                     return false;
 
-                const appId = (toplevel.wayland ? toplevel.wayland.appId : "") || toplevel.windowClass || toplevel.initialClass;
+                const appId = (toplevel.wayland ? toplevel.wayland.appId : "") || toplevel.windowClass
+                      || toplevel.initialClass;
                 return appId !== undefined && appId !== "";
             }
 
             // Modelo ya filtrado: el ListView solo ve ventanas reales, así
             // que currentIndex/count/scroll cuadran sin saltar fantasmas.
             readonly property var realToplevels: Hyprland.toplevels.values.filter(root.isRealToplevel)
+
             readonly property int realWindowCount: realToplevels.length
             // Hay más ventanas de las que caben: mostrar ayudas de scroll
             // (fades laterales, chevrons y barra inferior).
+
             readonly property bool overflow: realWindowCount > maxVisibleItems
 
             // Con 0 ventanas se queda en el ancho de un único hueco (no
@@ -98,7 +102,8 @@ Scope {
             // ancho se queda fijo y el ListView es quien se desplaza.
             readonly property int visibleItemCount: Math.min(Math.max(realWindowCount, 1), maxVisibleItems)
 
-            implicitWidth: Math.min(screen.width * 0.9, listMargins * 2 + visibleItemCount * itemWidth - cardSpacing)
+            implicitWidth: Math.min(screen.width * 0.9, listMargins * 2 + visibleItemCount * itemWidth
+                                    - cardSpacing)
             // Altura extra para la barra de scroll/contador cuando hay overflow.
             implicitHeight: overflow ? panelHeightOverflow : panelHeight
             color: "transparent"
@@ -183,6 +188,7 @@ Scope {
                 // Hay contenido oculto a izquierda/derecha: alimenta los
                 // fades, chevrons y la barra inferior.
                 property bool canGoLeft: contentX > 1
+
                 property bool canGoRight: contentX + width < contentWidth - 1
 
                 // Modelo nulo con el switcher cerrado: la ventana se cachea
@@ -196,7 +202,8 @@ Scope {
                 // Qt avisa "must be attached to an object deriving from
                 // Item or Action" si se pone en la ventana.
                 Accessible.role: Accessible.Dialog
-                Accessible.name: Services.I18nService.getTranslation("switcher.toggle", "Window switcher Toggle")
+                Accessible.name: Services.I18nService.getTranslation("switcher.toggle",
+                                                                     "Window switcher Toggle")
                 Accessible.description: (currentIndex + 1) + " / " + count
 
                 highlightMoveDuration: root.animFast
@@ -313,13 +320,16 @@ Scope {
                                 implicitWidth: 58
                                 implicitHeight: 58
 
-                                property bool isCurrent: ListView.view ? ListView.view.currentIndex === windowDelegate.index : false
+                                property bool isCurrent: ListView.view ? ListView.view.currentIndex
+                                                                         === windowDelegate.index : false
 
                                 MaterialShape {
                                     anchors.fill: parent
-                                    shape: parent.isCurrent ? MaterialShape.Cookie9Sided : MaterialShape.Circle
+                                    shape: parent.isCurrent ? MaterialShape.Cookie9Sided :
+                                                              MaterialShape.Circle
                                     animationDuration: Appearance.motion.medium2
-                                    color: parent.isCurrent ? Appearance.md3.primary_container : Appearance.md3.surface_container_highest
+                                    color: parent.isCurrent ? Appearance.md3.primary_container :
+                                                              Appearance.md3.surface_container_highest
                                 }
 
                                 IconImage {
@@ -330,13 +340,13 @@ Scope {
                                         if (!tl)
                                             return ""; // Protección contra null
 
-                                        const appId = (tl.wayland ? tl.wayland.appId : "") || tl.windowClass || tl.initialClass;
+                                        const appId = (tl.wayland ? tl.wayland.appId : "") || tl.windowClass
+                                              || tl.initialClass;
                                         // Icons memoiza por appId: sin lookup repetido.
                                         return Icons.getAppIcon(appId, "application-x-executable");
                                     }
 
                                     Behavior on implicitSize {
-                                        enabled: !Appearance.motion.reduced
                                         SpringAnimation {
                                             spring: Appearance.motion.springSnappy.spring
                                             damping: Appearance.motion.springSnappy.damping
@@ -350,7 +360,8 @@ Scope {
                             StyledText {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 // Protección segura para extraer el título
-                                text: windowDelegate.modelData && windowDelegate.modelData.title ? windowDelegate.modelData.title : ""
+                                text: windowDelegate.modelData && windowDelegate.modelData.title
+                                      ? windowDelegate.modelData.title : ""
                                 elide: Text.ElideRight
                                 width: parent.width
                                 horizontalAlignment: Text.AlignHCenter
@@ -383,6 +394,7 @@ Scope {
                 visible: opacity > 0
                 gradient: Gradient {
                     orientation: Gradient.Horizontal
+
                     GradientStop {
                         position: 0.0
                         color: Appearance.md3.surface
@@ -392,6 +404,7 @@ Scope {
                         color: "transparent"
                     }
                 }
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.animMed
@@ -410,6 +423,7 @@ Scope {
                 visible: opacity > 0
                 gradient: Gradient {
                     orientation: Gradient.Horizontal
+
                     GradientStop {
                         position: 0.0
                         color: "transparent"
@@ -419,6 +433,7 @@ Scope {
                         color: Appearance.md3.surface
                     }
                 }
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.animMed

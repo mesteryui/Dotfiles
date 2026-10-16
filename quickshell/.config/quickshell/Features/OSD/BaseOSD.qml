@@ -72,9 +72,9 @@ Scope {
                 }
             }
             Behavior on scale {
-                enabled: !Appearance.motion.reduced
                 SpringAnimation {
                     id: popAnim
+
                     spring: Appearance.motion.springSoft.spring
                     damping: Appearance.motion.springSoft.damping
                     mass: Appearance.motion.springSoft.mass

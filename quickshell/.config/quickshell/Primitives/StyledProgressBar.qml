@@ -15,22 +15,24 @@ ProgressBar {
     width: parent.width
 
     background: Rectangle {
-        implicitWidth:  root.width
+        implicitWidth: root.width
         implicitHeight: root.barHeight
-        radius:         height / 2
-        color:          root.backgroundColor
+        radius: height / 2
+        color: root.backgroundColor
     }
 
     // Barra rellena
     contentItem: Item {
         Rectangle {
-            width:  root.visualPosition * parent.width
+            width: root.visualPosition * parent.width
             height: parent.height
             radius: height / 2
-            color:  root.accentColor
+            color: root.accentColor
 
             Behavior on width {
-                NumberAnimation { duration: Appearance.motion.short3 }
+                NumberAnimation {
+                    duration: Appearance.motion.short3
+                }
             }
         }
     }

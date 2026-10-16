@@ -21,7 +21,11 @@ Item {
 
     opacity: enabled ? 1.0 : Appearance.state.disabled
 
-    Behavior on opacity { NumberAnimation { duration: Appearance.motion.short3 } }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Appearance.motion.short3
+        }
+    }
 
     // State layer M3 (icon-button estándar): velo circular al hover/press.
     MaterialShape {
@@ -30,9 +34,14 @@ Item {
         height: width
         shape: MaterialShape.Circle
         color: Appearance.md3.on_surface
-        opacity: iconMouse.pressed ? Appearance.state.pressed : (iconMouse.containsMouse ? Appearance.state.hovered : 0.0)
+        opacity: iconMouse.pressed ? Appearance.state.pressed : (iconMouse.containsMouse
+                                                                 ? Appearance.state.hovered : 0.0)
 
-        Behavior on opacity { NumberAnimation { duration: Appearance.motion.short2 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Appearance.motion.short2
+            }
+        }
     }
 
     MaterialIcon {

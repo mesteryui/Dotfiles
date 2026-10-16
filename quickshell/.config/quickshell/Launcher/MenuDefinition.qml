@@ -82,8 +82,10 @@ QtObject {
         const o = opts || {};
         return {
             entryId: entryId,
-            titleFallback: title, titleKey: o.titleKey || "",
-            subtitleFallback: sub, subtitleKey: o.subtitleKey || "",
+            titleFallback: title,
+            titleKey: o.titleKey || "",
+            subtitleFallback: sub,
+            subtitleKey: o.subtitleKey || "",
             iconName: icon || "menu",
             action: action,
             previewPath: o.preview || ""
@@ -91,15 +93,24 @@ QtObject {
     }
 
     function shellCmd(cmd) {
-        return { kind: "shell", shellCommand: cmd };
+        return {
+            kind: "shell",
+            shellCommand: cmd
+        };
     }
 
     function ipcCall(call) {
-        return { kind: "ipc", ipcCall: call };
+        return {
+            kind: "ipc",
+            ipcCall: call
+        };
     }
 
     function goSection(target) {
-        return { kind: "section", targetSectionId: target };
+        return {
+            kind: "section",
+            targetSectionId: target
+        };
     }
 
     function shell(entryId, title, sub, icon, cmd, opts) {
