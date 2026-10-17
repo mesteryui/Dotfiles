@@ -5,16 +5,15 @@ lockscreen, notifications, media, settings.
 
 - `shell.qml` — root: `Scope` ligero por feature con `LazyLoader`
   interno (IPC/atajos responden al arranque, la `PanelWindow` solo se
-  instancia al abrir). `settings.watchFiles: true`. Al arrancar:
-  `ConfigService.load()`, `KeyboardThings.load()`,
-  `ThemeApplier.init()`. Incluye `Switcher`, `AppLauncher`,
-  `SettingsPanel`, `PanelWithControls`, `VolumeCenter`, `OsdManager`,
+  instancia al abrir). `settings.watchFiles: false`. Al arrancar:
+  `ConfigService.load()`, `ThemeApplier.init()`. Incluye `Switcher`,
+  `AppLauncher`, `SettingsPanel`, `PanelWithControls`, `VolumeCenter`, `OsdManager`,
   `WallpaperMenu`, `ScreenRounding`, `PowerButtons`, `Notifications`,
   `Cheatsheet`, `PolkitWindow`, `WallpaperLayer`, `Bar`, `LockScreen`.
 - `Bar/` — una `PanelWindow` por pantalla (`Bar.qml` + `MainBar.qml`,
   items, tray, redondeo). Ver `Bar/README.md`.
 - `Core/` — `Appearance.qml` (tokens M3), `Modules/` (`Directories`,
-  `Icons`, `Persistent`, `Screens`), `Services/` (30 singletons +
+  `Icons`, `Persistent`, `Screens`), `Services/` (31 singletons +
   submódulo `Brightness/`), `i18n/` (`en_US.json` referencia,
   `es_ES.json`, `eo.json`). Ver `Core/README.md` y `Core/i18n/I18N.md`.
 - `Launcher/` — buscador unificado de 7 modos (apps, menús `>`,

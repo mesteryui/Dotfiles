@@ -28,10 +28,6 @@ Singleton {
             props.inhibited = true;
         }
 
-        function isEnabled(): bool {
-            return props.inhibited;
-        }
-
         function off() {
             props.inhibited = false;
         }

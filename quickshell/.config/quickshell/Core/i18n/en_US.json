@@ -334,7 +334,34 @@
     "updating": "Updating…"
   },
   "wallpaper": {
+    "color": {
+      "black": "Black",
+      "blue": "Blue",
+      "brown": "Brown",
+      "cyan": "Cyan",
+      "gray": "Gray",
+      "green": "Green",
+      "orange": "Orange",
+      "pink": "Pink",
+      "purple": "Purple",
+      "red": "Red",
+      "white": "White",
+      "yellow": "Yellow"
+    },
+    "filter": {
+      "all": "All",
+      "analyzing": "Analyzing colors…",
+      "clear": "Clear",
+      "color": "Color",
+      "image": "Images",
+      "video": "Videos"
+    },
+    "hint_apply": "↵ Apply",
+    "hint_navigate": "← → Navigate",
+    "no_match": "No wallpaper matches",
+    "no_match_hint": "Try removing a filter",
     "no_results": "No wallpapers found",
+    "search": "Search wallpapers…",
     "title": "Wallpapers"
   },
   "weather": {

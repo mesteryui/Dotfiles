@@ -19,6 +19,12 @@
   segundo 1 para fondos animados (póster, lockscreen, matugen).
   Idempotente: si la salida existe y es más nueva que el vídeo, sale 0
   sin reescribir.
+- `wallpaper-scan.py --cache <json> --dir <carpeta>` — color dominante
+  (tono + hex + luma) de cada fondo, imágenes (ImageMagick) y vídeos
+  (ffmpeg). Caché incremental por `mtime`+`tamaño`: solo decodifica lo
+  nuevo o modificado. Alimenta el filtro por color del selector
+  (`WallpaperColorService`). Sin herramientas o con un fichero roto
+  omite ese fondo, nunca aborta el escaneo.
 
 QML style is enforced via `.qmlformat.ini` (spaces, indent 4, Unix
 newlines, max column 110) / `.qmlls.ini` at the shell root.

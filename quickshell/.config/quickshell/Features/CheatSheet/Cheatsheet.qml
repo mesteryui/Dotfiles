@@ -53,10 +53,6 @@ Scope {
         function show(): void {
             scope.active = true;
         }
-
-        function hide(): void {
-            scope.active = false;
-        }
     }
 
     // qmllint disable unresolved-type

@@ -14,11 +14,11 @@
   `NotificationService.centerOpen`) + `NotificationHistoryCard.qml`
   (`M3SelectionFill` + `M3StateLayer`) + `NotificationPopups.qml` +
   `NotificationToastCard.qml`.
-- `OSD/` (12 files) — `OsdManager.qml` (`Scope` grouping, no window)
+- `OSD/` (11 files) — `OsdManager.qml` (`Scope` grouping, no window)
   instantiates `VolumeOSD`, `BrightnessOSD`,
   `KeyboardBrightnessOSD`, `MicOSD`, `SpecialKeysOSD`, `GameModeOSD`,
   `BatteryOSD`; bases `BaseOSD.qml`, `PercentageOSD.qml`,
-  `IconTextOSD.qml`, `MediaOSD.qml`.
+  `IconTextOSD.qml`.
 - `WindowSwitcher/` — `Switcher.qml` alt-tab (`Scope` + IPC
   `switcher` `toggle`/`close` + `LazyLoader`-cached `PanelWindow`,
   `cycle`/`activateCurrent`, skips non-toplevels).

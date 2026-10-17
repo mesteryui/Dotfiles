@@ -14,9 +14,6 @@ Singleton {
     property bool capsLockOn: false
     property bool numsLock: false
 
-    function load() {
-    }
-
     Component.onCompleted: refreshCapsLock()
 
     // qmllint disable unresolved-type

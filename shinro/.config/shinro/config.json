@@ -7,12 +7,10 @@
             "type": "scheme-tonal-spot"
         },
         "monospace": "JetBrains Mono NerdFont",
-        "reading": "Google Sans Flex",
-        "reduceMotion": false,
-        "shadows": true
+        "reading": "Google Sans Flex"
     },
     "bar": {
-        "barType": "full_hug",
+        "barType": "partial_hug",
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"

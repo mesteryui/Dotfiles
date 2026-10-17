@@ -36,7 +36,7 @@ Other:
   `EmptyState`.
 - Buttons: `AnimatedIconButton`, `AnimatedTextButton`, `ButtonIcon`.
 - Controls: `ControlSlider`, `ControlSwitch`, `ControlToggle`.
-- Text: `StyledText`, `StyledTextArea`, `MaterialTextField`.
+- Text: `StyledText`, `MaterialTextField`.
 - Bars: `M3ProgressBar`, `StyledProgressBar`, `StyledScrollBar`,
   `MprisSeekBar`.
 - Icons/media: `MaterialIcon`, `FluentIcon`, `AppIcon`.

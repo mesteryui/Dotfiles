@@ -334,7 +334,34 @@
     "updating": "Ĝisdatigante…"
   },
   "wallpaper": {
+    "color": {
+      "black": "Nigra",
+      "blue": "Blua",
+      "brown": "Bruna",
+      "cyan": "Cejana",
+      "gray": "Griza",
+      "green": "Verda",
+      "orange": "Oranĝa",
+      "pink": "Roza",
+      "purple": "Purpura",
+      "red": "Ruĝa",
+      "white": "Blanka",
+      "yellow": "Flava"
+    },
+    "filter": {
+      "all": "Ĉiuj",
+      "analyzing": "Analizante kolorojn…",
+      "clear": "Forviŝi",
+      "color": "Koloro",
+      "image": "Bildoj",
+      "video": "Filmetoj"
+    },
+    "hint_apply": "↵ Apliki",
+    "hint_navigate": "← → Navigi",
+    "no_match": "Neniu fonbildo kongruas",
+    "no_match_hint": "Provu forigi filtrilon",
     "no_results": "Neniuj fonbildoj trovitaj",
+    "search": "Serĉi fonbildojn…",
     "title": "Fonbildoj"
   },
   "weather": {

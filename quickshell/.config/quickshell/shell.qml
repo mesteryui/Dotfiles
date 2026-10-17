@@ -36,7 +36,6 @@ ShellRoot {
         Qt.application.domain = "shinro.org";
         Qt.application.name = "shinro";
         ConfigService.load();
-        KeyboardThings.load();
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).
         ThemeApplier.init();
     }

@@ -96,10 +96,6 @@ Singleton {
             root.monitorsChanged();
     }
 
-    function getMonitorForScreen(screen: ShellScreen): var {
-        return root.monitors.find(m => m.modelData === screen) ?? null;
-    }
-
     readonly property var focusedMonitor: {
         const name = Hyprland.focusedMonitor?.name ?? "";
         return root.monitors.find(m => m.screenName === name) ?? root.monitors[0] ?? null;
@@ -146,14 +142,6 @@ Singleton {
 
     function adjustBrightness(delta: real) {
         root.setBrightness(root.brightness + delta);
-    }
-
-    function increaseBrightness(step: real) {
-        root.adjustBrightness(step > 0 ? step : 0.05);
-    }
-
-    function decreaseBrightness(step: real) {
-        root.adjustBrightness(-(step > 0 ? step : 0.05));
     }
 
     function refresh() {

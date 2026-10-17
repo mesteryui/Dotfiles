@@ -334,7 +334,34 @@
     "updating": "Actualizando…"
   },
   "wallpaper": {
+    "color": {
+      "black": "Negro",
+      "blue": "Azul",
+      "brown": "Marrón",
+      "cyan": "Cian",
+      "gray": "Gris",
+      "green": "Verde",
+      "orange": "Naranja",
+      "pink": "Rosa",
+      "purple": "Morado",
+      "red": "Rojo",
+      "white": "Blanco",
+      "yellow": "Amarillo"
+    },
+    "filter": {
+      "all": "Todos",
+      "analyzing": "Analizando colores…",
+      "clear": "Limpiar",
+      "color": "Color",
+      "image": "Imágenes",
+      "video": "Vídeos"
+    },
+    "hint_apply": "↵ Aplicar",
+    "hint_navigate": "← → Navegar",
+    "no_match": "Ningún fondo coincide",
+    "no_match_hint": "Prueba a quitar algún filtro",
     "no_results": "No se encontraron fondos",
+    "search": "Buscar fondos…",
     "title": "Fondos de Pantalla"
   },
   "weather": {

@@ -358,47 +358,6 @@ function filterFuzzyMulti(query, items, getTexts) {
     return results;
 }
 
-/**
- * Parte `text` en segmentos según qué caracteres matchearon, para que la UI
- * pueda resaltarlos (ej: negrita, color distinto) sin que este módulo tenga
- * que asumir nada sobre rich text / StyledText.
- *
- * @param {string} text
- * @param {number[]} indices  los `indices` que devuelve fuzzyMatch()
- * @returns {Array<{text: string, matched: boolean}>}
- */
-function highlightSegments(text, indices) {
-    if (!indices || indices.length === 0) {
-        return [{ text: text, matched: false }];
-    }
-
-    var segments = [];
-    var indexSet = {};
-    for (var k = 0; k < indices.length; k++)
-        indexSet[indices[k]] = true;
-    var current = "";
-    var currentMatched = null;
-    var i;
-
-    for (i = 0; i < text.length; i++) {
-        var isMatched = !!indexSet[i];
-        if (currentMatched === null) {
-            currentMatched = isMatched;
-        }
-        if (isMatched !== currentMatched) {
-            segments.push({ text: current, matched: currentMatched });
-            current = "";
-            currentMatched = isMatched;
-        }
-        current += text[i];
-    }
-    if (current.length > 0) {
-        segments.push({ text: current, matched: currentMatched });
-    }
-
-    return segments;
-}
-
 // Exports estilo CommonJS-ish para que Quickshell (`.import "FuzzyMatch.js" as FuzzyMatch`)
 // pueda acceder a las funciones vía FuzzyMatch.fuzzyMatch(...) etc. — Quickshell/QML
 // expone directamente las funciones top-level de un módulo .js, no hace falta module.exports.

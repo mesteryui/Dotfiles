@@ -20,8 +20,4 @@ Singleton {
         return Icons.getBatteryIcon(device.percentage, device.state === UPowerDeviceState.Charging);
     }
     readonly property var profile: PowerProfiles.profile
-
-    function changeProfile(newProfile) {
-        PowerProfiles.profile = newProfile;
-    }
 }

@@ -1,7 +1,6 @@
 import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
-import qs.Core.Modules
 import qs.Panels.Bluetooth
 import QtQuick
 import Quickshell

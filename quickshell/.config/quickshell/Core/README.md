@@ -24,7 +24,9 @@
   `NotificationService`, `PolkitService`, `RandomPhraseses`,
   `SystemInfoService`, `ThemeApplier` (`init()`), `TimeService`,
   `UpdatesTracking`, `VideoFrameService` (frames de vídeo) +
-  `VideoSupport` (sonda QtMultimedia), `WallpaperService`, `WeatherService`
+  `VideoSupport` (sonda QtMultimedia), `WallpaperColorService` (color
+  dominante por fondo, caché vía `scripts/wallpaper-scan.py`),
+  `WallpaperService`, `WeatherService`
   (+ `WeatherFormat.js` puro). Submódulo `Brightness/` (módulo
   `qs.Core.Services.Brightness`): singletons `BrightnessService`,
   `KbdBacklight` + `BrightnessMonitor` + `DdcUtils.js`.

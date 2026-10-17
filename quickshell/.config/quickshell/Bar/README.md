@@ -10,11 +10,11 @@
   el alto de la barra). `position` top/bottom, `height` (def. 36).
 - `MainBar.qml` — contenido: 3 zonas (left/center/right) con
   componentes directos de `Items/`.
-- `Content/` — popups de cada módulo (11): `Battery`, `Caffeine`,
-  `Clock`, `HyprlandSubmap`, `Network`, `Notifications`, `Player`,
+- `Content/` — popups de cada módulo (10): `Battery`, `Clock`,
+  `HyprlandSubmap`, `Network`, `Notifications`, `Player`,
   `UpdateCounter`, `Volume`, `Weather`, `WorkspaceButton`.
-- `Items/` — caras de barra (16 + base `BarItem.qml`): `Battery`,
-  `Bluetooth`, `Caffeine`, `Clock`, `HyprlandSubmap`, `Launcher`,
+- `Items/` — caras de barra (15 + base `BarItem.qml`): `Battery`,
+  `Bluetooth`, `Clock`, `HyprlandSubmap`, `Launcher`,
   `MprisPlayer`, `Network`, `Notifications`, `SysTray`, `UpdateCounter`,
   `Volume`, `Weather`, `WorkspaceButton`, `Workspaces` (+ `Workspaces`
   es el contenedor y `WorkspaceButton` el botón).

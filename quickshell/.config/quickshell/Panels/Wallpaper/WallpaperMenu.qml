@@ -54,7 +54,7 @@ Scope {
             id: wallpaperMenu
 
             implicitWidth: 1120
-            implicitHeight: 330
+            implicitHeight: 420
             color: "transparent"
             screen: root.focusedScreen
             visible: root.showing || root._isAnimatingOut
@@ -86,7 +86,13 @@ Scope {
 
             Shortcut {
                 sequence: "Escape"
-                onActivated: root.showing = false
+                onActivated: {
+                    // El contenido puede consumir el Escape antes que el menú
+                    // (limpiar la búsqueda o los filtros primero).
+                    const content = contentLoader.item;
+                    if (!content || !content.escapePressed || !content.escapePressed())
+                        root.showing = false;
+                }
             }
 
             Item {

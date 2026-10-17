@@ -45,7 +45,7 @@ input_path = "~/.config/matugen/templates/telegram.tdesktop-theme"
 output_path = "~/.local/share/TelegramDesktop/tdata/matugen.tdesktop-theme"
 
 [templates.steam]
-input_path = "~/.config/matugen/templates/steam.css"
+input_path = "~/.config/matugen/templates/millenium.css"
 output_path = "~/.steam/steam/steamui/skins/Material-Theme/css/main/colors/matugen.css"
 
 [templates.cava]

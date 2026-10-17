@@ -28,5 +28,6 @@ singleton TimeService 1.0 TimeService.qml
 singleton UpdatesTracking 1.0 UpdatesTracking.qml
 singleton VideoFrameService 1.0 VideoFrameService.qml
 singleton VideoSupport 1.0 VideoSupport.qml
+singleton WallpaperColorService 1.0 WallpaperColorService.qml
 singleton WallpaperService 1.0 WallpaperService.qml
 singleton WeatherService 1.0 WeatherService.qml

@@ -9,7 +9,7 @@ files only fill it.
   `PanelWithControlsContent.qml` (fixed header + per-tab scroll:
   `ControlsHeader`, `ControlsSliders`, `ControlsTogglesGrid`,
   `ControlsTabBar`; 2 tabs: `Tabs/SysInfoTab`, `Tabs/WeatherTab`;
-  reusable bits `Tabs/AppVolume`, `Tabs/CpuArc`).
+  reusable bits `Tabs/CpuArc`).
 - `Volume/` — `VolumeCenter.qml` (`Scope` + `GlobalShortcut`
   `audio_panel` + `LazyLoader`) + `VolumePanel.qml` +
   `VolumePopupContent.qml`.
@@ -22,10 +22,14 @@ files only fill it.
 - `Wallpaper/` — `WallpaperMenu.qml` (`Scope` + IPC
   `ui.wallpaperMenu` + `LazyLoader`) + `WallpaperItem.qml` +
   `WallpaperLayer.qml` + `WallpaperLayerScreen.qml` + `Content/`
-  (`WallpaperMenuContent`, `WallpaperItemContent`) + vídeo opcional:
+  (`WallpaperMenuContent` — carrusel + estado de filtros/búsqueda,
+  `WallpaperFilterBar` — tipo (todos/imágenes/vídeos) y color dominante,
+  `WallpaperItemContent`) + vídeo opcional:
   `AnimatedWallpaperPlayer.qml` (único con `import QtMultimedia`, carga
   aislada por `Loader`), frames vía `VideoFrameService` + script
   `scripts/extract-wallpaper-frame.sh`, disponibilidad en `VideoSupport`.
+  El filtro por color usa `WallpaperColorService` + script
+  `scripts/wallpaper-scan.py` (caché incremental en State).
 - `Updates/` — `UpdateList.qml` + `UpdateListHeader.qml` +
   `UpdateListFooter.qml` + `Content/` (`UpdateListContent`,
   `UpdateListHeaderContent`, `UpdateFooterContent`,

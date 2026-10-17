@@ -1,9 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.Bar.Content
-import qs.Bar
 import qs.Core
-import qs.Core.Services as Services
 import qs.Panels.Calendar
 import QtQuick
 import Quickshell
