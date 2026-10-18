@@ -127,7 +127,7 @@ PanelWindow {
                     }
                 }
 
-                // --- DND: botón de icono tonal M3 (Circle ↔ Cookie4Sided).
+                // --- DND: botón de icono tonal M3 (siempre circular).
                 // 40×40 es cuadrado, así que la silueta expresiva se ve completa.
                 // El halo de foco usa la MISMA forma que el fondo para que el
                 // anillo acompañe la morfología en vez de pelear con ella, y
@@ -139,8 +139,7 @@ PanelWindow {
                     implicitHeight: 40
                     activeFocusOnTab: true
 
-                    readonly property int dndShape: NotificationData.dnd ? MaterialShape.Cookie4Sided :
-                                                                           MaterialShape.Circle
+                    readonly property int dndShape: MaterialShape.Circle
 
                     readonly property bool dndOn: NotificationData.dnd
 

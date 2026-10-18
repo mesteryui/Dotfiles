@@ -9,7 +9,7 @@ hl.on("hyprland.start", function()
 	-- MALLOC_ARENA_MAX=4: con 12 cores glibc crearía hasta 96 arenas y
 	-- la shell retenía ~40 MB extra de heap fragmentado (medido: 660→621 MB).
 	-- `env` en vez de prefijo VAR= para no depender de shell en exec_cmd.
-	--hl.exec_cmd("env MALLOC_ARENA_MAX=4 qs -d -n")
+	hl.exec_cmd("qs -d -n")
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
 	--hl.exec_cmd("emacs --fg-daemon")
 	hl.exec_cmd("trash-empty 30")

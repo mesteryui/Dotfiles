@@ -15,7 +15,6 @@ import qs.Core
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
-import M3Shapes
 
 ColumnLayout {
     id: root
@@ -243,21 +242,17 @@ ColumnLayout {
             }
         }
 
-        // Thumb M3 Expressive — en reposo solo pista (slider small);
-        // al hover aparece el círculo y al arrastrar morfea a cookie.
-        MaterialShape {
+        // Thumb — círculo simple (sin MaterialShape ni morph); aparece al hover.
+        Rectangle {
             id: seekThumb
 
             x: Math.max(0, Math.min(trackContainer.width - width, trackContainer.width
                                     * trackContainer.displayRatio - width / 2))
             anchors.verticalCenter: parent.verticalCenter
-            width: seekArea.pressed ? 18 : 14
+            width: 14
             height: width
-            shape: seekArea.pressed ? MaterialShape.Cookie4Sided : MaterialShape.Circle
+            radius: width / 2
             color: Appearance.md3.primary
-            strokeColor: Appearance.md3.surface_container_lowest
-            strokeWidth: 1.5
-            animationDuration: Appearance.motion.medium1
             opacity: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0
             scale: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0.5
 
@@ -279,14 +274,6 @@ ColumnLayout {
 
                 NumberAnimation {
                     duration: 80
-                }
-            }
-            Behavior on width {
-                SpringAnimation {
-                    spring: Appearance.motion.springSnappy.spring
-                    damping: Appearance.motion.springSnappy.damping
-                    mass: Appearance.motion.springSnappy.mass
-                    epsilon: 0.25
                 }
             }
         }

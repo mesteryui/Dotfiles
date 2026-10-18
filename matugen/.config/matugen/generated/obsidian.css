@@ -5,123 +5,123 @@ body.theme-dark.theme-dark.theme-dark,
 body.theme-light.theme-light.theme-light {
 
     /* Material 3 RGB helpers */
-    --mat-bg-rgb:             26, 17, 17;
-    --mat-surface-rgb:        26, 17, 17;
-    --mat-on-surface-rgb:     240, 222, 222;
-    --mat-primary-rgb:        255, 179, 179;
-    --mat-on-primary-rgb:     86, 29, 32;
+    --mat-bg-rgb:             26, 17, 16;
+    --mat-surface-rgb:        26, 17, 16;
+    --mat-on-surface-rgb:     241, 222, 220;
+    --mat-primary-rgb:        255, 180, 171;
+    --mat-on-primary-rgb:     86, 30, 26;
 
     /* Core backgrounds */
-    --background-primary:           #1a1111;
-    --background-primary-alt:       #1a1111;
-    --background-secondary:         #221919;
-    --background-secondary-alt:     #271d1d;
+    --background-primary:           #1a1110;
+    --background-primary-alt:       #1a1110;
+    --background-secondary:         #231918;
+    --background-secondary-alt:     #271d1c;
 
     /* Titlebar */
-    --titlebar-background:          #1a1111;
-    --titlebar-background-focused:  #221919;
-    --titlebar-text-color:          #f0dede;
+    --titlebar-background:          #1a1110;
+    --titlebar-background-focused:  #231918;
+    --titlebar-text-color:          #f1dedc;
 
     /* Borders and dividers */
-    --background-modifier-border:         #524343;
-    --background-modifier-border-focus:   #a08c8c;
-    --background-modifier-border-hover:   #a08c8c;
+    --background-modifier-border:         #534341;
+    --background-modifier-border-focus:   #a08c8a;
+    --background-modifier-border-hover:   #a08c8a;
 
     /* Text colors */
-    --text-normal:      #f0dede;
-    --text-muted:       #d7c1c1;
-    --text-faint:       #a08c8c;
-    --text-on-accent:   #561d20;
-    --text-selection:   rgba(255, 179, 179, 0.25);
+    --text-normal:      #f1dedc;
+    --text-muted:       #d8c2bf;
+    --text-faint:       #a08c8a;
+    --text-on-accent:   #561e1a;
+    --text-selection:   rgba(255, 180, 171, 0.25);
 
     /* Accent and interactive */
-    --interactive-accent:           #ffb3b3;
-    --interactive-accent-hover:     #733335;
-    --interactive-accent-rgb:       255, 179, 179;
-    --text-accent:                  #ffb3b3;
-    --text-accent-hover:            #733335;
+    --interactive-accent:           #ffb4ab;
+    --interactive-accent-hover:     #73332e;
+    --interactive-accent-rgb:       255, 180, 171;
+    --text-accent:                  #ffb4ab;
+    --text-accent-hover:            #73332e;
 
     /* Accent HSL triple. Obsidian's core builds --color-accent and the
        theme-facing --color-accent-hsl from --accent-h/s/l, and popular themes
        read that triple directly rather than --interactive-accent, so the
        wallpaper accent has to land here to reach every accent surface. */
-    --accent-h: 0;
+    --accent-h: 6;
     --accent-s: 100%;
-    --accent-l: 85%;
+    --accent-l: 83%;
     --color-accent-hsl:       var(--accent-h), var(--accent-s), var(--accent-l);
     --interactive-accent-hsl: var(--color-accent-hsl);
 
     /* Hover and active modifiers */
     --background-modifier-hover:          rgba(var(--mat-on-surface-rgb), 0.06);
     --background-modifier-active-hover:   rgba(var(--mat-primary-rgb), 0.15);
-    --background-modifier-success:        #5d3f3f;
+    --background-modifier-success:        #5d3f3c;
     --background-modifier-error:          #ffb4ab;
     --background-modifier-error-hover:    #ffb4ab;
 
     /* Obsidian color scale */
-    --color-base-00:    #1a1111;
-    --color-base-05:    #1a1111;
-    --color-base-10:    #140c0c;
-    --color-base-20:    #221919;
-    --color-base-25:    #271d1d;
-    --color-base-30:    #322827;
-    --color-base-35:    #3d3232;
-    --color-base-40:    #524343;
-    --color-base-50:    #a08c8c;
-    --color-base-60:    #d7c1c1;
-    --color-base-70:    #f0dede;
-    --color-base-100:   #f0dede;
+    --color-base-00:    #1a1110;
+    --color-base-05:    #1a1110;
+    --color-base-10:    #140c0b;
+    --color-base-20:    #231918;
+    --color-base-25:    #271d1c;
+    --color-base-30:    #322826;
+    --color-base-35:    #3d3231;
+    --color-base-40:    #534341;
+    --color-base-50:    #a08c8a;
+    --color-base-60:    #d8c2bf;
+    --color-base-70:    #f1dedc;
+    --color-base-100:   #f1dedc;
 
     /* Semantic colors */
     --color-red:        #ffb4ab;
-    --color-orange:     #e5c18d;
-    --color-yellow:     #e6bdbc;
-    --color-green:      #5d3f3f;
-    --color-cyan:       #5d3f3f;
-    --color-blue:       #ffb3b3;
-    --color-purple:     #e6bdbc;
-    --color-pink:       #e5c18d;
+    --color-orange:     #e0c38c;
+    --color-yellow:     #e7bdb8;
+    --color-green:      #5d3f3c;
+    --color-cyan:       #5d3f3c;
+    --color-blue:       #ffb4ab;
+    --color-purple:     #e7bdb8;
+    --color-pink:       #e0c38c;
 
     /* Headings */
-    --h1-color:     #ffb3b3;
-    --h2-color:     #ffb3b3;
-    --h3-color:     #e6bdbc;
-    --h4-color:     #e5c18d;
-    --h5-color:     #d7c1c1;
-    --h6-color:     #a08c8c;
+    --h1-color:     #ffb4ab;
+    --h2-color:     #ffb4ab;
+    --h3-color:     #e7bdb8;
+    --h4-color:     #e0c38c;
+    --h5-color:     #d8c2bf;
+    --h6-color:     #a08c8a;
 
     /* Links */
-    --link-color:            #ffb3b3;
-    --link-color-hover:      #ffdad9;
-    --link-external-color:   #e5c18d;
-    --link-unresolved-color: #a08c8c;
+    --link-color:            #ffb4ab;
+    --link-color-hover:      #ffdad6;
+    --link-external-color:   #e0c38c;
+    --link-unresolved-color: #a08c8a;
 
     /* Tags */
-    --tag-color:            #ffdad9;
-    --tag-background:       #733335;
-    --tag-border-color:     #ffb3b3;
-    --tag-color-hover:      #561d20;
-    --tag-background-hover: #ffb3b3;
+    --tag-color:            #ffdad6;
+    --tag-background:       #73332e;
+    --tag-border-color:     #ffb4ab;
+    --tag-color-hover:      #561e1a;
+    --tag-background-hover: #ffb4ab;
 
     /* Checkboxes */
-    --checkbox-color:        #ffb3b3;
-    --checkbox-color-hover:  #733335;
-    --checkbox-border-color: #a08c8c;
-    --checkbox-marker-color: #561d20;
+    --checkbox-color:        #ffb4ab;
+    --checkbox-color-hover:  #73332e;
+    --checkbox-border-color: #a08c8a;
+    --checkbox-marker-color: #561e1a;
 
     /* Code blocks */
-    --code-background:  #221919;
-    --code-normal:      #f0dede;
-    --code-comment:     #a08c8c;
-    --code-function:    #ffb3b3;
+    --code-background:  #231918;
+    --code-normal:      #f1dedc;
+    --code-comment:     #a08c8a;
+    --code-function:    #ffb4ab;
     --code-important:   #ffb4ab;
-    --code-keyword:     #e6bdbc;
-    --code-operator:    #e5c18d;
-    --code-property:    #d7c1c1;
-    --code-punctuation: #524343;
-    --code-string:      #e5c18d;
+    --code-keyword:     #e7bdb8;
+    --code-operator:    #e0c38c;
+    --code-property:    #d8c2bf;
+    --code-punctuation: #534341;
+    --code-string:      #e0c38c;
     --code-tag:         #ffb4ab;
-    --code-value:       #e6bdbc;
+    --code-value:       #e7bdb8;
 
     /* Scrollbar */
     --scrollbar-thumb-bg:        rgba(var(--mat-on-surface-rgb), 0.12);
@@ -130,16 +130,16 @@ body.theme-light.theme-light.theme-light {
 
     /* Inputs */
     --input-shadow: none;
-    --input-shadow-hover: 0 0 0 2px #a08c8c;
+    --input-shadow-hover: 0 0 0 2px #a08c8a;
 
     /* Graph view */
-    --graph-node:            #ffb3b3;
-    --graph-node-unresolved: #a08c8c;
-    --graph-node-focused:    #ffdad9;
-    --graph-node-tag:        #e6bdbc;
-    --graph-node-attachment: #e5c18d;
-    --graph-line:            #524343;
-    --graph-background:      #1a1111;
+    --graph-node:            #ffb4ab;
+    --graph-node-unresolved: #a08c8a;
+    --graph-node-focused:    #ffdad6;
+    --graph-node-tag:        #e7bdb8;
+    --graph-node-attachment: #e0c38c;
+    --graph-line:            #534341;
+    --graph-background:      #1a1110;
 
 }
 

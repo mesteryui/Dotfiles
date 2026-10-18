@@ -35,7 +35,7 @@
         "countTime": 14
     },
     "weather": {
-        "autoLocation": false,
+        "autoLocation": true,
         "city": "Vigo,ES",
         "reloadTime": 10
     }

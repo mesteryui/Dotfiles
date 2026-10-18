@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """wallpaper-scan.py — color representativo de cada fondo, con caché incremental.
 
-Calcula un tono dominante por fondo (imágenes y vídeos) para que el selector
-de la shell pueda filtrar por color. El trabajo caro (decode + reducción a
-HSV + clasificación) solo se hace para ficheros nuevos o modificados; el
-resto se reutiliza de la caché JSON, así que abrir el selector no re-decoda
-todos los fondos cada vez.
+Saca un par (hue, saturación) del color MEDIO de cada fondo (imágenes y
+vídeos), al estilo de Ryoku: se reduce la imagen a 1x1 y se lee su HSL. El
+selector de la shell agrupa ese par en 12 grupos de hue + neutro
+(Core/Services/WallpaperColorService.qml) y filtra por grupo.
+
+El trabajo caro (decode + media) solo se hace para ficheros nuevos o
+modificados; el resto se reutiliza de la caché JSON, así que abrir el
+selector no re-decoda todos los fondos cada vez.
 
 Uso:
     wallpaper-scan.py --cache <cache.json> --dir <carpeta> \
@@ -13,22 +16,20 @@ Uso:
 
 Salida (cache.json):
     {
-      "version": 1,
+      "version": 2,
       "files": {
         "/ruta/fondo.jpg": {
           "mtime": 1699999999.0,
           "size": 1234567,
-          "tone": "blue",
-          "hex": "#2a3f8f",
-          "luma": 0.31
+          "hue": 210.5,
+          "sat": 42.0
         }
       }
     }
 
-`tone` es uno de: red orange yellow green cyan blue purple pink brown white
-gray black. La lista debe coincidir con `WallpaperColorService.tones`
-(Core/Services/WallpaperColorService.qml) y con los swatches de
-`WallpaperFilterBar.qml`.
+`hue` son grados (0-360) y `sat` el porcentaje (0-100) de saturación HSL. La
+agrupación (bucket) vive en WallpaperColorService.qml, igual que en Ryoku
+(index.sh emite hue/sat y el singleton los agrupa en un grupo de color).
 
 Herramientas: ImageMagick (`magick` o `convert`) para imágenes y `ffmpeg`
 para vídeos. Si falta la herramienta o falla el decode, ese fichero se omite
@@ -47,21 +48,12 @@ import shutil
 import subprocess
 import sys
 
-# Muestreo: 48x48 = 2304 px es de sobra para el tono dominante y barato de
-# decodificar (los fondos de 4K bajan a esto en un solo paso).
+# Muestreo para vídeos: un frame reducido a 48x48; su media es el color medio.
 SAMPLE = 48
 
-# ---- umbrales de clasificación (documentados para poder ajustarlos) --------
-# Un píxel "cuenta" como color si tiene saturación/valor mínimos.
-SAT_MIN = 0.18
-VAL_MIN = 0.12
-# Un fondo solo se clasifica por tono si hay suficiente color en él... 
-SAT_FRACTION = 0.20
-# ...y ese tono cubre una parte real del área (si no, es ruido → acromático).
-DOM_FRACTION = 0.12
-# Cortes de luminancia para el eje acromático.
-LUM_BLACK = 0.17
-LUM_WHITE = 0.83
+# v2: hue/sat (media HSL). v1 guardaba `tone`/`hex`/`luma` (histograma por
+# píxel); una caché v1 se descarta y se recalcula.
+CACHE_VERSION = 2
 
 
 def which(*names):
@@ -83,121 +75,59 @@ def run_bytes(cmd):
     return proc.stdout
 
 
-def image_rgb(path, magick):
+def parse_hue_sat(data):
+    """stdout de magick con '%[fx:u.r*360] %[fx:u.g*100]' -> (hue, sat)."""
+    if not data:
+        return None
+    try:
+        parts = data.decode("ascii", "ignore").split()
+        if len(parts) < 2:
+            return None
+        return (float(parts[0]), float(parts[1]))
+    except ValueError:
+        return None
+
+
+def image_hue_sat(path, magick):
     if not magick:
         return None
-    # rgb:- emite 3 bytes/píxel crudos, sin parsear texto de ImageMagick.
-    # jpeg:size hace que libjpeg decodifique a escala reducida (DCT scaling):
-    # en fondos JPEG de 4K recorta el decode de forma notable. Inocuo en otros.
-    return run_bytes([magick, "-define", f"jpeg:size={SAMPLE}x{SAMPLE}", path, "-resize",
-                      f"{SAMPLE}x{SAMPLE}!", "-alpha", "off", "-depth", "8", "rgb:-"])
+    # Igual que Ryoku: media a 1x1 en sRGB y lectura HSL (u.r = hue, u.g = sat).
+    # `jpeg:size` hace que libjpeg decodifique a escala reducida (DCT scaling):
+    # en JPEG de 4K recorta el decode de forma notable. Inocuo en otros formatos.
+    return parse_hue_sat(run_bytes([magick, "-define", f"jpeg:size={SAMPLE}x{SAMPLE}", path, "-alpha",
+                                    "off", "-resize", "1x1!", "-colorspace", "HSL", "-format",
+                                    "%[fx:u.r*360] %[fx:u.g*100]", "info:"]))
 
 
-def video_rgb(path, ffmpeg):
+def video_hue_sat(path, ffmpeg):
     if not ffmpeg:
         return None
     vf = f"scale={SAMPLE}:{SAMPLE},setsar=1"
     size = SAMPLE * SAMPLE * 3
     # -ss 1 como todos los fondos (mismo patrón que extract-wallpaper-frame.sh);
     # los vídeos muy cortos caen al segundo 0.
+    data = None
     for ss in ("1", "0"):
         data = run_bytes([ffmpeg, "-v", "error", "-ss", ss, "-i", path, "-frames:v", "1", "-vf", vf,
                           "-f", "rawvideo", "-pix_fmt", "rgb24", "-"])
         if data and len(data) >= size:
-            return data[:size]
-    return None
-
-
-def hue_sector(hue):
-    """Sector de hue (grados) para el histograma por área."""
-    if hue >= 345 or hue < 15:
-        return "red"
-    if hue < 45:
-        return "orange"
-    if hue < 70:
-        return "yellow"
-    if hue < 165:
-        return "green"
-    if hue < 195:
-        return "cyan"
-    if hue < 255:
-        return "blue"
-    if hue < 290:
-        return "purple"
-    return "pink"
-
-
-def refine_tone(sector, sat, val):
-    """Ajusta el sector con el color medio del cubo (no píxel a píxel: en la
-    frontera cada píxel salta de nombre, el cubo no). El marrón es un cálido
-    oscuro y el rosa un rojo claro y suave, no hues propios."""
-    if sector in ("orange", "yellow") and val < 0.5:
-        return "brown"
-    if sector == "red":
-        if val < 0.45 and sat >= 0.35:
-            return "brown"
-        if sat < 0.45 and val > 0.6:
-            return "pink"
-    return sector
-
-
-def to_hex(rgb):
-    return "#%02x%02x%02x" % tuple(max(0, min(255, round(channel * 255))) for channel in rgb)
-
-
-def classify(data):
-    """rgb24 crudo → (tone, hex, luma). None si el búfer está incompleto."""
-    count = SAMPLE * SAMPLE
-    if not data or len(data) < count * 3:
+            data = data[:size]
+            break
+        data = None
+    if data is None:
         return None
-
-    sum_r = sum_g = sum_b = 0.0
-    buckets = {}  # sector -> [n, sum_r, sum_g, sum_b]
-    saturated = 0
+    count = SAMPLE * SAMPLE
+    sum_r = sum_g = sum_b = 0
     for i in range(count):
-        r = data[i * 3] / 255.0
-        g = data[i * 3 + 1] / 255.0
-        b = data[i * 3 + 2] / 255.0
-        sum_r += r
-        sum_g += g
-        sum_b += b
-        hue, sat, val = colorsys.rgb_to_hsv(r, g, b)
-        if sat >= SAT_MIN and val >= VAL_MIN:
-            saturated += 1
-            sector = hue_sector(hue * 360.0)
-            acc = buckets.get(sector)
-            if acc is None:
-                buckets[sector] = [1, r, g, b]
-            else:
-                acc[0] += 1
-                acc[1] += r
-                acc[2] += g
-                acc[3] += b
-
-    avg = (sum_r / count, sum_g / count, sum_b / count)
-    luma = 0.2126 * avg[0] + 0.7152 * avg[1] + 0.0722 * avg[2]
-
-    tone = None
-    rgb = avg
-    if buckets:
-        sector, acc = max(buckets.items(), key=lambda item: item[1][0])
-        # El tono debe pesar sobre el total, no solo ganar entre los pocos
-        # píxeles saturados: un fondo casi gris con un logo mini no es "azul".
-        if saturated / count >= SAT_FRACTION and acc[0] / count >= DOM_FRACTION:
-            mean = (acc[1] / acc[0], acc[2] / acc[0], acc[3] / acc[0])
-            _, mean_sat, mean_val = colorsys.rgb_to_hsv(*mean)
-            tone = refine_tone(sector, mean_sat, mean_val)
-            # Color del swatch = media de ESE tono (más vivo que la media global).
-            rgb = mean
-    if tone is None:
-        if luma < LUM_BLACK:
-            tone = "black"
-        elif luma > LUM_WHITE:
-            tone = "white"
-        else:
-            tone = "gray"
-
-    return tone, to_hex(rgb), round(luma, 4)
+        sum_r += data[i * 3]
+        sum_g += data[i * 3 + 1]
+        sum_b += data[i * 3 + 2]
+    r = sum_r / count / 255.0
+    g = sum_g / count / 255.0
+    b = sum_b / count / 255.0
+    # hsl (h, l, s): nos quedamos con h (0-1) y s (0-1).
+    hue, _, sat = colorsys.rgb_to_hls(r, g, b)
+    return (hue * 360.0, sat * 100.0)
 
 
 def matches_ext(name, exts):
@@ -209,7 +139,8 @@ def read_cache(path):
     try:
         with open(path, "r", encoding="utf-8") as handle:
             data = json.load(handle)
-        if isinstance(data, dict) and isinstance(data.get("files"), dict):
+        if isinstance(data, dict) and data.get("version") == CACHE_VERSION and isinstance(data.get(
+                "files"), dict):
             return data["files"]
     except (OSError, ValueError):
         pass
@@ -218,7 +149,7 @@ def read_cache(path):
 
 def write_cache(path, files):
     tmp = path + ".tmp.%d" % os.getpid()
-    payload = {"version": 1, "files": files}
+    payload = {"version": CACHE_VERSION, "files": files}
     try:
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(tmp, "w", encoding="utf-8") as handle:
@@ -236,7 +167,7 @@ def write_cache(path, files):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="Color dominante por fondo (caché incremental).")
+    parser = argparse.ArgumentParser(description="Color medio (hue/sat) por fondo, con caché incremental.")
     parser.add_argument("--cache", required=True, help="ruta del JSON de caché")
     parser.add_argument("--dir", required=True, help="carpeta de fondos")
     parser.add_argument("--image-exts", default="jpg,jpeg,png,webp,avif,bmp,svg")
@@ -284,14 +215,17 @@ def main(argv):
             reused += 1
             continue
 
-        data = video_rgb(path, ffmpeg) if is_video else image_rgb(path, magick)
-        result = classify(data)
-        if result is None:
+        pair = video_hue_sat(path, ffmpeg) if is_video else image_hue_sat(path, magick)
+        if pair is None:
             failed += 1
             continue
-        tone, hex_color, luma = result
-        files[path] = {"mtime": stat.st_mtime, "size": stat.st_size, "tone": tone, "hex": hex_color,
-                       "luma": luma}
+        hue, sat = pair
+        files[path] = {
+            "mtime": stat.st_mtime,
+            "size": stat.st_size,
+            "hue": round(hue, 2),
+            "sat": round(sat, 2)
+        }
         computed += 1
 
     # Sin cambios reales no se reescribe: evita despertar el watcher del

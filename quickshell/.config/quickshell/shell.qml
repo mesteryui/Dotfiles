@@ -3,7 +3,9 @@
 //@ pragma DefaultEnv QS_DROP_EXPENSIVE_FONTS=1
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
 //@ pragma DefaultEnv QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
-//@ pragma Env QT_LOGGING_RULES=qt.qpa.wayland.textinput=false
+// Nota: el silenciado de qt.qpa.wayland.textinput vive en env.lua (env real).
+// Un `//@ pragma Env` aquí llega tarde: cuando se parsea el QML, Qt ya
+// inicializó QLoggingRegistry y la regla se ignora.
 
 import qs.Core.Services
 import qs.Features.WindowSwitcher

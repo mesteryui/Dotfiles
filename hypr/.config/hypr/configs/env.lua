@@ -68,6 +68,24 @@ hl.env("QT_QPA_PLATFORMTHEME", "qtengine")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 --hl.env("QT_SCALE_FACTOR",2)
 hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
+-- Qt 6.12: el QPA de Wayland registra "Trying to disable … but … is focused"
+-- cada vez que el foco de text-input salta entre superficies al crear los
+-- paneles de quickshell (barra, launcher, OSD…). Es contabilidad interna de Qt
+-- —sin fallo funcional— y muy verbosa. Se apaga esa categoría.
+-- Importa el *dónde*: va aquí, como env real, y NO como
+-- `//@ pragma Env QT_LOGGING_RULES=…` en shell.qml. El pragma se aplica al
+-- parsear el QML, cuando Qt ya inicializó QLoggingRegistry, así que el valor
+-- se ignora y los warnings siguen saliendo.
+--
+-- quickshell.io.socket: el protocolo IPC de Hyprland (igual que hyprctl) es
+-- write → leer hasta EOF → el servidor CIERRA la conexión. Cada petición por
+-- el socket (HyprlandIpc.send: j/binds, j/devices, eval/reload de GameMode…)
+-- termina en ese cierre, y Quickshell logea
+-- "WARN quickshell.io.socket: … QLocalSocket::PeerClosedError". Es el fin
+-- normal de cada petición, no un fallo: los errores reales los sigue
+-- reportando cada servicio con su propio console.warn ([HyprlandIpc]/
+-- [Hyprsunset]). Se apaga solo el aviso de Quickshell.
+hl.env("QT_LOGGING_RULES", "qt.qpa.wayland.textinput=false;quickshell.io.socket.warning=false")
 
 hl.env("GDK_BACKEND", "wayland,x11")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")

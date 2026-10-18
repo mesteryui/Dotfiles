@@ -50,9 +50,9 @@ Variants {
                                                                         || 36)
 
             // Margen exterior en modo flotante / laterales del contenido.
-            readonly property int floatingMargin: 3
+            readonly property int floatingMargin: 2
 
-            readonly property int contentMargin: 6
+            readonly property int contentMargin: 5
 
             WlrLayershell.layer: WlrLayer.Top
             // La zona exclusiva sigue siendo SOLO el alto de la barra (no molesta a otras apps)

@@ -1,11 +1,13 @@
 // WallpaperFilterBar — fila de filtros del selector de fondos: tipo
-// (todos/imágenes/vídeos) a la izquierda y color dominante (swatches
-// multi-selección) a la derecha. `host` es la raíz de WallpaperMenuContent:
-// lee/escribe `typeFilter`/`toneFilter` y llama a `toggleTone`/`clearFilters`.
+// (todos/imágenes/vídeos) a la izquierda y color (grupos de hue, al estilo
+// Ryoku) a la derecha. `host` es la raíz de WallpaperMenuContent:
+// lee/escribe `typeFilter`/`colorFilter` y llama a `toggleColor`/`clearFilters`.
 //
-// Los swatches de color no usan tokens M3 a propósito: representan el tono
-// real de la pintura (rojo, azul...), ajeno al tema. Excepción intencionada
-// y única, igual que el scrim monocromo sobre foto del carrusel.
+// La tira de color replica la de Ryoku: chip ALL + un swatch por grupo de hue
+// presente (arcoíris calculado, neutro al final), selección única. Los colores
+// de los swatches no usan tokens M3 a propósito: representan el color real de
+// la pintura, ajeno al tema. Excepción intencionada y única, igual que el
+// scrim monocromo sobre foto del carrusel.
 pragma ComponentBehavior: Bound
 
 import qs.Core
@@ -18,23 +20,6 @@ RowLayout {
     id: root
 
     property var host
-
-    // Claves de tono: deben coincidir con WallpaperColorService.tones y con
-    // las que emite scripts/wallpaper-scan.py.
-    readonly property var tonePaint: ({
-                                          "red": "#e53935",
-                                          "orange": "#fb8c00",
-                                          "yellow": "#fdd835",
-                                          "green": "#43a047",
-                                          "cyan": "#00acc1",
-                                          "blue": "#1e88e5",
-                                          "purple": "#8e24aa",
-                                          "pink": "#ec407a",
-                                          "brown": "#8d6e63",
-                                          "white": "#ffffff",
-                                          "gray": "#9e9e9e",
-                                          "black": "#212121"
-                                      })
 
     readonly property var typeModel: [
         {
@@ -70,27 +55,10 @@ RowLayout {
         return root.label("wallpaper.filter.color", "Color");
     }
 
-    function paintFor(tone: string): color {
-        return root.tonePaint[tone] ?? Appearance.md3.surface_container_highest;
-    }
-
-    // ¿Hay resultados de este tono? Solo se atenúa cuando ya hay datos de
-    // color (si no, todos los swatches parecerían vacíos antes del escaneo).
-    function toneUnavailable(tone: string, active: bool): bool {
+    // Nombre accesible de un grupo de color (id -> clave i18n).
+    function colorName(id: int): string {
         const colorService = Services.WallpaperColorService;
-        if (active || !colorService.ready || colorService.entries === 0)
-            return false;
-        return (colorService.counts[tone] ?? 0) === 0;
-    }
-
-    // Tinta (check) legible sobre un color de pintura arbitrario: negro o
-    // blanco puros, ajenos al tema por la misma razón que los swatches.
-    function inkFor(hex: string): color {
-        const r = parseInt(hex.substr(1, 2), 16) / 255;
-        const g = parseInt(hex.substr(3, 2), 16) / 255;
-        const b = parseInt(hex.substr(5, 2), 16) / 255;
-        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        return luma > 0.55 ? Qt.rgba(0.1, 0.1, 0.1, 1.0) : Qt.rgba(1, 1, 1, 1);
+        return root.label("wallpaper.color." + colorService.keys[id], colorService.names[id] ?? "");
     }
 
     spacing: Appearance.spacing.s
@@ -187,7 +155,7 @@ RowLayout {
         Layout.fillWidth: true
     }
 
-    // ── Color dominante (multi-selección) ───────────────────────────────
+    // ── Color (grupos de hue, selección única) ──────────────────────────
     StyledText {
         Layout.alignment: Qt.AlignVCenter
         text: root.colorLabel()
@@ -201,23 +169,62 @@ RowLayout {
         Layout.alignment: Qt.AlignVCenter
         spacing: 4
 
+        // Chip ALL: quita el filtro de color (grupo activo -1).
+        Item {
+            id: allChip
+
+            readonly property bool active: root.host.colorFilter === -1
+
+            implicitWidth: allText.implicitWidth + 20
+            implicitHeight: 30
+
+            Accessible.role: Accessible.RadioButton
+            Accessible.name: root.label("wallpaper.filter.all", "Todos")
+            Accessible.checked: allChip.active
+
+            Rectangle {
+                anchors.fill: parent
+                radius: Appearance.shape.full
+                color: allChip.active ? Appearance.md3.secondary_container :
+                                        Appearance.md3.surface_container_high
+                border.width: allChip.active ? 0 : 1
+                border.color: Qt.alpha(Appearance.md3.on_surface, 0.18)
+
+                StyledText {
+                    id: allText
+
+                    anchors.centerIn: parent
+                    text: root.label("wallpaper.filter.all", "Todos")
+                    font.pixelSize: Appearance.typeScale.labelSmall
+                    color: allChip.active ? Appearance.md3.on_secondary_container :
+                                            Appearance.md3.on_surface_variant
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.host.clearColor()
+            }
+        }
+
         Repeater {
-            model: Services.WallpaperColorService.tones
+            model: Services.WallpaperColorService.presentGroups
 
             delegate: Item {
                 id: swatch
 
-                required property string modelData
+                required property int modelData
 
-                readonly property bool active: root.host.toneFilter[modelData] === true
-                readonly property color paint: root.paintFor(modelData)
-                readonly property bool unavailable: root.toneUnavailable(modelData, active)
+                readonly property bool active: root.host.colorFilter === modelData
+                readonly property color paint: Services.WallpaperColorService.swatch(modelData)
 
                 implicitWidth: 30
                 implicitHeight: 30
 
-                Accessible.role: Accessible.CheckBox
-                Accessible.name: root.label("wallpaper.color." + modelData, modelData)
+                Accessible.role: Accessible.RadioButton
+                Accessible.name: root.colorName(modelData)
                 Accessible.checked: active
 
                 // Anillo de selección (fuera del swatch, para no perder el
@@ -241,14 +248,8 @@ RowLayout {
                     color: swatch.paint
                     border.width: 1
                     border.color: Qt.alpha(Appearance.md3.on_surface, 0.25)
-                    opacity: swatch.unavailable ? Appearance.opacity.ghost : 1.0
-                    scale: swatchMouse.containsMouse && !swatch.unavailable ? 1.12 : 1.0
+                    scale: swatchMouse.containsMouse ? 1.12 : 1.0
 
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Appearance.motion.short3
-                        }
-                    }
                     Behavior on scale {
                         SpringAnimation {
                             spring: Appearance.motion.springSnappy.spring
@@ -262,7 +263,7 @@ RowLayout {
                         anchors.centerIn: parent
                         icon: "check"
                         size: 14
-                        color: root.inkFor(swatch.paint)
+                        color: Services.WallpaperColorService.swatchInk(swatch.modelData)
                         visible: swatch.active
                     }
                 }
@@ -271,10 +272,9 @@ RowLayout {
                     id: swatchMouse
 
                     anchors.fill: parent
-                    enabled: !swatch.unavailable
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.host.toggleTone(swatch.modelData)
+                    onClicked: root.host.toggleColor(swatch.modelData)
                 }
             }
         }

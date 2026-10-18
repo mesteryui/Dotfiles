@@ -45,10 +45,11 @@ Scope {
 
             // Altura completa: la ventana se estira de arriba a abajo.
             // Modelo de huecos: cada lado ya viene recortado por su
-            // exclusive zone (barra: su alto en Bar.qml; líneas hug de 10px
-            // de ScreenRounding en full_hug) y aquí solo se suma el respiro.
-            // Medido: sin esto el panel quedaba 10px de más a izquierda y
-            // abajo en full_hug (las líneas también reservan zona).
+            // exclusive zone (barra: su alto en Bar.qml; marco hug de
+            // Appearance.shape.screenBorder en full_hug) y aquí solo se suma
+            // el respiro.
+            // Medido: sin esto el panel quedaba un hueco de más a izquierda y
+            // abajo en full_hug (el marco también reserva zona).
             readonly property bool barAtBottom: ConfigService.configs.bar.position === "bottom"
 
             readonly property string barType: GameMode.enabled ? "no_floating" :

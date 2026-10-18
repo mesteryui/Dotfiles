@@ -15,10 +15,11 @@ Variants {
     readonly property string activeBarType: GameMode.enabled ? "no_floating" :
                                                                ConfigService.configs.bar.barType
 
-    // Contrato de 4 modos (compartido con Bar.qml, sin cambios visuales):
+    // Contrato de 4 modos (compartido con Bar.qml):
     // "floating" = píldora flotante (Bar.qml pone márgenes/radio; aquí no se dibuja
-    // borde de pantalla). "full_hug" = adherida con esquinas/líneas siempre.
-    // "partial_hug" = esquinas solo en el lado de la barra. "no_floating" = nada.
+    // borde de pantalla). "full_hug" = adherida con esquinas en ambos lados y marco.
+    // "partial_hug" = adherida con esquinas solo en el lado de la barra (sin marco).
+    // "no_floating" = nada.
     // NOTA: isFloating aquí significa full_hug (nombre histórico), distinto del
     // isFloating de Bar.qml que significa "floating".
     readonly property bool isFloating: activeBarType === "full_hug"
@@ -31,8 +32,9 @@ Variants {
         required property ShellScreen modelData
 
         // --- VARIABLES DE CONFIGURACIÓN ---
-        property int cornerRadius: 20
-        property int borderThickness: 10
+        // Grosor del marco y radio de esquinas: un solo mando en Appearance.
+        property int cornerRadius: Appearance.shape.screenRounding
+        property int borderThickness: Appearance.shape.screenBorder
 
         // --- INTERRUPTORES PARA LA BARRA ---
         property bool drawTopLine: ConfigService.configs.bar.position !== "top"

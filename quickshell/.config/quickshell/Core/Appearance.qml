@@ -35,20 +35,25 @@ Singleton {
     }
 
     component Shape: QtObject {
-        property int unsharpen: 2
-        property int extraSmall: 4
-        property int unsharpenmore: 6
-        property int verysmall: 8
-        property int small: 12
-        property int normal: 17
-        property int large: 23
-        property int verylarge: 30
+        property int unsharpen: 1
+        property int extraSmall: 3
+        property int unsharpenmore: 4
+        property int verysmall: 6
+        property int small: 8
+        property int normal: 12
+        property int large: 16
+        property int verylarge: 21
         property int full: 9999
         property int screenRounding: large
-        property int windowRounding: 18
+        property int windowRounding: 13
+        // Marco de pantalla de la barra en los modos "hug" (`full_hug` y
+        // `partial_hug`): grosor de las bandas del color de la barra que
+        // bordean la pantalla. El radio de sus esquinas es `screenRounding`.
+        // Consumidor: Bar/ScreenRounding.qml.
+        property int screenBorder: 14
         // Radio de tarjeta estándar de la shell (banners, M3Cards con override,
         // menús, paneles). Unifica los `radius: 20` literales antes dispersos.
-        property int card: 20
+        property int card: 14
     }
 
     // Opacidades decorativas (textos atenuados, placeholders): un solo
@@ -115,10 +120,10 @@ Singleton {
     // la densidad de la shell.
     component Spacing: QtObject {
         property int xs: 4
-        property int s: 8
-        property int m: 12
-        property int l: 16
-        property int xl: 24
+        property int s: 6
+        property int m: 8
+        property int l: 12
+        property int xl: 16
     }
     // Escala de tipos M3 (nombres spec; los roles de icono/display usan
     // large/larger/huge/hugeass tal cual, fuera de la escala de texto).

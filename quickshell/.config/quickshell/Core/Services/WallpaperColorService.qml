@@ -6,31 +6,118 @@ import Quickshell
 import Quickshell.Io
 
 // Color representativo por fondo, para el filtro por color del selector.
-// - Los colores los calcula `scripts/wallpaper-scan.py` (ImageMagick para
-//   imágenes, ffmpeg para vídeos) y quedan cacheados en State: un segundo
-//   plano no re-decoda todos los fondos, solo los nuevos o modificados.
-// - Este singleton solo orquesta: lanza el escaneo (uno a la vez, con
-//   timeout + kill) y lee la caché de forma reactiva vía FileView. La
-//   clasificación de tonos vive en el script, no aquí.
-// - `tones` debe coincidir con las claves que emite el script y con los
-//   swatches de `Panels/Wallpaper/Content/WallpaperFilterBar.qml`.
+//
+// Réplica del sistema de Ryoku
+// (ryoku/shell/quickshell/wallpaper/Singletons/Colors.qml): cada fondo se
+// reduce a su color medio y se lee su HSL; el par (hue, saturación) clasifica
+// el fondo en uno de 12 grupos de hue o en un cajón neutro (casi escala de
+// grises). El filtro del selector trabaja con esos grupos.
+//
+// Los colores los calcula `scripts/wallpaper-scan.py` (ImageMagick para
+// imágenes, ffmpeg para vídeos) y quedan cacheados en State: un segundo plano
+// no re-decoda todos los fondos, solo los nuevos o modificados. Este singleton
+// solo orquesta: lanza el escaneo (uno a la vez, con timeout + kill), lee la
+// caché de forma reactiva vía FileView y agrupa hue/sat (bucket).
 Singleton {
     id: root
 
-    readonly property list<string> tones: ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink",
-        "brown", "white", "gray", "black"]
+    // ── Agrupación de color ─────────────────────────────────────────────
+    // Cajón neutro (near-greyscale). Igual que Ryoku.
+    readonly property int neutral: 99
 
+    // hue en grados (0-360), sat en porcentaje (0-100) -> id de grupo.
+    function bucket(hue: real, sat: real): int {
+        if (sat < 10)
+            return root.neutral;
+        if (hue >= 340 || hue < 25)
+            return 0;
+        return Math.floor((hue - 25) / 30) + 1;
+    }
+
+    // Relleno del swatch de un grupo: arcoíris uniforme; gris para el neutro.
+    function swatch(id: int): color {
+        if (id === root.neutral)
+            return Qt.hsla(0, 0, 0.52, 1);
+        return Qt.hsla(id / 12, 0.62, 0.52, 1);
+    }
+
+    // Tinta legible (check) sobre el swatch de un grupo.
+    function swatchInk(id: int): color {
+        const c = root.swatch(id);
+        const luma = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+        return luma > 0.55 ? Qt.rgba(0.1, 0.1, 0.1, 1) : Qt.rgba(1, 1, 1, 1);
+    }
+
+    // Grupos en orden arcoíris, neutro al final.
+    readonly property var order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99]
+
+    readonly property var names: ({
+                                      0: "Red",
+                                      1: "Orange",
+                                      2: "Amber",
+                                      3: "Lime",
+                                      4: "Green",
+                                      5: "Teal",
+                                      6: "Cyan",
+                                      7: "Sky",
+                                      8: "Blue",
+                                      9: "Violet",
+                                      10: "Magenta",
+                                      11: "Pink",
+                                      99: "Neutral"
+                                  })
+
+    // Claves i18n por grupo (`wallpaper.color.<key>`), alineadas con `names`.
+    readonly property var keys: ({
+                                     0: "red",
+                                     1: "orange",
+                                     2: "amber",
+                                     3: "lime",
+                                     4: "green",
+                                     5: "teal",
+                                     6: "cyan",
+                                     7: "sky",
+                                     8: "blue",
+                                     9: "violet",
+                                     10: "magenta",
+                                     11: "pink",
+                                     99: "neutral"
+                                 })
+
+    // ── Datos ───────────────────────────────────────────────────────────
     readonly property string cachePath: Directories.state + "/quickshell/wallpaper-colors.json"
     readonly property string scanScript: Directories.config + "/quickshell/scripts/wallpaper-scan.py"
 
-    // Ruta absoluta -> { tone, hex, luma }.
+    // Ruta absoluta -> { hue, sat, group }.
     property var colors: ({})
-    // tone -> nº de fondos, para atenuar los swatches sin resultados.
+    // group -> nº de fondos, para la tira de color (solo grupos con fondos).
     property var counts: ({})
     // ready: la caché se leyó (aunque esté vacía o no exista aún).
     property bool ready: false
     property bool scanning: false
     property int entries: 0
+
+    // Grupos con al menos un fondo, en orden arcoíris (los que muestra la tira).
+    readonly property var presentGroups: {
+        const out = [];
+        for (const g of root.order) {
+            if ((root.counts[g] ?? 0) > 0)
+                out.push(g);
+        }
+        return out;
+    }
+
+    // id de grupo del fondo en `path`, o -1 si aún no tiene color.
+    function groupFor(path: string): int {
+        const entry = root.colors[String(path || "")];
+        return entry ? entry.group : -1;
+    }
+
+    // Saturación (%) del fondo, para ordenar dentro de un grupo. 0 si no hay.
+    function satFor(path: string): real {
+        const entry = root.colors[String(path || "")];
+        return entry ? entry.sat : 0;
+    }
 
     // Escaneo: un solo python a la vez. `command` se fija en ensureScan()
     // (necesita las extensiones del servicio de fondos).
@@ -60,16 +147,6 @@ Singleton {
         }
     }
 
-    function toneFor(path: string): string {
-        const entry = root.colors[String(path || "")];
-        return entry ? entry.tone : "";
-    }
-
-    function hexFor(path: string): string {
-        const entry = root.colors[String(path || "")];
-        return entry ? entry.hex : "";
-    }
-
     // Lanza el escaneo si no hay otro en vuelo. Barato cuando la caché está
     // vigente: el script solo hace stat y no reescribe si nada cambió, así
     // que abrir el selector no dispara un re-decode.
@@ -93,17 +170,25 @@ Singleton {
             console.warn("[WallpaperColor] caché ilegible: " + e);
         }
         const files = parsed && parsed.files ? parsed.files : ({});
+        const dict = {};
         const tally = {};
-        for (const tone of root.tones)
-            tally[tone] = 0;
+        for (const g of root.order)
+            tally[g] = 0;
         for (const key in files) {
-            const tone = files[key] ? String(files[key].tone || "") : "";
-            if (tally[tone] !== undefined)
-                tally[tone] += 1;
+            const raw = files[key] || {};
+            const hue = Number(raw.hue) || 0;
+            const sat = Number(raw.sat) || 0;
+            const group = root.bucket(hue, sat);
+            dict[key] = {
+                "hue": hue,
+                "sat": sat,
+                "group": group
+            };
+            tally[group] = (tally[group] ?? 0) + 1;
         }
-        root.colors = files;
+        root.colors = dict;
         root.counts = tally;
-        root.entries = Object.keys(files).length;
+        root.entries = Object.keys(dict).length;
         root.ready = true;
     }
 

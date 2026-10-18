@@ -1,9 +1,7 @@
 import qs.Bar.Content
-import qs.Core
 import qs.Core.Services
 import qs.Primitives
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 
 BarItem {
@@ -18,28 +16,10 @@ BarItem {
         anchors.centerIn: parent
     }
 
-    ToolTip {
-        id: tooltip
-
+    BarToolTip {
+        anchorItem: root
         text: (NetworkService.currentNetwork && NetworkService.currentNetwork.name)
               ? NetworkService.currentNetwork.name : "No Network"
-        visible: root.hovered
-        delay: 500      // ms antes de mostrarse
-        timeout: 5000   // ms antes de ocultarse solo
-
-        contentItem: StyledText {
-            text: tooltip.text
-            color: Appearance.md3.inverse_on_surface
-            font.pixelSize: Appearance.typeScale.labelMedium
-            wrapMode: Text.NoWrap
-        }
-
-        background: Rectangle {
-            color: Appearance.md3.inverse_surface
-            radius: Appearance.shape.extraSmall
-        }
-
-        padding: 8
-        horizontalPadding: 12
+        shown: root.hovered
     }
 }

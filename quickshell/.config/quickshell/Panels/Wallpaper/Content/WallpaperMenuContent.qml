@@ -13,15 +13,16 @@ Item {
     // ── Estado de filtros ───────────────────────────────────────────────
     // Tipo: "all" | "image" | "video".
     property string typeFilter: "all"
-    // Tono -> true. Multi-selección: se muestran los fondos de CUALQUIER
-    // tono marcado (unión), no la intersección.
-    property var toneFilter: ({})
+    // Grupo de color seleccionado (-1 = todos). Selección única, como Ryoku.
+    property int colorFilter: -1
     // Resultado filtrado que alimenta el ListView (array de { filePath, name }).
     property var filtered: []
     // Texto de búsqueda (alias bidireccional al campo real).
     property alias query: searchField.text
-    readonly property int toneFilterCount: Object.keys(toneFilter).length
-    readonly property bool filtersActive: typeFilter !== "all" || toneFilterCount > 0 || query !== ""
+    readonly property bool filtersActive: typeFilter !== "all" || colorFilter !== -1 || query !== ""
+    // Cambió un filtro (tipo/color/búsqueda): la próxima reconstrucción
+    // vuelve al primer resultado en vez de conservar la selección.
+    property bool resetSelection: false
 
     signal hideRequested
 
@@ -33,24 +34,18 @@ Item {
         return Services.I18nService?.getTranslation(key, fallback) ?? fallback;
     }
 
-    function toggleTone(tone: string): void {
-        // Objeto nuevo (no mutación): los bindings/onToneFilterChanged solo
-        // reaccionan a la reasignación.
-        const next = {};
-        for (const key in root.toneFilter) {
-            if (root.toneFilter[key])
-                next[key] = true;
-        }
-        if (next[tone])
-            delete next[tone];
-        else
-            next[tone] = true;
-        root.toneFilter = next;
+    // Selección única (como Ryoku): pulsar el grupo activo lo desactiva.
+    function toggleColor(group: int): void {
+        root.colorFilter = (root.colorFilter === group) ? -1 : group;
+    }
+
+    function clearColor(): void {
+        root.colorFilter = -1;
     }
 
     function clearFilters(): void {
         root.typeFilter = "all";
-        root.toneFilter = ({});
+        root.colorFilter = -1;
         root.query = "";
     }
 
@@ -61,7 +56,7 @@ Item {
             root.query = "";
             return true;
         }
-        if (root.typeFilter !== "all" || root.toneFilterCount > 0) {
+        if (root.typeFilter !== "all" || root.colorFilter !== -1) {
             root.clearFilters();
             return true;
         }
@@ -91,12 +86,13 @@ Item {
 
     // Reconstruye la lista filtrada a partir del FolderListModel del
     // servicio. Imperativo (no binding): el FolderListModel no notifica
-    // cambios por fila, así que se rehace al vuelo y se conserva la
-    // selección por ruta cuando sigue pasando el filtro.
+    // cambios por fila, así que se rehace al vuelo. Al cambiar un filtro la
+    // selección vuelve al primer resultado; en el resto de reconstrucciones
+    // (nuevos fondos, escaneo de color) se conserva por ruta.
     function rebuildModel(): void {
         const source = Services.WallpaperService.wallpaperList;
         const colorService = Services.WallpaperColorService;
-        const hasToneFilter = root.toneFilterCount > 0;
+        const hasColorFilter = root.colorFilter !== -1;
         const previousIndex = wallpaperList.currentIndex;
         // Ruta del fondo seleccionado ANTES de rehacer la lista (desde el
         // modelo actual, no desde el delegado: el delegado puede reciclarse).
@@ -113,21 +109,42 @@ Item {
                 continue;
             if (root.typeFilter === "video" && !isVideo)
                 continue;
-            if (hasToneFilter && !root.toneFilter[colorService.toneFor(path)])
+            const group = colorService.groupFor(path);
+            if (hasColorFilter && group !== root.colorFilter)
                 continue;
             const name = String(source.get(i, "fileName") ?? "");
             entries.push({
                              "filePath": path,
-                             "name": name
+                             "name": name,
+                             "group": group,
+                             "sat": colorService.satFor(path)
                          });
         }
         if (root.query.trim() !== "")
             entries = Services.FuzzySearch.filterItems(root.query, entries, entry => entry.name);
 
-        // Selección: se conserva el fondo actual si sigue en el resultado;
-        // si no, la posición anterior recortada al nuevo tamaño.
+        // Orden por color, como Ryoku: grupos en orden arcoíris (neutro al
+        // final) y, dentro del grupo, el más saturado primero. Así el
+        // carrusel "lee" como un arcoíris aunque no haya filtro activo.
+        const neutral = colorService.neutral;
+        const rank = g => (g < 0 ? 101 : (g === neutral ? 100 : g));
+        entries.sort((a, b) => {
+            const ga = rank(a.group);
+            const gb = rank(b.group);
+            if (ga !== gb)
+                return ga - gb;
+            return b.sat - a.sat;
+        });
+
+        // Selección: tras un cambio de filtro, el primer resultado; si no,
+        // se conserva el fondo actual mientras siga en el resultado y, si
+        // no, la posición anterior recortada al nuevo tamaño.
         let index = -1;
-        if (previousPath !== "") {
+        if (root.resetSelection) {
+            root.resetSelection = false;
+            if (entries.length > 0)
+                index = 0;
+        } else if (previousPath !== "") {
             for (let i = 0; i < entries.length; i++) {
                 if (String(entries[i].filePath) === previousPath) {
                     index = i;
@@ -150,9 +167,18 @@ Item {
         root.rebuildModel();
     }
 
-    onTypeFilterChanged: rebuildTimer.restart()
-    onToneFilterChanged: rebuildTimer.restart()
-    onQueryChanged: rebuildTimer.restart()
+    onTypeFilterChanged: {
+        root.resetSelection = true;
+        rebuildTimer.restart();
+    }
+    onColorFilterChanged: {
+        root.resetSelection = true;
+        rebuildTimer.restart();
+    }
+    onQueryChanged: {
+        root.resetSelection = true;
+        rebuildTimer.restart();
+    }
 
     // Diferir la reconstrucción: coalescea ráfagas (cada tecla de búsqueda,
     // llegada de colores + cambio de carpeta a la vez).

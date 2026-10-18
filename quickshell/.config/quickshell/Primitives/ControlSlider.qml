@@ -2,7 +2,6 @@
 import qs.Core
 import QtQuick
 import QtQuick.Layouts
-import M3Shapes
 
 RowLayout {
     id: root
@@ -170,11 +169,8 @@ RowLayout {
             }
         }
 
-        // Thumb / Manejador M3 Expressive con morph MANUAL atado al valor:
-        // 0% = Circle, 100% = Cookie4Sided. Al arrastrar ves la forma
-        // transformarse con el nivel (además de crecer con hover/press).
-        // Región cuadrada obligatoria para que el morph no colapse.
-        MaterialShape {
+        // Thumb / Manejador: pequeño círculo visible que marca la posición.
+        Rectangle {
             id: thumb
 
             x: Math.max(0, Math.min(sliderTrackContainer.width - width, sliderTrackContainer.width * Math.max(0,
@@ -183,35 +179,16 @@ RowLayout {
                                                                                                                            ))) - width
                                     / 2))
             anchors.verticalCenter: parent.verticalCenter
-            width: trackArea.pressed ? 22 : (trackArea.containsMouse || (root.activeFocus && root.keyboardMode)
-                                             ? 20 : 16)
+            width: 14
             height: width
-            fromShape: MaterialShape.Circle
-            toShape: MaterialShape.Cookie4Sided
-            morphProgress: Math.max(0, Math.min(1, root.displayValue()))
-            animationDuration: Appearance.motion.short4
+            radius: width / 2
             color: root.accentColor
-            strokeColor: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary :
-                                                                   Appearance.md3.surface_container_low
-
-            strokeWidth: 2
+            border.width: 2
+            border.color: Appearance.md3.surface_container_high
 
             Behavior on x {
                 NumberAnimation {
                     duration: 80
-                }
-            }
-            Behavior on width {
-                SpringAnimation {
-                    spring: Appearance.motion.springSnappy.spring
-                    damping: Appearance.motion.springSnappy.damping
-                    mass: Appearance.motion.springSnappy.mass
-                    epsilon: 0.25
-                }
-            }
-            Behavior on color {
-                ColorAnimation {
-                    duration: Appearance.motion.short3
                 }
             }
         }

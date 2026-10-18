@@ -6,7 +6,6 @@ import qs.Core.Services as Services
 import qs.Panels.Notifications
 import qs.Primitives
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 
 BarItem {
@@ -56,14 +55,9 @@ BarItem {
         }
     }
 
-    ToolTip {
-        id: tooltip
+    BarToolTip {
+        anchorItem: root
 
-        // Debajo del icono, centrado; si la barra está abajo, encima.
-        property bool barAtBottom: Services.ConfigService.configs.bar.position === "bottom"
-
-        x: (parent.width - width) / 2
-        y: barAtBottom ? -height - 8 : parent.height + 8
         text: {
             const n = Services.NotificationData.history ? Services.NotificationData.history.count : 0;
             if (Services.NotificationData.dnd)
@@ -72,23 +66,6 @@ BarItem {
                 return n + " notificaciones (click dcho: no molestar, central: limpiar)";
             return "Sin notificaciones (click dcho: no molestar)";
         }
-        visible: root.hovered && !root.popupOpen
-        delay: 500
-        timeout: 5000
-
-        contentItem: StyledText {
-            text: tooltip.text
-            color: Appearance.md3.inverse_on_surface
-            font.pixelSize: Appearance.typeScale.labelMedium
-            wrapMode: Text.NoWrap
-        }
-
-        background: Rectangle {
-            color: Appearance.md3.inverse_surface
-            radius: Appearance.shape.extraSmall
-        }
-
-        padding: 8
-        horizontalPadding: 12
+        shown: root.hovered && !root.popupOpen
     }
 }

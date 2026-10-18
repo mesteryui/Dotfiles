@@ -335,18 +335,19 @@
   },
   "wallpaper": {
     "color": {
-      "black": "Nigra",
+      "amber": "Sukcena",
       "blue": "Blua",
-      "brown": "Bruna",
       "cyan": "Cejana",
-      "gray": "Griza",
       "green": "Verda",
+      "lime": "Limea",
+      "magenta": "Magenta",
+      "neutral": "Neŭtrala",
       "orange": "Oranĝa",
       "pink": "Roza",
-      "purple": "Purpura",
       "red": "Ruĝa",
-      "white": "Blanka",
-      "yellow": "Flava"
+      "sky": "Ĉiela",
+      "teal": "Turkisa",
+      "violet": "Viola"
     },
     "filter": {
       "all": "Ĉiuj",

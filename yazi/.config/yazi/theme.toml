@@ -4,76 +4,76 @@
 # file is the daemon's alone and clobbers nothing you wrote.
 
 [mgr]
-cwd = { fg = "#e6bdbc" }
+cwd = { fg = "#e7bdb8" }
 
-hovered = { fg = "#ffdad9", bg = "#733335" }
+hovered = { fg = "#ffdad6", bg = "#73332e" }
 preview_hovered = { underline = true }
 
-find_keyword = { fg = "#e5c18d", bold = true }
-find_position = { fg = "#e6bdbc", bold = true }
+find_keyword = { fg = "#e0c38c", bold = true }
+find_position = { fg = "#e7bdb8", bold = true }
 
-marker_copied = { fg = "#e5c18d", bg = "#e5c18d" }
+marker_copied = { fg = "#e0c38c", bg = "#e0c38c" }
 marker_cut = { fg = "#ffb4ab", bg = "#ffb4ab" }
-marker_marked = { fg = "#e6bdbc", bg = "#e6bdbc" }
-marker_selected = { fg = "#ffb3b3", bg = "#ffb3b3" }
+marker_marked = { fg = "#e7bdb8", bg = "#e7bdb8" }
+marker_selected = { fg = "#ffb4ab", bg = "#ffb4ab" }
 
-tab_active = { fg = "#561d20", bg = "#ffb3b3" }
-tab_inactive = { fg = "#d7c1c1", bg = "#271d1d" }
+tab_active = { fg = "#561e1a", bg = "#ffb4ab" }
+tab_inactive = { fg = "#d8c2bf", bg = "#271d1c" }
 
 border_symbol = "│"
-border_style = { fg = "#524343" }
+border_style = { fg = "#534341" }
 
 [mode]
-normal_main = { fg = "#561d20", bg = "#ffb3b3", bold = true }
-normal_alt = { fg = "#ffb3b3", bg = "#271d1d" }
-select_main = { fg = "#422c05", bg = "#e5c18d", bold = true }
-select_alt = { fg = "#e5c18d", bg = "#271d1d" }
+normal_main = { fg = "#561e1a", bg = "#ffb4ab", bold = true }
+normal_alt = { fg = "#ffb4ab", bg = "#271d1c" }
+select_main = { fg = "#3f2e04", bg = "#e0c38c", bold = true }
+select_alt = { fg = "#e0c38c", bg = "#271d1c" }
 unset_main = { fg = "#690005", bg = "#ffb4ab", bold = true }
-unset_alt = { fg = "#ffb4ab", bg = "#271d1d" }
+unset_alt = { fg = "#ffb4ab", bg = "#271d1c" }
 
 [status]
-progress_label = { fg = "#f0dede", bold = true }
-progress_normal = { fg = "#ffb3b3", bg = "#271d1d" }
-progress_error = { fg = "#ffb4ab", bg = "#271d1d" }
+progress_label = { fg = "#f1dedc", bold = true }
+progress_normal = { fg = "#ffb4ab", bg = "#271d1c" }
+progress_error = { fg = "#ffb4ab", bg = "#271d1c" }
 
 [input]
-border = { fg = "#ffb3b3" }
+border = { fg = "#ffb4ab" }
 title = {}
 value = {}
 selected = { reversed = true }
 
 [pick]
-border = { fg = "#ffb3b3" }
-active = { fg = "#e5c18d", bold = true }
+border = { fg = "#ffb4ab" }
+active = { fg = "#e0c38c", bold = true }
 inactive = {}
 
 [cmp]
-border = { fg = "#ffb3b3" }
-active = { fg = "#e5c18d", bold = true }
+border = { fg = "#ffb4ab" }
+active = { fg = "#e0c38c", bold = true }
 inactive = {}
 
 [tasks]
-border = { fg = "#ffb3b3" }
+border = { fg = "#ffb4ab" }
 title = {}
-hovered = { fg = "#e5c18d", underline = true }
+hovered = { fg = "#e0c38c", underline = true }
 
 [which]
-mask = { bg = "#271d1d" }
-cand = { fg = "#e6bdbc" }
-rest = { fg = "#d7c1c1" }
-desc = { fg = "#e5c18d" }
+mask = { bg = "#271d1c" }
+cand = { fg = "#e7bdb8" }
+rest = { fg = "#d8c2bf" }
+desc = { fg = "#e0c38c" }
 separator = "  "
-separator_style = { fg = "#a08c8c" }
+separator_style = { fg = "#a08c8a" }
 
 [help]
-on = { fg = "#e6bdbc" }
-run = { fg = "#e5c18d" }
+on = { fg = "#e7bdb8" }
+run = { fg = "#e0c38c" }
 hovered = { reversed = true, bold = true }
-footer = { fg = "#f0dede", bg = "#271d1d" }
+footer = { fg = "#f1dedc", bg = "#271d1c" }
 
 [notify]
-title_info = { fg = "#ffb3b3" }
-title_warn = { fg = "#e5c18d" }
+title_info = { fg = "#ffb4ab" }
+title_warn = { fg = "#e0c38c" }
 title_error = { fg = "#ffb4ab" }
 
 # the file list itself: dirs and file kinds carry the palette so yazi matches
@@ -81,11 +81,11 @@ title_error = { fg = "#ffb4ab" }
 # so the "*" fallback stays last.
 [filetype]
 rules = [
-	{ mime = "image/*", fg = "#733335" },
-	{ mime = "{audio,video}/*", fg = "#8f4a4b" },
-	{ mime = "application/{zip,gzip,x-tar,x-bzip2,x-7z-compressed,x-rar,vnd.rar,x-xz,zstd}", fg = "#e5c18d" },
+	{ mime = "image/*", fg = "#73332e" },
+	{ mime = "{audio,video}/*", fg = "#904a44" },
+	{ mime = "application/{zip,gzip,x-tar,x-bzip2,x-7z-compressed,x-rar,vnd.rar,x-xz,zstd}", fg = "#e0c38c" },
 	{ url = "*", is = "orphan", fg = "#ffb4ab" },
-	{ url = "*", is = "exec", fg = "#e6bdbc" },
-	{ url = "*/", fg = "#ffb3b3", bold = true },
-	{ url = "*", fg = "#d7c1c1" },
+	{ url = "*", is = "exec", fg = "#e7bdb8" },
+	{ url = "*/", fg = "#ffb4ab", bold = true },
+	{ url = "*", fg = "#d8c2bf" },
 ]

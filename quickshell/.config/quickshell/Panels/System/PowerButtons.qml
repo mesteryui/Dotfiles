@@ -47,6 +47,10 @@ Scope {
 
             WlrLayershell.namespace: "quickshell:logout_dialog"
             WlrLayershell.layer: WlrLayer.Overlay
+            // Reclama el teclado a demanda (junto al HyprlandFocusGrab) para
+            // que funcione el Shortcut de Escape. Sin esto, al abrirse desde
+            // el panel (cuyo grab sigue activo) la ventana no recibía teclado.
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
             exclusionMode: ExclusionMode.Ignore
 
             // Fullscreen: anclar los 4 lados

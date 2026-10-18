@@ -1,6 +1,6 @@
 # Primitives
 
-M3 building blocks. Import with `import qs.Primitives`. 24
+M3 building blocks. Import with `import qs.Primitives`. 25
 components + `effects/` (currently empty, reserved).
 
 Selection (single source of truth):
@@ -42,3 +42,8 @@ Other:
 - Icons/media: `MaterialIcon`, `FluentIcon`, `AppIcon`.
 - Windows: `BarPopupWindow` (popup anchored to the bar; follows
   `ConfigService.configs.bar.position` via `barAtBottom`).
+- Tooltips: `BarToolTip` (PopupWindow anclado al item; sale debajo de
+  la barra —encima si la barra está abajo— sin solaparla, así que no
+  roba el hover ni parpadea). Props: `anchorItem` (required), `text`,
+  `shown`, `delay`, `timeout`, `gap`. Sustituye a
+  `QtQuick.Controls.ToolTip`.

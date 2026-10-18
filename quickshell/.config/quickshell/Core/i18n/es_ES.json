@@ -335,18 +335,19 @@
   },
   "wallpaper": {
     "color": {
-      "black": "Negro",
+      "amber": "Ámbar",
       "blue": "Azul",
-      "brown": "Marrón",
       "cyan": "Cian",
-      "gray": "Gris",
       "green": "Verde",
+      "lime": "Lima",
+      "magenta": "Magenta",
+      "neutral": "Neutro",
       "orange": "Naranja",
       "pink": "Rosa",
-      "purple": "Morado",
       "red": "Rojo",
-      "white": "Blanco",
-      "yellow": "Amarillo"
+      "sky": "Cielo",
+      "teal": "Cerceta",
+      "violet": "Violeta"
     },
     "filter": {
       "all": "Todos",

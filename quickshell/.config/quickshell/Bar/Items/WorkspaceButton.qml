@@ -37,7 +37,8 @@ Item {
 
         anchors.fill: parent
         color: root.isActive ? Appearance.md3.primary : Appearance.md3.secondary_container
-        radius: Appearance.shape.verylarge
+        // Mismo radio que el resto de módulos de barra (BarItem.itemRadius).
+        radius: Appearance.shape.normal
 
         Behavior on color {
             ColorAnimation {

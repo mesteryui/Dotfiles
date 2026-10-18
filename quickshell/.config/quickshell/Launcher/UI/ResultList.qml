@@ -252,6 +252,12 @@ Item {
             const wantView = root.isGrid ? null : m;
             const wantGrid = root.isGrid ? m : null;
             if (view.model === wantView && grid.model === wantGrid) {
+                // Modelo sin cambios de identidad (p. ej. el ScriptModel del
+                // modo todo, que sólo cambia de filas): ningún swap va a
+                // llamar a _settle, así que si esto era un filtro nuevo
+                // asentamos aquí (primer resultado) en el siguiente tick.
+                if (root.filterEpoch !== root._seenEpoch)
+                    Qt.callLater(() => root._settle());
                 root._swapping = false;
                 return;
             }
@@ -301,6 +307,11 @@ Item {
     }
 
     onListModelChanged: root._requestApply()
+
+    // Cambio de filtro (query/modo/sección): además de por el modelo, puede
+    // venir sin cambio de identidad del mismo (ScriptModel del modo todo),
+    // así que se re-solicita el asentamiento para volver al primer resultado.
+    onFilterEpochChanged: root._requestApply()
 
     Component.onCompleted: root._requestApply()
 

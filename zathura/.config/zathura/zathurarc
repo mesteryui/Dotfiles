@@ -1,36 +1,36 @@
 " Ryoku palette -> zathura. Rendered by matugen; do not edit.
 
 " Colors
-set default-bg              "#561d20"
-set default-fg              "#ffb3b3"
+set default-bg              "#561e1a"
+set default-fg              "#ffb4ab"
 
-set statusbar-bg            "#561d20"
-set statusbar-fg            "#ffb3b3"
+set statusbar-bg            "#561e1a"
+set statusbar-fg            "#ffb4ab"
 
-set inputbar-bg             "#561d20"
-set inputbar-fg             "#ffb3b3"
+set inputbar-bg             "#561e1a"
+set inputbar-fg             "#ffb4ab"
 
 set notification-error-bg   "#690005"
 set notification-error-fg   "#ffb4ab"
 
-set notification-warning-bg "#733335"
+set notification-warning-bg "#73332e"
 set notification-warning-fg "#ffb4ab"
 
-set highlight-color         "#733335"
-set highlight-active-color  "#ffb3b3"
+set highlight-color         "#73332e"
+set highlight-active-color  "#ffb4ab"
 
-set completion-highlight-fg "#561d20"
-set completion-highlight-bg "#ffb3b3"
+set completion-highlight-fg "#561e1a"
+set completion-highlight-bg "#ffb4ab"
 
-set completion-bg           "#561d20"
-set completion-fg           "#ffb3b3"
+set completion-bg           "#561e1a"
+set completion-fg           "#ffb4ab"
 
-set notification-bg         "#561d20"
-set notification-fg         "#ffb3b3"
+set notification-bg         "#561e1a"
+set notification-fg         "#ffb4ab"
 
 set recolor                 "true"
-set recolor-lightcolor      "#561d20"
-set recolor-darkcolor       "#ffb3b3"
+set recolor-lightcolor      "#561e1a"
+set recolor-darkcolor       "#ffb4ab"
 set recolor-reverse-video   "true"
 set recolor-keephue         "true"
 

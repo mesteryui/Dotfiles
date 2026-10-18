@@ -3,6 +3,7 @@ import qs.Core
 import qs.Bar.SystemTray
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Services.SystemTray
 
 RowLayout {
     id: root
@@ -11,6 +12,22 @@ RowLayout {
     // así que el RowLayout padre en MainBar.qml reserva el espacio real.
     spacing: Appearance.spacing.xs
     Layout.alignment: Qt.AlignVCenter
+
+    // Sin iconos en la bandeja no hay nada que desplegar: se oculta el
+    // widget entero (la flecha incluida) y el RowLayout padre no reserva
+    // espacio, igual que UpdateCounter sin actualizaciones.
+    readonly property int trayCount: {
+        const v = SystemTray.items ? SystemTray.items.values : null;
+        return v ? v.length : 0;
+    }
+    visible: root.trayCount > 0
+
+    // Si se retiran los iconos con el revealer abierto, se vuelve a cerrar
+    // para no reaparecer desplegado cuando vuelvan a registrarse.
+    onVisibleChanged: {
+        if (!root.visible)
+            revealer.reveal = false;
+    }
 
     MaterialIcon {
         id: chevron
