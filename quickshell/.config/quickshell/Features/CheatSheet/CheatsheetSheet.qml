@@ -24,7 +24,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: hideAnimDuration
+            duration: root.hideAnimDuration
             easing.type: Easing.OutCubic
         }
     }
@@ -286,7 +286,7 @@ Item {
             margins: 48
         }
 
-        spacing: 20
+        spacing: Appearance.spacing.extraLarge
 
         // ----------------------------------------------------------------
         // Search bar — pill con fondo explícito + icono de lupa
@@ -304,9 +304,8 @@ Item {
                 anchors.fill: parent
                 radius: Appearance.shape.full
                 color: Appearance.md3.surface_container_high
-                border.width: searchField.activeFocus ? 2 : 1
-                border.color: searchField.activeFocus ? Appearance.md3.primary :
-                                                        Appearance.md3.outline_variant
+                border.width: searchField.activeFocus ? Appearance.border.focusWidth : Appearance.border.width
+                border.color: searchField.activeFocus ? Appearance.border.focus : Appearance.border.color
 
                 Behavior on border.color {
                     ColorAnimation {
@@ -320,7 +319,7 @@ Item {
                 id: searchIcon
                 anchors {
                     left: parent.left
-                    leftMargin: Appearance.spacing.l
+                    leftMargin: Appearance.spacing.large
                     verticalCenter: parent.verticalCenter
                 }
 
@@ -342,7 +341,7 @@ Item {
                     right: parent.right
                     top: parent.top
                     bottom: parent.bottom
-                    leftMargin: Appearance.spacing.s
+                    leftMargin: Appearance.spacing.small
                     rightMargin: 20
                 }
 
@@ -403,7 +402,7 @@ Item {
                         if (searchField.text.length > 0) {
                             searchField.text = "";
                         } else {
-                            closeRequested();
+                            root.closeRequested();
                         }
                         event.accepted = true;
                         break;
@@ -482,7 +481,7 @@ Item {
                 id: columnsRow
 
                 anchors.left: parent.left
-                spacing: 20
+                spacing: Appearance.spacing.extraLarge
 
                 Repeater {
                     id: columnsRepeater
@@ -493,7 +492,7 @@ Item {
                         required property int index   // column index
 
                         width: root.columnWidth
-                        spacing: 20
+                        spacing: Appearance.spacing.extraLarge
 
                         property alias cardsRepeater: cardsRep
 

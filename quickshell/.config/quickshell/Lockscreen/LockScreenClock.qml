@@ -19,7 +19,7 @@ ColumnLayout {
     // visualmente el icono de condición del clima.)
     RowLayout {
         Layout.alignment: Qt.AlignHCenter
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         StyledText {
             id: dateText
@@ -38,7 +38,7 @@ ColumnLayout {
         // Oculto hasta que el servicio tenga datos reales.
         RowLayout {
             Layout.alignment: Qt.AlignVCenter
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
             visible: WeatherService.data.temp !== "--°C"
 
             MaterialIcon {

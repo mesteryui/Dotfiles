@@ -4,7 +4,6 @@ import qs.Bar.Content
 import qs.Core
 import qs.Panels.Calendar
 import QtQuick
-import Quickshell
 
 BarItem {
     id: wrapper
@@ -30,21 +29,16 @@ BarItem {
         anchors.centerIn: parent
     }
 
-    onClicked: {
-        const w = popupLoader.item;
-        if (w)
-            w.visible = !w.visible;
-    }
+    onClicked: popupLoader.toggle()
 
-    LazyLoader {
+    BarPopup {
         id: popupLoader
 
-        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy).
-        loading: wrapper.hovered || wrapper.pressed
+        anchorItem: wrapper
+        hovered: wrapper.hovered
+        pressed: wrapper.pressed
         component: CalendarPopupWindow {
             id: popup
-
-            anchorItem: wrapper
         }
     }
 }

@@ -44,7 +44,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -53,16 +53,16 @@ Item {
     M3StateLayer {
         anchors.fill: parent
         anchors.margins: 2
-        radius: Appearance.shape.small
+        radius: Appearance.shape.medium
         hovered: rowMouse.containsMouse || switchRow.activeFocus
         pressed: rowMouse.pressed
     }
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: Appearance.spacing.xs
-        anchors.rightMargin: Appearance.spacing.xs
-        spacing: Appearance.spacing.l
+        anchors.leftMargin: Appearance.spacing.extraSmall
+        anchors.rightMargin: Appearance.spacing.extraSmall
+        spacing: Appearance.spacing.large
 
         MaterialIcon {
             Layout.alignment: Qt.AlignVCenter

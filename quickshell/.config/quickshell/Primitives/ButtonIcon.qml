@@ -11,7 +11,7 @@ Item {
 
     property color iconColor: Appearance.md3.on_surface
 
-    property int padding: 4
+    property int padding: Appearance.spacing.extraSmall
 
     signal clicked
 
@@ -23,7 +23,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -39,7 +39,7 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }

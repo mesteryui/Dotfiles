@@ -6,7 +6,7 @@ import Quickshell.Services.SystemTray
 Row {
     id: root
 
-    spacing: Appearance.spacing.xs
+    spacing: Appearance.spacing.extraSmall
 
     property alias items: rep.model
 

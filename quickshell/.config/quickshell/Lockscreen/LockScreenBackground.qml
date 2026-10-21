@@ -137,12 +137,15 @@ Item {
             }
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
-            cache: true
-            // Decodificar a la pantalla (no a 1920 fijo): en 1080p ahorra
-            // ~3x memoria de textura y en 4K no pierde nitidez. Con guarda
+            // El lockscreen se destruye al desbloquear; con cache:true Qt
+            // dejaba la imagen completa en la caché global tras el unlock.
+            cache: false
+            // Decodificar a píxeles físicos (lógicos × DPR): a 1600×1000
+            // lógicos se veía blando en una pantalla 2880×1800. Con guarda
             // nula: targetScreen se inyecta tras crear el item.
-            sourceSize.width: root.targetScreen ? root.targetScreen.width : 1920
-            sourceSize.height: root.targetScreen ? root.targetScreen.height : 1080
+            readonly property real dpr: root.targetScreen ? root.targetScreen.devicePixelRatio : 1
+            sourceSize.width: root.targetScreen ? Math.round(root.targetScreen.width * dpr) : 1920
+            sourceSize.height: root.targetScreen ? Math.round(root.targetScreen.height * dpr) : 1080
         }
     }
 

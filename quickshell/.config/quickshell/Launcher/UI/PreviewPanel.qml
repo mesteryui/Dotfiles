@@ -39,8 +39,8 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Appearance.spacing.m
-        spacing: 10
+        anchors.margins: Appearance.spacing.medium
+        spacing: Appearance.spacing.medium
 
         // Imagen: archivos de imagen, carátulas/thumbs multimedia o clipboard
         Image {

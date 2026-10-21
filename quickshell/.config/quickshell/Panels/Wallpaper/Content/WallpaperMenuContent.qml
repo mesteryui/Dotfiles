@@ -208,13 +208,13 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 14
+        spacing: Appearance.spacing.large
 
         // ── Cabecera ─────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 44
-            spacing: Appearance.spacing.m
+            spacing: Appearance.spacing.medium
 
             StyledText {
                 text: root.label("wallpaper.title", "Fondos de Pantalla")
@@ -228,7 +228,7 @@ Item {
             // Contador de elementos (del resultado filtrado)
             Rectangle {
                 color: Appearance.md3.surface_container_high
-                radius: Appearance.shape.small
+                radius: Appearance.shape.medium
                 implicitWidth: countText.implicitWidth + 16
                 implicitHeight: 24
 
@@ -246,15 +246,15 @@ Item {
 
             // Píldoras de ayuda rápida de teclado
             Row {
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 Rectangle {
                     color: Qt.alpha(Appearance.md3.on_surface, 0.06)
-                    radius: Appearance.shape.unsharpenmore
+                    radius: Appearance.shape.small
                     implicitWidth: hint1.implicitWidth + 12
                     implicitHeight: 22
-                    border.color: Qt.alpha(Appearance.md3.on_surface, 0.1)
-                    border.width: 1
+                    border.color: Appearance.border.subtleOn(Appearance.md3.surface)
+                    border.width: Appearance.border.width
 
                     StyledText {
                         id: hint1
@@ -268,11 +268,11 @@ Item {
 
                 Rectangle {
                     color: Qt.alpha(Appearance.md3.on_surface, 0.06)
-                    radius: Appearance.shape.unsharpenmore
+                    radius: Appearance.shape.small
                     implicitWidth: hint2.implicitWidth + 12
                     implicitHeight: 22
-                    border.color: Qt.alpha(Appearance.md3.on_surface, 0.1)
-                    border.width: 1
+                    border.color: Appearance.border.subtleOn(Appearance.md3.surface)
+                    border.width: Appearance.border.width
 
                     StyledText {
                         id: hint2
@@ -298,9 +298,9 @@ Item {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 14
-                    anchors.rightMargin: 6
-                    spacing: 6
+                    anchors.leftMargin: Appearance.spacing.large
+                    anchors.rightMargin: Appearance.spacing.small
+                    spacing: Appearance.spacing.small
 
                     MaterialIcon {
                         Layout.alignment: Qt.AlignVCenter
@@ -364,7 +364,7 @@ Item {
                 anchors.fill: parent
                 model: root.filtered
                 orientation: ListView.Horizontal
-                spacing: 20 // positivo: evita que las tarjetas se pisen entre sí
+                spacing: Appearance.spacing.extraLarge // positivo: evita que las tarjetas se pisen entre sí
                 clip: false
                 focus: true
 

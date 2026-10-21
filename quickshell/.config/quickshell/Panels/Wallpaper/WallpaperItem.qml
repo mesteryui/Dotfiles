@@ -36,7 +36,7 @@ Item {
     }
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.medium1
+            duration: Appearance.motion.relaxed
             easing.type: Easing.OutCubic
         }
     }

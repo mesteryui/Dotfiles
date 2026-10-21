@@ -14,7 +14,7 @@ Item {
     Row {
         id: volumeLayout
 
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
         anchors.centerIn: parent
 
         MaterialIcon {

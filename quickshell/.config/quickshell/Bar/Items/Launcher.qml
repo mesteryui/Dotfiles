@@ -30,7 +30,7 @@ BarItem {
 
         anchors.centerIn: parent
         icon: DistroService.icon
-        implicitSize: Appearance.font.pixelSize.hugeass
+        implicitSize: Appearance.font.pixelSize.massive
         color: Appearance.md3.primary
     }
 }

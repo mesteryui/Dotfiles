@@ -15,7 +15,7 @@ Item {
         id: layout
 
         anchors.fill: parent
-        spacing: 5
+        spacing: Appearance.spacing.extraSmall
 
         MaterialIcon {
             id: batteryIcon

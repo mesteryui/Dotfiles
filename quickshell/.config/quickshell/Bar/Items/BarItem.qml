@@ -16,7 +16,7 @@ Rectangle {
     property int horizontalPadding: 12
     property int verticalPadding: 6
     property color backgroundColor: Appearance.md3.surface_container_high
-    property int itemRadius: Appearance.shape.normal
+    property int itemRadius: Appearance.shape.large
     property bool clickable: false
     property alias area: mouseArea
     readonly property bool hovered: mouseArea.containsMouse
@@ -35,7 +35,7 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 

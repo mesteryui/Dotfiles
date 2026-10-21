@@ -1,8 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Core.Services
 import qs.Shared.Background
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
@@ -65,10 +66,9 @@ Scope {
                 Accessible.name: I18nService.getTranslation("settings.title", "Ajustes")
 
                 anchors.fill: parent
-                // Spec M3 basic-dialog: 28dp (verylarge).
-                surfaceRadius: Appearance.shape.verylarge
+                // Diálogo grande: `huge` (30) en la escala end-4.
+                surfaceRadius: Appearance.shape.huge
                 baseColor: Appearance.md3.surface
-                showBorder: false
             }
 
             // ── Sombra: source se asigna en onCompleted para evitar warning

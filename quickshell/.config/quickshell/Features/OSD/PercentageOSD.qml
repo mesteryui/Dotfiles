@@ -1,5 +1,4 @@
 import qs.Core
-import qs.Core.Services as Services
 import qs.Primitives
 import qs.Shared.Background
 import QtQuick
@@ -56,12 +55,12 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.large
+        radius: Appearance.shape.extraLarge
     }
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: Appearance.spacing.m
+        spacing: Appearance.spacing.medium
         width: parent.width - 40
 
         // Icono directo, sin contenedor (las props de forma se conservan

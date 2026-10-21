@@ -1,5 +1,7 @@
 // LockAuthView — etapa despierta: top-bar, avatar, huella, password, estado, MPRIS.
 // Extraído de LockScreenContent.qml. Los botones power viven en LockPowerButtons.
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Core.Services
 import qs.Primitives
@@ -46,48 +48,47 @@ Item {
     transform: Translate {
         id: authSlide
 
-        y: isAwake ? 0 : 60 - Math.min(60, dragDy * 0.5)
+        y: root.isAwake ? 0 : 60 - Math.min(60, root.dragDy * 0.5)
 
         Behavior on y {
-            enabled: !dragging
+            enabled: !root.dragging
 
             NumberAnimation {
-                duration: stageDuration
+                duration: root.stageDuration
                 easing.type: Easing.OutCubic
             }
         }
     }
 
     Behavior on opacity {
-        enabled: !dragging
+        enabled: !root.dragging
 
         NumberAnimation {
-            duration: stageDuration
+            duration: root.stageDuration
             easing.type: Easing.OutCubic
         }
     }
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: Appearance.spacing.m
+        spacing: Appearance.spacing.medium
 
         // Barra superior M3: volver a dormir (GNOME) + chip batería
         RowLayout {
             Layout.fillWidth: true
-            Layout.topMargin: Appearance.spacing.m
-            Layout.leftMargin: Appearance.spacing.l
-            Layout.rightMargin: Appearance.spacing.l
-            spacing: Appearance.spacing.s
+            Layout.topMargin: Appearance.spacing.medium
+            Layout.leftMargin: Appearance.spacing.large
+            Layout.rightMargin: Appearance.spacing.large
+            spacing: Appearance.spacing.small
 
             MaterialShape {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 shape: MaterialShape.Circle
-                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(
-                                                     Appearance.md3.surface_container_high, 0.72)
-                strokeWidth: 1
-                strokeColor: Qt.alpha(Appearance.md3.outline_variant, 0.5)
-                animationDuration: Appearance.motion.short3
+                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+                strokeWidth: Appearance.border.width
+                strokeColor: Appearance.border.subtleOn(color)
+                animationDuration: Appearance.motion.fast
 
                 MaterialIcon {
                     anchors.centerIn: parent
@@ -104,7 +105,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: sleepRequested()
+                    onClicked: root.sleepRequested()
                 }
             }
 
@@ -117,14 +118,14 @@ Item {
                 Layout.preferredWidth: authBatteryRow.implicitWidth + 28
                 radius: Appearance.shape.full
                 color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
-                border.width: 1
-                border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+                border.width: Appearance.border.width
+                border.color: Appearance.border.subtleOn(color)
 
                 RowLayout {
                     id: authBatteryRow
 
                     anchors.centerIn: parent
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     MaterialIcon {
                         icon: BatteryService.materialIcon
@@ -158,7 +159,7 @@ Item {
         Item {
             id: avatarWrapper
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 10
+            Layout.topMargin: Appearance.spacing.medium
 
             implicitWidth: 96
             implicitHeight: 96
@@ -170,9 +171,9 @@ Item {
                 anchors.centerIn: parent
                 width: 110
                 height: 110
-                shape: isAwake ? MaterialShape.Cookie9Sided : MaterialShape.Circle
+                shape: root.isAwake ? MaterialShape.Cookie9Sided : MaterialShape.Circle
                 animationDuration: 600
-                color: Qt.alpha(Appearance.md3.primary, isAwake ? 0.35 : 0.18)
+                color: Qt.alpha(Appearance.md3.primary, root.isAwake ? 0.35 : 0.18)
             }
 
             MaterialShape {
@@ -183,7 +184,7 @@ Item {
                 color: Qt.alpha(Appearance.md3.primary_container, 0.92)
                 strokeColor: Appearance.md3.primary
                 strokeWidth: 2
-                animationDuration: Appearance.motion.short3
+                animationDuration: Appearance.motion.fast
 
                 MaterialIcon {
                     anchors.centerIn: parent
@@ -218,7 +219,7 @@ Item {
         // Nombre de usuario (M3 titleLarge)
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: Appearance.spacing.xs
+            Layout.topMargin: Appearance.spacing.extraSmall
             text: Quickshell.env("USER")
             font.pixelSize: Appearance.font.pixelSize.larger
             font.weight: Font.DemiBold
@@ -245,19 +246,19 @@ Item {
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 2
-            visible: isFingerprintActive
+            visible: root.isFingerprintActive
             implicitWidth: fpRow.implicitWidth + 28
             implicitHeight: 32
             radius: Appearance.shape.full
             color: Qt.alpha(Appearance.md3.primary, 0.16)
-            border.width: 1
+            border.width: Appearance.border.width
             border.color: Qt.alpha(Appearance.md3.primary, 0.35)
 
             RowLayout {
                 id: fpRow
 
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "fingerprint"
@@ -277,7 +278,7 @@ Item {
         LockScreenPasswordInput {
             id: passwordInput
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 6
+            Layout.topMargin: Appearance.spacing.small
             Layout.preferredWidth: 380
 
             authFailed: authFailed
@@ -290,9 +291,9 @@ Item {
             isPrimary: isPrimary
             isAwake: root.isAwake
 
-            onAccepted: password => validatePassword(password)
+            onAccepted: password => root.validatePassword(password)
             onTogglePasswordVisibility: togglePasswordVisibility()
-            onRequestSleep: sleepRequested()
+            onRequestSleep: root.sleepRequested()
         }
 
         // Mensaje de estado (error / Bloq Mayús) en pastilla M3
@@ -302,20 +303,17 @@ Item {
             implicitWidth: statusText.implicitWidth + 24
             implicitHeight: statusText.implicitHeight + 12
             radius: Appearance.shape.full
-            visible: authFailed || KeyboardThings.capsLockOn
-            color: authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container,
-                                                                                          0.55)
-            border.width: 1
-            border.color: authFailed ? Appearance.md3.error : Qt.alpha(Appearance.md3.tertiary, 0.5)
+            visible: root.authFailed || KeyboardThings.capsLockOn
+            color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container, 0.55)
+            border.width: Appearance.border.width
+            border.color: root.authFailed ? Appearance.border.error : Qt.alpha(Appearance.md3.tertiary, 0.5)
 
             StyledText {
                 id: statusText
 
                 anchors.centerIn: parent
-                text: authFailed ? I18nService.getTranslation("lockscreen.incorrect_password",
-                                                              "Contraseña incorrecta") :
-                                   I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
-                color: authFailed ? Appearance.md3.on_error_container : Appearance.md3.on_tertiary_container
+                text: root.authFailed ? I18nService.getTranslation("lockscreen.incorrect_password", "Contraseña incorrecta") : I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
+                color: root.authFailed ? Appearance.md3.on_error_container : Appearance.md3.on_tertiary_container
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium
             }
@@ -332,7 +330,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 400
 
-            visible: isPrimary && MprisService.activePlayer !== null
+            visible: root.isPrimary && MprisService.activePlayer !== null
             mprisPosition: mprisPosition
         }
 
@@ -343,7 +341,7 @@ Item {
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: mprisCard.visible ? 6 : 0
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             Item {
                 Layout.preferredWidth: 26

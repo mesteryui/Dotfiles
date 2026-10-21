@@ -24,6 +24,10 @@ Rectangle {
     /// true cuando hay un borde de acento (p.ej. ítem seleccionado / MPRIS)
     property bool highlighted: false
 
+    /// Trazo hairline de reposo (superficies flotantes: barra, paneles).
+    /// Los elementos internos de la barra lo dejan en false.
+    property bool bordered: false
+
     // ── Apariencia ──────────────────────────────────────────────────────────
     /// Color base del fondo. Por defecto usa el token MD3 surface_container_high
     property color baseColor: Appearance.md3.surface_container_high
@@ -35,18 +39,18 @@ Rectangle {
     radius: surfaceRadius
     color: active ? Qt.tint(baseColor, Qt.alpha(Appearance.md3.on_surface, 0.08)) : baseColor
 
-    border.width: highlighted ? 1 : 0
-    border.color: Appearance.md3.outline
+    border.width: (bordered || highlighted) ? Appearance.border.width : 0
+    border.color: highlighted ? Appearance.border.focus : Appearance.border.subtleOn(color)
 
     // ── Animaciones ──────────────────────────────────────────────────────────
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
     Behavior on border.width {
         NumberAnimation {
-            duration: Appearance.motion.short2
+            duration: Appearance.motion.veryFast
         }
     }
 }

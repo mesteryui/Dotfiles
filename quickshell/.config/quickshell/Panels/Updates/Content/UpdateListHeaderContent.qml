@@ -12,10 +12,10 @@ Item {
         anchors {
             left: parent.left
             bottom: parent.bottom
-            margins: Appearance.spacing.l
-            bottomMargin: Appearance.spacing.m
+            margins: Appearance.spacing.large
+            bottomMargin: Appearance.spacing.medium
         }
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
@@ -49,7 +49,7 @@ Item {
         anchors {
             right: parent.right
             bottom: parent.bottom
-            margins: Appearance.spacing.m
+            margins: Appearance.spacing.medium
         }
         iconName: "refresh"
         iconSize: 18

@@ -3,14 +3,24 @@
 - `Appearance.qml` — singleton de diseño. `md3` (+ `base16`,
   `palette`) desde `colors.json` generado
   (`Directories.state + "/quickshell/generated/colors.json"`).
-  `shape` (`extraSmall 4` … `full 9999`, `screenRounding`,
-  `windowRounding 18`, `card 20`); `state` (`hovered 0.08` /
+  `shape` (radios ascendentes: `micro 2`, `extraSmall 4`, `small 8`,
+  `medium 12`, `large 17`, `extraLarge 23`, `huge 30`, `full 9999`;
+  `screenRounding` = `extraLarge`, `windowRounding 18`,
+  `screenBorder 14`; `card 20` = `largeIncreased` de caelestia para
+  popups/menús compactos); `border`
+  (trazo hairline `width 1`, `focusWidth 2`; colores `subtleOn(fondo)` /
+  `strong` / `focus` / `selected` / `error` / `divider`); `state`
+  (`hovered 0.08` /
   `pressed 0.12` / `disabled 0.38`) — nunca hardcodear `0.08/0.12`;
-  `opacity` (hint/faint/ghost); `elevation1…5`; `spacing` (`xs 4`,
-  `s 8`, `m 12`, `l 16`, `xl 24`); `font` + `typeScale` (label/
-  body/title/headline); `motion` (duraciones short/medium/long +
-  curvas `standard`/`emphasized` + springs `springSoft/Bouncy/Snappy`,
-  fijos y sobrios por diseño, sin interruptores).
+  `opacity` (hint/faint/ghost); `elevation1…5`; `spacing` (`extraSmall 4`,
+  `small 8`, `medium 12`, `large 16`, `extraLarge 24`); `font` +
+  `typeScale` (label/body/title/headline; `font.pixelSize` para
+  iconos/display: `large 17`, `larger 19`, `huge 22`, `massive 23`);
+  `motion` (duraciones por velocidad: `instant 50`, `veryFast 100`,
+  `fast 150`, `normal 200`, `relaxed 250`, `slow 300`, `verySlow 350`,
+  `slowest 450`; curvas `standard`/`emphasized` + springs
+  `springSoft/Bouncy/Snappy`, fijos y sobrios por diseño, sin
+  interruptores).
 - `Modules/` — `Directories` (rutas config/state), `Icons`, `Persistent`
   (persistencia con debounce), `Screens`.
 - `Services/` — singletons (ver `qmldir`, módulo `qs.Core.Services`):

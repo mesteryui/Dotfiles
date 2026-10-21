@@ -20,10 +20,10 @@ Item {
     Rectangle {
         anchors {
             fill: parent
-            leftMargin: Appearance.spacing.s
-            rightMargin: Appearance.spacing.s
+            leftMargin: Appearance.spacing.small
+            rightMargin: Appearance.spacing.small
         }
-        radius: Appearance.shape.verysmall
+        radius: Appearance.shape.small
         color: "transparent"
 
         Rectangle {
@@ -34,7 +34,7 @@ Item {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
         }
@@ -44,10 +44,10 @@ Item {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Appearance.spacing.l
-            rightMargin: Appearance.spacing.l
+            leftMargin: Appearance.spacing.large
+            rightMargin: Appearance.spacing.large
         }
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         StyledText {
             Layout.fillWidth: true

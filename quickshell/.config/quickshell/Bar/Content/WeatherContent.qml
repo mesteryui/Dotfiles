@@ -9,7 +9,7 @@ Item {
     Row {
         id: contentRow
 
-        spacing: 6
+        spacing: Appearance.spacing.small
         anchors.centerIn: parent
 
         MaterialIcon {
@@ -22,9 +22,9 @@ Item {
             fill: 0
         }
 
-        /*StyledText {
+        StyledText {
         anchors.verticalCenter: parent.verticalCenter
         text: WeatherService.temperature
-        }*/
+        }
     }
 }

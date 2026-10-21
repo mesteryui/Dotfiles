@@ -1,5 +1,7 @@
 // SettingsDropdownRow — dropdown M3 para listas largas.
 // Extraído de SettingsPanelContent.qml para partir sus ~950 líneas.
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Primitives
 import QtQuick
@@ -41,7 +43,7 @@ ColumnLayout {
     Component.onCompleted: dropRow.syncIndex()
 
     Layout.fillWidth: true
-    spacing: 6
+    spacing: Appearance.spacing.small
 
     SettingsFieldLabel {
         text: dropRow.label
@@ -55,9 +57,10 @@ ColumnLayout {
         implicitHeight: 56
         radius: Appearance.shape.extraSmall
         color: "transparent"
-        border.width: dropRow.open || dropField.activeFocus ? 2 : 1
-        border.color: dropRow.open || dropField.activeFocus ? Appearance.md3.primary :
-                                                              Appearance.md3.outline_variant
+        border.width: dropRow.open || dropField.activeFocus ? Appearance.border.focusWidth :
+                                                              Appearance.border.width
+        border.color: dropRow.open || dropField.activeFocus ? Appearance.border.focus :
+                                                              Appearance.border.strong
 
         activeFocusOnTab: true
 
@@ -67,7 +70,7 @@ ColumnLayout {
 
         Behavior on border.color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
 
@@ -115,9 +118,9 @@ ColumnLayout {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: Appearance.spacing.l
-            anchors.rightMargin: Appearance.spacing.m
-            spacing: Appearance.spacing.m
+            anchors.leftMargin: Appearance.spacing.large
+            anchors.rightMargin: Appearance.spacing.medium
+            spacing: Appearance.spacing.medium
 
             MaterialIcon {
                 visible: dropRow.iconName !== ""
@@ -148,7 +151,7 @@ ColumnLayout {
 
                 Behavior on rotation {
                     NumberAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }
@@ -177,7 +180,7 @@ ColumnLayout {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
 
@@ -185,8 +188,8 @@ ColumnLayout {
             id: menuFlick
 
             anchors.fill: parent
-            anchors.topMargin: Appearance.spacing.xs
-            anchors.bottomMargin: Appearance.spacing.xs
+            anchors.topMargin: Appearance.spacing.extraSmall
+            anchors.bottomMargin: Appearance.spacing.extraSmall
             contentWidth: width
             contentHeight: menuCol.implicitHeight
             clip: true
@@ -225,21 +228,21 @@ ColumnLayout {
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: 2
-                            radius: Appearance.shape.small
+                            radius: Appearance.shape.medium
                             color: "transparent"
                         }
 
                         M3SelectionFill {
                             anchors.fill: parent
                             anchors.margins: 2
-                            radius: Appearance.shape.small
+                            radius: Appearance.shape.medium
                             selected: menuRow._selected
                         }
 
                         M3StateLayer {
                             anchors.fill: parent
                             anchors.margins: 2
-                            radius: Appearance.shape.small
+                            radius: Appearance.shape.medium
                             tint: menuRow._selected ? Appearance.md3.on_secondary_container :
                                                       Appearance.md3.on_surface
                             hovered: menuArea.pressed || menuArea.containsMouse || menuRow._focused
@@ -248,9 +251,9 @@ ColumnLayout {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Appearance.spacing.m
-                            anchors.rightMargin: Appearance.spacing.m
-                            spacing: Appearance.spacing.m
+                            anchors.leftMargin: Appearance.spacing.medium
+                            anchors.rightMargin: Appearance.spacing.medium
+                            spacing: Appearance.spacing.medium
 
                             MaterialIcon {
                                 Layout.alignment: Qt.AlignVCenter

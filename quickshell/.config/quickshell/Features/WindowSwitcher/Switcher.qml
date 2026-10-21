@@ -61,8 +61,8 @@ Scope {
             readonly property int cardSpacing: 8
             // Ancho de cada botón + spacing.
             readonly property int itemWidth: cardWidth + cardSpacing
-            readonly property int listMargins: Appearance.spacing.m
-            readonly property int edgeMargin: Appearance.spacing.l
+            readonly property int listMargins: Appearance.spacing.medium
+            readonly property int edgeMargin: Appearance.spacing.large
             readonly property int footerSideMargin: 18
             readonly property int fadeWidth: 56
             readonly property int chevronSize: 28
@@ -211,7 +211,7 @@ Scope {
                 preferredHighlightBegin: 0
                 preferredHighlightEnd: width
                 highlight: Rectangle {
-                    radius: Appearance.shape.small
+                    radius: Appearance.shape.medium
                     color: Appearance.md3.primary
                     opacity: 0.15
                 }
@@ -297,18 +297,18 @@ Scope {
                     Rectangle {
                         width: 140
                         height: parent.height
-                        radius: Appearance.shape.small
+                        radius: Appearance.shape.medium
                         color: "transparent"
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: Appearance.motion.short3
+                                duration: Appearance.motion.fast
                             }
                         }
 
                         Column {
                             anchors.centerIn: parent
-                            spacing: Appearance.spacing.s
+                            spacing: Appearance.spacing.small
                             width: parent.width - 16
 
                             // Contenedor expresivo del icono: morfea al seleccionar
@@ -327,7 +327,7 @@ Scope {
                                     anchors.fill: parent
                                     shape: parent.isCurrent ? MaterialShape.Cookie9Sided :
                                                               MaterialShape.Circle
-                                    animationDuration: Appearance.motion.medium2
+                                    animationDuration: Appearance.motion.slow
                                     color: parent.isCurrent ? Appearance.md3.primary_container :
                                                               Appearance.md3.surface_container_highest
                                 }
@@ -453,8 +453,8 @@ Scope {
                 opacity: (root.overflow && windowList.canGoLeft) ? 1 : 0
                 visible: opacity > 0
                 color: Appearance.md3.surface_container_highest
-                border.color: Appearance.md3.outline_variant
-                border.width: 1
+                border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_highest)
+                border.width: Appearance.border.width
 
                 Accessible.role: Accessible.Button
                 Accessible.name: Services.I18nService.getTranslation("switcher.previous", "Previous window")
@@ -490,8 +490,8 @@ Scope {
                 opacity: (root.overflow && windowList.canGoRight) ? 1 : 0
                 visible: opacity > 0
                 color: Appearance.md3.surface_container_highest
-                border.color: Appearance.md3.outline_variant
-                border.width: 1
+                border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_highest)
+                border.width: Appearance.border.width
 
                 Accessible.role: Accessible.Button
                 Accessible.name: Services.I18nService.getTranslation("switcher.next", "Next window")
@@ -533,7 +533,7 @@ Scope {
 
                     anchors.left: parent.left
                     anchors.right: scrollCounter.left
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: Appearance.spacing.medium
                     anchors.verticalCenter: parent.verticalCenter
                     height: 4
                     radius: height / 2

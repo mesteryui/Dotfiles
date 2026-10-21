@@ -3,7 +3,6 @@
 // `scopeObj` su Scope y `resultView` el ResultList; `field` expone el TextField.
 pragma ComponentBehavior: Bound
 import qs.Core
-import qs.Core.Modules
 import qs.Core.Services as Services
 import qs.Primitives
 import QtQuick
@@ -44,9 +43,9 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: Appearance.spacing.l
-        anchors.rightMargin: 6
-        spacing: Appearance.spacing.xs
+        anchors.leftMargin: Appearance.spacing.large
+        anchors.rightMargin: Appearance.spacing.small
+        spacing: Appearance.spacing.extraSmall
 
         // Hero expresivo: morfea con el modo activo.
         Item {
@@ -56,13 +55,13 @@ Rectangle {
 
             MaterialShape {
                 anchors.fill: parent
-                shape: controller.modeShape(controller.activeMode)
-                animationDuration: Appearance.motion.medium3
+                shape: root.controller.modeShape(root.controller.activeMode)
+                animationDuration: Appearance.motion.verySlow
                 color: Appearance.md3.primary_container
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    icon: controller.modeIcon(controller.activeMode)
+                    icon: root.controller.modeIcon(root.controller.activeMode)
                     size: Appearance.font.pixelSize.large
                     color: Appearance.md3.on_primary_container
                 }
@@ -92,33 +91,34 @@ Rectangle {
             // con la surface enfocada -> `QWaylandTextInputv3::enableSurface`
             // "Trying to enable ... but ... has focus". El foco real lo da
             // onOpened()/goSection() vía forceActiveFocus().
-            focus: scopeObj.shown
+            focus: root.scopeObj.shown
             placeholderText: {
-                switch (controller.activeMode) {
+                switch (root.controller.activeMode) {
                 case "system":
-                    return controller.tr("controller.placeholder_system", "Sistema… (> para este modo)");
+                    return root.controller.tr("controller.placeholder_system", "Sistema… (> para este modo)");
                 case "files":
-                    return controller.tr("controller.placeholder_files", "Archivos en $HOME…");
+                    return root.controller.tr("controller.placeholder_files", "Archivos en $HOME…");
                 case "web":
-                    return controller.tr("controller.placeholder_web", "Buscar en DuckDuckGo…");
+                    return root.controller.tr("controller.placeholder_web", "Buscar en DuckDuckGo…");
                 case "emoji":
-                    return controller.tr("controller.placeholder_emoji",
-                                         "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
+                    return root.controller.tr("controller.placeholder_emoji",
+                                              "Emojis y símbolos… (g:grupo · Ctrl+Mayús+F favorito)");
                 case "calc":
-                    return controller.tr("controller.placeholder_calc", "Calculadora… ej: 45*1.21");
+                    return root.controller.tr("controller.placeholder_calc", "Calculadora… ej: 45*1.21");
                 case "clip":
-                    return controller.tr("controller.placeholder_clipboard", "Portapapeles (cliphist)…");
+                    return root.controller.tr("controller.placeholder_clipboard", "Portapapeles (cliphist)…");
                 default:
-                    return controller.tr("controller.placeholder_all", "Buscar aplicaciones…");
+                    return root.controller.tr("controller.placeholder_all", "Buscar aplicaciones…");
                 }
             }
 
             // Sin carácter de menú → volver al menú por defecto.
             onTextChanged: {
                 // Escribir vuelve a modo texto (flechas al cursor).
-                controller.navResults = false;
-                if (scopeObj.forcedMode !== "" && !text.startsWith(controller.prefixOf(scopeObj.forcedMode)))
-                    scopeObj.forcedMode = "";
+                root.controller.navResults = false;
+                if (root.scopeObj.forcedMode !== "" && !text.startsWith(root.controller.prefixOf(
+                                                                            root.scopeObj.forcedMode)))
+                    root.scopeObj.forcedMode = "";
             }
 
             Keys.onPressed: event => {
@@ -127,51 +127,51 @@ Rectangle {
                 if (ctrl && shift && event.key === Qt.Key_P) {
                     // Fija/quita la app seleccionada (solo modo todo).
                     // Va antes del Ctrl+P de navegación: lleva Shift.
-                    controller.togglePinCurrent();
+                    root.controller.togglePinCurrent();
                     event.accepted = true;
                     return;
                 }
                 if (ctrl && shift && event.key === Qt.Key_F) {
                     // Marca/desmarca el emoji seleccionado como favorito.
-                    controller.toggleFavCurrent();
+                    root.controller.toggleFavCurrent();
                     event.accepted = true;
                     return;
                 }
                 if (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N)) {
                     // En cuadrícula: abajo (una fila); en lista: siguiente.
-                    controller.navResults = true;
-                    if (resultView.isGrid)
-                        resultView.moveGrid(0, 1);
+                    root.controller.navResults = true;
+                    if (root.resultView.isGrid)
+                        root.resultView.moveGrid(0, 1);
                     else
-                        resultView.moveSelection(1);
+                        root.resultView.moveSelection(1);
                     event.accepted = true;
                     return;
                 }
                 if (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P)) {
                     // En cuadrícula: arriba (una fila); en lista: anterior.
-                    controller.navResults = true;
-                    if (resultView.isGrid)
-                        resultView.moveGrid(0, -1);
+                    root.controller.navResults = true;
+                    if (root.resultView.isGrid)
+                        root.resultView.moveGrid(0, -1);
                     else
-                        resultView.moveSelection(-1);
+                        root.resultView.moveSelection(-1);
                     event.accepted = true;
                     return;
                 }
                 if (ctrl && event.key === Qt.Key_F) {
                     // En cuadrícula: derecha. En lista se deja pasar
                     // al campo (mover cursor).
-                    if (resultView.isGrid) {
-                        controller.navResults = true;
-                        resultView.moveGrid(1, 0);
+                    if (root.resultView.isGrid) {
+                        root.controller.navResults = true;
+                        root.resultView.moveGrid(1, 0);
                         event.accepted = true;
                         return;
                     }
                 }
                 if (ctrl && event.key === Qt.Key_B) {
                     // En cuadrícula: izquierda. En lista, al campo.
-                    if (resultView.isGrid) {
-                        controller.navResults = true;
-                        resultView.moveGrid(-1, 0);
+                    if (root.resultView.isGrid) {
+                        root.controller.navResults = true;
+                        root.resultView.moveGrid(-1, 0);
                         event.accepted = true;
                         return;
                     }
@@ -179,66 +179,66 @@ Rectangle {
                 switch (event.key) {
                 case Qt.Key_Escape:
                     // ESC sale del menú directamente.
-                    scopeObj.shown = false;
+                    root.scopeObj.shown = false;
                     event.accepted = true;
                     break;
                 case Qt.Key_Left:
                     // Navegando: siempre a resultados. Escribiendo: solo
                     // al borde izquierdo; si no, el campo mueve el cursor.
                     // En lista, siempre al campo.
-                    if (resultView.isGrid && (controller.navResults || (searchField.cursorPosition === 0
-                                                                        && searchField.selectedText
-                                                                        === ""))) {
-                        controller.navResults = true;
-                        resultView.moveGrid(-1, 0);
+                    if (root.resultView.isGrid && (root.controller.navResults || (searchField.cursorPosition
+                                                                                  === 0 && searchField.selectedText
+                                                                                  === ""))) {
+                        root.controller.navResults = true;
+                        root.resultView.moveGrid(-1, 0);
                         event.accepted = true;
                     }
                     break;
                 case Qt.Key_Right:
                     // Simétrico al borde derecho.
-                    if (resultView.isGrid && (controller.navResults || (searchField.cursorPosition
-                                                                        >= searchField.length
-                                                                        && searchField.selectedText
-                                                                        === ""))) {
-                        controller.navResults = true;
-                        resultView.moveGrid(1, 0);
+                    if (root.resultView.isGrid && (root.controller.navResults || (searchField.cursorPosition
+                                                                                  >= searchField.length
+                                                                                  && searchField.selectedText
+                                                                                  === ""))) {
+                        root.controller.navResults = true;
+                        root.resultView.moveGrid(1, 0);
                         event.accepted = true;
                     }
                     break;
                 case Qt.Key_Down:
-                    controller.navResults = true;
-                    if (resultView.isGrid)
-                        resultView.moveGrid(0, 1);
+                    root.controller.navResults = true;
+                    if (root.resultView.isGrid)
+                        root.resultView.moveGrid(0, 1);
                     else
-                        resultView.moveSelection(1);
+                        root.resultView.moveSelection(1);
                     event.accepted = true;
                     break;
                 case Qt.Key_Up:
-                    controller.navResults = true;
-                    if (resultView.isGrid)
-                        resultView.moveGrid(0, -1);
+                    root.controller.navResults = true;
+                    if (root.resultView.isGrid)
+                        root.resultView.moveGrid(0, -1);
                     else
-                        resultView.moveSelection(-1);
+                        root.resultView.moveSelection(-1);
                     event.accepted = true;
                     break;
                 case Qt.Key_Tab:
                     // Rota de modo
-                    cycleMode(event.modifiers & Qt.ShiftModifier ? -1 : 1);
+                    root.cycleMode(event.modifiers & Qt.ShiftModifier ? -1 : 1);
                     event.accepted = true;
                     break;
                 case Qt.Key_Backspace:
                     // En modo sistema con query vacía: subir de sección.
-                    if (controller.activeMode === "system" && controller.query === "") {
-                        const parent = controller.systemParentSection();
+                    if (root.controller.activeMode === "system" && root.controller.query === "") {
+                        const parent = root.controller.systemParentSection();
                         if (parent !== "") {
-                            controller.goSection(parent);
+                            root.controller.goSection(parent);
                             event.accepted = true;
                         }
                     }
                     break;
                 case Qt.Key_Delete:
-                    if (controller.activeMode === "clip") {
-                        const d = resultView.itemAt(resultView.currentIndex);
+                    if (root.controller.activeMode === "clip") {
+                        const d = root.resultView.itemAt(root.resultView.currentIndex);
                         if (d && d.cid)
                             Services.ClipboardService.deleteEntry(d.cid);
                         event.accepted = true;
@@ -246,7 +246,7 @@ Rectangle {
                     break;
                 case Qt.Key_Return:
                 case Qt.Key_Enter:
-                    controller.activateCurrent();
+                    root.controller.activateCurrent();
                     event.accepted = true;
                     break;
                 }

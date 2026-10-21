@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import qs.Bar.Content
 import qs.Panels.Weather
 import QtQuick
-import Quickshell
 
 BarItem {
     id: root
@@ -11,16 +10,14 @@ BarItem {
     clickable: true
     horizontalPadding: 9
 
-    LazyLoader {
+    BarPopup {
         id: weatherCharge
 
-        // `hovered` (bool), no `hoveredChanged` (señal, siempre truthy).
-        loading: root.hovered
-
-        WeatherPopup {
+        anchorItem: root
+        hovered: root.hovered
+        pressed: root.pressed
+        component: WeatherPopup {
             id: popupWindow
-
-            anchorItem: root
         }
     }
 
@@ -30,9 +27,5 @@ BarItem {
         anchors.centerIn: parent
     }
 
-    onClicked: {
-        const w = weatherCharge.item;
-        if (w)
-            w.visible = !w.visible;
-    } //Quickshell.execDetached(["xdg-terminal-exec", "--app-id=local.floating", "-e", "omabat"])
+    onClicked: weatherCharge.toggle()
 }

@@ -32,7 +32,7 @@ ColumnLayout {
 
     signal seekRequested(real newPosition)
 
-    spacing: Appearance.spacing.xs
+    spacing: Appearance.spacing.extraSmall
 
     function formatTime(seconds: real): string {
         if (!seconds || seconds <= 0 || isNaN(seconds))
@@ -157,7 +157,7 @@ ColumnLayout {
                 }
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }

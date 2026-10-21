@@ -32,6 +32,11 @@ Singleton {
 
     property bool ready: false
 
+    // cliphist no limita el historial por defecto. El launcher solo
+    // necesita las entradas recientes: cargar miles duplicaba texto en
+    // `entries` y en `snapshot` sin aportar nada útil.
+    readonly property int maxEntries: 300
+
     property string error: ""
 
     property bool refreshing: false
@@ -385,6 +390,8 @@ Singleton {
         command: ["cliphist", "list"]
         stdout: SplitParser {
             onRead: data => {
+                if (root.entries.count >= root.maxEntries)
+                    return;
                 const line = data.trim();
                 if (line === "" || line.startsWith("opening db"))
                     return;

@@ -1,8 +1,6 @@
 import qs.Shared.Background
 import qs.Primitives
-import qs.Core
 import QtQuick
-import Quickshell
 
 BarPopupWindow {
     id: root

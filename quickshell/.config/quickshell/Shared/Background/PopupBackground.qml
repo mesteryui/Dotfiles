@@ -18,7 +18,7 @@ Rectangle {
     // de colors.json. La primera carga funde desde transparente.
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -27,8 +27,8 @@ Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: "transparent"
-        border.color: Appearance.md3.outline_variant
-        border.width: root.showBorder ? 1 : 0
+        border.color: Appearance.border.subtleOn(root.baseColor)
+        border.width: root.showBorder ? Appearance.border.width : 0
         z: 10
     }
 }

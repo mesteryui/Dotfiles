@@ -41,7 +41,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         anchors.margins: 10
-        spacing: Appearance.spacing.m
+        spacing: Appearance.spacing.medium
 
         StyledText {
             text: tabBtn.iconName

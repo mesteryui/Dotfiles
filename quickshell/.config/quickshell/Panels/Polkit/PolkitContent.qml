@@ -63,7 +63,7 @@ Item {
 
         anchors.centerIn: parent
         width: 380
-        radius: Appearance.shape.verylarge
+        radius: Appearance.shape.huge
         color: Appearance.md3.surface_container_high
 
         implicitHeight: contentColumn.implicitHeight + 48
@@ -78,7 +78,7 @@ Item {
 
         Behavior on opacity {
             OpacityAnimator {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
                 easing.type: Easing.OutCubic
             }
         }
@@ -104,7 +104,7 @@ Item {
                 target: shakeT
                 property: "x"
                 to: -10
-                duration: Appearance.motion.short1
+                duration: Appearance.motion.instant
                 easing.type: Easing.OutQuad
             }
             NumberAnimation {
@@ -132,7 +132,7 @@ Item {
                 target: shakeT
                 property: "x"
                 to: 0
-                duration: Appearance.motion.short1
+                duration: Appearance.motion.instant
                 easing.type: Easing.OutQuad
             }
         }
@@ -142,7 +142,7 @@ Item {
 
             anchors.centerIn: parent
             width: parent.width - 48
-            spacing: Appearance.spacing.l
+            spacing: Appearance.spacing.large
 
             MaterialIcon {
                 Layout.alignment: Qt.AlignHCenter
@@ -152,7 +152,7 @@ Item {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }
@@ -221,8 +221,8 @@ Item {
             // Button row
             RowLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: Appearance.spacing.s
-                spacing: Appearance.spacing.s
+                Layout.topMargin: Appearance.spacing.small
+                spacing: Appearance.spacing.small
 
                 Item {
                     Layout.fillWidth: true

@@ -2,10 +2,8 @@ pragma ComponentBehavior: Bound
 
 import qs.Core.Services as Services
 import qs.Core
-import qs.Primitives
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io

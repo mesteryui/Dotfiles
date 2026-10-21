@@ -44,22 +44,22 @@ Rectangle {
             root.toggled();
     }
 
-    radius: Appearance.shape.large
+    radius: Appearance.shape.extraLarge
     color: root.active ? Appearance.md3.primary_container : Appearance.md3.surface_container_high
     opacity: root.enable ? 1.0 : Appearance.state.disabled
-    border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
-    border.color: Appearance.md3.primary
+    border.width: (root.activeFocus && root.keyboardMode) ? Appearance.border.focusWidth : 0
+    border.color: Appearance.border.focus
 
     scale: hoverArea.pressed ? 0.96 : (hoverArea.containsMouse ? 1.02 : 1.0)
 
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
     Behavior on opacity {
         OpacityAnimator {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
     Behavior on scale {
@@ -82,7 +82,7 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }
@@ -90,7 +90,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         anchors.margins: root.stateText !== "" ? 12 : 8
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         // Contenedor del icono estilo badge M3 (círculo expresivo).
         MaterialShape {
@@ -100,11 +100,11 @@ Rectangle {
 
             shape: MaterialShape.Circle
             color: root.active ? Appearance.md3.primary : Appearance.md3.surface_container_highest
-            animationDuration: Appearance.motion.short3
+            animationDuration: Appearance.motion.fast
 
             Behavior on color {
                 ColorAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
 
@@ -116,7 +116,7 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }
@@ -138,7 +138,7 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }
@@ -155,7 +155,7 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }

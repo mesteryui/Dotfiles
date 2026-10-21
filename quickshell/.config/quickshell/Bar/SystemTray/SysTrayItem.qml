@@ -76,7 +76,7 @@ Item {
 
             // Centrado absoluto con márgenes limpios
             anchors.centerIn: parent
-            width: parent.width - 8  // Equivalente a margins: Appearance.spacing.xs por cada lado
+            width: parent.width - 8  // Equivalente a margins: Appearance.spacing.extraSmall por cada lado
             height: parent.height - 8
             visible: source !== ""
         }

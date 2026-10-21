@@ -11,7 +11,7 @@ import M3Shapes
 ColumnLayout {
     id: root
 
-    spacing: Appearance.spacing.m
+    spacing: Appearance.spacing.medium
 
     // Icono: o bien fuente del sistema (launcher: "search-none-symbolic")...
     property url iconSource: ""

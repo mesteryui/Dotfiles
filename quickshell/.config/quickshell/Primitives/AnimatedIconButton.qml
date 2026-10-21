@@ -42,7 +42,7 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
 
@@ -55,7 +55,7 @@ Item {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: Appearance.motion.short2
+                    duration: Appearance.motion.veryFast
                 }
             }
         }
@@ -69,7 +69,7 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
     }

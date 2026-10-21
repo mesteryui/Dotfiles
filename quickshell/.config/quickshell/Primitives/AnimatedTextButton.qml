@@ -23,11 +23,11 @@ Rectangle {
     implicitWidth: textLabel.implicitWidth + paddingHorizontal
     implicitHeight: buttonHeight
     // Spec M3E buttons: la forma morfea al pulsar (full → squircle).
-    radius: mouseArea.pressed ? Appearance.shape.small : Appearance.shape.full
+    radius: mouseArea.pressed ? Appearance.shape.medium : Appearance.shape.full
 
     Behavior on radius {
         NumberAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -49,12 +49,12 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -67,7 +67,7 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }

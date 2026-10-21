@@ -36,7 +36,7 @@ MaterialShape {
     shape: btnMouse.pressed ? MaterialShape.Cookie4Sided : (root.highlighted ? root.buttonShape :
                                                                                MaterialShape.Circle)
 
-    animationDuration: Appearance.motion.medium2
+    animationDuration: Appearance.motion.slow
     color: highlighted ? accentColor : Appearance.md3.surface_container
     strokeWidth: highlighted ? 2 : 1
     strokeColor: highlighted ? Qt.alpha(accentColor, 0.7) : Appearance.md3.outline_variant
@@ -66,7 +66,7 @@ MaterialShape {
         id: contentColumn
 
         anchors.centerIn: parent
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         // Exponemos el tamaño para el cálculo del lado del botón
         readonly property real implicitWidth: Math.max(iconItem.width, buttonTextItem.implicitWidth)
@@ -95,7 +95,7 @@ MaterialShape {
 
             Behavior on color {
                 ColorAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
         }

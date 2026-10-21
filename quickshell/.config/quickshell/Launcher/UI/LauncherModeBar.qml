@@ -1,6 +1,8 @@
 // LauncherModeBar — chips de modo, grupos de emoji y breadcrumb del sistema.
 // Extraído de AppLauncher.qml. `controller` es el PanelWindow del launcher.
 // La escritura del campo se delega con pickTodo/System/Mode.
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Primitives
 import QtQuick
@@ -16,7 +18,7 @@ ColumnLayout {
     signal pickSystem
     signal pickMode(string selectorChar)
 
-    spacing: 10
+    spacing: Appearance.spacing.medium
 
     Item {
         Layout.fillWidth: true
@@ -47,35 +49,35 @@ ColumnLayout {
             Row {
                 id: modeRow
 
-                spacing: 6
+                spacing: Appearance.spacing.small
                 height: 32
 
                 Repeater {
                     id: modeRepeater
 
-                    model: controller.modes
+                    model: root.controller.modes
                     delegate: Rectangle {
                         id: chipRect
 
                         required property var modelData
                         required property int index
 
-                        property bool isActive: controller.activeMode === modelData.modeId
+                        property bool isActive: root.controller.activeMode === modelData.modeId
 
                         // Ancho según contenido: sin aplastamiento.
                         width: Math.max(64, chipRow.implicitWidth + 26)
                         height: 30
-                        // Spec M3 assist-chip: contenedor small (8dp).
-                        radius: Appearance.shape.small
+                        // Chip de modo: `medium` (12) en la escala end-4.
+                        radius: Appearance.shape.medium
                         color: isActive ? Appearance.md3.secondary_container : "transparent"
-                        border.width: isActive ? 0 : 1
-                        border.color: Appearance.md3.outline_variant
+                        border.width: isActive ? 0 : Appearance.border.width
+                        border.color: Appearance.border.color
 
                         Row {
                             id: chipRow
 
                             anchors.centerIn: parent
-                            spacing: 6
+                            spacing: Appearance.spacing.small
 
                             // Check de filter-chip M3: solo en el modo activo.
                             MaterialIcon {
@@ -94,14 +96,14 @@ ColumnLayout {
 
                                 MaterialShape {
                                     anchors.fill: parent
-                                    shape: controller.modeShape(modelData.modeId)
-                                    animationDuration: Appearance.motion.medium2
+                                    shape: root.controller.modeShape(chipRect.modelData.modeId)
+                                    animationDuration: Appearance.motion.slow
                                     color: chipRect.isActive ? Appearance.md3.primary :
                                                                Appearance.md3.surface_container_highest
 
                                     MaterialIcon {
                                         anchors.centerIn: parent
-                                        icon: controller.modeIcon(modelData.modeId)
+                                        icon: root.controller.modeIcon(chipRect.modelData.modeId)
                                         size: 12
                                         color: chipRect.isActive ? Appearance.md3.on_primary :
                                                                    Appearance.md3.on_surface_variant
@@ -117,9 +119,10 @@ ColumnLayout {
                                 horizontalAlignment: Text.AlignHCenter
                                 elide: Text.ElideRight
                                 // Carácter selector del menú entre corchetes: teclearlo cambia de menú.
-                                text: (modelData.selectorChar !== "" ? "[" + modelData.selectorChar + "] " :
-                                                                       "") + controller.modeLabel(
-                                          modelData.modeId)
+                                text: (chipRect.modelData.selectorChar !== "" ? "["
+                                                                                + chipRect.modelData.selectorChar
+                                                                                + "] " : "")
+                                      + root.controller.modeLabel(chipRect.modelData.modeId)
                                 font.pixelSize: Appearance.typeScale.labelMedium
                                 color: chipRect.isActive ? Appearance.md3.on_secondary_container :
                                                            Appearance.md3.on_surface_variant
@@ -130,12 +133,12 @@ ColumnLayout {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                if (modelData.modeId === "todo") {
-                                    pickTodo();
-                                } else if (modelData.modeId === "system") {
-                                    pickSystem();
+                                if (chipRect.modelData.modeId === "todo") {
+                                    root.pickTodo();
+                                } else if (chipRect.modelData.modeId === "system") {
+                                    root.pickSystem();
                                 } else {
-                                    pickMode(modelData.selectorChar);
+                                    root.pickMode(chipRect.modelData.selectorChar);
                                 }
                             }
                         }
@@ -195,7 +198,7 @@ ColumnLayout {
 
     Flow {
         Layout.fillWidth: true
-        spacing: 6
+        spacing: Appearance.spacing.small
         visible: controller.activeMode === "emoji"
 
         Repeater {
@@ -208,15 +211,15 @@ ColumnLayout {
 
                 width: Math.max(56, groupChipText.implicitWidth + 30)
                 height: 26
-                // Spec M3 assist-chip: contenedor small (8dp).
-                radius: Appearance.shape.small
+                // Chip de grupo: `medium` (12) en la escala end-4.
+                radius: Appearance.shape.medium
                 color: isActive ? Appearance.md3.secondary_container : "transparent"
-                border.width: isActive ? 0 : 1
-                border.color: Appearance.md3.outline_variant
+                border.width: isActive ? 0 : Appearance.border.width
+                border.color: Appearance.border.color
 
                 Row {
                     anchors.centerIn: parent
-                    spacing: Appearance.spacing.xs
+                    spacing: Appearance.spacing.extraSmall
 
                     MaterialIcon {
                         anchors.verticalCenter: parent.verticalCenter
@@ -248,7 +251,7 @@ ColumnLayout {
 
     Row {
         Layout.fillWidth: true
-        spacing: Appearance.spacing.xs
+        spacing: Appearance.spacing.extraSmall
         visible: controller.activeMode === "system"
 
         Repeater {

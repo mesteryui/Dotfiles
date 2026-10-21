@@ -42,7 +42,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 
@@ -54,16 +54,16 @@ Item {
         radius: height / 2
         color: root.checked ? Appearance.md3.primary : Appearance.md3.surface_container_highest
         border.width: root.checked ? 0 : 2
-        border.color: Appearance.md3.outline
+        border.color: Appearance.border.strong
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
         Behavior on border.width {
             NumberAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
     }
@@ -74,8 +74,8 @@ Item {
         anchors.margins: -4
         radius: height / 2
         color: "transparent"
-        border.width: 2
-        border.color: Appearance.md3.primary
+        border.width: Appearance.border.focusWidth
+        border.color: Appearance.border.focus
         visible: root.interactive && root.activeFocus
     }
 
@@ -88,7 +88,7 @@ Item {
         height: width
         shape: MaterialShape.Circle
         color: root.checked ? Appearance.md3.on_primary : Appearance.md3.outline
-        animationDuration: Appearance.motion.short3
+        animationDuration: Appearance.motion.fast
         x: root.checked ? (52 - 8 - 24) : 8
         y: (32 - height) / 2
 
@@ -118,7 +118,7 @@ Item {
         }
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
 
@@ -146,7 +146,7 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }

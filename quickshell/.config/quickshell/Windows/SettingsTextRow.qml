@@ -14,7 +14,7 @@ ColumnLayout {
     signal edited(string text)
 
     Layout.fillWidth: true
-    spacing: Appearance.spacing.xs
+    spacing: Appearance.spacing.extraSmall
 
     SettingsFieldLabel {
         text: textRow.label

@@ -43,6 +43,8 @@ Singleton {
             implicitHeight: 0
             implicitWidth: 0
             color: "transparent"
+            // Solo se mapea mientras inhibe: apagado no debe dejar una
+            // superficie 1x1 viva con su contexto GL.
             mask: Region {
                 item: null
             }

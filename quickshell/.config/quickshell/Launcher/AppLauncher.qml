@@ -314,9 +314,11 @@ Scope {
                 // Modelos live del menú de sistema (búsqueda global + badges "Actual",
                 // más menús propios; no-op si aún no se descubrieron).
                 SystemMenuRegistry.refreshAll();
-                // Generador de emojis en background (no-op tras el primero):
-                // el arranque del shell ya no espera/spawnea python.
-                EmojiService.ensureLib();
+                // Generador de emojis: solo si se abre directamente en ese modo.
+                // Abrir el launcher para apps ya no lanza python ni construye el
+                // catálogo completo (ver onActiveModeChanged).
+                if (launcher.activeMode === "emoji")
+                    EmojiService.ensureLib();
                 searchBar.field.forceActiveFocus();
             }
 
@@ -428,6 +430,8 @@ Scope {
                 launcher.filterEpoch++;
                 if (scope.shown && activeMode === "clip")
                     Services.ClipboardService.refresh();
+                if (scope.shown && activeMode === "emoji")
+                    EmojiService.ensureLib();
             }
 
             // ---------- helpers ----------
@@ -1055,19 +1059,20 @@ Scope {
 
                 // Accessible en el contenido (Item), no en la PanelWindow.
                 Accessible.role: Accessible.Dialog
-                Accessible.name: tr("launcher.placeholder_all", "Buscar aplicaciones…")
+                Accessible.name: launcher.tr("launcher.placeholder_all", "Buscar aplicaciones…")
 
                 // Menú por defecto más estrecho; ancho completo solo con preview.
                 width: previewPanel.hasPreview ? 900 : 600
                 height: 640
                 Behavior on width {
                     NumberAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
                 anchors.centerIn: parent
                 color: Appearance.md3.surface
-                radius: Appearance.shape.verylarge
+                radius: Appearance.shape.huge
+                bordered: true
 
                 MouseArea {
                     anchors.fill: parent
@@ -1075,8 +1080,8 @@ Scope {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: Appearance.spacing.l
-                    spacing: 10
+                    anchors.margins: Appearance.spacing.large
+                    spacing: Appearance.spacing.medium
 
                     LauncherSearchBar {
                         id: searchBar
@@ -1197,16 +1202,16 @@ Scope {
                             clipText: preview.clipText
                             previewError: preview.previewError
                             metaText: preview.metaText
-                            fileTooLargeText: tr("launcher.file_too_large",
-                                                 "Archivo demasiado grande para previsualizar")
+                            fileTooLargeText: launcher.tr("launcher.file_too_large",
+                                                          "Archivo demasiado grande para previsualizar")
                         }
                     }
 
                     // Barra de ayuda
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
-                        text: tr("launcher.footer_hint",
-                                 "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
+                        text: launcher.tr("launcher.footer_hint",
+                                          "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
                         font.pixelSize: Appearance.typeScale.labelSmall
                         color: Appearance.md3.on_surface_variant
                         opacity: Appearance.opacity.hintStrong

@@ -25,10 +25,10 @@ Item {
         id: background
 
         anchors.fill: parent
-        radius: Appearance.shape.small  // shape token "small" = 12
+        radius: Appearance.shape.medium
         color: Appearance.md3.surface_container_highest
-        border.width: 1
-        border.color: Appearance.md3.outline_variant
+        border.width: Appearance.border.width
+        border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_highest)
     }
 
     StyledText {

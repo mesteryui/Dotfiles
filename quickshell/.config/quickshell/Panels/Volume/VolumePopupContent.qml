@@ -57,23 +57,23 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: Appearance.spacing.l
+        spacing: Appearance.spacing.large
 
         // --- Botón grande de estado / mute ---
         RowLayout {
             Layout.fillWidth: true
-            spacing: 14
+            spacing: Appearance.spacing.large
 
             Rectangle {
                 id: bigButton
 
                 implicitWidth: 72
                 implicitHeight: 72
-                radius: Appearance.shape.large
+                radius: Appearance.shape.extraLarge
                 color: Services.AudioService.muted ? Appearance.md3.surface_container_highest :
                                                      Appearance.md3.primary_container
-                border.width: activeFocus ? 2 : 0
-                border.color: Appearance.md3.primary
+                border.width: activeFocus ? Appearance.border.focusWidth : 0
+                border.color: Appearance.border.focus
                 activeFocusOnTab: true
 
                 Accessible.role: Accessible.Button
@@ -106,7 +106,7 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: Appearance.motion.short2
+                            duration: Appearance.motion.veryFast
                         }
                     }
                 }
@@ -130,7 +130,7 @@ Item {
                 StyledText {
                     text: Services.AudioService.muted ? "Silenciado" : Math.round(
                                                             Services.AudioService.volume * 100) + "%"
-                    font.pixelSize: Appearance.font.pixelSize.hugeass
+                    font.pixelSize: Appearance.font.pixelSize.massive
                     font.bold: true
                     color: Appearance.md3.on_surface
                 }
@@ -171,12 +171,12 @@ Item {
             font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
-            Layout.leftMargin: Appearance.spacing.xs
+            Layout.leftMargin: Appearance.spacing.extraSmall
         }
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
 
             Repeater {
                 id: sinkRepeater
@@ -193,10 +193,10 @@ Item {
 
                     Layout.fillWidth: true
                     implicitHeight: 40
-                    radius: Appearance.shape.small
+                    radius: Appearance.shape.medium
                     color: sinkRow.selected ? Appearance.md3.secondary_container : "transparent"
-                    border.width: activeFocus ? 2 : 0
-                    border.color: Appearance.md3.primary
+                    border.width: activeFocus ? Appearance.border.focusWidth : 0
+                    border.color: Appearance.border.focus
                     activeFocusOnTab: true
 
                     Accessible.role: Accessible.RadioButton
@@ -231,9 +231,9 @@ Item {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 10
+                        anchors.leftMargin: Appearance.spacing.medium
+                        anchors.rightMargin: Appearance.spacing.medium
+                        spacing: Appearance.spacing.medium
 
                         MaterialIcon {
                             icon: "speaker"
@@ -285,7 +285,7 @@ Item {
             font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
-            Layout.leftMargin: Appearance.spacing.xs
+            Layout.leftMargin: Appearance.spacing.extraSmall
         }
 
         ControlSlider {
@@ -310,7 +310,7 @@ Item {
         // --- Selector de micrófono ---
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
 
             Repeater {
                 id: sourceRepeater
@@ -327,10 +327,10 @@ Item {
 
                     Layout.fillWidth: true
                     implicitHeight: 40
-                    radius: Appearance.shape.small
+                    radius: Appearance.shape.medium
                     color: sourceRow.selected ? Appearance.md3.secondary_container : "transparent"
-                    border.width: activeFocus ? 2 : 0
-                    border.color: Appearance.md3.primary
+                    border.width: activeFocus ? Appearance.border.focusWidth : 0
+                    border.color: Appearance.border.focus
                     activeFocusOnTab: true
 
                     Accessible.role: Accessible.RadioButton
@@ -365,9 +365,9 @@ Item {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 10
+                        anchors.leftMargin: Appearance.spacing.medium
+                        anchors.rightMargin: Appearance.spacing.medium
+                        spacing: Appearance.spacing.medium
 
                         MaterialIcon {
                             icon: "mic"

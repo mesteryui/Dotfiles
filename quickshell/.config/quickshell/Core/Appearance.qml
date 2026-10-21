@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import qs.Core.Services
 import qs.Core.Modules
@@ -14,6 +15,7 @@ Singleton {
     property alias palette: jsonAdapter.palette
 
     readonly property Shape shape: Shape {}
+    readonly property Border border: Border {}
     readonly property FontConfig font: FontConfig {}
     readonly property State state: State {}
     readonly property TypeScale typeScale: TypeScale {}
@@ -34,26 +36,55 @@ Singleton {
         }
     }
 
+    // Escala de radios: de `micro` (casi recto) a `huge` (paneles grandes).
+    // Los nombres indican el tamaño relativo y siempre ascienden:
+    // micro < extraSmall < small < medium < large < extraLarge < huge.
+    // El orden importa: cada token se usa para su nivel de contenedor, no
+    // como valor decorativo suelto. `screenRounding` sigue a `extraLarge`.
     component Shape: QtObject {
-        property int unsharpen: 1
-        property int extraSmall: 3
-        property int unsharpenmore: 4
-        property int verysmall: 6
+        property int micro: 2
+        property int extraSmall: 4
         property int small: 8
-        property int normal: 12
-        property int large: 16
-        property int verylarge: 21
+        property int medium: 12
+        property int large: 17
+        property int extraLarge: 23
+        property int huge: 30
         property int full: 9999
-        property int screenRounding: large
-        property int windowRounding: 13
+        property int screenRounding: extraLarge
+        property int windowRounding: 18
         // Marco de pantalla de la barra en los modos "hug" (`full_hug` y
         // `partial_hug`): grosor de las bandas del color de la barra que
         // bordean la pantalla. El radio de sus esquinas es `screenRounding`.
         // Consumidor: Bar/ScreenRounding.qml.
         property int screenBorder: 14
-        // Radio de tarjeta estándar de la shell (banners, M3Cards con override,
-        // menús, paneles). Unifica los `radius: 20` literales antes dispersos.
-        property int card: 14
+        // Radio de tarjeta/popup estándar (caelestia `largeIncreased`): entre
+        // `large` y `extraLarge`, para menús y paneles compactos. No sustituye
+        // a `huge` en los paneles grandes.
+        property int card: 20
+    }
+
+    // Contrato de bordes (caelestia/end-4): un trazo hairline de 1px en las
+    // superficies flotantes (barra, popups, tarjetas elevadas), nunca en cada
+    // elemento interno; 2px solo para foco/selección. El color de reposo no
+    // usa `outline_variant` a plena intensidad: se mezcla con la superficie
+    // al 40% (como `colLayer0Border` de end-4) para que el borde defina sin
+    // competir con el contenido. `color` es el valor por defecto sobre
+    // `surface`; para otras superficies usar `subtleOn(colorDeFondo)`.
+    component Border: QtObject {
+        property int width: 1
+        property int focusWidth: 2
+        readonly property color color: subtleOn(root.md3.surface)
+        readonly property color strong: root.md3.outline
+        readonly property color focus: root.md3.primary
+        readonly property color selected: root.md3.primary
+        readonly property color error: root.md3.error
+        // Separadores de 1px dentro de paneles/listas (no son bordes de
+        // superficie): mismo trazo que los divisores de sección.
+        readonly property color divider: Qt.alpha(root.md3.outline_variant, 0.4)
+
+        function subtleOn(baseColor) {
+            return Qt.tint(baseColor, Qt.alpha(root.md3.outline_variant, 0.4));
+        }
     }
 
     // Opacidades decorativas (textos atenuados, placeholders): un solo
@@ -116,17 +147,20 @@ Singleton {
         offsetY: 3
     }   // sheets
 
-    // Escala de spacing M3 (márgenes y separaciones): un solo mando para
-    // la densidad de la shell.
+    // Escala de spacing (márgenes y separaciones): extraSmall 4, small 8,
+    // medium 12, large 16 y extraLarge 24. La misma base que comparten
+    // caelestia (`Tokens.spacing`) y end-4 en sus contenedores. Un solo mando
+    // para la densidad de la shell: los huecos de 2/3 que quedan en
+    // componentes concretos son micro-ajustes locales, no la escala.
     component Spacing: QtObject {
-        property int xs: 4
-        property int s: 6
-        property int m: 8
-        property int l: 12
-        property int xl: 16
+        property int extraSmall: 4
+        property int small: 8
+        property int medium: 12
+        property int large: 16
+        property int extraLarge: 24
     }
-    // Escala de tipos M3 (nombres spec; los roles de icono/display usan
-    // large/larger/huge/hugeass tal cual, fuera de la escala de texto).
+    // Escala de tipos M3 (nombres spec). Los roles de icono/display usan
+    // `font.pixelSize` (large/larger/huge/massive), fuera de la escala de texto.
     component TypeScale: QtObject {
         property int labelXSmall: 9   // micro (badges, timestamps)
         property int labelSmall: 11   // spec 11
@@ -159,16 +193,17 @@ Singleton {
     }
 
     // Esquema de motion M3 (duraciones fijas; animaciones sobrias por
-    // diseño, sin interruptor de movimiento reducido).
+    // diseño, sin interruptor de movimiento reducido). Nombres por velocidad,
+    // de `instant` a `slowest`; entre paréntesis, el rol M3 equivalente.
     component Motion: QtObject {
-        property int short1: 50
-        property int short2: 100
-        property int short3: 150
-        property int short4: 200
-        property int medium1: 250
-        property int medium2: 300
-        property int medium3: 350
-        property int long1: 450
+        property int instant: 50      // short1
+        property int veryFast: 100    // short2
+        property int fast: 150        // short3
+        property int normal: 200      // short4
+        property int relaxed: 250     // medium1
+        property int slow: 300        // medium2
+        property int verySlow: 350    // medium3
+        property int slowest: 450     // long1
         // Curvas M3 para Easing.Bezier (easing.bezierCurve).
         property var standard: [0.2, 0.0, 0.0, 1.0]
         property var emphasized: [0.05, 0.7, 0.1, 1.0]
@@ -234,18 +269,13 @@ Singleton {
                              })
     }
 
+    // Tamaños de icono y texto de display (no son roles M3: para texto usa
+    // `typeScale`). Escala ascendente: large < larger < huge < massive.
     component PixelSize: QtObject {
-        property int smallest: 11
-        property int smaller: 12
-        property int smallie: 14
-        property int small: 14
-        property int normal: 16
-        // large/larger/huge/hugeass dimensionan iconos y display expresivo:
-        // se conservan a propósito (17/19/22/23), no son roles de texto M3.
         property int large: 17
         property int larger: 19
         property int huge: 22
-        property int hugeass: 23
+        property int massive: 23
     }
 
     component Md3: JsonObject {

@@ -9,10 +9,17 @@ BarItem {
     clickable: true
     horizontalPadding: 10
 
-    onClicked: volumePanel.visible = !volumePanel.visible
+    onClicked: volumePanel.toggle()
 
-    VolumePanel {
+    BarPopup {
         id: volumePanel
+
+        anchorItem: root
+        hovered: root.hovered
+        pressed: root.pressed
+        component: VolumePanel {
+            id: panel
+        }
     }
 
     VolumeContent {

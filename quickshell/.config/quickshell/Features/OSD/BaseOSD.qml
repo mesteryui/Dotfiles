@@ -2,7 +2,6 @@ import qs.Core
 import qs.Core.Modules
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 
 Scope {
@@ -66,7 +65,7 @@ Scope {
                 OpacityAnimator {
                     id: fadeAnim
 
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                     easing.type: Easing.Bezier
                     easing.bezierCurve: Appearance.motion.emphasized
                 }

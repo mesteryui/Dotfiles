@@ -3,16 +3,22 @@ import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.Bluetooth
 import QtQuick
-import Quickshell
 
 BarItem {
     id: root
 
     clickable: true
-    onClicked: btPanel.visible = !btPanel.visible
+    onClicked: btPanel.toggle()
 
-    BluetoothPanel {
+    BarPopup {
         id: btPanel
+
+        anchorItem: root
+        hovered: root.hovered
+        pressed: root.pressed
+        component: BluetoothPanel {
+            id: panel
+        }
     }
 
     MaterialIcon {

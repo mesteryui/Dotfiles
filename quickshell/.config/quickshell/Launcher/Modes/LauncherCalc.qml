@@ -30,8 +30,8 @@ QtObject {
     property Timer watchdog: Timer {
         interval: 5000
         onTriggered: {
-            if (calcProc.running)
-                calcProc.running = false;
+            if (root.calcProc.running)
+                root.calcProc.running = false;
         }
     }
 
@@ -83,14 +83,14 @@ QtObject {
             // Coma decimal → punto + locale C: igual que antes, punto decimal.
             const expr = root.decimalExpr(q);
             // Mata el cálculo anterior: si no, su stdout se mezcla con este.
-            if (calcProc.running)
-                calcProc.running = false;
+            if (root.calcProc.running)
+                root.calcProc.running = false;
             root.busy = true;
             root.failed = false;
             root.acc = "";
             root._launchQuery = q;
-            calcProc.command = ["env", "LC_ALL=C", "qalc", "-t", expr];
-            calcProc.running = true;
+            root.calcProc.command = ["env", "LC_ALL=C", "qalc", "-t", expr];
+            root.calcProc.running = true;
             root.watchdog.restart();
         }
     }

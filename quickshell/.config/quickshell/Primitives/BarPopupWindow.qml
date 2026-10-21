@@ -8,7 +8,7 @@ import Quickshell.Hyprland
 PopupWindow {
     id: root
 
-    property Item anchorItem: parent
+    property Item anchorItem: root.parent
 
     readonly property string _pos: ConfigService.configs.bar.position
 

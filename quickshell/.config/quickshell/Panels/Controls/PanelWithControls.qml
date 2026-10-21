@@ -3,6 +3,8 @@
 // Scope ligero: el IPC vive aquí para responder antes de cargar.
 // La PanelWindow solo se instancia al abrir (ahorro en arranque).
 
+pragma ComponentBehavior: Bound
+
 import qs.Core.Services
 import qs.Shared.Background
 import qs.Core
@@ -145,7 +147,7 @@ Scope {
                 Accessible.name: I18nService.getTranslation("panel.controls", "Centro de control")
                 anchors.fill: parent
 
-                radius: Appearance.shape.verylarge
+                radius: Appearance.shape.huge
                 color: Appearance.md3.surface
             }
 

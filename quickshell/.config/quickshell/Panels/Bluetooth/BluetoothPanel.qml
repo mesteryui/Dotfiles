@@ -1,11 +1,9 @@
 // --- BluetoothPanel: popup de la barra con dispositivos y batería ---
-import qs.Core.Services
 import qs.Core
 import qs.Shared.Background
 import qs.Primitives
 import QtQuick
 import QtQuick.Effects
-import Quickshell.Hyprland
 
 BarPopupWindow {
     id: root
@@ -45,7 +43,7 @@ BarPopupWindow {
         id: popupContent
         anchors {
             fill: parent
-            margins: Appearance.spacing.m
+            margins: Appearance.spacing.medium
         }
     }
 }

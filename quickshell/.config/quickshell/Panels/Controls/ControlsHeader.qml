@@ -2,6 +2,8 @@
 // Extraído de PanelWithControlsContent.qml. `host` es la raíz del
 // contenido (misma semántica que el antiguo `root.`); `focusBelow`
 // es el primer foco bajo la cabecera (volumeSlider).
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Core.Modules
 import qs.Primitives
@@ -16,7 +18,7 @@ RowLayout {
     property Item focusBelow
     property alias powerButton: powerButtonItem
 
-    spacing: Appearance.spacing.m
+    spacing: Appearance.spacing.medium
 
     // Avatar circular (misma técnica que LockScreenContent):
     // StyledClippingRectangle con radius width/2 recorta
@@ -26,8 +28,8 @@ RowLayout {
         Layout.preferredHeight: 50
         Layout.alignment: Qt.AlignVCenter
         radius: Appearance.shape.full
-        border.width: 2
-        border.color: Appearance.md3.primary
+        border.width: Appearance.border.focusWidth
+        border.color: Appearance.border.focus
 
         Image {
             id: faceImage
@@ -49,14 +51,14 @@ RowLayout {
         spacing: 1
 
         StyledText {
-            text: host.username || "usuario"
+            text: root.host.username || "usuario"
             color: Appearance.md3.on_surface
             font.pixelSize: Appearance.typeScale.bodyLarge
             font.weight: Font.Medium
             font.family: Appearance.font.sans
         }
         StyledText {
-            text: host.hostname || "localhost"
+            text: root.host.hostname || "localhost"
             color: Appearance.md3.on_surface_variant
             font.pixelSize: Appearance.typeScale.labelMedium
             font.family: Appearance.font.sans
@@ -78,29 +80,29 @@ RowLayout {
                                                                                     ? Qt.alpha(
                                                                                           Appearance.md3.error_container,
                                                                                           0.4) : Appearance.md3.surface_container_high)
-        border.width: (activeFocus && host.keyboardMode) ? 2 : 0
-        border.color: Appearance.md3.primary
+        border.width: (activeFocus && root.host.keyboardMode) ? Appearance.border.focusWidth : 0
+        border.color: Appearance.border.focus
         activeFocusOnTab: true
 
         Accessible.role: Accessible.Button
         Accessible.name: "Apagar sesión"
 
-        Keys.onPressed: host.keyboardMode = true
+        Keys.onPressed: root.host.keyboardMode = true
         Keys.onReturnPressed: buttonProc.running = true
         Keys.onEnterPressed: buttonProc.running = true
         Keys.onSpacePressed: buttonProc.running = true
-        Keys.onDownPressed: (focusBelow ? focusBelow.forceActiveFocus() : undefined)
+        Keys.onDownPressed: (root.focusBelow ? root.focusBelow.forceActiveFocus() : undefined)
 
         onActiveFocusChanged: {
             if (activeFocus)
-                host.ensureVisible(powerButton);
+                root.host.ensureVisible(root.powerButton);
         }
 
         scale: powerArea.pressed ? 0.92 : (powerArea.containsMouse ? 1.06 : 1.0)
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
         Behavior on scale {
@@ -120,7 +122,7 @@ RowLayout {
 
             Behavior on color {
                 ColorAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
         }
@@ -131,10 +133,10 @@ RowLayout {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onEntered: host.keyboardMode = false
+            onEntered: root.host.keyboardMode = false
             onPressed: {
                 powerButtonItem.forceActiveFocus();
-                host.keyboardMode = false;
+                root.host.keyboardMode = false;
             }
             onClicked: buttonProc.running = true
 

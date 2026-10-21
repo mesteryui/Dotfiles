@@ -40,22 +40,22 @@ Item {
             right: parent.right
         }
 
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         // ══ HOY: resumen + detalles en una sola tarjeta ═══════════
         M3Card {
             Layout.fillWidth: true
-            padding: 12
+            padding: Appearance.spacing.medium
             color: Appearance.md3.surface_container_high
 
             ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: 10
+                spacing: Appearance.spacing.medium
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: Appearance.spacing.m
+                    spacing: Appearance.spacing.medium
 
                     Item {
                         Layout.preferredWidth: 48
@@ -75,7 +75,7 @@ Item {
                         spacing: 2
 
                         RowLayout {
-                            spacing: Appearance.spacing.s
+                            spacing: Appearance.spacing.small
 
                             StyledText {
                                 text: Services.WeatherService.data.temp
@@ -117,18 +117,18 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+                    color: Appearance.border.divider
                 }
 
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
-                    rowSpacing: 10
-                    columnSpacing: 8
+                    rowSpacing: Appearance.spacing.medium
+                    columnSpacing: Appearance.spacing.small
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "air"
@@ -157,7 +157,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "water_drop"
@@ -184,7 +184,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "compress"
@@ -212,7 +212,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "visibility"
@@ -239,7 +239,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "rainy"
@@ -269,7 +269,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "light_mode"
@@ -296,7 +296,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "wb_twilight"
@@ -323,7 +323,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "bedtime"
@@ -350,7 +350,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "eco"
@@ -380,7 +380,7 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "schedule"
@@ -429,37 +429,39 @@ Item {
             model: Services.WeatherService.data.hourlyByDay
 
             delegate: M3Card {
+                id: dayDelegate
+
                 required property var modelData
                 required property int index
                 Layout.fillWidth: true
 
-                padding: 12
+                padding: Appearance.spacing.medium
                 color: Appearance.md3.surface_container_high
 
                 ColumnLayout {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    spacing: 10
+                    spacing: Appearance.spacing.medium
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
-                            icon: Icons.getWeatherIcon(modelData.wCode)
+                            icon: Icons.getWeatherIcon(dayDelegate.modelData.wCode)
                             size: Appearance.font.pixelSize.large
                             color: Appearance.md3.primary
                         }
 
                         StyledText {
-                            text: modelData.dayLabel
+                            text: dayDelegate.modelData.dayLabel
                             font.pixelSize: Appearance.typeScale.bodyLarge
                             font.weight: Font.Medium
                             color: Appearance.md3.on_surface
                         }
 
                         StyledText {
-                            text: modelData.shortDate
+                            text: dayDelegate.modelData.shortDate
                             font.pixelSize: Appearance.typeScale.labelMedium
                             color: Appearance.md3.on_surface_variant
                         }
@@ -478,7 +480,7 @@ Item {
                                 color: Appearance.md3.tertiary
                             }
                             StyledText {
-                                text: modelData.maxTemp + "°"
+                                text: dayDelegate.modelData.maxTemp + "°"
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 font.weight: Font.Medium
                                 color: Appearance.md3.on_surface
@@ -490,7 +492,7 @@ Item {
                                 color: Appearance.md3.primary
                             }
                             StyledText {
-                                text: modelData.minTemp + "°"
+                                text: dayDelegate.modelData.minTemp + "°"
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 font.weight: Font.Medium
                                 color: Appearance.md3.on_surface
@@ -498,8 +500,8 @@ Item {
                         }
 
                         StyledText {
-                            visible: modelData.precipProb > 0
-                            text: "☂ " + modelData.precipProb + "%"
+                            visible: dayDelegate.modelData.precipProb > 0
+                            text: "☂ " + dayDelegate.modelData.precipProb + "%"
                             font.pixelSize: Appearance.typeScale.labelMedium
                             color: Appearance.md3.tertiary
                         }
@@ -517,18 +519,20 @@ Item {
                         Row {
                             id: hourRow
 
-                            spacing: 6
+                            spacing: Appearance.spacing.small
                             height: parent.height
 
                             Repeater {
-                                model: modelData.hours
+                                model: dayDelegate.modelData.hours
 
                                 delegate: Rectangle {
+                                    id: hourDelegate
+
                                     required property var modelData
 
                                     width: 54
                                     height: 92
-                                    radius: Appearance.shape.small
+                                    radius: Appearance.shape.medium
                                     color: Qt.alpha(Appearance.md3.surface_container_highest, 0.7)
                                     border.width: 0
 
@@ -538,7 +542,7 @@ Item {
                                         width: parent.width
 
                                         StyledText {
-                                            text: modelData.hourLabel
+                                            text: dayDelegate.modelData.hourLabel
                                             font.pixelSize: Appearance.typeScale.labelSmall
                                             color: Appearance.md3.on_surface_variant
                                             horizontalAlignment: Text.AlignHCenter
@@ -546,7 +550,8 @@ Item {
                                         }
 
                                         MaterialIcon {
-                                            icon: Icons.getWeatherIcon(modelData.wCode, modelData.isDay)
+                                            icon: Icons.getWeatherIcon(dayDelegate.modelData.wCode,
+                                                                       dayDelegate.modelData.isDay)
                                             size: 20
                                             color: Appearance.md3.primary
                                             width: parent.width
@@ -554,7 +559,7 @@ Item {
                                         }
 
                                         StyledText {
-                                            text: modelData.temp + "°"
+                                            text: dayDelegate.modelData.temp + "°"
                                             font.pixelSize: Appearance.typeScale.titleSmall
                                             font.weight: Font.Bold
                                             color: Appearance.md3.on_surface
@@ -563,10 +568,12 @@ Item {
                                         }
 
                                         StyledText {
-                                            text: modelData.precipProb > 0 ? modelData.precipProb + "%" : "—"
+                                            text: dayDelegate.modelData.precipProb > 0
+                                                  ? dayDelegate.modelData.precipProb + "%" : "—"
                                             font.pixelSize: Appearance.typeScale.labelSmall
-                                            color: modelData.precipProb > 20 ? Appearance.md3.tertiary :
-                                                                               Appearance.md3.on_surface_variant
+                                            color: dayDelegate.modelData.precipProb > 20
+                                                   ? Appearance.md3.tertiary :
+                                                     Appearance.md3.on_surface_variant
                                             horizontalAlignment: Text.AlignHCenter
                                             width: parent.width
                                         }
@@ -583,7 +590,7 @@ Item {
         M3Card {
             visible: Services.WeatherService.data.hourlyByDay.length === 0
             Layout.fillWidth: true
-            padding: 12
+            padding: Appearance.spacing.medium
             color: Qt.alpha(Appearance.md3.surface_container_high, 0.7)
 
             StyledText {

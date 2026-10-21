@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 
+import qs.Core
 import qs.Core.Services as Services
 import qs.Panels.MediaPlayer
 import qs.Bar.Content
 import qs.Shared.Background
 import QtQuick
-import Quickshell
 
 Item {
     id: root
@@ -34,27 +34,21 @@ Item {
         width: content.width / 2
         height: parent.height
         anchors.left: parent.left
-        anchors.leftMargin: 12
+        anchors.leftMargin: Appearance.spacing.medium
         hoverEnabled: true
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: {
-            const w = popupLoader.item;
-            if (w)
-                w.visible = !w.visible;
-        }
+        onClicked: popupLoader.toggle()
     }
 
     // Helpers para no repetir la guardia null en cada binding
-    LazyLoader {
+    BarPopup {
         id: popupLoader
 
-        // `containsMouse` (bool), no `hoveredChanged` (señal, siempre
-        // truthy: cargaba eager en arranque).
-        loading: titleInteraction.pressed || titleInteraction.containsMouse
+        anchorItem: root
+        hovered: titleInteraction.containsMouse
+        pressed: titleInteraction.pressed
         component: MprisSubwindow {
             id: popup
-
-            anchorItem: root
         }
     }
 }

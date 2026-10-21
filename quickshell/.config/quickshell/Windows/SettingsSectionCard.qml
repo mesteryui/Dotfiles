@@ -12,14 +12,14 @@ M3Card {
     default property alias rows: inner.data
 
     Layout.fillWidth: true
-    padding: 16
+    padding: Appearance.spacing.large
     color: Appearance.md3.surface_container_high
 
     content: ColumnLayout {
         id: inner
 
         width: parent.width
-        spacing: 14
+        spacing: Appearance.spacing.large
 
         StyledText {
             text: card.title

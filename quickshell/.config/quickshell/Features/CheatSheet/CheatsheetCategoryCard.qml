@@ -80,12 +80,12 @@ Item {
                 rightMargin: root.cardPadding
             }
 
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
 
             // Título de categoría con StyledText de Primitives
             StyledText {
                 Layout.fillWidth: true
-                Layout.bottomMargin: 6
+                Layout.bottomMargin: Appearance.spacing.small
                 text: root.category
                 color: Appearance.md3.primary
                 font.pixelSize: Appearance.typeScale.titleSmall

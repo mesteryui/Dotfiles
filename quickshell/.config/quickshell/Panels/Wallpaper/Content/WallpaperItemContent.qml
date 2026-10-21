@@ -2,7 +2,6 @@ import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
 import QtQuick
-import Quickshell.Widgets
 
 Item {
     id: root
@@ -26,8 +25,9 @@ Item {
     // piden entonces. El padre los ata a index/currentIndex.
     property int delegateIndex: -1
     property int listCurrentIndex: -1
-    readonly property bool isNear: delegateIndex < 0 || listCurrentIndex < 0
-        || Math.abs(delegateIndex - listCurrentIndex) <= 4
+    readonly property bool isNear: delegateIndex < 0 || listCurrentIndex < 0 || Math.abs(delegateIndex
+                                                                                         - listCurrentIndex)
+                                   <= 4
 
     readonly property bool isVideo: Services.WallpaperService.isVideo(root.filePath)
 
@@ -81,12 +81,13 @@ Item {
         StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            border.color: root.isSelected ? Appearance.md3.primary : Qt.alpha(Appearance.md3.on_surface, 0.12)
-            border.width: root.isSelected ? 2 : 1
+            border.color: root.isSelected ? Appearance.border.selected : Qt.alpha(Appearance.md3.on_surface,
+                                                                                  0.12)
+            border.width: root.isSelected ? Appearance.border.focusWidth : Appearance.border.width
 
             Behavior on border.color {
                 ColorAnimation {
-                    duration: Appearance.motion.short4
+                    duration: Appearance.motion.normal
                 }
             }
 
@@ -121,7 +122,7 @@ Item {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.short4
+                        duration: Appearance.motion.normal
                         easing.type: Easing.Bezier
                         easing.bezierCurve: Appearance.motion.emphasized
                     }
@@ -133,14 +134,14 @@ Item {
                 anchors {
                     left: parent.left
                     top: parent.top
-                    margins: 10
+                    margins: Appearance.spacing.medium
                 }
                 width: badgeIcon.implicitWidth + 14
                 height: 24
-                radius: Appearance.shape.small
+                radius: Appearance.shape.medium
                 color: Qt.rgba(0, 0, 0, 0.45)
                 border.color: Qt.rgba(1, 1, 1, 0.15)
-                border.width: 1
+                border.width: Appearance.border.width
                 visible: root.isVideo && wallpaperPreview.status === Image.Ready
 
                 MaterialIcon {
@@ -203,10 +204,10 @@ Item {
                 }
                 width: Math.min(parent.width - 20, fileNameLabel.implicitWidth + 16)
                 height: 24
-                radius: Appearance.shape.small
+                radius: Appearance.shape.medium
                 color: Qt.rgba(0, 0, 0, 0.45)
                 border.color: Qt.rgba(1, 1, 1, 0.15)
-                border.width: 1
+                border.width: Appearance.border.width
                 visible: wallpaperPreview.status === Image.Ready
 
                 StyledText {

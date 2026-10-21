@@ -24,12 +24,12 @@ Item {
         // Background
         Rectangle {
             anchors.fill: parent
-            radius: Appearance.shape.small
+            radius: Appearance.shape.medium
             color: root.btnEnabled ? Appearance.md3.primary : Qt.alpha(Appearance.md3.on_surface, 0.12)
 
             Behavior on color {
                 ColorAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
 
@@ -42,7 +42,7 @@ Item {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.short2
+                        duration: Appearance.motion.veryFast
                     }
                 }
             }
@@ -51,7 +51,7 @@ Item {
         // Content
         RowLayout {
             anchors.centerIn: parent
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             MaterialIcon {
                 id: btnIcon

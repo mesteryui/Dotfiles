@@ -11,8 +11,8 @@ IconTextOSD {
     osdIcon: "battery_full"
     osdText: ""
     // Identidad de forma por nivel: Circle(llena) → Bun(baja) → Boom(crítica).
-
-    property int iconShape: MaterialShape.Circle
+    // `iconShape` se hereda de IconTextOSD (se conserva para las asignaciones
+    // de refreshText, aunque hoy no tenga efecto visual).
 
     // Igual que VolumeOSD/MicOSD: suprime el spam de UPower durante el arranque,
     // que es cuando I18nService aún sirve en_US y el OSD cachearía inglés.

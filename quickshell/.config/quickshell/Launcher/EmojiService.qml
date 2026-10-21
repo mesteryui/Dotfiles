@@ -413,8 +413,8 @@ Singleton {
 
     // Arranque perezoso: el proceso python NO corre en boot (Component
     // solo deja lista tu capa custom, instantánea). AppLauncher llama a
-    // ensureLib() al abrirse; la UI muestra tu config al momento y se
-    // reevalúa sola vía `revision` cuando el generador termina.
+    // ensureLib() solo al entrar en el modo emoji; la UI muestra tu config
+    // al momento y se reevalúa sola vía `revision` cuando el generador termina.
     property bool libRequested: false
 
     function ensureLib() {
@@ -452,9 +452,15 @@ Singleton {
             root.libWatchdog.stop();
             if (code !== 0) {
                 root.libStatus = "error";
+                // No retener el volcado parcial: el catálogo no se va a usar.
+                root.libLines = [];
                 return;
             }
             root.mergeLibLines(root.libLines);
+            // El TSV crudo ya está fusionado en `base`/`libExtras`: liberar la
+            // segunda copia (nombres, grupos y keywords completos) hasta el
+            // siguiente refresh.
+            root.libLines = [];
         }
         // qmllint enable signal-handler-parameters
     }
@@ -751,6 +757,11 @@ Singleton {
         if (hit)
             return hit;
         const out = root.queryItemsFresh(qt, catLabel || "", max);
+        // No memoizar listas enormes (el catálogo completo sin query): la caché
+        // las retendría 50 veces y multiplicaría la RAM sin ahorrar trabajo
+        // perceptible. Las búsquedas normales siguen memoizadas.
+        if (out.length > 400 || (qt === "" && (catLabel || "") === ""))
+            return out;
         root._qmemo.map[key] = out;
         root._qmemo.keys.push(key);
         if (root._qmemo.keys.length > 50)

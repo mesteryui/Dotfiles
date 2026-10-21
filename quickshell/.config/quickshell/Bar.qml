@@ -91,6 +91,9 @@ Variants {
                 height: root.barHeight
                 color: Appearance.md3.surface
                 radius: root.isFloating ? Appearance.shape.full : 0
+                // Hairline solo en la píldora flotante; en los modos hug la
+                // barra es parte del marco de pantalla y no lleva trazo.
+                bordered: root.isFloating
             }
 
             // 3. Contenido de la barra

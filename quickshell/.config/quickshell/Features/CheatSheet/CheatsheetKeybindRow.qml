@@ -39,7 +39,7 @@ Item {
         id: focusLayer
 
         anchors.fill: parent
-        radius: Appearance.shape.small
+        radius: Appearance.shape.medium
         color: Appearance.md3.primary
         opacity: root.highlighted ? 0.22 : 0
 
@@ -56,13 +56,13 @@ Item {
         id: stateLayer
 
         anchors.fill: parent
-        radius: Appearance.shape.small   // usa token en lugar de número hardcodeado
+        radius: Appearance.shape.medium   // usa token en lugar de número hardcodeado
         color: Appearance.md3.on_surface
         opacity: 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }
@@ -81,27 +81,29 @@ Item {
             left: parent.left
             right: parent.right
             verticalCenter: parent.verticalCenter
-            leftMargin: Appearance.spacing.s
-            rightMargin: Appearance.spacing.s
+            leftMargin: Appearance.spacing.small
+            rightMargin: Appearance.spacing.small
         }
 
-        spacing: 6
+        spacing: Appearance.spacing.small
 
         Row {
             id: keyRow
 
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
             Layout.alignment: Qt.AlignVCenter
 
             Repeater {
                 model: root.bind.mods
                 delegate: Row {
+                    id: modDelegate
+
                     required property string modelData
 
-                    spacing: Appearance.spacing.xs
+                    spacing: Appearance.spacing.extraSmall
 
                     CheatsheetKeyChip {
-                        label: modelData
+                        label: modDelegate.modelData
                     }
                     // "+" separador usando StyledText de Primitives
                     StyledText {

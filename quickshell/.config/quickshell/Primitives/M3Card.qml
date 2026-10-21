@@ -9,8 +9,8 @@ Item {
 
     default property alias content: _inner.data
 
-    // Spec M3 cards: radio 12dp.
-    property int radius: Appearance.shape.small
+    // Radio de card alineado con end-4: `large` (17), no `medium`.
+    property int radius: Appearance.shape.large
     property color color: Appearance.md3.surface_container_high
     property int padding: 0
     property bool clickable: false
@@ -50,7 +50,7 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
     }
@@ -66,7 +66,7 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
     }

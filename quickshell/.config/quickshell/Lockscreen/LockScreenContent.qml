@@ -2,7 +2,6 @@
 // Las vistas viven en LockSleepView / LockAuthView (+ LockPowerButtons
 // dentro de auth) y el gesto en LockDragArea. El contrato hacia
 // LockScreenWrapper no cambia (props, alias passwordField y señales).
-import qs.Core
 import QtQuick
 
 Item {

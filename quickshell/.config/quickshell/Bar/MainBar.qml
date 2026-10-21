@@ -12,7 +12,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             Launcher {}
             Workspaces {}
@@ -25,7 +25,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignCenter | Qt.AlignVCenter
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             Weather {}
             MprisPlayer {}
@@ -39,7 +39,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             SysTray {}
             Network {}

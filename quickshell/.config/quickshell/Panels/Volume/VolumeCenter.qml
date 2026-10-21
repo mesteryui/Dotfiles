@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import qs.Core.Services
 import qs.Shared.Background
 import qs.Core
@@ -92,7 +94,7 @@ Scope {
 
                 anchors {
                     fill: parent
-                    margins: Appearance.spacing.m
+                    margins: Appearance.spacing.medium
                 }
                 active: root.visible
                 sourceComponent: volumeComp

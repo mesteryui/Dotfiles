@@ -58,18 +58,18 @@ Item {
             right: parent.right
         }
 
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         // ══ CPU HERO CARD ═════════════════════════════════════════
         M3Card {
             Layout.fillWidth: true
-            padding: 12
+            padding: Appearance.spacing.medium
             color: Appearance.md3.surface_container_high
 
             RowLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: Appearance.spacing.m
+                spacing: Appearance.spacing.medium
 
                 // Arco Donut de CPU M3
                 CpuArc {
@@ -81,11 +81,11 @@ Item {
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "memory"
@@ -138,23 +138,23 @@ Item {
         // ══ RAM + SWAP ═══════════════════════════════════════════
         RowLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             // RAM Card
             M3Card {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 10
+                padding: Appearance.spacing.medium
                 color: Appearance.md3.surface_container_high
 
                 ColumnLayout {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "developer_board"
@@ -206,24 +206,24 @@ Item {
             M3Card {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 10
+                padding: Appearance.spacing.medium
                 color: Appearance.md3.surface_container_high
                 opacity: (Services.SystemInfoService.swapTotalMiB ?? 0) > 0 ? 1.0 : 0.50
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.medium2
+                        duration: Appearance.motion.slow
                     }
                 }
 
                 ColumnLayout {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         MaterialIcon {
                             icon: "swap_horiz"
@@ -280,17 +280,17 @@ Item {
         // ══ TEMP (ancho completo, como la RAM: icono + valor + barra) ═
         M3Card {
             Layout.fillWidth: true
-            padding: 10
+            padding: Appearance.spacing.medium
             color: Appearance.md3.surface_container_high
 
             ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     MaterialIcon {
                         icon: "thermostat"
@@ -337,17 +337,17 @@ Item {
         // ══ DISCO + UPTIME (una sola tarjeta) ═════════════════════
         M3Card {
             Layout.fillWidth: true
-            padding: 10
+            padding: Appearance.spacing.medium
             color: Appearance.md3.surface_container_high
 
             ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 10
+                    spacing: Appearance.spacing.medium
 
                     MaterialIcon {
                         icon: "hard_drive"
@@ -359,7 +359,7 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         RowLayout {
                             Layout.fillWidth: true
@@ -398,12 +398,12 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+                    color: Appearance.border.divider
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: Appearance.spacing.s
+                    spacing: Appearance.spacing.small
 
                     MaterialIcon {
                         icon: "schedule"

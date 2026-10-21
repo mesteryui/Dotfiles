@@ -129,13 +129,13 @@ Item {
         id: mainColumn
         anchors {
             fill: parent
-            topMargin: Appearance.spacing.l
-            leftMargin: Appearance.spacing.l
-            rightMargin: Appearance.spacing.l
-            bottomMargin: Appearance.spacing.l
+            topMargin: Appearance.spacing.large
+            leftMargin: Appearance.spacing.large
+            rightMargin: Appearance.spacing.large
+            bottomMargin: Appearance.spacing.large
         }
 
-        spacing: Appearance.spacing.m
+        spacing: Appearance.spacing.medium
 
         // RePág/AvPág/Inicio/Fin no tienen señal dedicada en Keys:
         // se gestionan con el manejador genérico onPressed.
@@ -178,7 +178,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+            color: Appearance.border.divider
         }
 
         ControlsTogglesGrid {
@@ -192,7 +192,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+            color: Appearance.border.divider
         }
 
         ControlsTabBar {

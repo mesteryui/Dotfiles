@@ -36,8 +36,8 @@ PopupWindow {
         // Spec M3 menus: contenedor extraSmall (4dp).
         radius: Appearance.shape.extraSmall
         color: Appearance.md3.surface
-        border.color: Appearance.md3.outline
-        border.width: 1
+        border.color: Appearance.border.subtleOn(Appearance.md3.surface)
+        border.width: Appearance.border.width
 
         // QsMenuOpener lee los hijos del handle
         QsMenuOpener {
@@ -52,7 +52,7 @@ PopupWindow {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: Appearance.spacing.s
+                margins: Appearance.spacing.small
             }
 
             spacing: 2
@@ -84,12 +84,12 @@ PopupWindow {
 
                         anchors.fill: parent
                         visible: !(itemDelegate.modelData?.isSeparator ?? false)
-                        radius: Appearance.shape.verysmall
+                        radius: Appearance.shape.small
                         color: itemMouse.containsMouse ? Appearance.md3.primary : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: Appearance.motion.short2
+                                duration: Appearance.motion.veryFast
                             }
                         }
 
@@ -98,10 +98,10 @@ PopupWindow {
                         RowLayout {
                             anchors {
                                 fill: parent
-                                leftMargin: Appearance.spacing.m
-                                rightMargin: Appearance.spacing.m
+                                leftMargin: Appearance.spacing.medium
+                                rightMargin: Appearance.spacing.medium
                             }
-                            spacing: Appearance.spacing.s
+                            spacing: Appearance.spacing.small
 
                             // Icono (si tiene)
                             Image {
@@ -127,7 +127,7 @@ PopupWindow {
 
                                 Behavior on color {
                                     ColorAnimation {
-                                        duration: Appearance.motion.short2
+                                        duration: Appearance.motion.veryFast
                                     }
                                 }
                             }
@@ -150,8 +150,8 @@ PopupWindow {
                                         === QsMenuButtonType.Radio ? 8 : 4
                                 color: (itemDelegate.modelData?.checkState ?? Qt.Unchecked) === Qt.Checked
                                        ? Appearance.md3.primary : "transparent"
-                                border.color: Appearance.md3.outline
-                                border.width: 1
+                                border.color: Appearance.border.strong
+                                border.width: Appearance.border.width
                             }
                         }
 

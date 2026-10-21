@@ -17,7 +17,7 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: Appearance.motion.short3
+            duration: Appearance.motion.fast
         }
     }
 }

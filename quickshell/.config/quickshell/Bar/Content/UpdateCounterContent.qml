@@ -1,5 +1,4 @@
 import qs.Core
-import qs.Core.Services as Services
 import qs.Primitives
 import QtQuick
 
@@ -14,7 +13,7 @@ Item {
     Row {
         id: layout
 
-        spacing: 6
+        spacing: Appearance.spacing.small
 
         anchors.centerIn: parent
 

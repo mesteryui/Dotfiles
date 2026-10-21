@@ -35,9 +35,9 @@ Rectangle {
 
     implicitHeight: mainLayout.implicitHeight + 24
     color: "transparent"
-    radius: Appearance.shape.large
-    border.width: root.current ? 2 : 0
-    border.color: Appearance.md3.primary
+    radius: Appearance.shape.extraLarge
+    border.width: root.current ? Appearance.border.focusWidth : 0
+    border.color: Appearance.border.focus
 
     M3SelectionFill {
         anchors.fill: parent
@@ -66,9 +66,9 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: Appearance.spacing.m
+        anchors.margins: Appearance.spacing.medium
         anchors.rightMargin: 32
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         // Contenedor expresivo para el icono de la app (región cuadrada)
         Item {
@@ -85,7 +85,7 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }
@@ -108,7 +108,7 @@ Rectangle {
             // Fila superior: app · hora
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: Appearance.spacing.small
                 visible: root.appName !== "" || root.time !== ""
 
                 StyledText {
@@ -172,12 +172,12 @@ Rectangle {
 
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: Appearance.spacing.s
+        anchors.margins: Appearance.spacing.small
         opacity: (rowHover.hovered || root.current) ? 1 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short2
+                duration: Appearance.motion.veryFast
             }
         }
 

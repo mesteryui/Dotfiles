@@ -9,7 +9,7 @@ Item {
 
     property bool reveal
     property bool vertical: false
-    property int animationDuration: Appearance.motion.short4 // Duración por defecto para la animación
+    property int animationDuration: Appearance.motion.normal // Duración por defecto para la animación
 
     clip: true
 

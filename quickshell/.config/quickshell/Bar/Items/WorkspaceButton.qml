@@ -18,7 +18,7 @@ Item {
 
     Behavior on width {
         NumberAnimation {
-            duration: Appearance.motion.short4
+            duration: Appearance.motion.normal
             easing.type: Easing.OutCubic
         }
     }
@@ -38,11 +38,11 @@ Item {
         anchors.fill: parent
         color: root.isActive ? Appearance.md3.primary : Appearance.md3.secondary_container
         // Mismo radio que el resto de módulos de barra (BarItem.itemRadius).
-        radius: Appearance.shape.normal
+        radius: Appearance.shape.large
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short4
+                duration: Appearance.motion.normal
             }
         }
     }

@@ -4,7 +4,6 @@ import qs.Core.Services as Services
 import qs.Bar.Content
 import qs.Panels.Updates
 import QtQuick
-import Quickshell
 
 BarItem {
     id: root
@@ -16,26 +15,14 @@ BarItem {
     readonly property var service: Services.UpdatesTracking
     visible: service.updateCount > 0 || service.checking
 
-    onClicked: {
-        // Si popupLoader todavía está en 'loading' (async) cuando
-        // se hace click, acceder a .item fuerza el completado
-        // síncrono automáticamente — no hace falta gestionarlo aquí.
-        const w = popupLoader.item;
-        if (w)
-            w.visible = !w.visible;
-    }
+    onClicked: popupLoader.toggle()
 
-    LazyLoader {
+    BarPopup {
         id: popupLoader
 
-        // 'loading' construye el popup en segundo plano, en los huecos
-        // entre frames, sin bloquear el hilo de UI al crear la barra.
-        // Solo cuando hay algo que mostrar (visible) o el usuario va a
-        // abrirlo (hover/press): en reposo sin updates no cuesta RAM.
-        // OJO: aquí vale `hovered`, no `hoveredChanged` (la señal siempre
-        // es truthy y cargaba eager en arranque).
-        loading: root.visible || root.hovered || root.pressed
-
+        anchorItem: root
+        hovered: root.hovered
+        pressed: root.pressed
         component: UpdateList {
             id: popup
         }

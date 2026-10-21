@@ -21,7 +21,7 @@ Rectangle {
         enabled: root.animate
 
         NumberAnimation {
-            duration: Appearance.motion.short2
+            duration: Appearance.motion.veryFast
         }
     }
 }

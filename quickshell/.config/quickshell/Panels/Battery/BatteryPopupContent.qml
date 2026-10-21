@@ -107,29 +107,29 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: 14
+        spacing: Appearance.spacing.large
 
         // --- Tarjeta de Estado e Información de Batería ---
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: batteryCardContent.implicitHeight + 20
-            radius: Appearance.shape.normal
+            radius: Appearance.shape.large
             color: Appearance.md3.surface_container_low
-            border.color: Appearance.md3.outline_variant
-            border.width: 1
+            border.color: Appearance.border.subtleOn(color)
+            border.width: Appearance.border.width
 
             RowLayout {
                 id: batteryCardContent
 
                 anchors.fill: parent
-                anchors.margins: Appearance.spacing.m
-                spacing: Appearance.spacing.m
+                anchors.margins: Appearance.spacing.medium
+                spacing: Appearance.spacing.medium
 
                 // Contenedor del Ícono
                 Rectangle {
                     implicitWidth: 46
                     implicitHeight: 46
-                    radius: Appearance.shape.small
+                    radius: Appearance.shape.medium
                     color: root.charging ? Appearance.md3.primary_container :
                                            Appearance.md3.surface_container_highest
 
@@ -147,7 +147,7 @@ Item {
                     spacing: 2
 
                     RowLayout {
-                        spacing: Appearance.spacing.s
+                        spacing: Appearance.spacing.small
 
                         StyledText {
                             text: root.hasBattery ? Math.round(root.battery.percentage * 100) + "%" : "N/A"
@@ -187,13 +187,13 @@ Item {
             font.pixelSize: Appearance.typeScale.labelMedium
             font.bold: true
             color: Appearance.md3.on_surface_variant
-            Layout.leftMargin: Appearance.spacing.xs
+            Layout.leftMargin: Appearance.spacing.extraSmall
         }
 
         // --- Botones de Perfiles de Energía ---
         RowLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             Repeater {
                 model: root.profiles
@@ -210,7 +210,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
                     implicitHeight: 64
-                    radius: Appearance.shape.small
+                    radius: Appearance.shape.medium
                     color: selected ? Appearance.md3.primary_container : Appearance.md3.surface_container_high
                     opacity: profileDisabled ? 0.38 : 1.0
 
@@ -224,7 +224,7 @@ Item {
 
                         Behavior on opacity {
                             NumberAnimation {
-                                duration: Appearance.motion.short2
+                                duration: Appearance.motion.veryFast
                             }
                         }
                     }
@@ -232,7 +232,7 @@ Item {
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 6
-                        spacing: Appearance.spacing.xs
+                        spacing: Appearance.spacing.extraSmall
                         Layout.alignment: Qt.AlignCenter
 
                         MaterialIcon {

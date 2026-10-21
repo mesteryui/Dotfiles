@@ -31,7 +31,7 @@ ProgressBar {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: Appearance.motion.short3
+                    duration: Appearance.motion.fast
                 }
             }
         }

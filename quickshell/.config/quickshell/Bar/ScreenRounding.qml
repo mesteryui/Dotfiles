@@ -43,181 +43,206 @@ Variants {
         property bool drawTopCorners: true
         property bool drawBottomCorners: true
 
-        // ==========================================
-        // 1. ESQUINAS
-        // ==========================================
+        // Las ventanas del marco solo existen cuando el modo las puede pintar:
+        // - full_hug: esquinas + líneas.
+        // - partial_hug: solo esquinas.
+        // - floating / no_floating: ninguna (antes se creaban 8 PanelWindow por
+        //   pantalla aunque todas quedaran con visible:false).
+        LazyLoader {
+            id: cornersLoader
 
-        // --- ESQUINA SUPERIOR IZQUIERDA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            anchors {
-                top: true
-                left: true
-            }
-            WlrLayershell.namespace: "quickshell:border-left"
-            implicitWidth: screenScope.cornerRadius
-            implicitHeight: screenScope.cornerRadius
-            color: "transparent"
-            // full_hug: siempre. partial_hug: solo si la barra está arriba. no_floating: nunca.
-            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
-                                                                        && ConfigService.configs.bar.position
-                                                                        === "top"))
+            activeAsync: root.isFloating || root.isPartial
 
-            ScreenCorner {
-                anchors.fill: parent
-                cornerRadius: screenScope.cornerRadius
-                fillColor: Appearance.md3.surface
-            }
-        }
+            component: Component {
+                Scope {
+                    // ==========================================
+                    // 1. ESQUINAS
+                    // ==========================================
 
-        // --- ESQUINA SUPERIOR DERECHA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            anchors {
-                top: true
-                right: true
-            }
-            WlrLayershell.namespace: "quickshell:border-right"
-            implicitWidth: screenScope.cornerRadius
-            implicitHeight: screenScope.cornerRadius
-            color: "transparent"
-            visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
-                                                                        && ConfigService.configs.bar.position
-                                                                        === "top"))
+                    // --- ESQUINA SUPERIOR IZQUIERDA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        anchors {
+                            top: true
+                            left: true
+                        }
+                        WlrLayershell.namespace: "quickshell:border-left"
+                        implicitWidth: screenScope.cornerRadius
+                        implicitHeight: screenScope.cornerRadius
+                        color: "transparent"
+                        // full_hug: siempre. partial_hug: solo si la barra está arriba. no_floating: nunca.
+                        visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
+                                                                                    && ConfigService.configs.bar.position
+                                                                                    === "top"))
 
-            ScreenCorner {
-                anchors.fill: parent
-                cornerRadius: screenScope.cornerRadius
-                fillColor: Appearance.md3.surface
-                mirrorX: true
-            }
-        }
+                        ScreenCorner {
+                            anchors.fill: parent
+                            cornerRadius: screenScope.cornerRadius
+                            fillColor: Appearance.md3.surface
+                        }
+                    }
 
-        // --- ESQUINA INFERIOR IZQUIERDA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            anchors {
-                bottom: true
-                left: true
-            }
-            WlrLayershell.namespace: "quickshell:border-bottom-left"
-            implicitWidth: screenScope.cornerRadius
-            implicitHeight: screenScope.cornerRadius
-            color: "transparent"
-            // full_hug: siempre. partial_hug: solo si la barra está abajo. no_floating: nunca.
-            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
-                                                                           && ConfigService.configs.bar.position
-                                                                           === "bottom"))
+                    // --- ESQUINA SUPERIOR DERECHA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        anchors {
+                            top: true
+                            right: true
+                        }
+                        WlrLayershell.namespace: "quickshell:border-right"
+                        implicitWidth: screenScope.cornerRadius
+                        implicitHeight: screenScope.cornerRadius
+                        color: "transparent"
+                        visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
+                                                                                    && ConfigService.configs.bar.position
+                                                                                    === "top"))
 
-            ScreenCorner {
-                anchors.fill: parent
-                cornerRadius: screenScope.cornerRadius
-                fillColor: Appearance.md3.surface
-                mirrorY: true
-            }
-        }
+                        ScreenCorner {
+                            anchors.fill: parent
+                            cornerRadius: screenScope.cornerRadius
+                            fillColor: Appearance.md3.surface
+                            mirrorX: true
+                        }
+                    }
 
-        // --- ESQUINA INFERIOR DERECHA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            anchors {
-                bottom: true
-                right: true
-            }
-            WlrLayershell.namespace: "quickshell:border-bottom-right"
-            implicitWidth: screenScope.cornerRadius
-            implicitHeight: screenScope.cornerRadius
-            color: "transparent"
-            visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
-                                                                           && ConfigService.configs.bar.position
-                                                                           === "bottom"))
+                    // --- ESQUINA INFERIOR IZQUIERDA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        anchors {
+                            bottom: true
+                            left: true
+                        }
+                        WlrLayershell.namespace: "quickshell:border-bottom-left"
+                        implicitWidth: screenScope.cornerRadius
+                        implicitHeight: screenScope.cornerRadius
+                        color: "transparent"
+                        // full_hug: siempre. partial_hug: solo si la barra está abajo. no_floating: nunca.
+                        visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
+                                                                                       && ConfigService.configs.bar.position
+                                                                                       === "bottom"))
 
-            ScreenCorner {
-                anchors.fill: parent
-                cornerRadius: screenScope.cornerRadius
-                fillColor: Appearance.md3.surface
-                mirrorX: true
-                mirrorY: true
-            }
-        }
+                        ScreenCorner {
+                            anchors.fill: parent
+                            cornerRadius: screenScope.cornerRadius
+                            fillColor: Appearance.md3.surface
+                            mirrorY: true
+                        }
+                    }
 
-        // ==========================================
-        // 2. LÍNEAS CONECTORAS
-        // ==========================================
+                    // --- ESQUINA INFERIOR DERECHA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        anchors {
+                            bottom: true
+                            right: true
+                        }
+                        WlrLayershell.namespace: "quickshell:border-bottom-right"
+                        implicitWidth: screenScope.cornerRadius
+                        implicitHeight: screenScope.cornerRadius
+                        color: "transparent"
+                        visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
+                                                                                       && ConfigService.configs.bar.position
+                                                                                       === "bottom"))
 
-        // --- LÍNEA IZQUIERDA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            WlrLayershell.namespace: "quickshell:connect-left"
-            anchors {
-                left: true
-                top: true
-                bottom: true
-            }
-            implicitWidth: screenScope.borderThickness
-            color: "transparent"
-            visible: root.isFloating
-
-            Rectangle {
-                anchors.fill: parent
-                color: Appearance.md3.surface
+                        ScreenCorner {
+                            anchors.fill: parent
+                            cornerRadius: screenScope.cornerRadius
+                            fillColor: Appearance.md3.surface
+                            mirrorX: true
+                            mirrorY: true
+                        }
+                    }
+                }
             }
         }
 
-        // --- LÍNEA DERECHA ---
-        PanelWindow {
-            screen: screenScope.modelData
-            WlrLayershell.namespace: "quickshell:connect-right"
-            visible: root.isFloating
-            anchors {
-                right: true
-                top: true
-                bottom: true
-            }
-            implicitWidth: screenScope.borderThickness
-            color: "transparent"
+        LazyLoader {
+            id: linesLoader
 
-            Rectangle {
-                anchors.fill: parent
-                color: Appearance.md3.surface
-            }
-        }
+            activeAsync: root.isFloating
 
-        // --- LÍNEA SUPERIOR ---
-        PanelWindow {
-            WlrLayershell.namespace: "quickshell:connect-top"
-            screen: screenScope.modelData
-            anchors {
-                top: true
-                left: true
-                right: true
-            }
-            implicitHeight: screenScope.borderThickness
-            color: "transparent"
-            visible: screenScope.drawTopLine && root.isFloating
+            component: Component {
+                Scope {
+                    // ==========================================
+                    // 2. LÍNEAS CONECTORAS
+                    // ==========================================
 
-            Rectangle {
-                anchors.fill: parent
-                color: Appearance.md3.surface
-            }
-        }
+                    // --- LÍNEA IZQUIERDA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        WlrLayershell.namespace: "quickshell:connect-left"
+                        anchors {
+                            left: true
+                            top: true
+                            bottom: true
+                        }
+                        implicitWidth: screenScope.borderThickness
+                        color: "transparent"
+                        visible: root.isFloating
 
-        // --- LÍNEA INFERIOR ---
-        PanelWindow {
-            screen: screenScope.modelData
-            WlrLayershell.namespace: "quickshell:connect-down"
-            anchors {
-                bottom: true
-                left: true
-                right: true
-            }
-            implicitHeight: screenScope.borderThickness
-            color: "transparent"
-            visible: screenScope.drawBottomLine && root.isFloating
+                        Rectangle {
+                            anchors.fill: parent
+                            color: Appearance.md3.surface
+                        }
+                    }
 
-            Rectangle {
-                anchors.fill: parent
-                color: Appearance.md3.surface
+                    // --- LÍNEA DERECHA ---
+                    PanelWindow {
+                        screen: screenScope.modelData
+                        WlrLayershell.namespace: "quickshell:connect-right"
+                        visible: root.isFloating
+                        anchors {
+                            right: true
+                            top: true
+                            bottom: true
+                        }
+                        implicitWidth: screenScope.borderThickness
+                        color: "transparent"
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: Appearance.md3.surface
+                        }
+                    }
+
+                    // --- LÍNEA SUPERIOR ---
+                    PanelWindow {
+                        WlrLayershell.namespace: "quickshell:connect-top"
+                        screen: screenScope.modelData
+                        anchors {
+                            top: true
+                            left: true
+                            right: true
+                        }
+                        implicitHeight: screenScope.borderThickness
+                        color: "transparent"
+                        visible: screenScope.drawTopLine && root.isFloating
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: Appearance.md3.surface
+                        }
+                    }
+
+                    // --- LÍNEA INFERIOR ---
+                    PanelWindow {
+                        WlrLayershell.namespace: "quickshell:connect-down"
+                        screen: screenScope.modelData
+                        anchors {
+                            bottom: true
+                            left: true
+                            right: true
+                        }
+                        implicitHeight: screenScope.borderThickness
+                        color: "transparent"
+                        visible: screenScope.drawBottomLine && root.isFloating
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: Appearance.md3.surface
+                        }
+                    }
+                }
             }
         }
     }

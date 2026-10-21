@@ -112,7 +112,7 @@ Scope {
                 width: powerButtonsLayout.implicitWidth + 48
                 height: powerButtonsLayout.implicitHeight + 48
                 color: Appearance.md3.surface
-                radius: Appearance.shape.verylarge
+                radius: Appearance.shape.huge
 
                 scale: root.show ? 1 : 0.94
                 opacity: root.show ? 1 : 0
@@ -127,7 +127,7 @@ Scope {
                 }
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.short4
+                        duration: Appearance.motion.normal
                         easing.type: Easing.Bezier
                         easing.bezierCurve: Appearance.motion.emphasized
                     }
@@ -137,8 +137,8 @@ Scope {
                 Rectangle {
                     anchors.fill: parent
                     color: "transparent"
-                    border.width: 1
-                    border.color: Appearance.md3.outline_variant
+                    border.width: Appearance.border.width
+                    border.color: Appearance.border.color
                     radius: parent.radius
                     z: 10
                 }
@@ -147,7 +147,7 @@ Scope {
                     id: powerButtonsLayout
 
                     anchors.centerIn: parent
-                    spacing: 20
+                    spacing: Appearance.spacing.extraLarge
 
                     PowerButton {
                         id: shutdownBtn

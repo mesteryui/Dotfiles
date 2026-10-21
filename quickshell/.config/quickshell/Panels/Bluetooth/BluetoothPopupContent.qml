@@ -59,8 +59,8 @@ Item {
     function unpairedDevices() {
         const all = Services.BluetoothService.devices;
         const out = [];
-        for (let i = 0; i < (all?.length ?? 0); i++)
-            if (!all[i]?.paired)
+        for (let i = 0; i < all.length; i++)
+            if (!all[i].paired)
                 out.push(all[i]);
         return out;
     }
@@ -85,11 +85,11 @@ Item {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             StyledText {
                 Layout.fillWidth: true
@@ -126,6 +126,8 @@ Item {
             model: root.pairedDevices()
 
             delegate: M3ListItem {
+                id: pairedDelegate
+
                 required property var modelData
                 required property int index
 
@@ -133,7 +135,7 @@ Item {
 
                 Layout.fillWidth: true
                 implicitHeight: 52
-                radius: Appearance.shape.small
+                radius: Appearance.shape.medium
                 selected: connected
                 unselectedFill: Appearance.md3.surface_container_low
                 accessibleName: root.deviceName(modelData)
@@ -147,17 +149,17 @@ Item {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: Appearance.spacing.m
-                    anchors.rightMargin: Appearance.spacing.m
-                    spacing: 10
+                    anchors.leftMargin: Appearance.spacing.medium
+                    anchors.rightMargin: Appearance.spacing.medium
+                    spacing: Appearance.spacing.medium
 
                     MaterialIcon {
-                        icon: Icons.getBluetoothDeviceMaterialSymbol(modelData?.icon ?? "")
+                        icon: Icons.getBluetoothDeviceMaterialSymbol(pairedDelegate.modelData?.icon ?? "")
                         size: 20
-                        color: connected ? Appearance.md3.on_secondary_container : (root.deviceConnected(
-                                                                                        modelData)
-                                                                                    ? Appearance.md3.primary :
-                                                                                      Appearance.md3.on_surface_variant)
+                        color: pairedDelegate.connected ? Appearance.md3.on_secondary_container : (
+                                                              root.deviceConnected(pairedDelegate.modelData)
+                                                              ? Appearance.md3.primary :
+                                                                Appearance.md3.on_surface_variant)
                     }
 
                     ColumnLayout {
@@ -166,39 +168,41 @@ Item {
 
                         StyledText {
                             Layout.fillWidth: true
-                            text: root.deviceName(modelData)
+                            text: root.deviceName(pairedDelegate.modelData)
                             font.pixelSize: Appearance.typeScale.titleSmall
                             font.weight: Font.Medium
-                            color: connected ? Appearance.md3.on_secondary_container :
-                                               Appearance.md3.on_surface
+                            color: pairedDelegate.connected ? Appearance.md3.on_secondary_container :
+                                                              Appearance.md3.on_surface
                             elide: Text.ElideRight
                         }
 
                         StyledText {
                             Layout.fillWidth: true
-                            text: (root.deviceConnected(modelData) ? root.tr("panel.connected", "Conectado") :
-                                                                     root.tr("panel.disconnected",
-                                                                             "Desconectado")) + (
-                                      root.batteryPct(modelData) >= 0 ? " · " + root.batteryPct(modelData)
-                                                                        + "%" : "")
+                            text: (root.deviceConnected(pairedDelegate.modelData) ? root.tr("panel.connected",
+                                                                                            "Conectado") :
+                                                                                    root.tr("panel.disconnected",
+                                                                                            "Desconectado"))
+                                  + (root.batteryPct(pairedDelegate.modelData) >= 0 ? " · " + root.batteryPct(
+                                                                                          pairedDelegate.modelData)
+                                                                                      + "%" : "")
                             font.pixelSize: Appearance.typeScale.labelSmall
-                            color: connected ? Appearance.md3.on_secondary_container :
-                                               Appearance.md3.on_surface_variant
+                            color: pairedDelegate.connected ? Appearance.md3.on_secondary_container :
+                                                              Appearance.md3.on_surface_variant
                             elide: Text.ElideRight
                         }
                     }
 
                     M3ProgressBar {
                         Layout.preferredWidth: 48
-                        visible: root.batteryPct(modelData) >= 0
-                        value: root.batteryPct(modelData) / 100
+                        visible: root.batteryPct(pairedDelegate.modelData) >= 0
+                        value: root.batteryPct(pairedDelegate.modelData) / 100
                         implicitHeight: 5
                     }
 
                     ButtonIcon {
                         iconName: "delete"
                         iconSize: 18
-                        onClicked: modelData.forget()
+                        onClicked: pairedDelegate.modelData.forget()
                     }
                 }
             }
@@ -262,35 +266,38 @@ Item {
                 id: unpairedColumn
 
                 width: parent.width
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 Repeater {
                     model: root.unpairedDevices()
 
                     delegate: Rectangle {
+                        id: unpairedDelegate
+
                         required property var modelData
                         required property int index
 
                         Layout.fillWidth: true
                         implicitHeight: 48
-                        radius: Appearance.shape.small
+                        radius: Appearance.shape.medium
                         color: Appearance.md3.surface_container_low
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Appearance.spacing.m
-                            anchors.rightMargin: Appearance.spacing.m
-                            spacing: 10
+                            anchors.leftMargin: Appearance.spacing.medium
+                            anchors.rightMargin: Appearance.spacing.medium
+                            spacing: Appearance.spacing.medium
 
                             MaterialIcon {
-                                icon: Icons.getBluetoothDeviceMaterialSymbol(modelData?.icon ?? "")
+                                icon: Icons.getBluetoothDeviceMaterialSymbol(unpairedDelegate.modelData?.icon
+                                                                             ?? "")
                                 size: 20
                                 color: Appearance.md3.on_surface_variant
                             }
 
                             StyledText {
                                 Layout.fillWidth: true
-                                text: root.deviceName(modelData)
+                                text: root.deviceName(unpairedDelegate.modelData)
                                 font.pixelSize: Appearance.typeScale.titleSmall
                                 color: Appearance.md3.on_surface
                                 elide: Text.ElideRight
@@ -300,7 +307,7 @@ Item {
                                 text: root.tr("panel.bluetooth_pair", "Emparejar")
                                 fontSize: 12
                                 paddingHorizontal: 12
-                                onClicked: modelData.pair()
+                                onClicked: unpairedDelegate.modelData.pair()
                             }
                         }
                     }

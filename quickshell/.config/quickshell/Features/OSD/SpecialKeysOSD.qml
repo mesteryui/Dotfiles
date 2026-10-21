@@ -44,14 +44,14 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.normal
+        radius: Appearance.shape.large
     }
 
     Row {
         id: contentRow
 
         anchors.centerIn: parent
-        spacing: 10
+        spacing: Appearance.spacing.medium
 
         // Icono directo, sin contenedor (keyShape se conserva por
         // compatibilidad: solo decide el pulso cuando hay tecla activa).

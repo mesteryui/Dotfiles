@@ -2,6 +2,8 @@
 // Muestra el clima actual (icono, temperatura, sensación térmica, ciudad,
 // mínima/máxima de hoy y rejilla de detalles) y una fila con la previsión
 // de los próximos días, leyendo directamente de WeatherService.
+pragma ComponentBehavior: Bound
+
 import qs.Primitives
 import qs.Core
 import qs.Core.Services
@@ -35,15 +37,15 @@ Item {
         id: mainColumn
 
         anchors.fill: parent
-        anchors.margins: Appearance.spacing.m
-        spacing: 10
+        anchors.margins: Appearance.spacing.medium
+        spacing: Appearance.spacing.medium
 
         // --- Clima actual ---
         RowLayout {
             id: currentRow
             Layout.fillWidth: true
 
-            spacing: Appearance.spacing.m
+            spacing: Appearance.spacing.medium
             Layout.alignment: Qt.AlignVCenter
 
             Item {
@@ -60,12 +62,12 @@ Item {
             }
 
             ColumnLayout {
-                spacing: Appearance.spacing.xs
+                spacing: Appearance.spacing.extraSmall
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
 
                 RowLayout {
-                    spacing: Appearance.spacing.s
+                    spacing: Appearance.spacing.small
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
 
@@ -131,13 +133,13 @@ Item {
             Layout.fillWidth: true
 
             columns: 3
-            rowSpacing: 8
-            columnSpacing: 8
+            rowSpacing: Appearance.spacing.small
+            columnSpacing: Appearance.spacing.small
 
             // Cada celda: icono + columna(valor + etiqueta)
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "air"
@@ -164,7 +166,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "water_drop"
@@ -191,7 +193,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "compress"
@@ -218,7 +220,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "visibility"
@@ -245,7 +247,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "rainy"
@@ -272,7 +274,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "umbrella"
@@ -299,7 +301,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "light_mode"
@@ -326,7 +328,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "wb_twilight"
@@ -353,7 +355,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "bedtime"
@@ -380,7 +382,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "eco"
@@ -421,22 +423,24 @@ Item {
 
             visible: WeatherService.data.forecast.length > 0
             Layout.fillWidth: true
-            spacing: 10
+            spacing: Appearance.spacing.medium
             Layout.alignment: Qt.AlignHCenter
 
             Repeater {
                 model: WeatherService.data.forecast
 
                 delegate: ColumnLayout {
+                    id: forecastDelegate
+
                     required property var modelData
                     Layout.preferredWidth: 68
                     Layout.minimumWidth: 56
                     Layout.alignment: Qt.AlignHCenter
 
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     StyledText {
-                        text: modelData.dayLabel
+                        text: forecastDelegate.modelData.dayLabel
                         color: Appearance.md3.on_surface_variant
                         font.pixelSize: Appearance.typeScale.labelMedium
                         Layout.alignment: Qt.AlignHCenter
@@ -444,33 +448,33 @@ Item {
                     }
 
                     MaterialIcon {
-                        text: Icons.getWeatherIcon(modelData.wCode)
+                        text: Icons.getWeatherIcon(forecastDelegate.modelData.wCode)
                         size: Appearance.font.pixelSize.huge
                         color: Appearance.md3.primary
                         Layout.alignment: Qt.AlignHCenter
                     }
 
                     RowLayout {
-                        spacing: 6
+                        spacing: Appearance.spacing.small
                         Layout.alignment: Qt.AlignHCenter
 
                         StyledText {
-                            text: modelData.maxTemp + "°"
+                            text: forecastDelegate.modelData.maxTemp + "°"
                             color: Appearance.md3.on_surface
                             font.pixelSize: Appearance.typeScale.bodySmall
                             font.weight: Font.Medium
                         }
 
                         StyledText {
-                            text: modelData.minTemp + "°"
+                            text: forecastDelegate.modelData.minTemp + "°"
                             color: Appearance.md3.on_surface_variant
                             font.pixelSize: Appearance.typeScale.bodySmall
                         }
                     }
 
                     StyledText {
-                        visible: modelData.precipProb > 0
-                        text: modelData.precipProb + "%"
+                        visible: forecastDelegate.modelData.precipProb > 0
+                        text: forecastDelegate.modelData.precipProb + "%"
                         color: Appearance.md3.tertiary
                         font.pixelSize: Appearance.typeScale.labelSmall
                         Layout.alignment: Qt.AlignHCenter

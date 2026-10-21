@@ -16,13 +16,13 @@ ColumnLayout {
 
     property int count: Services.NotificationData.history ? Services.NotificationData.history.count : 0
 
-    spacing: 10
+    spacing: Appearance.spacing.medium
     implicitWidth: 348
 
     // ── Cabecera ──────────────────────────────────────────────
     RowLayout {
         Layout.fillWidth: true
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         StyledText {
             Layout.fillWidth: true
@@ -100,7 +100,7 @@ ColumnLayout {
                 id: clearRow
 
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "delete_sweep"
@@ -142,7 +142,7 @@ ColumnLayout {
         Layout.preferredHeight: Math.min(contentHeight, 340)
         visible: root.count > 0
         clip: true
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
         boundsBehavior: Flickable.StopAtBounds
         model: Services.NotificationData.history
 
@@ -157,10 +157,10 @@ ColumnLayout {
     // ── Estado vacío ──────────────────────────────────────────
     ColumnLayout {
         Layout.fillWidth: true
-        Layout.topMargin: Appearance.spacing.m
-        Layout.bottomMargin: Appearance.spacing.m
+        Layout.topMargin: Appearance.spacing.medium
+        Layout.bottomMargin: Appearance.spacing.medium
         visible: root.count === 0
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         MaterialIcon {
             Layout.alignment: Qt.AlignHCenter

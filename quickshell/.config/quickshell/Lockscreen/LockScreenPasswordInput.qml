@@ -148,29 +148,30 @@ Item {
         radius: Appearance.shape.full
         color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.55) : Qt.alpha(
                                      Appearance.md3.surface_container_high, 0.78)
-        border.color: root.authFailed ? Appearance.md3.error : (password.activeFocus ? Appearance.md3.primary :
-                                                                                       Qt.alpha(Appearance.md3.outline_variant,
-                                                                                                0.55))
-        border.width: password.activeFocus || root.authFailed ? 2 : 1
+        border.color: root.authFailed ? Appearance.border.error : (password.activeFocus ? Appearance.border.focus :
+                                                                                          Appearance.border.subtleOn(
+                                                                                              color))
+        border.width: password.activeFocus || root.authFailed ? Appearance.border.focusWidth :
+                                                                Appearance.border.width
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short4
+                duration: Appearance.motion.normal
             }
         }
         Behavior on border.color {
             ColorAnimation {
-                duration: Appearance.motion.short4
+                duration: Appearance.motion.normal
             }
         }
 
         RowLayout {
             anchors {
                 fill: parent
-                leftMargin: Appearance.spacing.s
-                rightMargin: Appearance.spacing.s
+                leftMargin: Appearance.spacing.small
+                rightMargin: Appearance.spacing.small
             }
-            spacing: 6
+            spacing: Appearance.spacing.small
 
             // Icono principal en contenedor expresivo estilo Pixel (huella / lock):
             // respira entre formas al escanear, Boom al fallar.
@@ -183,14 +184,14 @@ Item {
                                                                                        && root.isFingerprintActive)
                                                                                    ? root.breathShape :
                                                                                      MaterialShape.Circle
-                animationDuration: Appearance.motion.medium3
+                animationDuration: Appearance.motion.verySlow
                 color: root.authFailed ? Qt.alpha(Appearance.md3.error, 0.16) : Qt.alpha(
                                              Appearance.md3.primary, root.isFingerprintActive
                                              || password.activeFocus ? 0.18 : 0.10)
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short4
+                        duration: Appearance.motion.normal
                     }
                 }
 
@@ -210,7 +211,7 @@ Item {
 
                     Behavior on color {
                         ColorAnimation {
-                            duration: Appearance.motion.short4
+                            duration: Appearance.motion.normal
                         }
                     }
                 }
@@ -284,11 +285,11 @@ Item {
                 Layout.alignment: Qt.AlignVCenter
                 shape: MaterialShape.Circle
                 color: passwordMouse.containsMouse ? Qt.alpha(Appearance.md3.primary, 0.16) : "transparent"
-                animationDuration: Appearance.motion.short3
+                animationDuration: Appearance.motion.fast
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
 

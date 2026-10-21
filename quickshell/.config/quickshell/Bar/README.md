@@ -8,6 +8,8 @@
   flotantes `floatingMargin: 2`, laterales de contenido
   `contentMargin: 5`. `exclusiveZone = barHeight` siempre (solo reserva
   el alto de la barra). `position` top/bottom, `height` (def. 36).
+  La píldora flotante lleva hairline de `Appearance.border`; en los
+  modos hug el trazo lo aporta el marco de `ScreenRounding`.
 - `MainBar.qml` — contenido: 3 zonas (left/center/right) con
   componentes directos de `Items/`.
 - `Content/` — popups de cada módulo (10): `Battery`, `Clock`,
@@ -18,6 +20,15 @@
   `MprisPlayer`, `Network`, `Notifications`, `SysTray`, `UpdateCounter`,
   `Volume`, `Weather`, `WorkspaceButton`, `Workspaces` (+ `Workspaces`
   es el contenedor y `WorkspaceButton` el botón).
+- `Items/BarPopup.qml` — `LazyLoader` de popup de barra. Carga de forma
+  asíncrona al abrir o pulsar (el hover no precarga) y expone
+  `opened`/`toggle()`. `syncVisible()` es la única función que escribe
+  `visible`, y solo lo hace cuando `active` es true (popup ya
+  instanciado): nunca se lee `.item` durante la carga. Un único timer
+  de gracia (`graceMs`, def. 1200) retiene un popup ya cargado tras
+  cerrarse, sin iniciar cargas nuevas; `hovered`/`pressed` lo
+  conservan sin consumir la gracia. El componente cargado debe ser un
+  `BarPopupWindow` (usa `visible`/`anchorItem`).
 - `SystemTray/` — `SysTray.qml` + `SysTrayItem.qml` + `TrayMenu.qml`.
 - `ScreenRounding.qml` — redondeo/bordes por pantalla. Lee
   `ConfigService.configs.bar.{barType,position}` (`activeBarType`,

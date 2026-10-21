@@ -28,14 +28,14 @@ BaseOSD {
     PopupBackground {
         anchors.fill: parent
         color: Appearance.md3.surface
-        radius: Appearance.shape.normal
+        radius: Appearance.shape.large
     }
 
     RowLayout {
         id: contentRow
 
         anchors.centerIn: parent
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         Item {
             Layout.preferredWidth: 34

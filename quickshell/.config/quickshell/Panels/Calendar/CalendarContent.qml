@@ -47,12 +47,12 @@ Item {
     // ── UI ────────────────────────────────────────────────────
     ColumnLayout {
         anchors.fill: parent
-        spacing: Appearance.spacing.s
+        spacing: Appearance.spacing.small
 
         // ── Navegación: anterior / mes+año / siguiente ────────
         RowLayout {
             Layout.fillWidth: true
-            Layout.topMargin: Appearance.spacing.xs
+            Layout.topMargin: Appearance.spacing.extraSmall
 
             // Botón anterior — Wrapper + Background + Content
             Item {
@@ -67,7 +67,7 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: Appearance.motion.short3
+                            duration: Appearance.motion.fast
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -115,7 +115,7 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: Appearance.motion.short3
+                            duration: Appearance.motion.fast
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -225,8 +225,9 @@ Item {
                     color: delegateItem.isToday ? Appearance.md3.primary : delegateItem.isSelected
                                                   ? Appearance.md3.primary_container : "transparent"
 
-                    border.width: delegateItem.isSelected && !delegateItem.isToday ? 1 : 0
-                    border.color: Appearance.md3.primary
+                    border.width: delegateItem.isSelected && !delegateItem.isToday ? Appearance.border.width :
+                                                                                     0
+                    border.color: Appearance.border.selected
 
                     Behavior on color {
                         ColorAnimation {

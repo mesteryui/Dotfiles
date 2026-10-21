@@ -10,7 +10,7 @@ RowLayout {
 
     // implicitWidth/Height ahora se calculan solos a partir de los hijos,
     // así que el RowLayout padre en MainBar.qml reserva el espacio real.
-    spacing: Appearance.spacing.xs
+    spacing: Appearance.spacing.extraSmall
     Layout.alignment: Qt.AlignVCenter
 
     // Sin iconos en la bandeja no hay nada que desplegar: se oculta el
@@ -39,7 +39,7 @@ RowLayout {
 
         Behavior on rotation {
             NumberAnimation {
-                duration: Appearance.motion.short4
+                duration: Appearance.motion.normal
                 easing.type: Easing.OutQuad
             }
         }

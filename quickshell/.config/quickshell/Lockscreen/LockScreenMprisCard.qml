@@ -63,7 +63,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: Appearance.motion.short4
+            duration: Appearance.motion.normal
         }
     }
 
@@ -71,29 +71,29 @@ Item {
         id: mprisBg
 
         anchors.fill: parent
-        radius: Appearance.shape.verylarge
+        radius: Appearance.shape.huge
         color: Qt.alpha(Appearance.md3.surface_container_high, 0.78)
-        border.width: 1
-        border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+        border.width: Appearance.border.width
+        border.color: Appearance.border.subtleOn(color)
 
         RowLayout {
             id: mprisContent
             anchors {
                 fill: parent
-                leftMargin: Appearance.spacing.l
-                rightMargin: Appearance.spacing.l
+                leftMargin: Appearance.spacing.large
+                rightMargin: Appearance.spacing.large
                 topMargin: 14
                 bottomMargin: 14
             }
 
-            spacing: 14
+            spacing: Appearance.spacing.large
 
             // Carátula de la canción
             ClippingRectangle {
                 Layout.preferredWidth: 64
                 Layout.preferredHeight: 64
                 Layout.alignment: Qt.AlignVCenter
-                radius: Appearance.shape.large
+                radius: Appearance.shape.extraLarge
                 color: Appearance.md3.surface_container_highest
 
                 Image {
@@ -150,7 +150,7 @@ Item {
                 // estados que el popup multimedia, con fill ondulado M3E.
                 MprisSeekBar {
                     Layout.fillWidth: true
-                    Layout.topMargin: 6
+                    Layout.topMargin: Appearance.spacing.small
                     wavy: true
                     position: root.effectivePosition
                     length: root.trackLength

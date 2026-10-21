@@ -7,7 +7,6 @@ import qs.Shared.Background
 import qs.Primitives
 import QtQuick
 import QtQuick.Effects
-import Quickshell
 import Quickshell.Hyprland
 
 BarPopupWindow {
@@ -63,7 +62,7 @@ BarPopupWindow {
     CalendarContent {
         anchors {
             fill: parent
-            margins: Appearance.spacing.l
+            margins: Appearance.spacing.large
         }
 
         currentMonth: root.currentMonth

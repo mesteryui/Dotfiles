@@ -61,12 +61,12 @@ RowLayout {
         return root.label("wallpaper.color." + colorService.keys[id], colorService.names[id] ?? "");
     }
 
-    spacing: Appearance.spacing.s
+    spacing: Appearance.spacing.small
 
     // ── Tipo: Todos / Imágenes / Vídeos ─────────────────────────────────
     Row {
         Layout.alignment: Qt.AlignVCenter
-        spacing: 6
+        spacing: Appearance.spacing.small
 
         Repeater {
             model: root.typeModel
@@ -95,12 +95,12 @@ RowLayout {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
 
@@ -116,7 +116,7 @@ RowLayout {
                     id: typeRow
 
                     anchors.centerIn: parent
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     MaterialIcon {
                         anchors.verticalCenter: parent.verticalCenter
@@ -167,7 +167,7 @@ RowLayout {
         id: swatchRow
 
         Layout.alignment: Qt.AlignVCenter
-        spacing: 4
+        spacing: Appearance.spacing.extraSmall
 
         // Chip ALL: quita el filtro de color (grupo activo -1).
         Item {
@@ -187,8 +187,8 @@ RowLayout {
                 radius: Appearance.shape.full
                 color: allChip.active ? Appearance.md3.secondary_container :
                                         Appearance.md3.surface_container_high
-                border.width: allChip.active ? 0 : 1
-                border.color: Qt.alpha(Appearance.md3.on_surface, 0.18)
+                border.width: allChip.active ? 0 : Appearance.border.width
+                border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_high)
 
                 StyledText {
                     id: allText
@@ -233,7 +233,7 @@ RowLayout {
                     anchors.fill: parent
                     radius: width / 2
                     color: "transparent"
-                    border.width: 2
+                    border.width: Appearance.border.focusWidth
                     border.color: Appearance.md3.on_surface
                     visible: swatch.active
                 }
@@ -246,7 +246,7 @@ RowLayout {
                     height: 24
                     radius: width / 2
                     color: swatch.paint
-                    border.width: 1
+                    border.width: Appearance.border.width
                     border.color: Qt.alpha(Appearance.md3.on_surface, 0.25)
                     scale: swatchMouse.containsMouse ? 1.12 : 1.0
 
@@ -304,7 +304,7 @@ RowLayout {
             id: clearRow
 
             anchors.centerIn: parent
-            spacing: 4
+            spacing: Appearance.spacing.extraSmall
 
             MaterialIcon {
                 anchors.verticalCenter: parent.verticalCenter

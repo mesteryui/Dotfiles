@@ -81,21 +81,21 @@ PanelWindow {
         id: panelBg
 
         anchors.fill: parent
-        radius: Appearance.shape.verylarge
+        radius: Appearance.shape.huge
         color: Appearance.md3.surface_container_low
-        border.width: 1
-        border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+        border.width: Appearance.border.width
+        border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_low)
 
         ColumnLayout {
             id: centerCol
 
             anchors.fill: parent
-            anchors.margins: Appearance.spacing.l
-            spacing: Appearance.spacing.m
+            anchors.margins: Appearance.spacing.large
+            spacing: Appearance.spacing.medium
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.s
+                spacing: Appearance.spacing.small
 
                 StyledText {
                     Layout.fillWidth: true
@@ -164,7 +164,7 @@ PanelWindow {
                         anchors.margins: -2
                         shape: dndToggle.dndShape
                         color: Appearance.md3.primary
-                        animationDuration: Appearance.motion.medium2
+                        animationDuration: Appearance.motion.slow
                         opacity: dndToggle.activeFocus ? 1 : 0
 
                         Behavior on opacity {
@@ -181,11 +181,11 @@ PanelWindow {
                         shape: dndToggle.dndShape
                         color: dndToggle.dndOn ? Appearance.md3.secondary_container :
                                                  Appearance.md3.surface_container_highest
-                        animationDuration: Appearance.motion.medium2
+                        animationDuration: Appearance.motion.slow
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: Appearance.motion.short3
+                                duration: Appearance.motion.fast
                             }
                         }
                     }
@@ -197,13 +197,13 @@ PanelWindow {
                         shape: dndToggle.dndShape
                         color: dndToggle.dndOn ? Appearance.md3.on_secondary_container :
                                                  Appearance.md3.on_surface
-                        animationDuration: Appearance.motion.medium2
+                        animationDuration: Appearance.motion.slow
                         opacity: dndMouse.pressed ? 0.12 : (dndMouse.containsMouse || dndToggle.activeFocus) ? 0.08 :
                                                                                                                0
 
                         Behavior on opacity {
                             NumberAnimation {
-                                duration: Appearance.motion.short2
+                                duration: Appearance.motion.veryFast
                             }
                         }
                     }
@@ -219,7 +219,7 @@ PanelWindow {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: Appearance.motion.short3
+                                duration: Appearance.motion.fast
                             }
                         }
                     }
@@ -257,12 +257,12 @@ PanelWindow {
                         radius: Appearance.shape.full
                         color: clearAllButton.activeFocus ? Appearance.md3.primary_container :
                                                             Appearance.md3.secondary_container
-                        border.width: clearAllButton.activeFocus ? 2 : 0
-                        border.color: Appearance.md3.primary
+                        border.width: clearAllButton.activeFocus ? Appearance.border.focusWidth : 0
+                        border.color: Appearance.border.focus
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: Appearance.motion.short3
+                                duration: Appearance.motion.fast
                             }
                         }
 
@@ -274,7 +274,7 @@ PanelWindow {
 
                             Behavior on opacity {
                                 NumberAnimation {
-                                    duration: Appearance.motion.short2
+                                    duration: Appearance.motion.veryFast
                                 }
                             }
                         }
@@ -283,7 +283,7 @@ PanelWindow {
                             id: clearAllRow
 
                             anchors.centerIn: parent
-                            spacing: 6
+                            spacing: Appearance.spacing.small
 
                             MaterialIcon {
                                 text: "delete_sweep"
@@ -316,11 +316,12 @@ PanelWindow {
                 }
             }
 
-            // Separador fino bajo la cabecera (spec dividers: pleno).
+            // Separador fino bajo la cabecera (mismo trazo que el resto
+            // de divisores de panel; outline_variant al 40%).
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: Appearance.md3.outline_variant
+                color: Appearance.border.divider
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
             }
 
@@ -333,7 +334,7 @@ PanelWindow {
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 clip: true
                 focus: true
-                spacing: Appearance.spacing.m
+                spacing: Appearance.spacing.medium
                 keyNavigationWraps: true
                 highlightMoveDuration: 100
                 boundsBehavior: Flickable.StopAtBounds
@@ -354,8 +355,8 @@ PanelWindow {
             // Primitivo unificado en modo expresivo (halo Sunny + respiración).
             EmptyState {
                 Layout.fillWidth: true
-                Layout.topMargin: Appearance.spacing.xl
-                Layout.bottomMargin: Appearance.spacing.xl
+                Layout.topMargin: Appearance.spacing.extraLarge
+                Layout.bottomMargin: Appearance.spacing.extraLarge
                 Layout.alignment: Qt.AlignHCenter
                 visible: (root.historyModel ? root.historyModel.count : 0) === 0
                 expressive: true

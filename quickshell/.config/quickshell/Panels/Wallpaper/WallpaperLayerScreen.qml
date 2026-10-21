@@ -58,7 +58,7 @@ PanelWindow {
         // Sin esto un wallhaven de 17MB se decodifica entero (~30MB de
         // textura por cara, x2 en fundido). Patrón igual que lockscreen.
 
-        readonly property real targetScale: Math.max(1, Math.ceil(Screen.devicePixelRatio))
+        readonly property real targetScale: Math.max(1, Screen.devicePixelRatio)
         sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
         sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
     }
@@ -85,7 +85,7 @@ PanelWindow {
 
         property: "opacity"
         to: 0
-        duration: Appearance.motion.short4
+        duration: Appearance.motion.normal
         easing.type: Easing.Bezier
         easing.bezierCurve: Appearance.motion.standard
         onFinished: {
@@ -100,7 +100,7 @@ PanelWindow {
 
         property: "opacity"
         to: 1
-        duration: Appearance.motion.long1
+        duration: Appearance.motion.slowest
         easing.type: Easing.Bezier
         easing.bezierCurve: Appearance.motion.standard
         onFinished: {
@@ -120,7 +120,7 @@ PanelWindow {
 
         property: "scale"
         to: 1
-        duration: Appearance.motion.long1
+        duration: Appearance.motion.slowest
         easing.type: Easing.Bezier
         easing.bezierCurve: Appearance.motion.standard
     }
@@ -232,7 +232,7 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.long1
+                duration: Appearance.motion.slowest
                 easing.type: Easing.Bezier
                 easing.bezierCurve: Appearance.motion.standard
             }

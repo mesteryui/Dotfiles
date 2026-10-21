@@ -7,6 +7,14 @@
   colores hardcodeados. Uso: `scripts/check.sh [--fix] [--strict]`.
   Tarda ~15s. Importante: usa los binarios Qt6 (`/usr/lib/qt6/bin`);
   `/usr/bin/qmllint` es Qt5 y aborta con `pragma ComponentBehavior`.
+  También falla si `qmllint` reporta `Unqualified access [unqualified]`:
+  los miembros declarados en un ancestro se acceden siempre como
+  `idRaiz.miembro` (convención de claridad de origen de cada elemento).
+- `qmlls-sync.sh` — copia al VFS de quickshell (`buildDir` de
+  `.qmlls.ini`) los `qmldir` manuales (`Core/Services`, `Brightness`)
+  que quickshell no sintetiza. Sin esto el editor no resuelve
+  `import qs.Core.Services` y marca los servicios como desconocidos.
+  Idempotente; lo lanza `shell.qml` al arrancar y se puede correr a mano.
 - `qml-lint-conventions.py` — Qt QML ordering lint. Enforces member
   order per object (with blank line between sections): 1. `id`,
   2. properties, 3. signals, 4. functions, 5. bindings,

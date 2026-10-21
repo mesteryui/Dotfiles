@@ -28,10 +28,9 @@ Item {
         id: breathTimer
 
         interval: 1600
-        running: !isAwake
+        running: !root.isAwake
         repeat: true
-        onTriggered: wakeBreathShape = wakeBreathShape === MaterialShape.Sunny ? MaterialShape.VerySunny :
-                                                                                 MaterialShape.Sunny
+        onTriggered: root.wakeBreathShape = root.wakeBreathShape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
     }
 
     Component.onDestruction: {
@@ -53,17 +52,17 @@ Item {
     visible: opacity > 0
 
     Behavior on opacity {
-        enabled: !dragging
+        enabled: !root.dragging
 
         NumberAnimation {
-            duration: stageDuration
+            duration: root.stageDuration
             easing.type: Easing.OutCubic
         }
     }
 
     ColumnLayout {
         anchors.centerIn: parent
-        spacing: 18
+        spacing: Appearance.spacing.large
 
         // Chip de batería M3 (tonal, pill)
         Rectangle {
@@ -72,14 +71,14 @@ Item {
             implicitHeight: 36
             radius: Appearance.shape.full
             color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
-            border.width: 1
-            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+            border.width: Appearance.border.width
+            border.color: Appearance.border.subtleOn(color)
 
             RowLayout {
                 id: batteryRow
 
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: BatteryService.materialIcon
@@ -110,14 +109,14 @@ Item {
             implicitHeight: 36
             radius: Appearance.shape.full
             color: Qt.alpha(Appearance.md3.surface_container_high, 0.72)
-            border.width: 1
-            border.color: Qt.alpha(Appearance.md3.outline_variant, 0.5)
+            border.width: Appearance.border.width
+            border.color: Appearance.border.subtleOn(color)
 
             RowLayout {
                 id: notifRow
 
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 MaterialIcon {
                     icon: "notifications"
@@ -125,8 +124,7 @@ Item {
                     color: Appearance.md3.primary
                 }
                 StyledText {
-                    text: NotificationData.history.count + " " + I18nService.getTranslation(
-                              "lockscreen.notifications_unread", "sin leer")
+                    text: NotificationData.history.count + " " + I18nService.getTranslation("lockscreen.notifications_unread", "sin leer")
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.on_surface_variant
@@ -141,7 +139,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 400
             z: 2
-            visible: isPrimary && MprisService.activePlayer !== null
+            visible: root.isPrimary && MprisService.activePlayer !== null
             mprisPosition: mprisPosition
         }
     }
@@ -153,8 +151,7 @@ Item {
         id: wakePill
 
         Accessible.role: Accessible.Button
-        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint",
-                                                    "Desliza hacia arriba o pulsa una tecla")
+        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
 
         z: 2
         anchors {
@@ -165,19 +162,18 @@ Item {
         implicitWidth: wakeRow.implicitWidth + 32
         implicitHeight: 48
         radius: Appearance.shape.full
-        color: dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(
-                                 Appearance.md3.surface_container_high, 0.72)
-        border.width: 1
-        border.color: dragDy > 70 ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline_variant, 0.5)
+        color: root.dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+        border.width: Appearance.border.width
+        border.color: root.dragDy > 70 ? Appearance.border.focus : Appearance.border.subtleOn(color)
 
         transform: Translate {
-            y: -Math.min(28, dragDy * 0.22)
+            y: -Math.min(28, root.dragDy * 0.22)
 
             Behavior on y {
-                enabled: !dragging
+                enabled: !root.dragging
 
                 NumberAnimation {
-                    duration: stageDuration
+                    duration: root.stageDuration
                     easing.type: Easing.OutCubic
                 }
             }
@@ -193,7 +189,7 @@ Item {
             id: wakeRow
 
             anchors.centerIn: parent
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             // Flecha en forma expresiva que respira: la invitación a
             // despertar. Región cuadrada, apta para morph.
@@ -204,7 +200,7 @@ Item {
 
                 MaterialShape {
                     anchors.fill: parent
-                    shape: wakeBreathShape
+                    shape: root.wakeBreathShape
                     animationDuration: 1400
                     color: Appearance.md3.primary_container
 
@@ -220,7 +216,7 @@ Item {
 
                 SequentialAnimation on y {
                     loops: Animation.Infinite
-                    running: !isAwake && !dragging
+                    running: !root.isAwake && !root.dragging
 
                     NumberAnimation {
                         from: 0
@@ -238,11 +234,8 @@ Item {
             }
 
             StyledText {
-                text: dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock",
-                                                               "Suelta para desbloquear") :
-                                    I18nService.getTranslation("lockscreen.wake_hint",
-                                                               "Desliza hacia arriba o pulsa una tecla")
-                color: dragDy > 70 ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                text: root.dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock", "Suelta para desbloquear") : I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
+                color: root.dragDy > 70 ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium
             }
@@ -251,7 +244,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: wakeUp()
+            onClicked: root.wakeUp()
         }
     }
 }

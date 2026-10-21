@@ -3,6 +3,8 @@
 // contenido; focusAbove/focusBelow encadenan el foco con cabecera y toggles.
 // Un solo slider de brillo atado a BrightnessService.focusedMonitor: sigue
 // el foco de Hyprland y evita apilar un slider por pantalla.
+pragma ComponentBehavior: Bound
+
 import qs.Core
 import qs.Core.Services as Services
 import qs.Core.Services.Brightness as Brightness
@@ -23,7 +25,7 @@ ColumnLayout {
     readonly property var focused: Brightness.BrightnessService.focusedMonitor
     readonly property bool multiMonitor: Brightness.BrightnessService.monitors.length > 1
 
-    spacing: Appearance.spacing.s
+    spacing: Appearance.spacing.small
 
     // Volumen
     ControlSlider {
@@ -34,7 +36,7 @@ ColumnLayout {
         value: Services.AudioService.volume ?? 0
         accentColor: Appearance.md3.primary
         accessibleName: "Volumen"
-        keyboardMode: host.keyboardMode
+        keyboardMode: root.host.keyboardMode
         onMoved: val => {
             if (Services.AudioService.audio) {
                 Services.AudioService.audio.volume = val;
@@ -45,22 +47,22 @@ ColumnLayout {
                 Services.AudioService.audio.muted = !Services.AudioService.audio.muted;
             }
         }
-        Keys.onPressed: host.keyboardMode = true
+        Keys.onPressed: root.host.keyboardMode = true
         Keys.onUpPressed: {
-            if (focusAbove)
-                focusAbove.forceActiveFocus();
+            if (root.focusAbove)
+                root.focusAbove.forceActiveFocus();
         }
         Keys.onDownPressed: {
             if (brightnessSliderItem.visible)
                 brightnessSliderItem.forceActiveFocus();
-            else if (focusBelow)
-                focusBelow.forceActiveFocus();
+            else if (root.focusBelow)
+                root.focusBelow.forceActiveFocus();
         }
         onActiveFocusChanged: {
             if (activeFocus)
-                host.ensureVisible(volumeSliderItem);
+                root.host.ensureVisible(volumeSliderItem);
         }
-        onMouseUsed: host.keyboardMode = false
+        onMouseUsed: root.host.keyboardMode = false
     }
 
     // Brillo del monitor enfocado: sigue Hyprland.focusedMonitor.
@@ -83,21 +85,21 @@ ColumnLayout {
         value: root.focused?.brightness ?? 0
         accentColor: Appearance.md3.tertiary
         accessibleName: root.multiMonitor && root.focused ? "Brillo " + root.focused.screenName : "Brillo"
-        keyboardMode: host.keyboardMode
+        keyboardMode: root.host.keyboardMode
         onMoved: val => {
             if (root.focused)
                 root.focused.setBrightness(val);
         }
-        Keys.onPressed: host.keyboardMode = true
+        Keys.onPressed: root.host.keyboardMode = true
         Keys.onUpPressed: volumeSliderItem.forceActiveFocus()
         Keys.onDownPressed: {
-            if (focusBelow)
-                focusBelow.forceActiveFocus();
+            if (root.focusBelow)
+                root.focusBelow.forceActiveFocus();
         }
         onActiveFocusChanged: {
             if (activeFocus)
-                host.ensureVisible(brightnessSliderItem);
+                root.host.ensureVisible(brightnessSliderItem);
         }
-        onMouseUsed: host.keyboardMode = false
+        onMouseUsed: root.host.keyboardMode = false
     }
 }

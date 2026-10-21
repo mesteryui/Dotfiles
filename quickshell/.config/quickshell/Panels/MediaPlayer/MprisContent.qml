@@ -14,7 +14,6 @@ import qs.Core.Services as Services
 import qs.Core
 import qs.Primitives
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
@@ -84,10 +83,10 @@ Item {
             top: parent.top
             left: parent.left
             right: parent.right
-            margins: Appearance.spacing.l
+            margins: Appearance.spacing.large
         }
 
-        spacing: 14
+        spacing: Appearance.spacing.large
 
         // ════════════════════════════════════════════════════════
         // ESTADO VACÍO (Sin reproductor)
@@ -98,7 +97,7 @@ Item {
             Layout.preferredHeight: 160
 
             visible: !root.hasPlayer
-            spacing: Appearance.spacing.m
+            spacing: Appearance.spacing.medium
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
@@ -145,7 +144,7 @@ Item {
         // ════════════════════════════════════════════════════════
         RowLayout {
             Layout.fillWidth: true
-            spacing: 14
+            spacing: Appearance.spacing.large
             visible: root.hasPlayer
 
             // ── Carátula M3 Expressive (m3shapes) ──
@@ -222,7 +221,7 @@ Item {
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: Appearance.motion.short4
+                            duration: Appearance.motion.normal
                         }
                     }
 
@@ -257,7 +256,7 @@ Item {
                         id: appBadgeContent
 
                         anchors.centerIn: parent
-                        spacing: 5
+                        spacing: Appearance.spacing.extraSmall
 
                         IconImage {
                             implicitWidth: 12
@@ -323,7 +322,7 @@ Item {
         // ════════════════════════════════════════════════════════
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.xs
+            spacing: Appearance.spacing.extraSmall
             visible: root.hasPlayer
 
             // Seekbar unificado (Primitives/MprisSeekBar): mismo gesto y
@@ -407,7 +406,7 @@ Item {
                     shape: playPauseHero.heroShape
                     color: heroMouse.enabled ? Appearance.md3.primary :
                                                Appearance.md3.surface_container_highest
-                    animationDuration: Appearance.motion.long1
+                    animationDuration: Appearance.motion.slowest
                 }
 
                 // Capa de estado (hover/press) — misma silueta que el fondo
@@ -417,13 +416,13 @@ Item {
                     anchors.fill: parent
                     shape: playPauseHero.heroShape
                     color: Appearance.md3.on_primary
-                    animationDuration: Appearance.motion.long1
+                    animationDuration: Appearance.motion.slowest
                     opacity: heroMouse.pressed ? Appearance.state.pressed : (heroMouse.containsMouse
                                                                              ? Appearance.state.hovered : 0)
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: Appearance.motion.short2
+                            duration: Appearance.motion.veryFast
                         }
                     }
                 }
@@ -491,13 +490,13 @@ Item {
         // ════════════════════════════════════════════════════════
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 10
+            spacing: Appearance.spacing.medium
             visible: root.multiPlayer
 
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: 1
-                color: Qt.alpha(Appearance.md3.outline_variant, 0.4)
+                color: Appearance.border.divider
             }
 
             Flickable {
@@ -514,7 +513,7 @@ Item {
                 Row {
                     id: chipsRow
 
-                    spacing: Appearance.spacing.s
+                    spacing: Appearance.spacing.small
 
                     Repeater {
                         model: Services.MprisService.players
@@ -548,12 +547,12 @@ Item {
                                 radius: Appearance.shape.full
                                 color: chipItem.isActive ? Appearance.md3.secondary_container :
                                                            Appearance.md3.surface_container_low
-                                border.width: chipItem.isActive ? 0 : 1
-                                border.color: Appearance.md3.outline_variant
+                                border.width: chipItem.isActive ? 0 : Appearance.border.width
+                                border.color: Appearance.border.subtleOn(chipBg.color)
 
                                 Behavior on color {
                                     ColorAnimation {
-                                        duration: Appearance.motion.short3
+                                        duration: Appearance.motion.fast
                                     }
                                 }
 
@@ -570,7 +569,7 @@ Item {
                                     id: chipContent
 
                                     anchors.centerIn: parent
-                                    spacing: 6
+                                    spacing: Appearance.spacing.small
 
                                     IconImage {
                                         implicitWidth: 16
@@ -588,7 +587,7 @@ Item {
 
                                         Behavior on color {
                                             ColorAnimation {
-                                                duration: Appearance.motion.short3
+                                                duration: Appearance.motion.fast
                                             }
                                         }
                                     }

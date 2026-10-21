@@ -46,7 +46,7 @@ RowLayout {
         root.moved(v);
     }
 
-    spacing: Appearance.spacing.m
+    spacing: Appearance.spacing.medium
     activeFocusOnTab: true
 
     // ── Teclado ────────────────────────────────────────────────
@@ -97,7 +97,7 @@ RowLayout {
 
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
 
@@ -136,8 +136,8 @@ RowLayout {
             height: 16
             radius: height / 2
             color: Appearance.md3.surface_container_highest
-            border.width: (root.activeFocus && root.keyboardMode) ? 2 : 0
-            border.color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : "transparent"
+            border.width: (root.activeFocus && root.keyboardMode) ? Appearance.border.focusWidth : 0
+            border.color: (root.activeFocus && root.keyboardMode) ? Appearance.border.focus : "transparent"
 
             // Pista activa (Fill)
             Rectangle {
@@ -153,7 +153,7 @@ RowLayout {
                 }
                 Behavior on color {
                     ColorAnimation {
-                        duration: Appearance.motion.short3
+                        duration: Appearance.motion.fast
                     }
                 }
             }

@@ -47,8 +47,8 @@ Item {
         id: packageList
         anchors {
             fill: parent
-            topMargin: Appearance.spacing.s
-            bottomMargin: Appearance.spacing.s
+            topMargin: Appearance.spacing.small
+            bottomMargin: Appearance.spacing.small
         }
 
         clip: true

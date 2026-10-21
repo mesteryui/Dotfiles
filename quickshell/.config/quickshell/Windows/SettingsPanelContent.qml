@@ -24,8 +24,8 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: Appearance.spacing.l
-        spacing: Appearance.spacing.l
+        anchors.margins: Appearance.spacing.large
+        spacing: Appearance.spacing.large
 
         // 1. BARRA LATERAL IZQUIERDA (Ancho compacto y proporcionado)
         ColumnLayout {
@@ -34,7 +34,7 @@ Item {
             Layout.maximumWidth: 150
             Layout.fillHeight: true
 
-            spacing: 6
+            spacing: Appearance.spacing.small
 
             StyledText {
                 text: Services.I18nService.getTranslation("settings.title", "Ajustes")
@@ -42,7 +42,7 @@ Item {
                 font.weight: Font.Medium
                 font.variableAxes: Appearance.font.variableAxes.title
                 color: Appearance.md3.on_surface
-                Layout.bottomMargin: Appearance.spacing.s
+                Layout.bottomMargin: Appearance.spacing.small
                 Layout.fillWidth: true
                 elide: Text.ElideRight
             }
@@ -486,7 +486,7 @@ Item {
             id: tabCol
 
             width: parent.width
-            spacing: 14
+            spacing: Appearance.spacing.large
         }
     }
 }

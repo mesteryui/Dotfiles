@@ -415,7 +415,7 @@ Item {
         anchors.fill: parent
         visible: !root.isGrid
         clip: true
-        spacing: Appearance.spacing.xs
+        spacing: Appearance.spacing.extraSmall
         // Delegados ya instanciados fuera de vista (~4 por lado):
         // scroll rápido sin crear/destruir en cada frame.
         // Sin reciclaje de delegados (reuseItems): con swaps de modelo por
@@ -494,13 +494,13 @@ Item {
 
             width: view.width
             height: 56
-            radius: Appearance.shape.normal
+            radius: Appearance.shape.large
             color: "transparent"
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: Appearance.spacing.s
-                spacing: Appearance.spacing.m
+                anchors.margins: Appearance.spacing.small
+                spacing: Appearance.spacing.medium
 
                 // Icono según tipo
                 Item {
@@ -655,7 +655,7 @@ Item {
 
             width: grid.cellWidth
             height: grid.cellHeight
-            radius: Appearance.shape.normal
+            radius: Appearance.shape.large
             color: "transparent"
 
             Item {
@@ -691,7 +691,7 @@ Item {
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: Appearance.spacing.xs
+                anchors.margins: Appearance.spacing.extraSmall
                 iconName: "star"
                 size: 12
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -704,7 +704,7 @@ Item {
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: Appearance.spacing.xs
+                anchors.margins: Appearance.spacing.extraSmall
                 iconName: "history"
                 size: 12
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -755,13 +755,13 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         height: 3
-        radius: Appearance.shape.unsharpen
+        radius: Appearance.shape.micro
         color: Appearance.md3.primary
         opacity: (root.wrapFlash && root.wrapDir > 0) ? 0.55 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
     }
@@ -770,13 +770,13 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 3
-        radius: Appearance.shape.unsharpen
+        radius: Appearance.shape.micro
         color: Appearance.md3.primary
         opacity: (root.wrapFlash && root.wrapDir < 0) ? 0.55 : 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
     }

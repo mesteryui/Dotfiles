@@ -8,6 +8,9 @@
 #
 # Capas:
 #   1. qmllint (Qt6): sintaxis QML. Falla si hay errores de sintaxis.
+#      Incluye la convención propia `idRaiz.miembro`: los accesos a miembros
+#      declarados en un ancestro deben ir cualificados con el id del ancestro
+#      (qmllint los marca como `Unqualified access [unqualified]`).
 #   2. qmlformat (Qt6): formato según .qmlformat.ini. Falla si hay ficheros sucios.
 #   3. qml-lint-conventions.py: orden Qt + separadores. Informa por defecto (el repo
 #      aún tiene ~1000 avisos pendientes); con --strict falla.
@@ -163,6 +166,18 @@ else
         echo "--- ${f#"$ROOT"/} ---"
         head -n 10 "$LINT_TMP/${f//\//_}.log"
     done
+fi
+
+# Convención propia: un miembro declarado en un elemento ancestro se accede
+# siempre con el id de ese ancestro (`idRaiz.miembro`), nunca sin cualificar,
+# para que se vea de qué elemento viene. qmllint lo emite como
+# `Unqualified access [unqualified]`; cualquier aparición rompe el check.
+UNQUAL="$(grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | wc -l)"
+if [ "$UNQUAL" -gt 0 ]; then
+    fail "$UNQUAL accesos sin cualificar (usa el id del ancestro: idRaiz.miembro)"
+    grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | sed 's|.*quickshell/||' | head -n 20
+else
+    ok "convención idRaiz.miembro (sin accesos sin cualificar)"
 fi
 rm -rf "$LINT_TMP"
 [ -n "$TMPDIR_MERGE" ] && rm -rf "$TMPDIR_MERGE"

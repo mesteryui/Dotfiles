@@ -50,22 +50,23 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         implicitHeight: cardLayout.implicitHeight + 24
-        // Spec M3 cards: 12dp.
-        radius: Appearance.shape.small
+        // Card alineada con end-4: `large` (17), no `medium`.
+        radius: Appearance.shape.large
         color: root.isCritical ? Appearance.md3.error_container : Appearance.md3.surface
 
-        border.width: 1
-        border.color: root.isCritical ? Appearance.md3.error : Qt.alpha(Appearance.md3.outline_variant, 0.45)
+        border.width: Appearance.border.width
+        border.color: root.isCritical ? Appearance.border.error : Appearance.border.subtleOn(
+                                            Appearance.md3.surface)
 
         Behavior on implicitHeight {
             NumberAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
                 easing.type: Easing.OutCubic
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: Appearance.motion.short3
+                duration: Appearance.motion.fast
             }
         }
 
@@ -79,17 +80,17 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: Appearance.spacing.m
+                margins: Appearance.spacing.medium
             }
 
-            spacing: Appearance.spacing.s
+            spacing: Appearance.spacing.small
 
             // ════════════════════════════════════════════════════
             // SECCIÓN PRINCIPAL: IMAGEN A LA IZQUIERDA + CONTENIDO
             // ════════════════════════════════════════════════════
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Appearance.spacing.m
+                spacing: Appearance.spacing.medium
                 Layout.alignment: Qt.AlignTop
 
                 // ── Imagen / Icono Destacado (Grande a la izquierda) ──
@@ -111,7 +112,7 @@ Item {
                                                                        === NotificationUrgency.Low
                                                                        ? MaterialShape.Circle :
                                                                          MaterialShape.Cookie4Sided)
-                        animationDuration: Appearance.motion.medium2
+                        animationDuration: Appearance.motion.slow
                         color: root.isCritical ? Appearance.md3.error : Appearance.md3.primary_container
 
                         // Respiración en críticas: el ojo va a lo urgente.
@@ -148,7 +149,7 @@ Item {
                         id: notifIcon
 
                         anchors.fill: parent
-                        anchors.margins: Appearance.spacing.xs
+                        anchors.margins: Appearance.spacing.extraSmall
                         source: {
                             const img = root.notification.image;
                             if (img && img !== "")
@@ -170,7 +171,7 @@ Item {
                     // Fila superior: Nombre de App + Badge Urgente + Botón Cerrar
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         StyledText {
                             text: root.notification.appName || "Sistema"
@@ -272,7 +273,7 @@ Item {
                     RowLayout {
                         id: actionRow
 
-                        spacing: 6
+                        spacing: Appearance.spacing.small
 
                         Repeater {
                             model: root.notification.actions
@@ -295,8 +296,8 @@ Item {
                                 overlayColor: root.isCritical ? Appearance.md3.on_error_container :
                                                                 Appearance.md3.on_primary_container
 
-                                border.width: root.isCritical ? 1 : 0
-                                border.color: Appearance.md3.error
+                                border.width: root.isCritical ? Appearance.border.width : 0
+                                border.color: Appearance.border.error
 
                                 onClicked: modelData.invoke()
                             }
@@ -311,7 +312,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 visible: root.hasInlineReply
-                spacing: 6
+                spacing: Appearance.spacing.small
 
                 Rectangle {
                     Layout.fillWidth: true
@@ -320,22 +321,23 @@ Item {
                     color: root.isCritical ? Qt.alpha(Appearance.md3.surface, 0.5) :
                                              Appearance.md3.surface_container_highest
 
-                    border.width: replyInput.activeFocus ? 2 : 1
-                    border.color: replyInput.activeFocus ? (root.isCritical ? Appearance.md3.error :
-                                                                              Appearance.md3.primary) : (
-                                                               root.isCritical ? Qt.alpha(Appearance.md3.error,
-                                                                                          0.4) : Qt.alpha(
-                                                                                     Appearance.md3.outline_variant,
-                                                                                     0.5))
+                    border.width: replyInput.activeFocus ? Appearance.border.focusWidth :
+                                                           Appearance.border.width
+                    border.color: replyInput.activeFocus ? (root.isCritical ? Appearance.border.error :
+                                                                              Appearance.border.focus) : (
+                                                               root.isCritical ? Qt.alpha(
+                                                                                     Appearance.border.error,
+                                                                                     0.4) : Appearance.border.subtleOn(
+                                                                                     Appearance.md3.surface_container_highest))
 
                     Behavior on border.width {
                         NumberAnimation {
-                            duration: Appearance.motion.short2
+                            duration: Appearance.motion.veryFast
                         }
                     }
                     Behavior on border.color {
                         ColorAnimation {
-                            duration: Appearance.motion.short3
+                            duration: Appearance.motion.fast
                         }
                     }
 
@@ -343,8 +345,8 @@ Item {
                         id: replyInput
 
                         anchors.fill: parent
-                        anchors.leftMargin: Appearance.spacing.m
-                        anchors.rightMargin: Appearance.spacing.m
+                        anchors.leftMargin: Appearance.spacing.medium
+                        anchors.rightMargin: Appearance.spacing.medium
                         verticalAlignment: TextInput.AlignVCenter
                         clip: true
                         color: root.isCritical ? Appearance.md3.on_error_container : Appearance.md3.on_surface
