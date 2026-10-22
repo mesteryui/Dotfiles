@@ -326,13 +326,16 @@ Item {
             visible: root.hasPlayer
 
             // Seekbar unificado (Primitives/MprisSeekBar): mismo gesto y
-            // estados que la tarjeta del lockscreen.
+            // estados que la tarjeta del lockscreen, con trazo ondulado
+            // estilo M3 Expressive.
             MprisSeekBar {
                 id: seekBar
 
                 Layout.fillWidth: true
+                wavy: true
+                playing: Services.MprisService.isPlaying
                 position: root.currentPosition
-                length: root.player?.length ?? 0
+                length: Services.MprisService.trackLength
                 canSeek: (root.player?.canSeek || root.player?.canControl) ?? false
                 onSeekRequested: newPosition => root.seekRequested(newPosition)
             }

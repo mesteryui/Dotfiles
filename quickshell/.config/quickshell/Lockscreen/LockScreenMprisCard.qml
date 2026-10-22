@@ -17,8 +17,7 @@ Item {
 
     property real mprisPosition: 0
 
-    readonly property real trackLength: (MprisService.activePlayer && MprisService.activePlayer.length)
-                                        ? MprisService.activePlayer.length : 0
+    readonly property real trackLength: MprisService.trackLength
 
     // Posición optimista post-seek (igual que Panels/MediaPlayer/MprisSubwindow):
     // el player aplica el seek de forma asíncrona; mientras tanto manda lo pedido.
@@ -147,11 +146,13 @@ Item {
                 }
 
                 // Seekbar unificado (Primitives/MprisSeekBar): mismo gesto y
-                // estados que el popup multimedia, con fill ondulado M3E.
+                // estados que el popup multimedia, con trazo ondulado M3E
+                // animado mientras suena.
                 MprisSeekBar {
                     Layout.fillWidth: true
                     Layout.topMargin: Appearance.spacing.small
                     wavy: true
+                    playing: MprisService.isPlaying
                     position: root.effectivePosition
                     length: root.trackLength
                     canSeek: (MprisService.activePlayer?.canSeek || MprisService.activePlayer?.canControl)

@@ -542,7 +542,7 @@ Item {
                                         width: parent.width
 
                                         StyledText {
-                                            text: dayDelegate.modelData.hourLabel
+                                            text: hourDelegate.modelData?.hourLabel ?? ""
                                             font.pixelSize: Appearance.typeScale.labelSmall
                                             color: Appearance.md3.on_surface_variant
                                             horizontalAlignment: Text.AlignHCenter
@@ -550,8 +550,8 @@ Item {
                                         }
 
                                         MaterialIcon {
-                                            icon: Icons.getWeatherIcon(dayDelegate.modelData.wCode,
-                                                                       dayDelegate.modelData.isDay)
+                                            icon: Icons.getWeatherIcon(hourDelegate.modelData.wCode,
+                                                                       hourDelegate.modelData.isDay)
                                             size: 20
                                             color: Appearance.md3.primary
                                             width: parent.width
@@ -559,7 +559,7 @@ Item {
                                         }
 
                                         StyledText {
-                                            text: dayDelegate.modelData.temp + "°"
+                                            text: hourDelegate.modelData.temp + "°"
                                             font.pixelSize: Appearance.typeScale.titleSmall
                                             font.weight: Font.Bold
                                             color: Appearance.md3.on_surface
@@ -568,10 +568,10 @@ Item {
                                         }
 
                                         StyledText {
-                                            text: dayDelegate.modelData.precipProb > 0
-                                                  ? dayDelegate.modelData.precipProb + "%" : "—"
+                                            text: hourDelegate.modelData.precipProb > 0
+                                                  ? hourDelegate.modelData.precipProb + "%" : "—"
                                             font.pixelSize: Appearance.typeScale.labelSmall
-                                            color: dayDelegate.modelData.precipProb > 20
+                                            color: hourDelegate.modelData.precipProb > 20
                                                    ? Appearance.md3.tertiary :
                                                      Appearance.md3.on_surface_variant
                                             horizontalAlignment: Text.AlignHCenter

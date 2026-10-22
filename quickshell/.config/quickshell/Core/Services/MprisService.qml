@@ -108,7 +108,18 @@ Singleton {
             // nueva duración pintaba la barra llena en falso y tiempos
             // incoherentes hasta el siguiente tick. Reset inmediato.
             root.position = 0;
+            root.syncTrackLength();
             root.updateTrack();
+        }
+
+        // lengthChanged solo llega cuando la duración NO está soportada;
+        // metadataChanged es la señal fiable al cambiar mpris:length.
+        function onMetadataChanged() {
+            root.syncTrackLength();
+        }
+
+        function onLengthChanged() {
+            root.syncTrackLength();
         }
 
         function onTrackArtUrlChanged() {
@@ -127,6 +138,7 @@ Singleton {
         // Evita mostrar la posición congelada del reproductor anterior
         // mientras el nuevo aún no reporta la suya.
         root.position = 0;
+        root.syncTrackLength();
         this.updateTrack();
     }
 
@@ -167,6 +179,31 @@ Singleton {
 
     property real position: 0
 
+    // Duración real de la pista activa en segundos (0 = desconocida).
+    //
+    // No se puede leer `activePlayer.length` desde los bindings de la UI:
+    //   · Quickshell NO emite lengthChanged al cambiar mpris:length (solo
+    //     lo emite cuando la duración no está soportada), así que la barra
+    //     y el total se quedaban congelados con la duración anterior
+    //     (p. ej. 0:01 mientras la posición ya iba por 0:45).
+    //   · Con lengthSupported == false, MprisPlayer::length devuelve la
+    //     posición actual, lo que pintaba la barra llena y un total falso.
+    // El servicio la refresca en cada tick y en los cambios de pista,
+    // metadata y reproductor; la UI solo consume esta propiedad.
+    property real trackLength: 0
+
+    function syncTrackLength(): void {
+        const p = root.activePlayer;
+        const next = (p && p.lengthSupported && isFinite(p.length) && p.length > 0) ? p.length : 0;
+        if (root.trackLength !== next)
+            root.trackLength = next;
+    }
+
+    onPositionClientsChanged: {
+        if (root.positionClients > 0)
+            root.syncTrackLength();
+    }
+
     Timer {
         // 400ms (2.5Hz) en vez de 150ms: el fill lleva Behavior de 80ms
         // y el salto de ~0.4s es imperceptible; 2.6x menos lecturas D-Bus.
@@ -174,6 +211,10 @@ Singleton {
         running: root.isPlaying && root.positionClients > 0
         repeat: true
         onTriggered: {
+            // La duración se refresca siempre, aunque la posición no esté
+            // soportada o el player no permita seek.
+            root.syncTrackLength();
+
             const p = root.activePlayer;
             if (!p)
                 return;

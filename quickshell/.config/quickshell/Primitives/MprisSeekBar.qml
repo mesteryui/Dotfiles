@@ -9,6 +9,8 @@
 //   length:   segundos totales; <= 0 = duración desconocida (sin fill).
 //   canSeek:  el reproductor permite buscar (streams en directo: no).
 //   showTimes / showBubble: visibilidad de tiempos y burbuja de arrastre.
+//   wavy:     trazo ondulado M3E (parte reproducida) + cursor vertical.
+//   playing:  con wavy, anima la fase de la onda solo al reproducir.
 //   seekRequested(newPosition): único seek real del gesto (al soltar).
 //   dragging: true mientras el dedo está sobre la pista.
 import qs.Core
@@ -24,9 +26,13 @@ ColumnLayout {
     property bool canSeek: false
     property bool showTimes: true
     property bool showBubble: true
-    // Variante ondulada M3E del fill (solo lockscreen): desactivada por
-    // defecto, el widget usa el fill plano.
+    // Variante ondulada M3E del fill (reproductor y lockscreen): trazo
+    // senoidal en la parte reproducida + cursor vertical en la cabeza.
+    // Desactivada por defecto, el widget usa el fill plano.
     property bool wavy: false
+    // Solo con wavy: desplaza la fase de la onda mientras suena.
+    // En pausa (o durante el arrastre) la onda queda quieta.
+    property bool playing: false
 
     readonly property bool dragging: seekArea.pressed
 
@@ -67,35 +73,45 @@ ColumnLayout {
         // Fase 0..1 del segmento indeterminado (LIVE).
         property real indetPhase: 0
 
-        // Geometría de la onda M3E (fill ondulado opt-in).
-        readonly property real waveAmp: 2
+        // Geometría de la onda M3E (trazo ondulado opt-in): amplitud,
+        // periodo y grosor del trazo.
+        readonly property real waveAmp: 5
 
-        readonly property real waveLen: 16
-        // Path SVG de la cinta: superior izq→der, inferior der→izq, cierre.
-        // Solo depende del ancho/alto del track (redimensiones), no del
-        // progreso: no se reconstruye por frame.
+        readonly property real waveLen: 36
 
+        readonly property real waveStroke: 4
+
+        // Cursor vertical de la cabeza de reproducción.
+        readonly property real headWidth: 3
+
+        readonly property real headHeight: 18
+
+        readonly property real headX: Math.max(0, Math.min(trackContainer.width - headWidth,
+                                                           trackContainer.width * displayRatio - headWidth
+                                                           / 2))
+
+        // Ancho del trazo ondulado: acaba bajo el cursor, que tapa el
+        // recorte vertical del clip.
+        readonly property real waveWidth: Math.max(0, headX + headWidth / 2)
+
+        // Path SVG del trazo: seno muestreado (sin cierre) con dos periodos
+        // de margen para poder desplazar la fase sin reconstruirlo por
+        // frame. Solo depende del ancho/alto del track (redimensiones); el
+        // muestreo fino mantiene las crestas redondeadas con stroke suave.
         function wavePath(): string {
-            const w = trackBg.width;
-            const h = trackBg.height;
+            const w = trackContainer.width + 2 * trackContainer.waveLen;
             if (w <= 0)
                 return "";
             const amp = trackContainer.waveAmp;
             const len = trackContainer.waveLen;
-            const cy = (h + 2 * amp + 2) / 2;
-            const top = x => cy - h / 2 + amp * Math.sin(x * 2 * Math.PI / len);
-            const bot = x => cy + h / 2 + amp * Math.sin(x * 2 * Math.PI / len);
-            const n = Math.max(8, Math.ceil(w / 8));
-            let d = "M0 " + top(0).toFixed(1);
-            for (let i = 1; i <= n; i++) {
-                const x = i / n * w;
-                d += "L" + x.toFixed(1) + " " + top(x).toFixed(1);
+            const cy = trackContainer.height / 2;
+            const step = 2;
+            let d = "M0 " + cy.toFixed(1);
+            for (let x = step; x <= w; x += step) {
+                const y = cy + amp * Math.sin(x * 2 * Math.PI / len);
+                d += "L" + x.toFixed(1) + " " + y.toFixed(1);
             }
-            for (let j = n; j >= 0; j--) {
-                const x = j / n * w;
-                d += "L" + x.toFixed(1) + " " + bot(x).toFixed(1);
-            }
-            return d + "Z";
+            return d;
         }
 
         SequentialAnimation on indetPhase {
@@ -121,6 +137,9 @@ ColumnLayout {
         Rectangle {
             id: trackBg
 
+            // En modo ondulado la pista plana solo se usa como fallback
+            // indeterminado (LIVE / duración desconocida).
+            visible: !root.wavy || trackContainer.totalLength <= 0
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
             height: seekArea.pressed ? 8 : (seekArea.containsMouse ? 6 : 4)
@@ -138,10 +157,10 @@ ColumnLayout {
             }
 
             // Pista activa (Fill) con stop-indicator M3 Expressive:
-            // gap de 4dp antes del resto (desaparece al 100%).
-            // Con wavy fallido (path vacío) se muestra el plano.
+            // gap de 4dp antes del resto (desaparece al 100%). Solo modo
+            // plano; con wavy el trazo ondulado vive fuera de trackBg.
             Rectangle {
-                visible: !root.wavy || trackContainer.wavePath() === ""
+                visible: !root.wavy
                 width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio
                                                                                   >= 0.999 ? 0 : 4))
                 height: parent.height
@@ -158,34 +177,6 @@ ColumnLayout {
                 Behavior on color {
                     ColorAnimation {
                         duration: Appearance.motion.fast
-                    }
-                }
-            }
-
-            // Fill ondulado M3E (opt-in): cinta senoidal recortada al
-            // progreso. La geometría abarca todo el track (estable ante
-            // redimensiones) y el clip la limita al fill.
-            Item {
-                visible: root.wavy && trackContainer.totalLength > 0
-                width: Math.max(0, trackBg.width * trackContainer.displayRatio - (trackContainer.displayRatio
-                                                                                  >= 0.999 ? 0 : 4))
-                height: trackBg.height + 2 * trackContainer.waveAmp + 2
-                anchors.verticalCenter: parent.verticalCenter
-                clip: true
-
-                Shape {
-                    width: trackBg.width
-                    height: parent.height
-                    asynchronous: true
-
-                    ShapePath {
-                        fillColor: Appearance.md3.primary
-                        strokeWidth: -1
-                        strokeColor: "transparent"
-
-                        PathSvg {
-                            path: trackContainer.wavePath()
-                        }
                     }
                 }
             }
@@ -214,6 +205,86 @@ ColumnLayout {
                 radius: parent.radius
                 color: Appearance.md3.primary
                 x: -width + trackContainer.indetPhase * (trackBg.width + width)
+            }
+        }
+
+        // Pista inactiva del modo ondulado: línea fina desde la cabeza
+        // hasta el final (la parte reproducida no lleva línea, solo onda).
+        Rectangle {
+            visible: root.wavy && trackContainer.totalLength > 0
+            x: trackContainer.headX + trackContainer.headWidth
+            width: Math.max(0, trackContainer.width - x)
+            height: 2
+            radius: 1
+            anchors.verticalCenter: parent.verticalCenter
+            color: Appearance.md3.surface_container_highest
+        }
+
+        // Trazo ondulado M3E (opt-in): seno recortado al progreso. El
+        // Shape abarca dos periodos extra y la fase se anima desplazando
+        // su x (sin reconstruir el path por frame).
+        Item {
+            id: waveViewport
+
+            visible: root.wavy && trackContainer.totalLength > 0
+            width: trackContainer.waveWidth
+            height: trackContainer.height
+            anchors.verticalCenter: parent.verticalCenter
+            clip: true
+
+            Shape {
+                id: waveShape
+
+                width: trackContainer.width + 2 * trackContainer.waveLen
+                height: waveViewport.height
+                asynchronous: true
+
+                ShapePath {
+                    fillColor: "transparent"
+                    strokeWidth: trackContainer.waveStroke
+                    strokeColor: Appearance.md3.primary
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.RoundJoin
+
+                    PathSvg {
+                        path: trackContainer.wavePath()
+                    }
+                }
+
+                SequentialAnimation on x {
+                    loops: Animation.Infinite
+                    // paused (no running) conserva la fase al pausar o
+                    // arrastrar: al reanudar no salta al inicio del ciclo.
+                    paused: !root.playing || seekArea.pressed
+
+                    NumberAnimation {
+                        from: 0
+                        to: -trackContainer.waveLen
+                        duration: 2600
+                        easing.type: Easing.Linear
+                    }
+                }
+            }
+        }
+
+        // Cursor vertical de la cabeza (siempre visible en modo ondulado;
+        // crece ligeramente al pasar el ratón o arrastrar).
+        Rectangle {
+            id: progressHead
+
+            visible: root.wavy && trackContainer.totalLength > 0
+            x: trackContainer.headX
+            width: trackContainer.headWidth
+            height: trackContainer.headHeight + ((seekArea.containsMouse || seekArea.pressed) ? 4 : 0)
+            radius: Appearance.shape.full
+            anchors.verticalCenter: parent.verticalCenter
+            color: Appearance.md3.primary
+
+            Behavior on height {
+                NumberAnimation {
+                    duration: 120
+                    easing.type: Easing.OutCubic
+                }
             }
         }
 
@@ -253,8 +324,8 @@ ColumnLayout {
             height: width
             radius: width / 2
             color: Appearance.md3.primary
-            opacity: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0
-            scale: (seekArea.containsMouse || seekArea.pressed) ? 1 : 0.5
+            opacity: (!root.wavy && (seekArea.containsMouse || seekArea.pressed)) ? 1 : 0
+            scale: (!root.wavy && (seekArea.containsMouse || seekArea.pressed)) ? 1 : 0.5
 
             Behavior on opacity {
                 NumberAnimation {
