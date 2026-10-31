@@ -12,6 +12,16 @@
 input_path = "~/.config/matugen/templates/kitty-colors.conf"
 output_path = "~/.config/kitty/current-theme.conf"
 
+[templates.gtk3]
+input_path = "~/.config/matugen/templates/gtk3-colors.css"
+output_path = "~/.config/gtk-3.0/gtk.css"
+
+# GTK 4 and GTK 3 read separate inputs: libadwaita 1.6+ recolours its widgets
+# from CSS custom properties (:root) that GTK 3 cannot parse, so the GTK 4
+# template leads with those and GTK 3 keeps the @define-color form it can read.
+[templates.gtk4]
+input_path = "~/.config/matugen/templates/gtk4-colors.css"
+output_path = "~/.config/gtk-4.0/gtk.css"
 
 [templates.hyprland]
 input_path = './templates/hyprland_template.lua'
@@ -27,7 +37,7 @@ output_path = "~/.config/btop/themes/ryoku.theme"
 # with "Theme apps" off, instead of opening stock-grey in a themed session.
 [templates.sharepicker]
 input_path = "~/.config/matugen/templates/share-picker.css"
-output_path = "~/.cache/ryoku/share-picker.css"
+output_path = "~/.config/hyprland-preview-share-picker/style.css"
 
 [templates.quickshell]
 input_path = './templates/quickshell.json'
@@ -43,7 +53,7 @@ output_path = "~/.local/share/color-schemes/matugen.colors"
 # declara apps.toml para no duplicar salidas si algún día se usa ese fichero.
 [templates.fish]
 input_path = "~/.config/matugen/templates/colors.fish"
-output_path = "~/.config/fish/conf.d/ryoku-colors.fish"
+output_path = "~/.config/fish/conf.d/colors.fish"
 
 # El prompt (starship se carga desde config.fish). La plantilla es el
 # starship.toml completo: solo la paleta es dinámica, el diseño vive aquí.

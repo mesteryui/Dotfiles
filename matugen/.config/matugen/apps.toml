@@ -3,16 +3,7 @@
 # Ryoku Arch Matugen App Templates
 # Configured and toggled via Ryoku Settings (Hub) -> Appearance -> Matugen
 
-[templates.gtk3]
-input_path = "~/.config/matugen/templates/gtk3-colors.css"
-output_path = "~/.config/gtk-3.0/gtk.css"
 
-# GTK 4 and GTK 3 read separate inputs: libadwaita 1.6+ recolours its widgets
-# from CSS custom properties (:root) that GTK 3 cannot parse, so the GTK 4
-# template leads with those and GTK 3 keeps the @define-color form it can read.
-[templates.gtk4]
-input_path = "~/.config/matugen/templates/gtk4-colors.css"
-output_path = "~/.config/gtk-4.0/gtk.css"
 
 # Reglas propias de Thunar (GTK3). gtk.css lo trae con @import, así que este
 # fichero debe regenerarse junto a él o Thunar queda con colores viejos.
@@ -32,9 +23,7 @@ output_path = "~/.config/equibop/themes/matugen.css"
 input_path = "~/.config/matugen/templates/obs.theme"
 output_path = "~/.config/obs-studio/themes/matugen.theme"
 
-[templates.zed]
-input_path = "~/.config/matugen/templates/zed.json"
-output_path = "~/.config/zed/themes/matugen.json"
+
 
 [templates.heroic]
 input_path = "~/.config/matugen/templates/heroic.css"
@@ -118,6 +107,10 @@ output_path = "~/.config/matugen/generated/obsidian.css"
 [templates.zathura]
 input_path = "~/.config/matugen/templates/zathura"
 output_path = "~/.config/zathura/zathurarc"
+
+[templates.zed]
+input_path = "~/.config/matugen/templates/zed.json"
+output_path = "~/.config/zed/themes/matugen.json"
 
 [templates.alacritty]
 input_path = "~/.config/matugen/templates/alacritty.toml"
