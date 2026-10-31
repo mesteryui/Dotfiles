@@ -87,7 +87,7 @@ Rectangle {
             }
             MaterialIcon {
                 anchors.centerIn: parent
-                iconName: root.cur ? (root.cur.iconName || "circle") : "circle"
+                icon: root.cur ? (root.cur.icon || "circle") : "circle"
                 size: 56
                 color: Appearance.md3.primary
                 visible: root.cur && ((root.cur.appIcon || "") === "") && ((root.cur.ch || "") === "")

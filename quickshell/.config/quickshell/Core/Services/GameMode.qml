@@ -69,7 +69,9 @@ Singleton {
             // --- ACTIVAR MODO JUEGO ---
 
             // Enviar keywords directamente por el socket IPC nativo de Hyprland:
-            let luaConfig = "hl.config({ " + "animations = { enabled = false }, " + "decoration = { rounding = 2, blur = { enabled = false }, shadow = { enabled = false } }, " + "general = { gaps_in = 0, gaps_out = 0, border_size = 1, allow_tearing = true } " + "})";
+            let luaConfig = "hl.config({ " + "animations = { enabled = false }, "
+                + "decoration = { rounding = 2, blur = { enabled = false }, shadow = { enabled = false } }, "
+                + "general = { gaps_in = 0, gaps_out = 0, border_size = 1, allow_tearing = true } " + "})";
 
             // Misma petición que `hyprctl eval '<lua>'`, pero sin proceso:
             // HyprlandIpc escribe `eval ...` al socket y Hyprland responde `ok`.

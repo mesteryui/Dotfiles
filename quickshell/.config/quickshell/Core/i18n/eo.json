@@ -8,10 +8,14 @@
     "powersave": "Ŝparreĝimo"
   },
   "cheatsheet": {
+    "bind_count": "%1 klavkombinoj",
+    "categories": "Kategorioj",
     "empty_no_binds": "Neniuj dokumentitaj klavkombinoj trovigu",
     "empty_no_match": "Neniu klavkombino kongruas",
-    "hint": "Ctrl+J/K movi · Ctrl+H/L kolumnoj · Esc viŝi/fermi",
+    "hint": "↑/↓ movi · Ctrl+H/L aŭ Tab kategorioj · Esc viŝi/fermi",
     "search_placeholder": "Serĉi klavkombinojn…",
+    "summary": "%1 kategorioj · %2 klavkombinoj",
+    "title": "Klavkombinoj",
     "empty_error": "Ne povis legi klavkombinojn (ĉu hyprctl disponeblas?)"
   },
   "launcher": {
@@ -188,11 +192,18 @@
         "type_floating": "Flosanta",
         "type_full_hug": "Plena brakumo",
         "type_no_floating": "Neflosanta",
+        "type_notch": "Noĉo",
         "type_partial_hug": "Parta brakumo",
         "workspace_style": "Laborspaca stilo",
         "workspace_style_circles": "Cirkloj",
         "workspace_style_kanji": "Kanji",
         "workspace_style_numbers": "Nombroj"
+      },
+      "wallpaper": {
+        "deck_frost": "Malklarigi la fonon kun malfermitaj fenestroj",
+        "deck_frost_on_battery": "Ankaŭ kun baterio",
+        "deck_frost_strength": "Intenseco",
+        "title": "Fono"
       }
     },
     "screen": {

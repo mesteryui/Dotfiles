@@ -8,7 +8,7 @@
 //
 // Esta base NO sabe nada de ningún menú concreto (ni energía, ni
 // fastfetch, ni hyprland, ni nada): solo expone el contrato
-// (sectionId/titleFallback/titleKey/iconName/parentId/entries/refresh())
+// (sectionId/titleFallback/titleKey/icon/parentId/entries/refresh())
 // y fábricas genéricas para construir entradas. Toda la lógica de lo que
 // muestra/hace un menú vive en SU propio archivo (ver MenuProviders/).
 //
@@ -55,7 +55,7 @@ QtObject {
     property string sectionId: ""
     property string titleFallback: "Menú"
     property string titleKey: ""
-    property string iconName: "menu"
+    property string icon: "menu"
     property string parentId: "main"
 
     // Items con el esquema de arriba. Si dependen del sistema, se generan
@@ -86,7 +86,7 @@ QtObject {
             titleKey: o.titleKey || "",
             subtitleFallback: sub,
             subtitleKey: o.subtitleKey || "",
-            iconName: icon || "menu",
+            icon: icon || "menu",
             action: action,
             previewPath: o.preview || ""
         };

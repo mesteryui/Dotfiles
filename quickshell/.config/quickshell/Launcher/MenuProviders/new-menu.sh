@@ -50,7 +50,7 @@ import qs.Launcher
 MenuDefinition {
     sectionId: "$SEC_ESC"
     titleFallback: "$TITLE_ESC"
-    iconName: "$ICON_ESC"
+    icon: "$ICON_ESC"
     parentId: "$PARENT_ESC"
 
     entries: [

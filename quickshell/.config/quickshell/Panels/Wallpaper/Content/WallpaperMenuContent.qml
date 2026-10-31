@@ -333,7 +333,7 @@ Item {
 
                     ButtonIcon {
                         Layout.alignment: Qt.AlignVCenter
-                        iconName: "close"
+                        icon: "close"
                         iconSize: 18
                         iconColor: Appearance.md3.on_surface_variant
                         visible: searchField.text !== ""
@@ -451,7 +451,7 @@ Item {
             EmptyState {
                 anchors.centerIn: parent
                 visible: root.filtered.length === 0
-                iconName: "image_not_supported"
+                icon: "image_not_supported"
                 title: root.filtersActive ? root.label("wallpaper.no_match", "Ningún fondo coincide") :
                                             root.label("wallpaper.no_results", "No se encontraron fondos")
                 subtitle: root.filtersActive ? root.label("wallpaper.no_match_hint",

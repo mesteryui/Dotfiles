@@ -85,7 +85,8 @@ Item {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 shape: MaterialShape.Circle
-                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+                color: downMouse.containsMouse ? Qt.alpha(Appearance.md3.on_surface, 0.10) : Qt.alpha(
+                                                     Appearance.md3.surface_container_high, 0.72)
                 strokeWidth: Appearance.border.width
                 strokeColor: Appearance.border.subtleOn(color)
                 animationDuration: Appearance.motion.fast
@@ -304,7 +305,8 @@ Item {
             implicitHeight: statusText.implicitHeight + 12
             radius: Appearance.shape.full
             visible: root.authFailed || KeyboardThings.capsLockOn
-            color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(Appearance.md3.tertiary_container, 0.55)
+            color: root.authFailed ? Qt.alpha(Appearance.md3.error_container, 0.72) : Qt.alpha(
+                                         Appearance.md3.tertiary_container, 0.55)
             border.width: Appearance.border.width
             border.color: root.authFailed ? Appearance.border.error : Qt.alpha(Appearance.md3.tertiary, 0.5)
 
@@ -312,8 +314,12 @@ Item {
                 id: statusText
 
                 anchors.centerIn: parent
-                text: root.authFailed ? I18nService.getTranslation("lockscreen.incorrect_password", "Contraseña incorrecta") : I18nService.getTranslation("lockscreen.caps_lock", "Bloq Mayús activado")
-                color: root.authFailed ? Appearance.md3.on_error_container : Appearance.md3.on_tertiary_container
+                text: root.authFailed ? I18nService.getTranslation("lockscreen.incorrect_password",
+                                                                   "Contraseña incorrecta") :
+                                        I18nService.getTranslation("lockscreen.caps_lock",
+                                                                   "Bloq Mayús activado")
+                color: root.authFailed ? Appearance.md3.on_error_container :
+                                         Appearance.md3.on_tertiary_container
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium
             }

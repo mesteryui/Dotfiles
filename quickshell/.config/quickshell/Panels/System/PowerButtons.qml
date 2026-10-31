@@ -34,8 +34,8 @@ Scope {
         onTriggered: root.animating = false
         running: false
     }
-    // LazyLoader: el overlay se incuba en background y se cachea. Como ya
-    // no se destruye al cerrarse, el visible de la ventana va atado a show.
+    // LazyLoader: el overlay se carga en background al abrir. Al cerrar,
+    // loading pasa a false y el item se destruye; el visible va atado a show.
     LazyLoader {
         id: loader
 

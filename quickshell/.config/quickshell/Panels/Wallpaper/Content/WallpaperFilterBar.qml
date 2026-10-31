@@ -24,19 +24,19 @@ RowLayout {
     readonly property var typeModel: [
         {
             "key": "all",
-            "iconName": "apps",
+            "icon": "apps",
             "labelKey": "wallpaper.filter.all",
             "fallback": "Todos"
         },
         {
             "key": "image",
-            "iconName": "image",
+            "icon": "image",
             "labelKey": "wallpaper.filter.image",
             "fallback": "Imágenes"
         },
         {
             "key": "video",
-            "iconName": "movie",
+            "icon": "movie",
             "labelKey": "wallpaper.filter.video",
             "fallback": "Vídeos"
         }
@@ -120,7 +120,7 @@ RowLayout {
 
                     MaterialIcon {
                         anchors.verticalCenter: parent.verticalCenter
-                        icon: typePill.modelData.iconName
+                        icon: typePill.modelData.icon
                         size: Appearance.typeScale.bodyLarge
                         color: typePill.active ? Appearance.md3.on_secondary_container :
                                                  Appearance.md3.on_surface_variant

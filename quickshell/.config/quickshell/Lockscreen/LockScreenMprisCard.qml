@@ -166,7 +166,7 @@ Item {
                     spacing: 2
 
                     ButtonIcon {
-                        iconName: "skip_previous"
+                        icon: "skip_previous"
                         iconSize: 22
                         enabled: MprisService.canGoPrevious
                         onClicked: MprisService.previous()
@@ -193,7 +193,7 @@ Item {
                         }
                     }
                     ButtonIcon {
-                        iconName: "skip_next"
+                        icon: "skip_next"
                         iconSize: 22
                         enabled: MprisService.canGoNext
                         onClicked: MprisService.next()

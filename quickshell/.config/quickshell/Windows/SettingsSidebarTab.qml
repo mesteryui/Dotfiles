@@ -8,7 +8,7 @@ import QtQuick.Layouts
 Rectangle {
     id: tabBtn
 
-    property string iconName: ""
+    property string icon: ""
     property string title: ""
     property string description: ""
     property bool selected: false
@@ -44,7 +44,7 @@ Rectangle {
         spacing: Appearance.spacing.medium
 
         StyledText {
-            text: tabBtn.iconName
+            text: tabBtn.icon
             font.family: "Material Symbols Rounded"
             font.pixelSize: Appearance.typeScale.headlineSmall
             color: tabBtn.selected ? Appearance.md3.on_secondary_container : Appearance.md3.on_surface_variant

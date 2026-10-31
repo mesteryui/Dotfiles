@@ -10,7 +10,7 @@ Rectangle {
 
     property string label: ""
     property string stateText: ""
-    property string iconName: ""
+    property string icon: ""
     property bool active: false
     property bool enable: true
     // Patrón focus-visible (ver ControlSlider): el anillo de foco solo se
@@ -110,7 +110,7 @@ Rectangle {
 
             MaterialIcon {
                 anchors.centerIn: parent
-                icon: root.iconName
+                icon: root.icon
                 size: root.stateText !== "" ? Appearance.font.pixelSize.large : Appearance.typeScale.bodyLarge
                 color: root.active ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
 

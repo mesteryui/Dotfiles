@@ -106,7 +106,7 @@ Singleton {
         return {
             sectionId: "main",
             title: tr("sysmenu.section_main", "Sistema"),
-            iconName: "tune",
+            icon: "tune",
             parentId: ""
         };
     }
@@ -235,7 +235,7 @@ Singleton {
             kind: "system",
             title: tr(entry.titleKey, entry.titleFallback),
             sub: tr(entry.subtitleKey, entry.subtitleFallback),
-            iconName: entry.iconName,
+            icon: entry.icon,
             appIcon: "",
             ch: "",
             imagePath: entry.previewPath ? ShellUtils.fileUrl(entry.previewPath) : "",

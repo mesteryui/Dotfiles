@@ -91,6 +91,13 @@ Singleton {
     }
     component Appearance: JsonObject {
         property bool darkMode: true
+        // Deck frost: desenfoque del wallpaper cuando hay ventanas en la
+        // workspace activa. Se puede apagar desde Ajustes > Interfaz.
+        property bool deckFrost: true
+        property real deckFrostStrength: 0.45
+        // Por defecto también con batería: el blur solo trabaja al abrir/cerrar
+        // ventana, no en reposo. Se puede apagar desde Ajustes > Interfaz.
+        property bool deckFrostOnBattery: true
         property string fontSans: "Google Sans Flex"
         property string monospace: "JetBrains Mono Nerd Font"
         property string reading: "Google Sans Flex"
@@ -103,7 +110,9 @@ Singleton {
         property string workspaceButtonType: "numbers"
         // Modos: "floating" (píldora flotante con márgenes), "full_hug" (adherida
         // con esquinas de pantalla redondeadas), "partial_hug" (adherida con
-        // esquinas solo en el lado de la barra), "no_floating" (adherida cuadrada).
+        // esquinas solo en el lado de la barra), "notch" (barra con
+        // esquinas cóncavas en el borde de la pantalla), "no_floating"
+        // (adherida cuadrada).
         property string barType: "floating"
     }
     component Notifications: JsonObject {

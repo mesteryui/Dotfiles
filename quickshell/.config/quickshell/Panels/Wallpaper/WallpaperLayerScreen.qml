@@ -18,6 +18,9 @@ PanelWindow {
     property string shownSource: ""
     // Primera puesta: directa, sin transición de arranque.
     property bool isInitialLoad: true
+    // Ventanas reales en la workspace activa de este monitor. Lo calcula
+    // WallpaperLayer; el control del frost decide si se enciende.
+    property int windowsOnWorkspace: 0
 
     visible: root.source !== ""
     color: "transparent"
@@ -63,16 +66,40 @@ PanelWindow {
         sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
     }
 
-    WallpaperImage {
-        id: imgA
+    // Control del deck frost: vive aparte del wallpaper. Si se elimina este
+    // bloque, el wallpaper sigue igual; solo hay que quitar las dos líneas
+    // `layer` de wallpaperPlane para dejar de aplicar el efecto.
+    WallpaperFrostController {
+        id: frost
 
-        opacity: 1
+        windowsOnWorkspace: root.windowsOnWorkspace
+        videoActive: root.isVideoTarget
     }
 
-    WallpaperImage {
-        id: imgB
+    // Contenedor exclusivo del fondo. La capa solo se enciende mientras el
+    // frost está activo (ventana abierta, modo permitido, etc.); con el
+    // ajuste apagado renderiza directamente, sin FBO ni MultiEffect.
+    Item {
+        id: wallpaperPlane
 
-        opacity: 0
+        anchors.fill: parent
+        layer.enabled: frost.active
+        layer.effect: WallpaperFrostEffect {
+            amount: frost.blur
+            maxRadius: frost.blurMax
+        }
+
+        WallpaperImage {
+            id: imgA
+
+            opacity: 1
+        }
+
+        WallpaperImage {
+            id: imgB
+
+            opacity: 0
+        }
     }
 
     // NOTA: el target se asigna imperativo en start/stop, NUNCA por
@@ -159,6 +186,7 @@ PanelWindow {
     // si QtMultimedia falta o el archivo falla, solo este Loader da Error
     // y queda el poster estatico del fundido. La shell nunca rompe.
     readonly property bool isVideoTarget: Services.WallpaperService.isVideo(root.source)
+
     readonly property bool videoEnabled: root.isVideoTarget && Services.VideoSupport.available
 
     // Sonda lazy: solo un fondo vídeo carga QtMultimedia al proceso. El
@@ -193,6 +221,7 @@ PanelWindow {
             unloadGrace.restart();
         }
     }
+
     onVideoEnabledChanged: {
         if (!root.videoEnabled) {
             unloadGrace.stop();

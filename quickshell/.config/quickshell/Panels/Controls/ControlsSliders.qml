@@ -32,7 +32,7 @@ ColumnLayout {
         id: volumeSliderItem
         Layout.fillWidth: true
 
-        iconName: Services.AudioService.materialIcon
+        icon: Services.AudioService.materialIcon
         value: Services.AudioService.volume ?? 0
         accentColor: Appearance.md3.primary
         accessibleName: "Volumen"
@@ -74,7 +74,7 @@ ColumnLayout {
         visible: root.focused !== null && root.focused.supported && root.focused.ready
         // Roundtrip lento (spawn + sysfs/DDC): eco local al arrastrar.
         liveEcho: true
-        iconName: {
+        icon: {
             const b = root.focused?.brightness ?? 0;
             if (b > 0.6)
                 return "brightness_high";

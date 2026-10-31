@@ -358,7 +358,7 @@ Item {
             AnimatedIconButton {
                 implicitWidth: 40
                 implicitHeight: 40
-                iconName: "shuffle"
+                icon: "shuffle"
                 iconSize: 20
                 enabled: Services.MprisService.shuffleSupported
                 isActive: Services.MprisService.hasShuffle
@@ -373,7 +373,7 @@ Item {
 
             // 2. Previous
             AnimatedIconButton {
-                iconName: "skip_previous"
+                icon: "skip_previous"
                 enabled: root.player?.canGoPrevious ?? false
                 onClicked: Services.MprisService.previous()
             }
@@ -455,7 +455,7 @@ Item {
 
             // 4. Next
             AnimatedIconButton {
-                iconName: "skip_next"
+                icon: "skip_next"
                 enabled: root.player?.canGoNext ?? false
                 onClicked: Services.MprisService.next()
             }
@@ -470,7 +470,7 @@ Item {
 
                 implicitWidth: 40
                 implicitHeight: 40
-                iconName: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
+                icon: Services.MprisService.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
                 iconSize: 20
                 enabled: Services.MprisService.loopSupported
                 isActive: isLooping

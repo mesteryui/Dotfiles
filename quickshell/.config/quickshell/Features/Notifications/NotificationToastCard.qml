@@ -213,7 +213,7 @@ Item {
                             Layout.preferredWidth: 24
                             Layout.preferredHeight: 24
                             Layout.alignment: Qt.AlignVCenter
-                            iconName: "close"
+                            icon: "close"
                             iconSize: 14
                             implicitWidth: 24
                             implicitHeight: 24
@@ -382,7 +382,7 @@ Item {
                 AnimatedIconButton {
                     Layout.preferredWidth: 32
                     Layout.preferredHeight: 32
-                    iconName: "send"
+                    icon: "send"
                     iconSize: 15
                     implicitWidth: 32
                     implicitHeight: 32

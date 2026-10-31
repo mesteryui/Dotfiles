@@ -72,8 +72,11 @@ Singleton {
 
     // Entrada en vuelo (para marcar last* al terminar con éxito).
     property string currentWallpaperReq: ""
+
     property string currentMode: ""
+
     property string currentType: ""
+
     property Process proc: Process {
         onExited: exitCode => {
             root.genWatchdog.stop();
@@ -101,6 +104,7 @@ Singleton {
     }
 
     signal generationStarted
+
     signal generationFinished(bool success)
 
     function applyTheme(wallpaperPath: string) {
@@ -148,7 +152,9 @@ Singleton {
         // Dos pasadas: config.toml (núcleo: terminal, shell, prompt) y apps.toml
         // (apps GTK, Thunar, carpetas...). Si falla la primera no se corre la
         // segunda; el exit code refleja ambas.
-        proc.command = ["sh", "-c", "nice -n 15 matugen image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\" && nice -n 15 matugen -c \"$HOME/.config/matugen/apps.toml\" image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\"", "matugen-theme", wallpaperPath, root.matugenType, root.matugenMode];
+        proc.command = ["sh", "-c",
+                        "nice -n 15 matugen image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\" && nice -n 15 matugen -c \"$HOME/.config/matugen/apps.toml\" image \"$1\" --source-color-index 0 -t \"$2\" -m \"$3\"",
+                        "matugen-theme", wallpaperPath, root.matugenType, root.matugenMode];
         root.generationStarted();
         proc.running = true;
         root.genWatchdog.restart();

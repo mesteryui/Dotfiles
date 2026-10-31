@@ -7,13 +7,13 @@ RowLayout {
     id: root
 
     property string label: ""
-    property string iconName: ""
+    property string icon: ""
     property real value: 0.0          // 0.0 – 1.0
     property color accentColor: Appearance.md3.primary
     property bool showValue: true
     property string valueText: Math.round(root.displayValue() * 100) + "%"
     property real stepSize: 0.05
-    property string accessibleName: root.label !== "" ? root.label : root.iconName
+    property string accessibleName: root.label !== "" ? root.label : root.icon
     // Eco local opt-in para roundtrips lentos (ej. brillo: spawn + sysfs).
     // Con liveEcho el thumb/% siguen el dedo durante el arrastre y la verdad
     // (propiedad `value` del padre) manda al soltar o en reposo. Apagado por
@@ -88,8 +88,8 @@ RowLayout {
     MaterialIcon {
         id: iconItem
 
-        visible: root.iconName !== ""
-        icon: root.iconName
+        visible: root.icon !== ""
+        icon: root.icon
         size: Appearance.font.pixelSize.large
         color: (root.activeFocus && root.keyboardMode) ? Appearance.md3.primary : (iconArea.containsMouse
                                                                                    ? Appearance.md3.primary :

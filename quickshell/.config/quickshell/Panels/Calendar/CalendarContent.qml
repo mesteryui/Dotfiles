@@ -75,7 +75,7 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    text: "chevron_backward"
+                    icon: "chevron_backward"
                     font.pixelSize: Appearance.typeScale.headlineSmall
                     color: Appearance.md3.on_surface_variant
                 }
@@ -123,7 +123,7 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    text: "chevron_forward"
+                    icon: "chevron_forward"
                     font.pixelSize: Appearance.typeScale.headlineSmall
                     color: Appearance.md3.on_surface_variant
                 }

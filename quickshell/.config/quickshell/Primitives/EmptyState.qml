@@ -17,7 +17,7 @@ ColumnLayout {
     property url iconSource: ""
     // ...o bien símbolo Material.
 
-    property string iconName: ""
+    property string icon: ""
 
     property int iconSize: 48
 
@@ -52,8 +52,8 @@ ColumnLayout {
     // --- Icono plano / fuente del sistema ---
     MaterialIcon {
         Layout.alignment: Qt.AlignHCenter
-        visible: !root.expressive && root.iconSource.toString() === "" && root.iconName !== ""
-        iconName: root.iconName
+        visible: !root.expressive && root.iconSource.toString() === "" && root.icon !== ""
+        icon: root.icon
         size: root.iconSize
         color: root.iconColor
         opacity: root.iconOpacity
@@ -86,18 +86,10 @@ ColumnLayout {
 
             MaterialIcon {
                 anchors.centerIn: parent
-                iconName: root.iconName !== "" ? root.iconName : "notifications_none"
+                icon: root.icon !== "" ? root.icon : "notifications_none"
                 size: 32
                 color: Appearance.md3.on_primary_container
             }
-        }
-
-        Timer {
-            interval: 1600
-            running: root.expressive && root.visible
-            repeat: true
-            onTriggered: haloShape.shape = haloShape.shape === MaterialShape.Sunny ? MaterialShape.VerySunny :
-                                                                                     MaterialShape.Sunny
         }
     }
 

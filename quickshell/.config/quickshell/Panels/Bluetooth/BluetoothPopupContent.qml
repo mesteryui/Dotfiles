@@ -113,7 +113,7 @@ Item {
             label: root.tr("panel.bluetooth", "Bluetooth")
             stateText: Services.BluetoothService.enabled ? root.tr("panel.on", "Activado") : root.tr(
                                                                "panel.off", "Desactivado")
-            iconName: Services.BluetoothService.enabled ? "bluetooth" : "bluetooth_disabled"
+            icon: Services.BluetoothService.enabled ? "bluetooth" : "bluetooth_disabled"
             active: Services.BluetoothService.enabled
             onToggled: {
                 if (Services.BluetoothService.currentAdapter)
@@ -200,7 +200,7 @@ Item {
                     }
 
                     ButtonIcon {
-                        iconName: "delete"
+                        icon: "delete"
                         iconSize: 18
                         onClicked: pairedDelegate.modelData.forget()
                     }

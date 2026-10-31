@@ -10,7 +10,7 @@ Item {
 
     property string label: ""
     property string stateText: ""
-    property string iconName: ""
+    property string icon: ""
     property bool checked: false
     property bool enable: true
 
@@ -66,7 +66,7 @@ Item {
 
         MaterialIcon {
             Layout.alignment: Qt.AlignVCenter
-            icon: switchRow.iconName
+            icon: switchRow.icon
             size: 24
             color: Appearance.md3.on_surface_variant
         }

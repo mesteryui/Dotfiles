@@ -6,8 +6,8 @@ Scope {
     id: root
 
     // NotificationCenter es PanelWindow pesado pero pasa oculto casi siempre:
-    // LazyLoader lo incuba en background y lo cachea (su visible ya va
-    // atado a centerOpen). Los popups por pantalla se quedan directos.
+    // LazyLoader lo carga al abrir y lo destruye al cerrar (loading sigue a
+    // centerOpen). Los popups por pantalla se quedan directos.
     LazyLoader {
         id: centerLoader
 

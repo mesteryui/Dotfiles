@@ -223,7 +223,7 @@ ColumnLayout {
 
                     MaterialIcon {
                         anchors.verticalCenter: parent.verticalCenter
-                        iconName: modelData.icon || "circle"
+                        icon: modelData.icon || "circle"
                         size: 14
                         color: parent.parent.isActive ? Appearance.md3.on_secondary_container :
                                                         Appearance.md3.on_surface_variant

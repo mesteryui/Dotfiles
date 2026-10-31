@@ -8,8 +8,8 @@ import QtQuick.Layouts
 /**
 * CheatsheetKeybindRow
 * ---------------------
-* One row inside a CheatsheetCategoryCard:
-*   [Super] + [Shift] + [Q]   Close active window
+* One row inside the cheatsheet's right-hand bind list:
+*   Close active window   [Super] + [Shift] + [Q]
 *
 * `bind` is one entry from HyprlandKeybinds.groupedKeybinds[category]:
 *   { mods: string[], keyLabel: string, label: string, repeat: bool, searchText: string }
@@ -87,11 +87,23 @@ Item {
 
         spacing: Appearance.spacing.small
 
+        // Descripción de la acción a la izquierda (como un menú normal)
+        StyledText {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            text: root.bind.label
+            color: Appearance.md3.on_surface
+            font.pixelSize: Appearance.typeScale.bodyMedium
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignLeft
+        }
+
+        // Atajos a la derecha: [Super] + [Shift] + [Q]
         Row {
             id: keyRow
 
             spacing: Appearance.spacing.extraSmall
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
             Repeater {
                 model: root.bind.mods
@@ -118,17 +130,6 @@ Item {
             CheatsheetKeyChip {
                 label: root.bind.keyLabel
             }
-        }
-
-        // Descripción de la acción usando StyledText de Primitives
-        StyledText {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
-            text: root.bind.label
-            color: Appearance.md3.on_surface_variant
-            font.pixelSize: Appearance.typeScale.bodyMedium
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignRight
         }
     }
 }

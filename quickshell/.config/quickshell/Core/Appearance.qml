@@ -55,7 +55,8 @@ Singleton {
         // Marco de pantalla de la barra en los modos "hug" (`full_hug` y
         // `partial_hug`): grosor de las bandas del color de la barra que
         // bordean la pantalla. El radio de sus esquinas es `screenRounding`.
-        // Consumidor: Bar/ScreenRounding.qml.
+        // Consumidores: Bar/ScreenRounding.qml (hug) y Bar.qml (notch, radio
+        // exterior; el interior del notch usa `medium`).
         property int screenBorder: 14
         // Radio de tarjeta/popup estándar (caelestia `largeIncreased`): entre
         // `large` y `extraLarge`, para menús y paneles compactos. No sustituye

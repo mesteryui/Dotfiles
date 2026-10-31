@@ -33,21 +33,21 @@ Item {
         }
         ButtonIcon {
             iconSize: Appearance.typeScale.bodyLarge
-            iconName: "skip_previous"
+            icon: "skip_previous"
             enabled: Services.MprisService.activePlayer != null
             onClicked: Services.MprisService.previous()
             Layout.alignment: Qt.AlignVCenter
         }
         ButtonIcon {
             iconSize: Appearance.typeScale.bodyLarge
-            iconName: Services.MprisService.isPlaying ? "pause" : "music_note"
+            icon: Services.MprisService.isPlaying ? "pause" : "music_note"
             enabled: Services.MprisService.activePlayer != null
             onClicked: Services.MprisService.togglePlaying()
             Layout.alignment: Qt.AlignVCenter
         }
         ButtonIcon {
             iconSize: Appearance.typeScale.bodyLarge
-            iconName: "skip_next"
+            icon: "skip_next"
             enabled: Services.MprisService.activePlayer != null
             onClicked: Services.MprisService.next()
             Layout.alignment: Qt.AlignVCenter

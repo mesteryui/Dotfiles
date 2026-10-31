@@ -5,7 +5,7 @@ import QtQuick
 Item {
     id: root
 
-    property string iconName: ""
+    property string icon: ""
     property int iconSize: 24
     property bool isActive: false
 
@@ -63,7 +63,7 @@ Item {
 
     MaterialIcon {
         anchors.centerIn: parent
-        icon: root.iconName
+        icon: root.icon
         size: root.iconSize
         color: root.enabled ? (root.isActive ? root.activeIconColor : root.iconColor) : root.disabledIconColor
 

@@ -15,7 +15,7 @@ MenuDefinition {
     sectionId: "powerprofiles"
     titleFallback: "Perfil de energía"
     titleKey: "sysmenu.section_powerprofiles"
-    iconName: "battery_charging_full"
+    icon: "battery_charging_full"
     parentId: "configure"
 
     readonly property var ppMeta: [

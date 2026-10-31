@@ -51,6 +51,13 @@ Scope {
     // Sección pedida por IPC antes de que exista el item (se aplica en onLoaded).
     property string _pendingSection: ""
 
+    // Comprueba si los .desktop cambiaron y, solo entonces, fuerza el
+    // rescan de DesktopEntries. Vive fuera del LazyLoader para conservar
+    // la huella entre aperturas. Ver DesktopEntryRefresh.qml.
+    DesktopEntryRefresh {
+        id: desktopEntryRefresh
+    }
+
     IpcHandler {
         target: "launcher"
 
@@ -181,12 +188,10 @@ Scope {
                 }
             }
 
-            // Warmup: este binding se evalúa al arrancar el shell y dispara el
-            // escaneo asíncrono de .desktop (si no, la primera apertura tardaba
-            // segundos en listar). Estado de carga para mostrar "Cargando…".
-            // Número de apps instaladas. Se actualiza solo cuando Quickshell
-            // detecta cambios en los .desktop. Solo se usa para el texto
-            // "Cargando…" cuando aún no hay ninguna.
+            // Número de apps instaladas. El binding se evalúa al crear el item
+            // (LazyLoader, primera apertura), no al arrancar el shell: el scan
+            // inicial de DesktopEntries se lanza en el primer acceso. Solo se
+            // usa para el texto "Cargando…" cuando aún no hay ninguna.
             property int appCount: DesktopEntries.applications.values.length
 
             function prefixOf(modeId) {
@@ -301,6 +306,11 @@ Scope {
                 launcher.debouncedQuery = launcher.query;
                 launcher.refreshPins();
                 launcher.refreshSortedBase();
+                // Si algún .desktop cambió desde la última apertura, nudge
+                // asíncrono -> rescan -> applicationsChanged -> sortedBase.
+                // Se hace después de refreshSortedBase para que la lista
+                // aparezca ya (aunque sea con lo último indexado) sin esperar.
+                desktopEntryRefresh.check();
                 fileSearch.snapshot = [];
                 preview.reset();
                 // Cada apertura empieza en orden canónico (no congelado).
@@ -393,9 +403,14 @@ Scope {
             }
 
             Connections {
-                target: DesktopEntries.applications
+                target: DesktopEntries
 
-                function onValuesChanged() {
+                // applicationsChanged se emite al terminar CUALQUIER rescan,
+                // aunque los IDs no cambien. Editar Name/Exec/Icon in place
+                // reutiliza el mismo DesktopEntry: la lista de objects puede
+                // quedar igual y valuesChanged no llega, así que escuchar
+                // solo valuesChanged dejaba snapshots viejos en sortedBase.
+                function onApplicationsChanged() {
                     launcher.refreshSortedBase();
                 }
             }
@@ -778,7 +793,7 @@ Scope {
                                  kind: "menuback",
                                  title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
                                  sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
-                                 iconName: "arrow_back",
+                                 icon: "arrow_back",
                                  appIcon: "",
                                  ch: "",
                                  imagePath: "",
@@ -884,7 +899,7 @@ Scope {
                                                      "Imagen · Enter copia · preview →") : tr(
                                                       "launcher.clip_text_subtitle",
                                                       "Texto · Enter copia · Supr borra"),
-                                 iconName: e.isImage ? "image" : "content_paste",
+                                 icon: e.isImage ? "image" : "content_paste",
                                  appIcon: "",
                                  ch: "",
                                  imagePath: "",
@@ -944,7 +959,7 @@ Scope {
                                                  title: q.trim() + " = " + fresh,
                                                  sub: tr("launcher.calc_copy_hint",
                                                          "Enter copia el resultado"),
-                                                 iconName: "calculate",
+                                                 icon: "calculate",
                                                  appIcon: "",
                                                  ch: "",
                                                  imagePath: "",
@@ -968,7 +983,7 @@ Scope {
                                     kind: "calc",
                                     title: tr("launcher.calc_busy_title", "Calculando…"),
                                     sub: "qalc",
-                                    iconName: "calculate",
+                                    icon: "calculate",
                                     appIcon: "",
                                     ch: "",
                                     imagePath: "",
@@ -982,7 +997,7 @@ Scope {
                                 title: tr("launcher.calc_empty_title", "Escribe una operación"),
                                 sub: tr("launcher.calc_empty_subtitle",
                                         "ej: 45*1.21 · sqrt(2) · 100 EUR to USD"),
-                                iconName: "calculate",
+                                icon: "calculate",
                                 appIcon: "",
                                 ch: "",
                                 imagePath: "",
@@ -1000,7 +1015,7 @@ Scope {
                                     kind: "web",
                                     title: tr("launcher.web_empty_title", "Escribe para buscar"),
                                     sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"),
-                                    iconName: "search",
+                                    icon: "search",
                                     appIcon: "",
                                     ch: "",
                                     imagePath: "",
@@ -1015,7 +1030,7 @@ Scope {
                                  kind: "web",
                                  title: "Abrir " + url,
                                  sub: tr("launcher.web_open_subtitle", "Abrir URL en navegador"),
-                                 iconName: "open_in_new",
+                                 icon: "open_in_new",
                                  appIcon: "",
                                  ch: "",
                                  imagePath: "",
@@ -1028,7 +1043,7 @@ Scope {
                              title: tr("launcher.web_search_prefix", "Buscar “") + q + tr(
                                         "launcher.web_search_suffix", "”"),
                              sub: tr("launcher.web_empty_subtitle", "Búsqueda web DuckDuckGo"),
-                             iconName: "search",
+                             icon: "search",
                              appIcon: "",
                              ch: "",
                              imagePath: "",
@@ -1070,7 +1085,7 @@ Scope {
                     }
                 }
                 anchors.centerIn: parent
-                color: Appearance.md3.surface
+                color: Qt.alpha(Appearance.md3.surface,0.90)
                 radius: Appearance.shape.huge
                 bordered: true
 

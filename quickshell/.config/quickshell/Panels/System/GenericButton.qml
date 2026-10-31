@@ -38,8 +38,9 @@ MaterialShape {
 
     animationDuration: Appearance.motion.slow
     color: highlighted ? accentColor : Appearance.md3.surface_container
-    strokeWidth: highlighted ? 2 : 1
-    strokeColor: highlighted ? Qt.alpha(accentColor, 0.7) : Appearance.md3.outline_variant
+    strokeWidth: highlighted ? Appearance.border.focusWidth : Appearance.border.width
+    strokeColor: highlighted ? Qt.alpha(root.accentColor, 0.7) : Appearance.border.subtleOn(
+                                   Appearance.md3.surface_container)
 
     // Lado dinámico: mínimo 120 o lo que pida el contenido + margen.
     // Mismo valor en ambos ejes para mantener el cuadrado.

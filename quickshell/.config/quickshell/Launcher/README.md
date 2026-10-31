@@ -45,6 +45,12 @@ emoji en `~/.local/state/quickshell/emoji.json` con debounce).
   hoja ejecuta `sh -c`/`qs ipc`; `emoji`/`calc`→`wl-copy`;
   `clip`→`ClipboardService`; `file`/`web`→`xdg-open`). Helpers de
   modo: `modeLabel`, `modeShape`, `modeIcon`, `prefixOf`, `tr`.
+* `DesktopEntryRefresh.qml` — al abrir, compara una huella
+  (`find` con path+mtime+ctime+tamaño) de los `.desktop`; solo si
+  cambió fuerza el rescan de Quickshell (marcador no-`.desktop` en
+  `~/.local/share/applications`). Sin watchers por fichero: coste
+  cero con el launcher cerrado. `AppLauncher` rehace `sortedBase`
+  desde `DesktopEntries.applicationsChanged`.
 * `UI/LauncherSearchBar.qml` — campo + atajos; expone `field`;
   props `controller`/`scopeObj`/`resultView`. `cycleMode`,
   `Ctrl+J/N`/`Ctrl+K/P`, `Tab` rota modo, `Backspace` en sistema
@@ -70,7 +76,7 @@ emoji en `~/.local/state/quickshell/emoji.json` con debounce).
   `refreshSection()`/`refreshAll()`/`reloadMenus()`, `toResultItem()`,
   `shellOf()`. No descubre nada.
 * `MenuDefinition.qml` — base de cada provider (`sectionId`,
-  `titleFallback`, `titleKey`, `iconName`, `parentId`, `entries`,
+  `titleFallback`, `titleKey`, `icon`, `parentId`, `entries`,
   `helpers`, `refresh()`; NO redeclare con `property` al heredar).
   Fábricas `shell()`/`ipc()`/`submenu()`/`entry()` (+ `shellCmd()`/
   `ipcCall()`), todas con `opts` `{titleKey, subtitleKey, preview}`.

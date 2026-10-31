@@ -30,7 +30,8 @@ Item {
         interval: 1600
         running: !root.isAwake
         repeat: true
-        onTriggered: root.wakeBreathShape = root.wakeBreathShape === MaterialShape.Sunny ? MaterialShape.VerySunny : MaterialShape.Sunny
+        onTriggered: root.wakeBreathShape = root.wakeBreathShape === MaterialShape.Sunny
+                     ? MaterialShape.VerySunny : MaterialShape.Sunny
     }
 
     Component.onDestruction: {
@@ -124,7 +125,8 @@ Item {
                     color: Appearance.md3.primary
                 }
                 StyledText {
-                    text: NotificationData.history.count + " " + I18nService.getTranslation("lockscreen.notifications_unread", "sin leer")
+                    text: NotificationData.history.count + " " + I18nService.getTranslation(
+                              "lockscreen.notifications_unread", "sin leer")
                     font.pixelSize: Appearance.typeScale.titleSmall
                     font.weight: Font.Medium
                     color: Appearance.md3.on_surface_variant
@@ -151,7 +153,8 @@ Item {
         id: wakePill
 
         Accessible.role: Accessible.Button
-        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
+        Accessible.name: I18nService.getTranslation("lockscreen.wake_hint",
+                                                    "Desliza hacia arriba o pulsa una tecla")
 
         z: 2
         anchors {
@@ -162,7 +165,8 @@ Item {
         implicitWidth: wakeRow.implicitWidth + 32
         implicitHeight: 48
         radius: Appearance.shape.full
-        color: root.dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(Appearance.md3.surface_container_high, 0.72)
+        color: root.dragDy > 70 ? Qt.alpha(Appearance.md3.primary_container, 0.85) : Qt.alpha(
+                                      Appearance.md3.surface_container_high, 0.72)
         border.width: Appearance.border.width
         border.color: root.dragDy > 70 ? Appearance.border.focus : Appearance.border.subtleOn(color)
 
@@ -234,8 +238,12 @@ Item {
             }
 
             StyledText {
-                text: root.dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock", "Suelta para desbloquear") : I18nService.getTranslation("lockscreen.wake_hint", "Desliza hacia arriba o pulsa una tecla")
-                color: root.dragDy > 70 ? Appearance.md3.on_primary_container : Appearance.md3.on_surface_variant
+                text: root.dragDy > 70 ? I18nService.getTranslation("lockscreen.release_to_unlock",
+                                                                    "Suelta para desbloquear") :
+                                         I18nService.getTranslation("lockscreen.wake_hint",
+                                                                    "Desliza hacia arriba o pulsa una tecla")
+                color: root.dragDy > 70 ? Appearance.md3.on_primary_container :
+                                          Appearance.md3.on_surface_variant
                 font.pixelSize: Appearance.typeScale.labelMedium
                 font.weight: Font.Medium
             }

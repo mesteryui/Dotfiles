@@ -7,64 +7,64 @@ import Quickshell.Hyprland
 import Quickshell.Io
 
 /**
- * HyprlandIpc
- * -----------
- * Envía órdenes a Hyprland SIN crear ningún proceso (sin `hyprctl`,
- * sin QProcess/Process). Escribe directamente en el socket IPC de
- * Hyprland (`.socket.sock`), que es exactamente lo que `hyprctl`
- * hace por dentro:
- *
- *   hyprctl/src/main.cpp `request()`: socket(AF_UNIX, SOCK_STREAM),
- *   connect($XDG_RUNTIME_DIR/hypr/$HIS/.socket.sock),
- *   write(cmd), read() hasta EOF, close().
- *
- * Referencias:
- *   - Wiki IPC: https://wiki.hypr.land/IPC/
- *   - Comandos: https://wiki.hypr.land/Configuring/Advanced-and-Cool/Using-hyprctl/
- *   - Quickshell Hyprland.requestSocketPath + dispatch():
- *       https://quickshell.org/docs/v0.2.0/types/Quickshell.Hyprland/Hyprland/
- *   - Quickshell.Io.Socket (path/connected/write/flush):
- *       https://quickshell.org/docs/v0.2.0/types/Quickshell.Io/Socket/
- *   - Fuente Quickshell src/wayland/hyprland/ipc/connection.cpp
- *     `makeRequest()`: crea un QLocalSocket NUEVO por petición,
- *     escribe, lee con readyRead y lo destruye. Este helper replica
- *     ese patrón en QML con cola FIFO.
- *
- * Por qué no basta con `Hyprland.dispatch()`:
- *   El singleton QML de Quickshell solo expone `dispatch(request)`,
- *   que internamente hace `makeRequest("dispatch/" + request)`.
- *   Sirve para dispatchers (`Hyprland.dispatch("exec kitty")`) pero
- *   NO puede enviar `eval ...`, `reload`, `j/...` ni `[[BATCH]]...`.
- *   Para eso hace falta el socket crudo, que es lo que este
- *   helper ofrece.
- *
- * Detalles de protocolo verificados en Hyprland 0.56.2:
- *   - Path: Hyprland.requestSocketPath
- *     ($XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock)
- *   - Bytes: comando en crudo SIN newline, p.ej. `eval hl.config({...})`,
- *     `reload`, `dispatch exec kitty`. Sin `/` inicial (el servidor
- *     acepta verbatim sin flags; `hyprctl` antepone `/` cuando no hay
- *     flags, ambas formas valen).
- *   - Respuesta: texto plano hasta que Hyprland CIERRA la conexión.
- *     `eval`/`reload` responden `ok` SIN `\n` final (verificado con
- *     socket python: repr(b'ok')). Por eso el parser usa
- *     `splitMarker: ""` (chunks arbitrarios) en vez del `\n` por
- *     defecto, que jamás emitiría `read` para `ok`.
- *   - Hyprland evalúa conexiones de forma SÍNCRONA: una conexión
- *     sin cerrar congela el compositor hasta el timeout de 5s
- *     (wiki IPC). Patrón obligatorio: conectar → write → flush →
- *     leer → connected=false INMEDIATAMENTE. Este helper nunca
- *     mantiene la conexión en idle.
- *   - En Hyprland con parser Lua (0.56.x) `keyword` YA NO funciona:
- *     responde "keyword can't work with non-legacy parsers. Use eval."
- *     Hay que usar `eval hl.config({...})`. Verificado por socket.
- *
- * Uso:
- *   HyprlandIpc.send("reload")
- *   HyprlandIpc.evalLua("hl.config({ animations = { enabled = false } })")
- *   HyprlandIpc.send("dispatch exec kitty")  // o Hyprland.dispatch(...)
- *   HyprlandIpc.send("j/clients")            // respuesta JSON en replyReceived
- */
+* HyprlandIpc
+* -----------
+* Envía órdenes a Hyprland SIN crear ningún proceso (sin `hyprctl`,
+* sin QProcess/Process). Escribe directamente en el socket IPC de
+* Hyprland (`.socket.sock`), que es exactamente lo que `hyprctl`
+* hace por dentro:
+*
+*   hyprctl/src/main.cpp `request()`: socket(AF_UNIX, SOCK_STREAM),
+*   connect($XDG_RUNTIME_DIR/hypr/$HIS/.socket.sock),
+*   write(cmd), read() hasta EOF, close().
+*
+* Referencias:
+*   - Wiki IPC: https://wiki.hypr.land/IPC/
+*   - Comandos: https://wiki.hypr.land/Configuring/Advanced-and-Cool/Using-hyprctl/
+*   - Quickshell Hyprland.requestSocketPath + dispatch():
+*       https://quickshell.org/docs/v0.2.0/types/Quickshell.Hyprland/Hyprland/
+*   - Quickshell.Io.Socket (path/connected/write/flush):
+*       https://quickshell.org/docs/v0.2.0/types/Quickshell.Io/Socket/
+*   - Fuente Quickshell src/wayland/hyprland/ipc/connection.cpp
+*     `makeRequest()`: crea un QLocalSocket NUEVO por petición,
+*     escribe, lee con readyRead y lo destruye. Este helper replica
+*     ese patrón en QML con cola FIFO.
+*
+* Por qué no basta con `Hyprland.dispatch()`:
+*   El singleton QML de Quickshell solo expone `dispatch(request)`,
+*   que internamente hace `makeRequest("dispatch/" + request)`.
+*   Sirve para dispatchers (`Hyprland.dispatch("exec kitty")`) pero
+*   NO puede enviar `eval ...`, `reload`, `j/...` ni `[[BATCH]]...`.
+*   Para eso hace falta el socket crudo, que es lo que este
+*   helper ofrece.
+*
+* Detalles de protocolo verificados en Hyprland 0.56.2:
+*   - Path: Hyprland.requestSocketPath
+*     ($XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock)
+*   - Bytes: comando en crudo SIN newline, p.ej. `eval hl.config({...})`,
+*     `reload`, `dispatch exec kitty`. Sin `/` inicial (el servidor
+*     acepta verbatim sin flags; `hyprctl` antepone `/` cuando no hay
+*     flags, ambas formas valen).
+*   - Respuesta: texto plano hasta que Hyprland CIERRA la conexión.
+*     `eval`/`reload` responden `ok` SIN `\n` final (verificado con
+*     socket python: repr(b'ok')). Por eso el parser usa
+*     `splitMarker: ""` (chunks arbitrarios) en vez del `\n` por
+*     defecto, que jamás emitiría `read` para `ok`.
+*   - Hyprland evalúa conexiones de forma SÍNCRONA: una conexión
+*     sin cerrar congela el compositor hasta el timeout de 5s
+*     (wiki IPC). Patrón obligatorio: conectar → write → flush →
+*     leer → connected=false INMEDIATAMENTE. Este helper nunca
+*     mantiene la conexión en idle.
+*   - En Hyprland con parser Lua (0.56.x) `keyword` YA NO funciona:
+*     responde "keyword can't work with non-legacy parsers. Use eval."
+*     Hay que usar `eval hl.config({...})`. Verificado por socket.
+*
+* Uso:
+*   HyprlandIpc.send("reload")
+*   HyprlandIpc.evalLua("hl.config({ animations = { enabled = false } })")
+*   HyprlandIpc.send("dispatch exec kitty")  // o Hyprland.dispatch(...)
+*   HyprlandIpc.send("j/clients")            // respuesta JSON en replyReceived
+*/
 Singleton {
     id: root
 
@@ -87,10 +87,10 @@ Singleton {
     signal requestFailed(command: string, reason: string)
 
     /**
-     * Encola un comando IPC crudo. Ejemplos:
-     *   "reload" | "eval <lua>" | "dispatch <args>" | "j/monitors"
-     * No crea ningún proceso; escribe al socket de Hyprland.
-     */
+    * Encola un comando IPC crudo. Ejemplos:
+    *   "reload" | "eval <lua>" | "dispatch <args>" | "j/monitors"
+    * No crea ningún proceso; escribe al socket de Hyprland.
+    */
     function send(command: string): void {
         if (!command || command.length === 0) {
             console.warn("[HyprlandIpc] send() ignorado: comando vacío.");
@@ -164,7 +164,8 @@ Singleton {
 
     function finishErr(reason: string): void {
         watchdog.stop();
-        const cmd = root.currentCommand !== "" ? root.currentCommand : (root.queue.length > 0 ? root.queue.shift() : "");
+        const cmd = root.currentCommand !== "" ? root.currentCommand : (root.queue.length > 0 ? root.queue.shift(
+                                                                                                    ) : "");
         root.currentCommand = "";
         root.buffer = "";
         root.disconnectSoon();
@@ -183,13 +184,15 @@ Singleton {
     // item encolado se reporta como fallo aquí.
     Timer {
         id: watchdog
+
         interval: 2000
         repeat: false
         onTriggered: {
             if (root.currentCommand !== "")
                 root.finishErr("timeout 2s sin respuesta");
             else if (root.queue.length > 0)
-                root.finishErr("sin conexión a Hyprland" + (root.lastError !== "" ? ": " + root.lastError : ""));
+                root.finishErr("sin conexión a Hyprland" + (root.lastError !== "" ? ": " + root.lastError :
+                                                                                    ""));
             else if (sock.connected)
                 sock.connected = false;
         }
@@ -235,7 +238,9 @@ Singleton {
                     if (root.buffer !== "")
                         root.finishOk();
                     else
-                        root.finishErr("respuesta vacía (peer cerró sin datos)" + (root.lastError !== "" ? ": " + root.lastError : ""));
+                        root.finishErr("respuesta vacía (peer cerró sin datos)" + (root.lastError !== ""
+                                                                                   ? ": " + root.lastError :
+                                                                                     ""));
                 }
             }
         }

@@ -5,7 +5,7 @@ import M3Shapes
 Item {
     id: root
 
-    required property string iconName
+    required property string icon
 
     property int iconSize: 16
 
@@ -48,7 +48,7 @@ Item {
         id: iconItem
 
         anchors.centerIn: parent
-        icon: root.iconName
+        icon: root.icon
         size: root.iconSize
         color: root.iconColor
     }
@@ -64,8 +64,8 @@ Item {
     }
 
     Component.onCompleted: {
-        if (iconName === "") {
-            console.warn("[ButtonIcon] Required property 'iconName' is empty");
+        if (icon === "") {
+            console.warn("[ButtonIcon] Required property 'icon' is empty");
         }
     }
 }

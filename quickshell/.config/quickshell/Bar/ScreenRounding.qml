@@ -15,16 +15,21 @@ Variants {
     readonly property string activeBarType: GameMode.enabled ? "no_floating" :
                                                                ConfigService.configs.bar.barType
 
-    // Contrato de 4 modos (compartido con Bar.qml):
+    // Contrato de 5 modos (compartido con Bar.qml):
     // "floating" = píldora flotante (Bar.qml pone márgenes/radio; aquí no se dibuja
     // borde de pantalla). "full_hug" = adherida con esquinas en ambos lados y marco.
     // "partial_hug" = adherida con esquinas solo en el lado de la barra (sin marco).
+    // "notch" = barra con esquinas cóncavas propias en Bar.qml; aquí no se dibuja nada.
     // "no_floating" = nada.
     // NOTA: isFloating aquí significa full_hug (nombre histórico), distinto del
     // isFloating de Bar.qml que significa "floating".
     readonly property bool isFloating: activeBarType === "full_hug"
 
     readonly property bool isPartial: activeBarType === "partial_hug"
+
+    // notch dibuja sus esquinas dentro de la propia ventana de la barra
+    // (Bar.qml), así que este componente no debe crear ninguna ventana.
+    readonly property bool isNotch: activeBarType === "notch"
 
     delegate: Scope {
         id: screenScope
@@ -46,8 +51,8 @@ Variants {
         // Las ventanas del marco solo existen cuando el modo las puede pintar:
         // - full_hug: esquinas + líneas.
         // - partial_hug: solo esquinas.
-        // - floating / no_floating: ninguna (antes se creaban 8 PanelWindow por
-        //   pantalla aunque todas quedaran con visible:false).
+        // - floating / notch / no_floating: ninguna (antes se creaban 8
+        //   PanelWindow por pantalla aunque todas quedaran con visible:false).
         LazyLoader {
             id: cornersLoader
 
@@ -70,7 +75,8 @@ Variants {
                         implicitWidth: screenScope.cornerRadius
                         implicitHeight: screenScope.cornerRadius
                         color: "transparent"
-                        // full_hug: siempre. partial_hug: solo si la barra está arriba. no_floating: nunca.
+                        // full_hug: siempre. partial_hug: solo si la barra está arriba.
+                        // notch / no_floating: nunca.
                         visible: screenScope.drawTopCorners && (root.isFloating || (root.isPartial
                                                                                     && ConfigService.configs.bar.position
                                                                                     === "top"))
@@ -116,7 +122,8 @@ Variants {
                         implicitWidth: screenScope.cornerRadius
                         implicitHeight: screenScope.cornerRadius
                         color: "transparent"
-                        // full_hug: siempre. partial_hug: solo si la barra está abajo. no_floating: nunca.
+                        // full_hug: siempre. partial_hug: solo si la barra está abajo.
+                        // notch / no_floating: nunca.
                         visible: screenScope.drawBottomCorners && (root.isFloating || (root.isPartial
                                                                                        && ConfigService.configs.bar.position
                                                                                        === "bottom"))

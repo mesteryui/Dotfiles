@@ -8,10 +8,14 @@
     "powersave": "Ahorro"
   },
   "cheatsheet": {
+    "bind_count": "%1 atajos",
+    "categories": "Categorías",
     "empty_no_binds": "No se encontraron atajos documentados",
     "empty_no_match": "Ningún atajo coincide con",
-    "hint": "Ctrl+J/K moverse · Ctrl+H/L columnas · Esc limpiar/cerrar",
+    "hint": "↑/↓ mover · Ctrl+H/L o Tab categorías · Esc limpiar/cerrar",
     "search_placeholder": "Buscar atajos de teclado…",
+    "summary": "%1 categorías · %2 atajos",
+    "title": "Atajos de teclado",
     "empty_error": "No se pudieron leer los atajos (¿hyprctl disponible?)"
   },
   "launcher": {
@@ -188,11 +192,18 @@
         "type_floating": "Flotante",
         "type_full_hug": "Completa (Full hug)",
         "type_no_floating": "No flotante",
+        "type_notch": "Notch (Muesca)",
         "type_partial_hug": "Parcial (Partial hug)",
         "workspace_style": "Estilo de espacios de trabajo",
         "workspace_style_circles": "Círculos",
         "workspace_style_kanji": "Kanji",
         "workspace_style_numbers": "Números"
+      },
+      "wallpaper": {
+        "deck_frost": "Desenfocar el fondo con ventanas abiertas",
+        "deck_frost_on_battery": "También con batería",
+        "deck_frost_strength": "Intensidad",
+        "title": "Fondo de pantalla"
       }
     },
     "screen": {

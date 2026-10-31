@@ -86,15 +86,20 @@ Singleton {
 
     // ── Datos ───────────────────────────────────────────────────────────
     readonly property string cachePath: Directories.state + "/quickshell/wallpaper-colors.json"
+
     readonly property string scanScript: Directories.config + "/quickshell/scripts/wallpaper-scan.py"
 
     // Ruta absoluta -> { hue, sat, group }.
     property var colors: ({})
     // group -> nº de fondos, para la tira de color (solo grupos con fondos).
+
     property var counts: ({})
     // ready: la caché se leyó (aunque esté vacía o no exista aún).
+
     property bool ready: false
+
     property bool scanning: false
+
     property int entries: 0
 
     // Grupos con al menos un fondo, en orden arcoíris (los que muestra la tira).

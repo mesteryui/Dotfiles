@@ -35,7 +35,7 @@ GridLayout {
         id: wifiToggleItem
         Layout.fillWidth: true
 
-        iconName: root.host.wifiEnabled ? "wifi" : "wifi_off"
+        icon: root.host.wifiEnabled ? "wifi" : "wifi_off"
         label: Services.I18nService.getTranslation("panel.wifi", "WiFi")
         stateText: root.host.wifiEnabled ? Services.I18nService.getTranslation("panel.connected",
                                                                                "Conectado") :
@@ -61,7 +61,7 @@ GridLayout {
         id: btToggle
         Layout.fillWidth: true
 
-        iconName: root.host.btEnabled ? "bluetooth" : "bluetooth_disabled"
+        icon: root.host.btEnabled ? "bluetooth" : "bluetooth_disabled"
         label: Services.I18nService.getTranslation("panel.bluetooth", "Bluetooth")
         stateText: !root.host.btEnabled ? Services.I18nService.getTranslation("panel.off", "Desactivado") : (
                                               Services.BluetoothService.connectedBatteryPct >= 0
@@ -91,7 +91,7 @@ GridLayout {
         id: cafeToggle
         Layout.fillWidth: true
 
-        iconName: "local_cafe"
+        icon: "local_cafe"
         label: Services.I18nService.getTranslation("panel.caffeine", "Cafeína")
         stateText: Services.IdleInhibitedService.inhibited ? Services.I18nService.getTranslation(
                                                                  "panel.caffeine_on", "Activada") :
@@ -116,7 +116,7 @@ GridLayout {
         id: dndToggle
         Layout.fillWidth: true
 
-        iconName: Services.NotificationData.dnd ? "bedtime" : "notifications"
+        icon: Services.NotificationData.dnd ? "bedtime" : "notifications"
         label: Services.I18nService.getTranslation("panel.dnd", "No molestar")
         stateText: Services.NotificationData.dnd ? Services.I18nService.getTranslation("panel.dnd_on",
                                                                                        "Activado") :
@@ -139,7 +139,7 @@ GridLayout {
         id: nightToggle
         Layout.fillWidth: true
 
-        iconName: Services.Hyprsunset.nightLightActive ? "bedtime" : "bedtime"
+        icon: Services.Hyprsunset.nightLightActive ? "bedtime" : "bedtime"
         label: Services.I18nService.getTranslation("panel.night_light", "Luz nocturna")
         stateText: Services.Hyprsunset.nightLightActive ? Services.I18nService.getTranslation("panel.on",
                                                                                               "Activado") :
@@ -162,7 +162,7 @@ GridLayout {
         id: gameToggleItem
         Layout.fillWidth: true
 
-        iconName: "gamepad"
+        icon: "gamepad"
         label: Services.I18nService.getTranslation("panel.game_mode", "Modo de Juego")
         stateText: Services.GameMode.enabled ? Services.I18nService.getTranslation("panel.on", "Activado") :
                                                Services.I18nService.getTranslation("panel.off", "Desactivado")

@@ -203,7 +203,7 @@ property var results: {
 * `calcResults`: solo muestra el resultado si es "fresco" (`calcState.forQuery === q`, con `CalcCache` stale-while-revalidate de fondo). Si no, "Calculando…" o "Escribe una operación".
 * `webResults`: si parece URL (`isUrl`), ofrece "Abrir URL"; siempre ofrece "Buscar en DuckDuckGo".
 
-Cada item tiene forma común: `{ kind, title, sub, iconName/appIcon/ch/imagePath, cat, ...datos propios }`. Eso permite que **un solo delegate** pinte todo.
+Cada item tiene forma común: `{ kind, title, sub, icon/appIcon/ch/imagePath, cat, ...datos propios }`. Eso permite que **un solo delegate** pinte todo.
 
 ### 3.5. Archivos con `fd` y calculadora con `qalc`
 
@@ -289,7 +289,7 @@ Funciones importantes:
 ## 5. `MenuProviders/System/*.qml` — las secciones internas (estáticas + dinámicas)
 
 Son providers con el componente base (`Launcher/MenuDefinition.qml`, misma API que los tuyos):
-`sectionId/titleFallback/titleKey/iconName/parentId/entries/refresh()`.
+`sectionId/titleFallback/titleKey/icon/parentId/entries/refresh()`.
 
 Cada entrada se escribe con las fábricas del componente:
 
@@ -302,7 +302,7 @@ shell("shot-region", "Capturar región", "hyprshot region", "crop",
 ```
 
 * `titleFallback/subtitleFallback` = texto en español si no hay traducción (`opts.titleKey/subtitleKey` = claves `I18nService`).
-* `iconName` = icono Material Symbols (¡debe existir o se ve roto!).
+* `icon` = icono Material Symbols (¡debe existir o se ve roto!).
 * `shell` ejecuta comando, `ipc` llama a otra parte del shell, `submenu` navega a otra sección.
   No hay más fábricas a propósito: la base es genérica y todo lo específico
   (energía, fastfetch, animaciones…) vive en su propio archivo.
@@ -348,7 +348,7 @@ Hay **una sola forma**: providers (ver §5 para el formato de entradas).
 
 * `Launcher/MenuDefinition.qml` es el **componente base genérico** (módulo `qs.Launcher`).
   No es un menú ni sabe nada de ninguno: solo el contrato
-  (`sectionId/titleFallback/titleKey/iconName/parentId/entries/helpers/refresh()`)
+  (`sectionId/titleFallback/titleKey/icon/parentId/entries/helpers/refresh()`)
   + fábricas `shell()/ipc()/submenu()/entry()`. Toda la lógica vive en cada archivo.
 * `MenuStore.qml` es un detective: al arrancar ejecuta un `sh` que lista `MenuProviders/System/*.qml` + `MenuProviders/*.qml`, los carga con `Qt.createComponent`, los instancia y guarda la lista en `providers` (internos primero). Al abrir el launcher se firman los ficheros y se recarga solo si cambiaron (sin proceso periódico).
 * Reglas: si el archivo no carga → aviso y se salta. Si no expone `sectionId` → se ignora. Si el `sectionId` choca con uno interno → gana el interno.
@@ -368,7 +368,7 @@ MenuDefinition {
   sectionId: "mimenu"             // ÚNICO, sin espacios. Ej: "notas", "trabajo"
   titleFallback: "Mi menú"        // Nombre visible
   titleKey: ""                    // "" = usa el fallback (recomendado para empezar)
-  iconName: "menu"                // Material Symbol válido
+  icon: "menu"                // Material Symbol válido
   parentId: "main"                // ¿De quién cuelga? "main" = aparece en Sistema
   entries: [ ... ]                // Tus botones con shell()/ipc()/submenu()
   // function refresh() {}       // Solo si es dinámico: heredado no-op (ver 6.5)
@@ -407,7 +407,7 @@ import qs.Launcher
 MenuDefinition {
   sectionId: "proyectos"
   titleFallback: "Proyectos"
-  iconName: "folder"
+  icon: "folder"
   parentId: "main"
   entries: [
     shell("web", "Abrir web", "mi portafolio", "open_in_new", "xdg-open https://ejemplo.com"),
@@ -467,7 +467,7 @@ MenuDefinition {
   id: root
   sectionId: "scripts"
   titleFallback: "Mis scripts"
-  iconName: "terminal"
+  icon: "terminal"
   parentId: "main"
   entries: []
 
@@ -513,7 +513,7 @@ MenuDefinition {
 ### 6.6. Errores típicos de principiantes
 
 1. **`sectionId` duplicado o con espacios** → usa minúsculas-guiones (`"mis-notas"`). Reservados (se rechazan en `new-menu.sh` y los internos ganan si chocan): `main,todo,system,files,web,emoji,calc,clip,powerprofiles,fastfetch,animations`.
-2. **Icono roto (círculo vacío)** → `iconName` debe existir en Material Symbols (`folder`, `terminal`, `palette`, `menu`...). Prueba con `menu` si dudas.
+2. **Icono roto (círculo vacío)** → `icon` debe existir en Material Symbols (`folder`, `terminal`, `palette`, `menu`...). Prueba con `menu` si dudas.
 3. **No aparece** → ¿el archivo está en `MenuProviders/` y no se llama `MenuDefinition.qml`? Abre de nuevo el launcher (comprueba cambios en disco) o fuerza con `qs ipc call launcher reloadMenus`. Mira la consola: `MenuStore: ...` te dice qué falló.
 4. **Comillas rotas en `shellCommand`** → si tu ruta tiene `'`, escápala. Usa comillas dobles fuera y simples dentro, o la función `shEscape` del ejemplo.
 5. **Mutar `entries` con `push`** → no se refresca bien. Siempre `entries = nuevaLista`.

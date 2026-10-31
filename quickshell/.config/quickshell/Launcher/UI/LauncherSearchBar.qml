@@ -256,7 +256,7 @@ Rectangle {
         // Trailing M3 (spec Search): limpiar texto cuando hay.
         ButtonIcon {
             Layout.alignment: Qt.AlignVCenter
-            iconName: "close"
+            icon: "close"
             iconSize: 20
             iconColor: Appearance.md3.on_surface_variant
             visible: searchField.text !== ""

@@ -463,7 +463,7 @@ Item {
 
             // En modo todo el modelData es el snapshot plano de la app
             // (viene de appModel); en el resto, el wrapper
-            // {kind,title,sub,iconName,appIcon,ch,...} de results.
+            // {kind,title,sub,icon,appIcon,ch,...} de results.
             readonly property bool isRawApp: {
                 const d = entryDelegate.modelData;
                 return root.activeMode === "todo" && d && d.isDesktopApp === true;
@@ -477,7 +477,7 @@ Item {
                                                                                                          || ""))
             readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon
                                                                                        || "")
-            readonly property string dispIconName: modelData.iconName || "circle"
+            readonly property string dispIcon: modelData.icon || "circle"
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(
                                                    modelData.id)
@@ -515,7 +515,7 @@ Item {
                     }
                     MaterialIcon {
                         anchors.centerIn: parent
-                        iconName: entryDelegate.dispIconName
+                        icon: entryDelegate.dispIcon
                         size: 24
                         color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                            Appearance.md3.primary
@@ -557,7 +557,7 @@ Item {
                 // Chincheta de app fijada (Alt+P)
                 MaterialIcon {
                     Layout.alignment: Qt.AlignVCenter
-                    iconName: "push_pin"
+                    icon: "push_pin"
                     size: 20
                     color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                        Appearance.md3.primary
@@ -643,7 +643,7 @@ Item {
             required property int index
 
             readonly property string dispAppIcon: modelData.appIcon || ""
-            readonly property string dispIconName: modelData.iconName || "circle"
+            readonly property string dispIcon: modelData.icon || "circle"
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispFav: modelData.isFavorite ?? false
             readonly property bool dispRecent: (modelData.isRecent ?? false) && !gridDelegate.dispFav
@@ -651,7 +651,7 @@ Item {
                                                                                         && root._swapping)
 
             Accessible.role: Accessible.ListItem
-            Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIconName
+            Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIcon
 
             width: grid.cellWidth
             height: grid.cellHeight
@@ -671,7 +671,7 @@ Item {
                 }
                 MaterialIcon {
                     anchors.centerIn: parent
-                    iconName: gridDelegate.dispIconName
+                    icon: gridDelegate.dispIcon
                     size: 24
                     color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                       Appearance.md3.primary
@@ -692,7 +692,7 @@ Item {
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: Appearance.spacing.extraSmall
-                iconName: "star"
+                icon: "star"
                 size: 12
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                   Appearance.md3.primary
@@ -705,7 +705,7 @@ Item {
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: Appearance.spacing.extraSmall
-                iconName: "history"
+                icon: "history"
                 size: 12
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                   Appearance.md3.on_surface_variant

@@ -4,7 +4,7 @@
 //
 // Todo menú —interno o tuyo, estático o dinámico— usa el componente base
 // Launcher/MenuDefinition.qml (módulo qs.Launcher) como raíz:
-//   sectionId, titleFallback, titleKey, iconName, parentId, entries,
+//   sectionId, titleFallback, titleKey, icon, parentId, entries,
 //   helpers, refresh() + fábricas shell()/ipc()/submenu()/entry()
 // La base es genérica (no conoce ningún menú concreto); la lógica de cada
 // menú vive en su propio archivo. Los dinámicos (p. ej. powerprofiles,
@@ -87,7 +87,7 @@ Singleton {
                          sectionId: p.sectionId,
                          titleFallback: p.titleFallback,
                          titleKey: p.titleKey,
-                         iconName: p.iconName,
+                         icon: p.icon,
                          parentId: p.parentId
                      });
         }

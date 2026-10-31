@@ -16,13 +16,14 @@ Item {
     // por fuente: si al cargar ya se pasó del s1 no se retrocede (sería un
     // salto visible), y las reanudaciones tras pausa siguen donde quedaron.
     property bool _seekDone: false
+
     onVideoSourceChanged: root._seekDone = false
 
     function maybeSeekToPoster() {
         if (root._seekDone)
             return;
-        const loaded = player.mediaStatus === MediaPlayer.LoadedMedia
-            || player.mediaStatus === MediaPlayer.BufferedMedia;
+        const loaded = player.mediaStatus === MediaPlayer.LoadedMedia || player.mediaStatus
+              === MediaPlayer.BufferedMedia;
         if (!loaded || player.duration <= 1000)
             return;
         if (player.position >= 1000) {
@@ -66,9 +67,11 @@ Item {
     // Estado de reproducción hacia fuera (la capa de fondo lo usa para
     // fundir el vídeo solo cuando hay imagen real).
     readonly property int playbackState: player.playbackState
+
     readonly property bool isPlaying: player.playbackState === MediaPlayer.PlayingState
     // Hay frame visible (reproduciendo o en pausa): distingue "nunca
     // arrancado" (póster estático) de "pausado" (último frame congelado).
+
     readonly property bool hasVideo: player.playbackState !== MediaPlayer.StoppedState
 
     // Control imperativo (el vigilante de la capa lo usa para re-emitir

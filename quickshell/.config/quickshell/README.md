@@ -22,10 +22,9 @@ lockscreen, notifications, media, settings.
   `Launcher/GUIA-MENUS.md`, resumen en inglés en
   `Launcher/GUIDE-MENUS.md`. Catálogo emoji generado en runtime por
   `Launcher/scripts/emoji-dump.py`.
-- `Panels/` — 12 superficies: `Battery`, `Bluetooth`, `Calendar`,
-  `Controls` (dashboard), `MediaPlayer`, `Notifications`, `Polkit`,
-  `System` (powermenu), `Updates`, `Volume`, `Wallpaper`, `Weather`.
-  Ver `Panels/README.md`.
+- `Panels/` — 11 superficies: `Battery`, `Bluetooth`, `Calendar`,
+  `Controls` (dashboard), `MediaPlayer`, `Polkit`, `System` (powermenu),
+  `Updates`, `Volume`, `Wallpaper`, `Weather`. Ver `Panels/README.md`.
 - `Features/` — `CheatSheet`, `Notifications` (centro + toasts),
   `OSD` (7 OSDs + `OsdManager`), `WindowSwitcher`. Ver
   `Features/README.md`.

@@ -181,7 +181,7 @@ Rectangle {
             }
         }
 
-        iconName: "close"
+        icon: "close"
 
         iconSize: 16
 

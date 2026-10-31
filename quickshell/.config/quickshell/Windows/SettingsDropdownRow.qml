@@ -14,7 +14,7 @@ ColumnLayout {
     property string label: ""
     property string value: ""
     property var choicesModel: []
-    property string iconName: ""
+    property string icon: ""
 
     signal chosen(string value)
 
@@ -123,9 +123,9 @@ ColumnLayout {
             spacing: Appearance.spacing.medium
 
             MaterialIcon {
-                visible: dropRow.iconName !== ""
+                visible: dropRow.icon !== ""
                 Layout.alignment: Qt.AlignVCenter
-                icon: dropRow.iconName
+                icon: dropRow.icon
                 size: 24
                 color: Appearance.md3.on_surface_variant
             }

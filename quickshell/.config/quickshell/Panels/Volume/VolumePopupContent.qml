@@ -150,7 +150,7 @@ Item {
             id: volumeSlider
             Layout.fillWidth: true
 
-            iconName: Services.AudioService.materialIcon
+            icon: Services.AudioService.materialIcon
             value: Services.AudioService.volume
             accentColor: Appearance.md3.primary
             accessibleName: "Volumen de salida"
@@ -292,7 +292,7 @@ Item {
             id: micSlider
             Layout.fillWidth: true
 
-            iconName: Services.AudioService.micMaterialIcon
+            icon: Services.AudioService.micMaterialIcon
             value: Services.AudioService.micVolume
             accentColor: Appearance.md3.primary
             accessibleName: "Volumen del micrófono"

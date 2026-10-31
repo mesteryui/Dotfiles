@@ -143,6 +143,7 @@ Item {
             // Decodificar a píxeles físicos (lógicos × DPR): a 1600×1000
             // lógicos se veía blando en una pantalla 2880×1800. Con guarda
             // nula: targetScreen se inyecta tras crear el item.
+
             readonly property real dpr: root.targetScreen ? root.targetScreen.devicePixelRatio : 1
             sourceSize.width: root.targetScreen ? Math.round(root.targetScreen.width * dpr) : 1920
             sourceSize.height: root.targetScreen ? Math.round(root.targetScreen.height * dpr) : 1080

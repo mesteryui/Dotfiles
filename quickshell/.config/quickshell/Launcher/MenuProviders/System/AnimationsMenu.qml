@@ -17,7 +17,7 @@ MenuDefinition {
     sectionId: "animations"
     titleFallback: "Animaciones Hyprland"
     titleKey: "sysmenu.section_animations"
-    iconName: "animation"
+    icon: "animation"
     parentId: "appearance"
 
     entries: []

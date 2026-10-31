@@ -8,10 +8,14 @@
     "powersave": "PowerSave"
   },
   "cheatsheet": {
+    "bind_count": "%1 keybinds",
+    "categories": "Categories",
     "empty_no_binds": "No documented keybinds found",
     "empty_no_match": "No keybinds match",
-    "hint": "Ctrl+J/K move · Ctrl+H/L columns · Esc clear/close",
+    "hint": "↑/↓ move · Ctrl+H/L or Tab categories · Esc clear/close",
     "search_placeholder": "Search keybinds…",
+    "summary": "%1 categories · %2 keybinds",
+    "title": "Keyboard shortcuts",
     "empty_error": "Could not read keybinds (is hyprctl available?)"
   },
   "launcher": {
@@ -188,11 +192,18 @@
         "type_floating": "Floating",
         "type_full_hug": "Full hug",
         "type_no_floating": "Non-floating",
+        "type_notch": "Notch",
         "type_partial_hug": "Partial hug",
         "workspace_style": "Workspace style",
         "workspace_style_circles": "Circles",
         "workspace_style_kanji": "Kanji",
         "workspace_style_numbers": "Numbers"
+      },
+      "wallpaper": {
+        "deck_frost": "Blur the wallpaper with open windows",
+        "deck_frost_on_battery": "Also on battery",
+        "deck_frost_strength": "Strength",
+        "title": "Wallpaper"
       }
     },
     "screen": {

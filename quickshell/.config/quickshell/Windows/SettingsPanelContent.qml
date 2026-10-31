@@ -12,6 +12,17 @@ Item {
 
     property int currentTab: 0
 
+    // El JSON puede no tener aún las claves nuevas (configs antiguas): estos
+    // helpers aplican los mismos defaults que ConfigService sin romper los
+    // bindings del panel.
+    readonly property bool deckFrostEnabled: Services.ConfigService.configs.appearance.deckFrost !== false
+    readonly property bool deckFrostOnBattery: Services.ConfigService.configs.appearance.deckFrostOnBattery
+                                               !== false
+    readonly property real deckFrostStrength: {
+        const value = Number(Services.ConfigService.configs.appearance.deckFrostStrength);
+        return Number.isFinite(value) ? value : 0.45;
+    }
+
     function toSlider(val, min, max) {
         return Math.max(0, Math.min(1, (val - min) / (max - min)));
     }
@@ -48,7 +59,7 @@ Item {
             }
 
             SettingsSidebarTab {
-                iconName: "palette"
+                icon: "palette"
                 title: Services.I18nService.getTranslation("settings.tabs.interface.title", "Interfaz")
                 description: Services.I18nService.getTranslation("settings.tabs.interface.description",
                                                                  "Apariencia")
@@ -56,7 +67,7 @@ Item {
                 onClicked: root.currentTab = 0
             }
             SettingsSidebarTab {
-                iconName: "display_settings"
+                icon: "display_settings"
                 title: Services.I18nService.getTranslation("settings.tabs.screen.title", "Pantalla")
                 description: Services.I18nService.getTranslation("settings.tabs.screen.description",
                                                                  "Bloqueo y luz")
@@ -64,7 +75,7 @@ Item {
                 onClicked: root.currentTab = 1
             }
             SettingsSidebarTab {
-                iconName: "partly_cloudy_day"
+                icon: "partly_cloudy_day"
                 title: Services.I18nService.getTranslation("settings.tabs.environment.title", "Entorno")
                 description: Services.I18nService.getTranslation("settings.tabs.environment.description",
                                                                  "Clima y avisos")
@@ -72,7 +83,7 @@ Item {
                 onClicked: root.currentTab = 2
             }
             SettingsSidebarTab {
-                iconName: "settings"
+                icon: "settings"
                 title: Services.I18nService.getTranslation("settings.tabs.system.title", "Sistema")
                 description: Services.I18nService.getTranslation("settings.tabs.system.description",
                                                                  "Idioma y updates")
@@ -107,7 +118,7 @@ Item {
                                                                          "Activado") :
                                      Services.I18nService.getTranslation("settings.common.deactivated",
                                                                          "Desactivado")
-                        iconName: "dark_mode"
+                        icon: "dark_mode"
                         checked: Services.ConfigService.configs.appearance.darkMode
                         onToggled: Services.ConfigService.configs.appearance.darkMode =
                                    !Services.ConfigService.configs.appearance.darkMode
@@ -116,7 +127,7 @@ Item {
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation(
                                    "settings.interface.appearance.color_scheme", "Esquema de color (matugen)")
-                        iconName: "palette"
+                        icon: "palette"
                         value: Services.ConfigService.configs.appearance.matugen.type
                         choicesModel: [
                             {
@@ -191,7 +202,7 @@ Item {
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.position",
                                                                    "Posición")
-                        iconName: "swap_vert"
+                        icon: "swap_vert"
                         value: Services.ConfigService.configs.bar.position
                         choicesModel: [
                             {
@@ -211,7 +222,7 @@ Item {
                     ControlSlider {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.interface.bar.height", "Altura")
-                        iconName: "height"
+                        icon: "height"
                         value: root.toSlider(Services.ConfigService.configs.bar.height, 24, 64)
                         valueText: Services.ConfigService.configs.bar.height + " px"
                         onMoved: val => Services.ConfigService.configs.bar.height = root.fromSlider(val, 24,
@@ -221,7 +232,7 @@ Item {
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.workspace_style",
                                                                    "Estilo de espacios de trabajo")
-                        iconName: "tag"
+                        icon: "tag"
                         value: Services.ConfigService.configs.bar.workspaceButtonType
                         choicesModel: [
                             {
@@ -245,7 +256,7 @@ Item {
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.interface.bar.type",
                                                                    "Tipo de barra")
-                        iconName: "web_asset"
+                        icon: "web_asset"
                         value: Services.ConfigService.configs.bar.barType
                         choicesModel: [
                             {
@@ -264,6 +275,11 @@ Item {
                                           "settings.interface.bar.type_partial_hug", "Parcial (Partial hug)")
                             },
                             {
+                                value: "notch",
+                                text: Services.I18nService.getTranslation(
+                                          "settings.interface.bar.type_notch", "Notch")
+                            },
+                            {
                                 value: "no_floating",
                                 text: Services.I18nService.getTranslation(
                                           "settings.interface.bar.type_no_floating", "No flotante")
@@ -272,6 +288,54 @@ Item {
                         onChosen: val => Services.ConfigService.configs.bar.barType = val
                     }
                 }
+
+                SettingsSectionCard {
+                    title: Services.I18nService.getTranslation("settings.interface.wallpaper.title",
+                                                               "Fondo de pantalla")
+
+                    SettingsSwitchRow {
+                        label: Services.I18nService.getTranslation("settings.interface.wallpaper.deck_frost",
+                                                                   "Desenfocar el fondo con ventanas abiertas")
+                        stateText: root.deckFrostEnabled ? Services.I18nService.getTranslation(
+                                                               "settings.common.activated", "Activado") :
+                                                           Services.I18nService.getTranslation(
+                                                               "settings.common.deactivated", "Desactivado")
+                        icon: "blur_on"
+                        checked: root.deckFrostEnabled
+                        onToggled: Services.ConfigService.configs.appearance.deckFrost =
+                                   !root.deckFrostEnabled
+                    }
+
+                    ControlSlider {
+                        Layout.fillWidth: true
+                        label: Services.I18nService.getTranslation(
+                                   "settings.interface.wallpaper.deck_frost_strength", "Intensidad")
+                        icon: "tune"
+                        value: root.toSlider(root.deckFrostStrength, 0.1, 1.0)
+                        valueText: Math.round(root.deckFrostStrength * 100) + " %"
+                        enabled: root.deckFrostEnabled
+                        opacity: enabled ? 1.0 : 0.45
+                        onMoved: val => Services.ConfigService.configs.appearance.deckFrostStrength
+                                        = root.fromSlider(val, 0.1, 1.0, 2)
+                    }
+
+                    SettingsSwitchRow {
+                        label: Services.I18nService.getTranslation(
+                                   "settings.interface.wallpaper.deck_frost_on_battery",
+                                   "También con batería")
+                        stateText: root.deckFrostOnBattery ? Services.I18nService.getTranslation(
+                                                                 "settings.common.activated", "Activado") :
+                                                             Services.I18nService.getTranslation(
+                                                                 "settings.common.deactivated", "Desactivado")
+                        icon: "battery_std"
+                        checked: root.deckFrostOnBattery
+                        enabled: root.deckFrostEnabled
+                        opacity: enabled ? 1.0 : 0.45
+                        onToggled: Services.ConfigService.configs.appearance.deckFrostOnBattery =
+                                   !root.deckFrostOnBattery
+                    }
+                }
+
                 Item {
                     Layout.preferredHeight: 8
                 }
@@ -291,7 +355,7 @@ Item {
                                                                          "Activado") :
                                      Services.I18nService.getTranslation("settings.common.deactivated",
                                                                          "Desactivado")
-                        iconName: "wallpaper"
+                        icon: "wallpaper"
                         checked: Services.ConfigService.configs.lockscreen.useWallpaper
                         onToggled: Services.ConfigService.configs.lockscreen.useWallpaper =
                                    !Services.ConfigService.configs.lockscreen.useWallpaper
@@ -301,7 +365,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.screen.lockscreen.blur_level",
                                                                    "Nivel de desenfoque")
-                        iconName: "blur_on"
+                        icon: "blur_on"
                         value: root.toSlider(Services.ConfigService.configs.lockscreen.blurLevel, 0.0, 3.0)
                         valueText: Services.ConfigService.configs.lockscreen.blurLevel.toFixed(1) + "x"
                         onMoved: val => Services.ConfigService.configs.lockscreen.blurLevel = root.fromSlider(
@@ -317,7 +381,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.screen.night_light.temperature",
                                                                    "Temperatura de color")
-                        iconName: "thermostat"
+                        icon: "thermostat"
                         value: root.toSlider(Services.ConfigService.configs.nightLight.temperature, 1000,
                                              6500)
                         valueText: Services.ConfigService.configs.nightLight.temperature + " K"
@@ -335,7 +399,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.screen.night_light.gamma",
                                                                    "Gamma")
-                        iconName: "exposure"
+                        icon: "exposure"
                         value: root.toSlider(Services.ConfigService.configs.nightLight.gamma, 0, 100)
                         valueText: Services.ConfigService.configs.nightLight.gamma + "%"
                         onMoved: val => {
@@ -365,7 +429,7 @@ Item {
                                                                          "Activado") :
                                      Services.I18nService.getTranslation("settings.common.deactivated",
                                                                          "Desactivado")
-                        iconName: "my_location"
+                        icon: "my_location"
                         checked: Services.ConfigService.configs.weather.autoLocation
                         onToggled: Services.ConfigService.configs.weather.autoLocation =
                                    !Services.ConfigService.configs.weather.autoLocation
@@ -384,7 +448,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.environment.weather.refresh_rate",
                                                                    "Frecuencia de actualización")
-                        iconName: "refresh"
+                        icon: "refresh"
                         value: root.toSlider(Services.ConfigService.configs.weather.reloadTime, 1, 60)
                         valueText: Services.ConfigService.configs.weather.reloadTime + " min"
                         onMoved: val => Services.ConfigService.configs.weather.reloadTime = root.fromSlider(
@@ -400,7 +464,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation(
                                    "settings.environment.notifications.timeout", "Tiempo de espera")
-                        iconName: "notifications"
+                        icon: "notifications"
                         value: root.toSlider(Services.ConfigService.configs.notifications.timeout, 1, 30)
                         valueText: Services.ConfigService.configs.notifications.timeout + " s"
                         onMoved: val => Services.ConfigService.configs.notifications.timeout = root.fromSlider(
@@ -420,7 +484,7 @@ Item {
                     SettingsDropdownRow {
                         label: Services.I18nService.getTranslation("settings.system.language.selection",
                                                                    "Seleccion de idiomas")
-                        iconName: "translate"
+                        icon: "translate"
                         value: Services.ConfigService.configs.language
                         choicesModel: {
                             // Dependencia explícita para re-traducir al cambiar idioma.
@@ -447,7 +511,7 @@ Item {
                         Layout.fillWidth: true
                         label: Services.I18nService.getTranslation("settings.system.updates.check_frequency",
                                                                    "Frecuencia de comprobación")
-                        iconName: "update"
+                        icon: "update"
                         value: root.toSlider(Services.ConfigService.configs.updates.countTime, 5, 180)
                         valueText: Services.ConfigService.configs.updates.countTime + " min"
                         onMoved: val => Services.ConfigService.configs.updates.countTime = root.fromSlider(val,

@@ -7,14 +7,14 @@ MenuDefinition {
     sectionId: "screenshot"
     titleFallback: "Captura"
     titleKey: "sysmenu.section_screenshot"
-    iconName: "screenshot_monitor"
+    icon: "screenshot_monitor"
     parentId: "main"
 
     entries: [shell("shot-screen", "Capturar pantalla", "hyprshot output", "screenshot_monitor",
                     "sleep 0.5 && hyprshot -m output -m eDP-1", {
                         titleKey: "sysmenu.shot_screen_title",
                         subtitleKey: "sysmenu.shot_screen_subtitle"
-                    }), shell("shot-screen-copy", "Copiar pantalla", "al portapapeles", "content_copy",
+                    }),shell("shot-ocr-copy", "Captura con OCR", "capturar texto con OCR", "crop", "grim -g \"$(slurp)\" - | tesseract stdin stdout | wl-copy"), shell("shot-screen-copy", "Copiar pantalla", "al portapapeles", "content_copy",
                               "sleep 0.5 && hyprshot -m output -m eDP-1 --clipboard-only", {
                                   titleKey: "sysmenu.shot_screen_copy_title",
                                   subtitleKey: "sysmenu.shot_screen_copy_subtitle"

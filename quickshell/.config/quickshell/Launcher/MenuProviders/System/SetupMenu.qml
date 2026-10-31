@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "setup"
     titleFallback: "Setup"
     titleKey: "sysmenu.section_setup"
-    iconName: "construction"
+    icon: "construction"
     parentId: "main"
 
     entries: [shell("setup-docker", "Setup Docker", "docker-setup.sh", "deployed_code",

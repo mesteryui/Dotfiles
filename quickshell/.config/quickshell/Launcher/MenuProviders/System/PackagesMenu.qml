@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "packages"
     titleFallback: "Paquetes"
     titleKey: "sysmenu.section_packages"
-    iconName: "package_2"
+    icon: "package_2"
     parentId: "configure"
 
     entries: [shell("pkg-install", "Instalar paquete", "application-installer", "package_2",

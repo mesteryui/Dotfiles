@@ -26,7 +26,7 @@ BarItem {
         id: content
 
         anchors.centerIn: parent
-        iconName: Services.AudioService.materialIcon
+        icon: Services.AudioService.materialIcon
         text: Math.round(Services.AudioService.volume * 100) + "%"
     }
 }

@@ -448,7 +448,7 @@ Item {
                     }
 
                     MaterialIcon {
-                        text: Icons.getWeatherIcon(forecastDelegate.modelData.wCode)
+                        icon: Icons.getWeatherIcon(forecastDelegate.modelData.wCode)
                         size: Appearance.font.pixelSize.huge
                         color: Appearance.md3.primary
                         Layout.alignment: Qt.AlignHCenter

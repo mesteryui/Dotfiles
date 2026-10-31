@@ -135,7 +135,7 @@ PopupWindow {
                             // Indicador de submenú
                             MaterialIcon {
                                 visible: itemDelegate.modelData?.hasChildren ?? false
-                                text: "chevron_right"
+                                icon: "chevron_right"
                                 color: Appearance.md3.on_surface_variant
                                 font.pixelSize: Appearance.typeScale.bodyLarge
                             }
@@ -147,7 +147,8 @@ PopupWindow {
                                 Layout.preferredWidth: 16
                                 Layout.preferredHeight: 16
                                 radius: (itemDelegate.modelData?.buttonType ?? QsMenuButtonType.None)
-                                        === QsMenuButtonType.Radio ? 8 : 4
+                                        === QsMenuButtonType.Radio ? Appearance.shape.small :
+                                                                     Appearance.shape.extraSmall
                                 color: (itemDelegate.modelData?.checkState ?? Qt.Unchecked) === Qt.Checked
                                        ? Appearance.md3.primary : "transparent"
                                 border.color: Appearance.border.strong

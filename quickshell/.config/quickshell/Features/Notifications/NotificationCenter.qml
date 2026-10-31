@@ -212,7 +212,7 @@ PanelWindow {
                         id: dndIcon
 
                         anchors.centerIn: parent
-                        text: dndToggle.dndOn ? "do_not_disturb_on" : "do_not_disturb_off"
+                        icon: dndToggle.dndOn ? "do_not_disturb_on" : "do_not_disturb_off"
                         size: Appearance.font.pixelSize.large
                         color: dndToggle.dndOn ? Appearance.md3.on_secondary_container :
                                                  Appearance.md3.on_surface_variant
@@ -286,7 +286,7 @@ PanelWindow {
                             spacing: Appearance.spacing.small
 
                             MaterialIcon {
-                                text: "delete_sweep"
+                                icon: "delete_sweep"
                                 size: Appearance.typeScale.bodyLarge
                                 color: clearAllButton.activeFocus ? Appearance.md3.on_primary_container :
                                                                     Appearance.md3.on_secondary_container
@@ -334,17 +334,40 @@ PanelWindow {
                 visible: (root.historyModel ? root.historyModel.count : 0) > 0
                 clip: true
                 focus: true
+                activeFocusOnTab: true
                 spacing: Appearance.spacing.medium
                 keyNavigationWraps: true
                 highlightMoveDuration: 100
                 boundsBehavior: Flickable.StopAtBounds
                 model: root.historyModel
 
+                // El foco de teclado debe recaer en la lista al abrir el panel.
+                // `focus: true` por sí solo no siempre basta con el grab de
+                // HyprlandFocusGrab, así que lo asegura de forma explícita.
+                Component.onCompleted: forceActiveFocus()
+
+                // Mueve el cursor entre notificaciones y trae la fila actual al
+                // viewport. currentIndex parte de -1 (ninguna seleccionada).
+                function moveCursor(delta) {
+                    const total = root.historyModel ? root.historyModel.count : 0;
+                    if (total === 0)
+                        return;
+                    let idx = currentIndex;
+                    if (idx < 0)
+                        idx = delta > 0 ? 0 : total - 1;
+                    else
+                        idx = (idx + delta + total) % total;
+                    currentIndex = idx;
+                    positionViewAtIndex(idx, ListView.Contain);
+                }
+
                 ScrollBar.vertical: StyledScrollBar {
                     id: historyScrollBar
                 }
-                Keys.onDownPressed: incrementCurrentIndex()
-                Keys.onUpPressed: decrementCurrentIndex()
+                Keys.onDownPressed: { moveCursor(1); event.accepted = true; }
+                Keys.onUpPressed: { moveCursor(-1); event.accepted = true; }
+                // Tab/Shift+Tab ciclan entre la lista y los botones de cabecera
+                // (activeFocusOnTab) sin salir del panel.
                 delegate: NotificationHistoryCard {
                     width: historyList.width
                     onRemoveRequested: root.historyModel.remove(index)
@@ -360,7 +383,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 visible: (root.historyModel ? root.historyModel.count : 0) === 0
                 expressive: true
-                iconName: "notifications_none"
+                icon: "notifications_none"
                 title: I18nService.getTranslation("notifications.empty_title", "")
                 titleSize: Appearance.font.pixelSize.large
                 titleColor: Appearance.md3.on_surface

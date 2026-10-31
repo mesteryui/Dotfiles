@@ -27,8 +27,8 @@ Singleton {
             // tracked = true es lo que mantiene viva la notificación y la
             // expone en trackedNotifications (el toast). No la guardamos en
             // el historial: al expirar/cerrar se libera también su imagen.
-            n.tracked = true
-            NotificationData.pushHistory(n)
+            n.tracked = true;
+            NotificationData.pushHistory(n);
         }
     }
 

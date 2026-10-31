@@ -27,6 +27,7 @@ Singleton {
     property bool failed: false
 
     readonly property list<string> extensions: ["jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"]
+
     readonly property list<string> videoExtensions: ["mp4", "webm", "mov", "mkv", "ogv", "m4v"]
 
     // Sin soporte de vídeo, los vídeos no aparecen como opción: evita que el

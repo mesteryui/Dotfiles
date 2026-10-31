@@ -713,7 +713,7 @@ Singleton {
             kind: "emoji",
             title: raw.ch + "  " + raw.name,
             sub: badge + kw + (grp !== "" ? " · " + root.groupLabel(grp) : ""),
-            iconName: "",
+            icon: "",
             appIcon: "",
             ch: raw.ch,
             imagePath: "",

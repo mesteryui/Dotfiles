@@ -23,8 +23,8 @@ Item {
         }
 
         StyledText {
-        anchors.verticalCenter: parent.verticalCenter
-        text: WeatherService.temperature
+            anchors.verticalCenter: parent.verticalCenter
+            text: WeatherService.temperature
         }
     }
 }

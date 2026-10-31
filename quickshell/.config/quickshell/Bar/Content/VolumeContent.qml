@@ -5,7 +5,7 @@ import QtQuick
 Item {
     id: root
 
-    property string iconName
+    property string icon
     property string text
 
     implicitHeight: 30
@@ -22,7 +22,7 @@ Item {
 
             size: Appearance.font.pixelSize.larger
             color: Appearance.md3.on_surface
-            icon: root.iconName
+            icon: root.icon
         }
 
         StyledText {

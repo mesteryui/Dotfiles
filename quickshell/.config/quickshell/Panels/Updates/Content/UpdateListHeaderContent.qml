@@ -51,7 +51,7 @@ Item {
             bottom: parent.bottom
             margins: Appearance.spacing.medium
         }
-        iconName: "refresh"
+        icon: "refresh"
         iconSize: 18
         enabled: !Services.UpdatesTracking.checking && !Services.UpdatesTracking.updating
         onClicked: Services.UpdatesTracking.checkNow()

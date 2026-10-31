@@ -80,7 +80,7 @@ function mapSnapshot(snapshot, cat) {
         else if (e.isDir)
             icon = "folder";
         out.push({ kind: "file", title: e.name, sub: e.path,
-                   iconName: icon,
+                   icon: icon,
                    appIcon: "", ch: "", imagePath: media === "image" ? fileUrl(e.path) : "",
                    cat: cat, path: e.path, media: media });
     }

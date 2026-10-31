@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "main"
     titleFallback: "Sistema"
     titleKey: "sysmenu.section_main"
-    iconName: "tune"
+    icon: "tune"
     parentId: ""
 
     entries: [shell("about", "Sobre el sistema", "fastfetch en terminal flotante", "info",

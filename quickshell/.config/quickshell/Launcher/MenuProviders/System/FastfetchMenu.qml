@@ -17,7 +17,7 @@ MenuDefinition {
     sectionId: "fastfetch"
     titleFallback: "Tema Fastfetch"
     titleKey: "sysmenu.section_fastfetch"
-    iconName: "terminal"
+    icon: "terminal"
     parentId: "appearance"
 
     entries: []

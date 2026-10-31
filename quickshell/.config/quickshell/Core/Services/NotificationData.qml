@@ -103,5 +103,4 @@ Singleton {
 
         reloadableId: "notifications"
     }
-
 }

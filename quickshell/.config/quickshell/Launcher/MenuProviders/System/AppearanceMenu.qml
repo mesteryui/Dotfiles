@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "appearance"
     titleFallback: "Apariencia"
     titleKey: "sysmenu.section_appearance"
-    iconName: "palette"
+    icon: "palette"
     parentId: "main"
 
     entries: [ipc("theme-wallpapers", "Wallpapers", "panel del shell", "photo_library",

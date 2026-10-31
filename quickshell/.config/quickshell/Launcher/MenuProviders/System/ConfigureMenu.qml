@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "configure"
     titleFallback: "Configuración"
     titleKey: "sysmenu.section_configure"
-    iconName: "settings"
+    icon: "settings"
     parentId: "main"
 
     entries: [shell("cfg-keybinds", "Editar atajos de teclado", "hypr keybinds", "keyboard",
@@ -25,7 +25,7 @@ MenuDefinition {
                                             titleKey: "sysmenu.config_monitor_title",
                                             subtitleKey: "sysmenu.config_monitor_subtitle"
                                         }), shell("cfg-dns", "Cambiar DNS", "dns-manager.sh", "dns",
-                                                  "xdg-terminal-exec --app-id=local.floating -e dns-manager.sh",
+                                                  "xdg-terminal-exec --app-id=local.floating -e dns-manager",
                                                   {
                                                       titleKey: "sysmenu.config_dns_title",
                                                       subtitleKey: "sysmenu.config_dns_subtitle"

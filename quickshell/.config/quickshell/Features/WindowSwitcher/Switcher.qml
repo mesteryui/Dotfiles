@@ -42,9 +42,9 @@ Scope {
         }
     }
 
-    // LazyLoader: primera apertura asíncrona en gaps de frames y caché
-    // después (reaperturas instantáneas). Como la ventana ya no se
-    // destruye al cerrar, su visible va atado a scope.shown.
+    // LazyLoader: primera apertura asíncrona en gaps de frames. Al cerrar,
+    // loading pasa a false y el item se destruye; la siguiente apertura
+    // vuelve a cargarlo. Su visible va atado a scope.shown.
     LazyLoader {
         id: switcherLoader
 

@@ -34,9 +34,6 @@ files only fill it.
   `UpdateListFooter.qml` + `Content/` (`UpdateListContent`,
   `UpdateListHeaderContent`, `UpdateFooterContent`,
   `UpdateListPackages`, `UpdatePackageDelegate`).
-- `Notifications/` — `NotificationPopupContent.qml` +
-  `NotificationPopupWindow.qml` (popups per-screen; the center lives
-  in `Features/Notifications/`).
 - `Polkit/` — `PolkitWindow.qml` (`Scope` + `LazyLoader`, auth agent
   vs `PolkitService`) + `PolkitContent.qml`.
 - `System/` — `PowerButtons.qml` (`Scope` + IPC `ui.powermenu`,

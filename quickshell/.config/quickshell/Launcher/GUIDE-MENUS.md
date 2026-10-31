@@ -40,7 +40,7 @@ dynamic), `EmojiService.qml`, `FilePreviewService.qml`.
 Custom menu contract (`MenuDefinition`, do NOT redeclare with
 `property`): provide `sectionId` (lowercase-dashes, unique),
 `titleFallback` (+ `titleKey` for i18n, see `Core/i18n/I18N.md`),
-`iconName` (valid Material Symbol), `parentId` (default `"main"`),
+`icon` (valid Material Symbol), `parentId` (default `"main"`),
 `entries` built with `shell()`/`ipc()`/`submenu()`/`entry()` (all
 take `opts` `{titleKey, subtitleKey, preview}`); dynamic menus
 implement `refresh()` reassigning `entries` wholesale and put

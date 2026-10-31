@@ -1,5 +1,7 @@
-// CheatsheetSheet — hoja del cheatsheet (búsqueda, grid, filtrado, navegación).
-// Extraído de Cheatsheet.qml. El Scope/IPC/atajo/PanelWindow quedan allí.
+// CheatsheetSheet — menú de atajos con pestañas laterales.
+// Izquierda: categorías (navigation-drawer M3). Derecha: atajos de la
+// categoría activa. La búsqueda filtra ambas columnas y selecciona la
+// primera categoría con resultados.
 pragma ComponentBehavior: Bound
 import qs.Core.Services as Services
 import qs.Core
@@ -39,89 +41,34 @@ Item {
 
     focus: active
 
+    // --- Estado de navegación ---
+    /// Categoría activa en la barra lateral. Se guarda por nombre para
+    /// sobrevivir a los reordenamientos que provoca la búsqueda.
+    property string selectedCategory: ""
+    /// Índice de la fila resaltada dentro de la categoría activa.
+
+    property int activeBindIndex: 0
+
     Keys.onPressed: event => {
-        const ctrl = event.modifiers & Qt.ControlModifier;
-        if (ctrl) {
-            switch (event.key) {
-            case Qt.Key_J:
-            case Qt.Key_N:
-                root.moveSelection(1);
-                event.accepted = true;
-                return;
-            case Qt.Key_K:
-            case Qt.Key_P:
-                root.moveSelection(-1);
-                event.accepted = true;
-                return;
-            case Qt.Key_H:
-                root.moveColumn(-1);
-                event.accepted = true;
-                return;
-            case Qt.Key_L:
-                root.moveColumn(1);
-                event.accepted = true;
-                return;
-            default:
-                break;
-            }
-        }
-        switch (event.key) {
-        case Qt.Key_Escape:
-            active = false;
+        // El buscador tiene prioridad: si tiene el foco, sus Keys.onPressed
+        // ya ha gestionado (o dejado pasar) el evento. Evita que ↑/← se
+        // procesen dos veces al burbujear hasta la raíz.
+        if (searchField.activeFocus)
+            return;
+
+        if (root.handleKey(event, false)) {
             event.accepted = true;
-            break;
-        case Qt.Key_Tab:
-        case Qt.Key_Backtab:
+            return;
+        }
+
+        // Escribiendo con el foco fuera del buscador (p. ej. tras clicar el
+        // fondo): reinyecta el carácter en vez de perderlo.
+        if (event.text.length > 0 && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier
+                                                          | Qt.MetaModifier))) {
+            searchField.text += event.text;
+            searchField.cursorPosition = searchField.text.length;
             searchField.forceActiveFocus();
             event.accepted = true;
-            break;
-        case Qt.Key_Down:
-            root.moveSelection(1);
-            event.accepted = true;
-            break;
-        case Qt.Key_Up:
-            root.moveSelection(-1);
-            event.accepted = true;
-            break;
-        case Qt.Key_Left:
-            root.moveColumn(-1);
-            event.accepted = true;
-            break;
-        case Qt.Key_Right:
-            root.moveColumn(1);
-            event.accepted = true;
-            break;
-        case Qt.Key_PageDown:
-            root.scrollBy(flick.height * 0.9);
-            event.accepted = true;
-            break;
-        case Qt.Key_PageUp:
-            root.scrollBy(-flick.height * 0.9);
-            event.accepted = true;
-            break;
-        case Qt.Key_Home:
-            root.activeBindIndex = 0;
-            root.scrollToActiveItem();
-            event.accepted = true;
-            break;
-        case Qt.Key_End:
-            root.activeBindIndex = Math.max(0, root.flatBinds.length - 1);
-            root.scrollToActiveItem();
-            event.accepted = true;
-            break;
-        default:
-            // Escribiendo con el foco fuera del buscador (p. ej. tras
-            // clicar el fondo): reinyecta el carácter en vez de perderlo.
-            // Se ignoran combinaciones con Ctrl/Alt/Meta (son atajos, no texto).
-            if (!searchField.activeFocus && event.text.length > 0 && !(event.modifiers & (Qt.ControlModifier
-                                                                                          | Qt.AltModifier
-                                                                                          | Qt.MetaModifier))) {
-                searchField.text += event.text;
-                searchField.cursorPosition = searchField.text.length;
-                searchField.forceActiveFocus();
-                event.accepted = true;
-            }
-            break;
         }
     }
 
@@ -131,27 +78,144 @@ Item {
         onClicked: root.forceActiveFocus()
     }
 
-    // --- Keyboard scrolling ---
-    readonly property real scrollStep: 140
-
+    // ----------------------------------------------------------------
+    // Navegación
+    // ----------------------------------------------------------------
     NumberAnimation {
         id: scrollAnim
 
-        target: flick
+        target: contentFlick
         property: "contentY"
         duration: 180
         easing.type: Easing.OutCubic
     }
 
     function scrollTo(y) {
-        const maxY = Math.max(0, flick.contentHeight - flick.height);
+        const maxY = Math.max(0, contentFlick.contentHeight - contentFlick.height);
         scrollAnim.stop();
         scrollAnim.to = Math.max(0, Math.min(maxY, y));
         scrollAnim.start();
     }
 
     function scrollBy(delta) {
-        root.scrollTo(flick.contentY + delta);
+        root.scrollTo(contentFlick.contentY + delta);
+    }
+
+    function selectCategory(category) {
+        if (category === root.selectedCategory)
+            return;
+        root.selectedCategory = category;
+    }
+
+    /// Cambia de pestaña. `wrap` permite que Tab salte de la última a la
+    /// primera; las flechas se quedan en los extremos.
+    function moveCategory(delta, wrap) {
+        const cats = root.filteredCategories;
+        if (cats.length === 0)
+            return;
+
+        let current = root.selectedIndex;
+        if (current < 0)
+            current = 0;
+
+        let target = current + delta;
+        if (wrap) {
+            target = (target + cats.length) % cats.length;
+        } else {
+            target = Math.max(0, Math.min(cats.length - 1, target));
+        }
+
+        if (target === current)
+            return;
+
+        root.goToCategoryIndex(target, 0);
+    }
+
+    /// Activa la categoría `index` y coloca la selección en `bindIndex`
+    /// (-1 = última fila). Se usa al cruzar de categoría con ↑/↓.
+    function goToCategoryIndex(index, bindIndex) {
+        const cats = root.filteredCategories;
+        if (index < 0 || index >= cats.length)
+            return;
+
+        const entry = cats[index];
+        const count = entry.binds.length;
+
+        root.selectedCategory = entry.category;
+        root.activeBindIndex = bindIndex < 0 ? Math.max(0, count - 1) : Math.max(0, Math.min(bindIndex, count
+                                                                                             - 1));
+        Qt.callLater(root.scrollToActiveItem);
+    }
+
+    /// Mueve la selección por las filas de la categoría activa. Al llegar
+    /// arriba/abajo del todo, salta a la categoría anterior/siguiente para
+    /// que la navegación sea continua.
+    function moveSelection(delta) {
+        const binds = root.selectedBinds;
+        if (binds.length === 0) {
+            root.moveCategory(delta, false);
+            return;
+        }
+
+        const next = root.activeBindIndex + delta;
+        if (next < 0) {
+            if (root.selectedIndex > 0) {
+                root.goToCategoryIndex(root.selectedIndex - 1, -1);
+            } else {
+                root.activeBindIndex = 0;
+                root.scrollToActiveItem();
+            }
+        } else if (next >= binds.length) {
+            if (root.selectedIndex >= 0 && root.selectedIndex < root.filteredCategories.length - 1) {
+                root.goToCategoryIndex(root.selectedIndex + 1, 0);
+            } else {
+                root.activeBindIndex = binds.length - 1;
+                root.scrollToActiveItem();
+            }
+        } else {
+            root.activeBindIndex = next;
+            root.scrollToActiveItem();
+        }
+    }
+
+    /// Desplaza el listado justo lo necesario para que la fila activa se vea
+    /// entera, usando las coordenadas reales del delegate (no estimaciones).
+    function scrollToActiveItem() {
+        if (root.activeBindIndex < 0 || root.selectedBinds.length === 0)
+            return;
+
+        const row = rowsRepeater.itemAt(root.activeBindIndex);
+        if (!row || !contentFlick.contentItem)
+            return;
+
+        const p = row.mapToItem(contentFlick.contentItem, 0, 0);
+        const viewTop = contentFlick.contentY;
+        const viewBottom = viewTop + contentFlick.height;
+        if (p.y < viewTop - 1) {
+            root.scrollTo(p.y - 8);
+        } else if (p.y + row.height > viewBottom + 1) {
+            root.scrollTo(p.y + row.height - contentFlick.height + 8);
+        }
+    }
+
+    /// Mantiene visible la pestaña de la categoría activa en la barra
+    /// lateral cuando hay más categorías de las que caben.
+    function ensureCategoryVisible() {
+        if (root.selectedIndex < 0)
+            return;
+
+        const tab = tabsRepeater.itemAt(root.selectedIndex);
+        if (!tab || !categoriesFlick.contentItem)
+            return;
+
+        const p = tab.mapToItem(categoriesFlick.contentItem, 0, 0);
+        const viewTop = categoriesFlick.contentY;
+        const viewBottom = viewTop + categoriesFlick.height;
+        if (p.y < viewTop) {
+            categoriesFlick.contentY = Math.max(0, p.y - 4);
+        } else if (p.y + tab.height > viewBottom) {
+            categoriesFlick.contentY = p.y + tab.height - categoriesFlick.height + 4;
+        }
     }
 
     // Reseteo al abrir (llamado desde onActiveChanged del root y
@@ -159,418 +223,516 @@ Item {
     function resetOnOpen() {
         searchField.text = "";
         root.activeBindIndex = 0;
-        Qt.callLater(() => searchField.forceActiveFocus());
+        root.selectedCategory = root.filteredCategories.length > 0 ? root.filteredCategories[0].category : "";
+        scrollAnim.stop();
+        contentFlick.contentY = 0;
+        Qt.callLater(() => {
+            searchField.forceActiveFocus();
+            root.scrollToActiveItem();
+        });
     }
 
-    // --- Item-by-item keyboard navigation ---
+    /// Gestión central de teclas para la raíz y el buscador.
+    /// `fromSearch` evita secuestrar ←/→/Home/End mientras se edita texto.
+    function handleKey(event, fromSearch) {
+        const ctrl = event.modifiers & Qt.ControlModifier;
+        const shift = event.modifiers & Qt.ShiftModifier;
 
-    /// Flat list of all currently visible binds in display order
-    /// (column 0 top→bottom, column 1 top→bottom, …)
-    /// Each entry: { flatIndex, catIdx, bindIdx }
-    property var flatBinds: []
-
-    /// Index into flatBinds that is currently highlighted (-1 = none)
-    property int activeBindIndex: -1
-
-    /// Rebuild flatBinds whenever the masonry columns change.
-    onColumnsChanged: {
-        const list = [];
-        let idx = 0;
-        const cols = root.columns;
-        for (let c = 0; c < cols.length; c++) {
-            const col = cols[c];
-            for (let r = 0; r < col.length; r++) {
-                const card = col[r];
-                for (let b = 0; b < card.binds.length; b++) {
-                    list.push({
-                                  flatIndex: idx,
-                                  col: c,
-                                  cardInCol: r,
-                                  bindInCard: b
-                              });
-                    idx++;
-                }
+        if (ctrl) {
+            switch (event.key) {
+            case Qt.Key_J:
+            case Qt.Key_N:
+                root.moveSelection(1);
+                return true;
+            case Qt.Key_K:
+            case Qt.Key_P:
+                root.moveSelection(-1);
+                return true;
+            case Qt.Key_H:
+                root.moveCategory(-1, false);
+                return true;
+            case Qt.Key_L:
+                root.moveCategory(1, false);
+                return true;
+            case Qt.Key_U:
+                searchField.text = "";
+                return true;
+            default:
+                break;
             }
         }
-        root.flatBinds = list;
-        // Clamp activeBindIndex to valid range after filter changes.
-        if (root.activeBindIndex >= list.length)
-            root.activeBindIndex = Math.max(0, list.length - 1);
-    }
 
-    /// Move selection by `delta` rows, clamped to the list bounds.
-    function moveSelection(delta) {
-        if (root.flatBinds.length === 0)
-            return;
-        const next = Math.max(0, Math.min(root.flatBinds.length - 1, root.activeBindIndex + delta));
-        root.activeBindIndex = next;
-        root.scrollToActiveItem();
-    }
-
-    /// Move selection sideways by `delta` columns (-1 = left, +1 = right),
-    /// landing on the item at roughly the same vertical position in the
-    /// target column. No-op at the first/last column.
-    function moveColumn(delta) {
-        if (root.flatBinds.length === 0)
-            return;
-        const current = root.flatBinds[root.activeBindIndex];
-        if (!current)
-            return;
-
-        const targetCol = current.col + delta;
-        if (targetCol < 0 || targetCol >= root.columns.length)
-            return;
-
-        // How many binds precede the current one within its own column.
-        let posInCol = 0;
-        for (let i = 0; i < root.activeBindIndex; i++) {
-            if (root.flatBinds[i].col === current.col)
-                posInCol++;
-        }
-
-        // Land on the item at the same position in the target column,
-        // clamped if that column is shorter.
-        const candidates = [];
-        for (let i = 0; i < root.flatBinds.length; i++) {
-            if (root.flatBinds[i].col === targetCol)
-                candidates.push(i);
-        }
-        if (candidates.length === 0)
-            return;
-
-        root.activeBindIndex = candidates[Math.min(posInCol, candidates.length - 1)];
-        root.scrollToActiveItem();
-    }
-
-    /// Compute the global flat index of the first bind inside a given card entry.
-    function firstIndexForCard(colIdx, cardInColIdx) {
-        let idx = 0;
-        const cols = root.columns;
-        for (let c = 0; c < cols.length; c++) {
-            const col = cols[c];
-            for (let r = 0; r < col.length; r++) {
-                if (c === colIdx && r === cardInColIdx)
-                    return idx;
-                idx += col[r].binds.length;
+        switch (event.key) {
+        case Qt.Key_Escape:
+            // 1º Esc con texto: limpia. 2º Esc (vacío): cierra.
+            if (searchField.text.length > 0) {
+                searchField.text = "";
+            } else {
+                root.closeRequested();
             }
+            return true;
+        case Qt.Key_Tab:
+        case Qt.Key_Backtab:
+            root.moveCategory((event.key === Qt.Key_Backtab || shift !== 0) ? -1 : 1, true);
+            return true;
+        case Qt.Key_Down:
+            root.moveSelection(1);
+            return true;
+        case Qt.Key_Up:
+            root.moveSelection(-1);
+            return true;
+        case Qt.Key_Right:
+            if (fromSearch)
+                return false;
+            root.moveCategory(1, false);
+            return true;
+        case Qt.Key_Left:
+            if (fromSearch)
+                return false;
+            root.moveCategory(-1, false);
+            return true;
+        case Qt.Key_PageDown:
+            root.scrollBy(contentFlick.height * 0.9);
+            return true;
+        case Qt.Key_PageUp:
+            root.scrollBy(-contentFlick.height * 0.9);
+            return true;
+        case Qt.Key_Home:
+            if (fromSearch && !ctrl)
+                return false;
+            root.activeBindIndex = 0;
+            root.scrollToActiveItem();
+            return true;
+        case Qt.Key_End:
+            if (fromSearch && !ctrl)
+                return false;
+            root.activeBindIndex = Math.max(0, root.selectedBinds.length - 1);
+            root.scrollToActiveItem();
+            return true;
+        default:
+            return false;
         }
-        return idx;
     }
 
-    /// Scroll the flickable so that the active item is fully visible.
-    /// Resolves the real delegate via the Repeaters and asks the card
-    /// for its mapped coordinates — no height estimates, so wrapped
-    /// descriptions can't push the selection out of view anymore.
-    function scrollToActiveItem() {
-        if (root.activeBindIndex < 0 || root.flatBinds.length === 0)
-            return;
+    // ----------------------------------------------------------------
+    // Panel principal
+    // ----------------------------------------------------------------
+    Rectangle {
+        id: panel
 
-        const entry = root.flatBinds[root.activeBindIndex];
-        if (!entry)
-            return;
+        anchors.centerIn: parent
+        width: Math.min(root.width - 96, 1180)
+        height: Math.min(root.height - 96, 780)
+        radius: Appearance.shape.huge
+        color: Appearance.md3.surface_container_low
+        border.width: Appearance.border.width
+        border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_low)
 
-        // Los Repeaters pueden estar a mitad de reconstrucción al filtrar.
-        const colItem = columnsRepeater.itemAt(entry.col);
-        if (!colItem)
-            return;
-        const card = colItem.cardsRepeater.itemAt(entry.cardInCol);
-        if (!card)
-            return;
-        card.ensureRowVisible(entry.bindInCard);
-    }
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Appearance.spacing.extraLarge
+            spacing: Appearance.spacing.large
 
-    ColumnLayout {
-        id: mainLayout
-        anchors {
-            fill: parent
-            margins: 48
-        }
+            // --- Cabecera: título + resumen + búsqueda + cerrar ---
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Appearance.spacing.medium
 
-        spacing: Appearance.spacing.extraLarge
+                Rectangle {
+                    implicitWidth: 44
+                    implicitHeight: 44
+                    radius: Appearance.shape.full
+                    color: Appearance.md3.primary_container
 
-        // ----------------------------------------------------------------
-        // Search bar — pill con fondo explícito + icono de lupa
-        // ----------------------------------------------------------------
-        Item {
-            id: searchWrapper
-            Layout.fillWidth: false
-            Layout.preferredWidth: 480
-            Layout.alignment: Qt.AlignHCenter
-
-            implicitHeight: 52
-
-            // Fondo pill
-            Rectangle {
-                anchors.fill: parent
-                radius: Appearance.shape.full
-                color: Appearance.md3.surface_container_high
-                border.width: searchField.activeFocus ? Appearance.border.focusWidth : Appearance.border.width
-                border.color: searchField.activeFocus ? Appearance.border.focus : Appearance.border.color
-
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 120
+                    MaterialIcon {
+                        anchors.centerIn: parent
+                        icon: "keyboard"
+                        size: 22
+                        color: Appearance.md3.on_primary_container
                     }
                 }
-            }
 
-            // Ícono lupa
-            MaterialIcon {
-                id: searchIcon
-                anchors {
-                    left: parent.left
-                    leftMargin: Appearance.spacing.large
-                    verticalCenter: parent.verticalCenter
-                }
+                ColumnLayout {
+                    spacing: 0
 
-                iconName: "search"
-                size: Appearance.font.pixelSize.large
-                color: searchField.activeFocus ? Appearance.md3.primary : Appearance.md3.on_surface_variant
+                    StyledText {
+                        text: Services.I18nService.getTranslation("cheatsheet.title", "Atajos de teclado")
+                        color: Appearance.md3.on_surface
+                        font.pixelSize: Appearance.typeScale.titleLarge
+                        font.variableAxes: Appearance.font.variableAxes.title
+                    }
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
+                    StyledText {
+                        text: Services.I18nService.getTranslation("cheatsheet.summary",
+                                                                  "%1 categorías · %2 atajos").arg(
+                                  root.totalCategories).arg(root.totalBinds)
+                        color: Appearance.md3.on_surface_variant
+                        font.pixelSize: Appearance.typeScale.labelMedium
                     }
                 }
-            }
 
-            TextField {
-                id: searchField
-                anchors {
-                    left: searchIcon.right
-                    right: parent.right
-                    top: parent.top
-                    bottom: parent.bottom
-                    leftMargin: Appearance.spacing.small
-                    rightMargin: 20
+                Item {
+                    Layout.fillWidth: true
                 }
 
-                Accessible.name: placeholderText
-                background: null
-                color: Appearance.md3.on_surface
-                placeholderText: Services.I18nService.getTranslation("cheatroot.search_placeholder",
-                                                                     "Buscar atajos de teclado…")
-                placeholderTextColor: Appearance.md3.on_surface_variant
-                // Gatillado a active: sin esto el campo retenía el foco durante
-                // el fade-out (active=false, ventana aún visible) y Qt pedía
-                // text-input en una surface sin foco Wayland (spam
-                // enable/disableSurface). El foco real lo da resetOnOpen().
-                focus: root.active
-                selectedTextColor: Appearance.md3.on_secondary_container
-                selectionColor: Appearance.md3.secondary_container
-                font.family: Appearance.font.sans
-                font.pixelSize: Appearance.typeScale.bodyLarge
-                font.variableAxes: Appearance.font.variableAxes.main
-                verticalAlignment: TextInput.AlignVCenter
+                // --- Buscador: pill con fondo explícito + icono de lupa ---
+                Item {
+                    id: searchWrapper
 
-                Keys.onPressed: event => {
-                    const ctrl = event.modifiers & Qt.ControlModifier;
-                    // Ctrl+letra: navegar sin salir del buscador.
-                    // (El buscador acapara el foco; sin esto, ←/→/Home/End
-                    //  del nivel sheet serían inalcanzables escribiendo.)
-                    if (ctrl) {
-                        switch (event.key) {
-                        case Qt.Key_J:
-                        case Qt.Key_N:
-                            root.moveSelection(1);
-                            event.accepted = true;
-                            return;
-                        case Qt.Key_K:
-                        case Qt.Key_P:
-                            root.moveSelection(-1);
-                            event.accepted = true;
-                            return;
-                        case Qt.Key_H:
-                            root.moveColumn(-1);
-                            event.accepted = true;
-                            return;
-                        case Qt.Key_L:
-                            root.moveColumn(1);
-                            event.accepted = true;
-                            return;
-                        case Qt.Key_U:
-                            searchField.text = "";
-                            event.accepted = true;
-                            return;
-                        default:
-                            break;
+                    Layout.preferredWidth: 340
+                    Layout.minimumWidth: 200
+                    implicitHeight: 48
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Appearance.shape.full
+                        color: Appearance.md3.surface_container_high
+                        border.width: searchField.activeFocus ? Appearance.border.focusWidth :
+                                                                Appearance.border.width
+                        border.color: searchField.activeFocus ? Appearance.border.focus :
+                                                                Appearance.border.color
+
+                        Behavior on border.color {
+                            ColorAnimation {
+                                duration: 120
+                            }
                         }
                     }
-                    switch (event.key) {
-                    case Qt.Key_Escape:
-                        // 1º Esc con texto: limpia. 2º Esc (vacío): cierra via signal al padre.
-                        if (searchField.text.length > 0) {
-                            searchField.text = "";
-                        } else {
-                            root.closeRequested();
+
+                    MaterialIcon {
+                        id: searchIcon
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: Appearance.spacing.large
+                            verticalCenter: parent.verticalCenter
                         }
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_Tab:
-                    case Qt.Key_Backtab:
-                        // Atrapa el foco: no hay nada más enfocable aquí.
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_Down:
-                        root.moveSelection(1);
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_Up:
-                        root.moveSelection(-1);
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_PageDown:
-                        root.scrollBy(flick.height * 0.9);
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_PageUp:
-                        root.scrollBy(-flick.height * 0.9);
-                        event.accepted = true;
-                        break;
-                    case Qt.Key_Home:
-                        if (event.modifiers & Qt.ControlModifier) {
-                            root.activeBindIndex = 0;
-                            root.scrollToActiveItem();
-                            event.accepted = true;
+
+                        icon: "search"
+                        size: Appearance.font.pixelSize.large
+                        color: searchField.activeFocus ? Appearance.md3.primary :
+                                                         Appearance.md3.on_surface_variant
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
+                            }
                         }
-                        break;
-                    case Qt.Key_End:
-                        if (event.modifiers & Qt.ControlModifier) {
-                            root.activeBindIndex = Math.max(0, root.flatBinds.length - 1);
-                            root.scrollToActiveItem();
-                            event.accepted = true;
+                    }
+
+                    TextField {
+                        id: searchField
+
+                        anchors {
+                            left: searchIcon.right
+                            right: parent.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            leftMargin: Appearance.spacing.small
+                            rightMargin: 20
                         }
-                        break;
-                    default:
-                        break;
+
+                        Accessible.name: placeholderText
+                        background: null
+                        color: Appearance.md3.on_surface
+                        placeholderText: Services.I18nService.getTranslation("cheatsheet.search_placeholder",
+                                                                             "Buscar atajos de teclado…")
+                        placeholderTextColor: Appearance.md3.on_surface_variant
+                        // Gatillado a active: sin esto el campo retenía el foco durante
+                        // el fade-out (active=false, ventana aún visible) y Qt pedía
+                        // text-input en una surface sin foco Wayland (spam
+                        // enable/disableSurface). El foco real lo da resetOnOpen().
+                        focus: root.active
+                        selectedTextColor: Appearance.md3.on_secondary_container
+                        selectionColor: Appearance.md3.secondary_container
+                        font.family: Appearance.font.sans
+                        font.pixelSize: Appearance.typeScale.bodyLarge
+                        font.variableAxes: Appearance.font.variableAxes.main
+                        verticalAlignment: TextInput.AlignVCenter
+
+                        Keys.onPressed: event => {
+                            if (root.handleKey(event, true))
+                                event.accepted = true;
+                        }
                     }
                 }
+
+                AnimatedIconButton {
+                    icon: "close"
+                    iconSize: 20
+                    onClicked: root.closeRequested()
+                }
             }
-        }
 
-        // ----------------------------------------------------------------
-        // Hint de teclado — una línea, centrada, mismo tono que el placeholder
-        // ----------------------------------------------------------------
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            text: Services.I18nService.getTranslation("cheatroot.hint",
-                                                      "Ctrl+J/K moverse · Ctrl+H/L columnas · Esc limpiar/cerrar")
-            color: Appearance.md3.on_surface_variant
-            font.pixelSize: Appearance.typeScale.labelMedium
-            opacity: Appearance.opacity.hintStrong
-        }
+            // --- Cuerpo: pestañas a la izquierda, atajos a la derecha ---
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: Appearance.spacing.large
+                visible: root.filteredCategories.length > 0
 
-        // ----------------------------------------------------------------
-        // Masonry grid — solo visible cuando hay resultados
-        // ----------------------------------------------------------------
-        Flickable {
-            id: flick
-            Layout.fillWidth: false
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: Math.min(mainLayout.width, columnsRow.implicitWidth + 16)
-            Layout.fillHeight: true
+                // Barra lateral de categorías
+                Rectangle {
+                    Layout.preferredWidth: 236
+                    Layout.minimumWidth: 180
+                    Layout.maximumWidth: 260
+                    Layout.fillHeight: true
+                    radius: Appearance.shape.extraLarge
+                    color: Appearance.md3.surface_container
+                    border.width: Appearance.border.width
+                    border.color: Appearance.border.subtleOn(Appearance.md3.surface_container)
 
-            visible: root.filteredCategories.length > 0
-            contentWidth: Math.max(width, columnsRow.implicitWidth)
-            contentHeight: columnsRow.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: StyledScrollBar {}
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Appearance.spacing.small
+                        spacing: Appearance.spacing.extraSmall
 
-            Row {
-                id: columnsRow
+                        StyledText {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: Appearance.spacing.small
+                            Layout.topMargin: Appearance.spacing.extraSmall
+                            text: Services.I18nService.getTranslation("cheatsheet.categories", "Categorías")
+                            color: Appearance.md3.on_surface_variant
+                            font.pixelSize: Appearance.typeScale.labelMedium
+                            font.variableAxes: Appearance.font.variableAxes.title
+                        }
 
-                anchors.left: parent.left
-                spacing: Appearance.spacing.extraLarge
+                        Flickable {
+                            id: categoriesFlick
 
-                Repeater {
-                    id: columnsRepeater
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            contentWidth: width
+                            contentHeight: tabsColumn.implicitHeight
+                            clip: true
+                            boundsBehavior: Flickable.StopAtBounds
+                            ScrollBar.vertical: StyledScrollBar {}
 
-                    model: root.columns
-                    delegate: Column {
-                        required property var modelData
-                        required property int index   // column index
+                            ColumnLayout {
+                                id: tabsColumn
 
-                        width: root.columnWidth
-                        spacing: Appearance.spacing.extraLarge
+                                width: parent.width
+                                spacing: 2
 
-                        property alias cardsRepeater: cardsRep
+                                Repeater {
+                                    id: tabsRepeater
 
-                        Repeater {
-                            id: cardsRep
+                                    model: root.filteredCategories
 
-                            model: parent.modelData
-                            delegate: CheatsheetCategoryCard {
-                                required property var modelData
-                                required property int index   // card-in-column index
+                                    delegate: CheatsheetCategoryTab {
+                                        required property var modelData
+                                        required property int index
 
-                                width: parent?.width ?? 40
-                                category: modelData.category
-                                binds: modelData.binds
-                                // colIdx travels with the data (set in root.columns), so this
-                                // no longer depends on the item already being reparented —
-                                // fixes "Cannot read property 'colIdx' of null" during
-                                // Repeater teardown/recreate on filter changes.
-                                firstRowIndex: root.firstIndexForCard(modelData.colIdx, index)
-                                activeRowIndex: root.activeBindIndex
-                                flickRef: flick
-                                scrollToFunc: y => root.scrollTo(y)
-                                onRowHovered: globalIndex => root.activeBindIndex = globalIndex
+                                        category: modelData.category
+                                        icon: root.iconForCategory(modelData.category)
+                                        count: modelData.binds.length
+                                        selected: modelData.category === root.selectedCategory
+                                        onClicked: {
+                                            root.selectCategory(modelData.category);
+                                            // Al clicar una pestaña, las flechas
+                                            // vuelven a navegar el menú; si el
+                                            // usuario escribe, el texto se
+                                            // reinyecta en el buscador.
+                                            root.forceActiveFocus();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Panel de atajos de la categoría activa
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    radius: Appearance.shape.extraLarge
+                    color: Appearance.md3.surface_container_lowest
+                    border.width: Appearance.border.width
+                    border.color: Appearance.border.subtleOn(Appearance.md3.surface_container_lowest)
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Appearance.spacing.large
+                        spacing: Appearance.spacing.medium
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Appearance.spacing.small
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.selectedEntry ? root.selectedEntry.category : ""
+                                color: Appearance.md3.on_surface
+                                font.pixelSize: Appearance.typeScale.headlineSmall
+                                font.variableAxes: Appearance.font.variableAxes.title
+                                elide: Text.ElideRight
+                            }
+
+                            Rectangle {
+                                implicitWidth: countLabel.implicitWidth + 16
+                                implicitHeight: 24
+                                radius: Appearance.shape.full
+                                color: Appearance.md3.surface_container_high
+
+                                StyledText {
+                                    id: countLabel
+
+                                    anchors.centerIn: parent
+                                    text: Services.I18nService.getTranslation("cheatsheet.bind_count",
+                                                                              "%1 atajos").arg(
+                                              root.selectedBinds.length)
+                                    color: Appearance.md3.on_surface_variant
+                                    font.pixelSize: Appearance.typeScale.labelMedium
+                                    font.variableAxes: Appearance.font.variableAxes.numbers
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 1
+                            color: Appearance.border.divider
+                        }
+
+                        Flickable {
+                            id: contentFlick
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            contentWidth: width
+                            contentHeight: rowsColumn.implicitHeight
+                            clip: true
+                            boundsBehavior: Flickable.StopAtBounds
+                            ScrollBar.vertical: StyledScrollBar {}
+
+                            Column {
+                                id: rowsColumn
+
+                                width: parent.width
+                                spacing: 2
+
+                                Repeater {
+                                    id: rowsRepeater
+
+                                    model: root.selectedBinds
+                                    delegate: CheatsheetKeybindRow {
+                                        required property var modelData
+                                        required property int index
+
+                                        width: rowsColumn.width
+                                        bind: modelData
+                                        highlighted: index === root.activeBindIndex
+                                        onHoverEntered: root.activeBindIndex = index
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // ----------------------------------------------------------------
-        // Estado vacío — icono + texto centrados en el espacio disponible
-        // ----------------------------------------------------------------
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            visible: root.filteredCategories.length === 0
+            // --- Estado vacío ---
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: root.filteredCategories.length === 0
 
-            M3Card {
-                anchors.centerIn: parent
-                width: emptyContent.implicitWidth + 56
-                height: emptyContent.implicitHeight + 48
+                M3Card {
+                    anchors.centerIn: parent
+                    width: emptyContent.implicitWidth + 56
+                    height: emptyContent.implicitHeight + 48
 
-                // Estado vacío unificado (la card la pone el llamador).
-                EmptyState {
-                    id: emptyContent
+                    EmptyState {
+                        id: emptyContent
 
-                    iconName: searchField.text.length > 0 ? "search_off" : (Services.HyprlandKeybinds.failed
+                        icon: searchField.text.length > 0 ? "search_off" : (Services.HyprlandKeybinds.failed
                                                                             ? "error" : "keyboard")
-                    iconSize: 52
-                    iconOpacity: 0.55
-                    iconColor: Services.HyprlandKeybinds.failed && searchField.text.length === 0
-                               ? Appearance.md3.error : Appearance.md3.on_surface_variant
-                    titleSize: Appearance.typeScale.bodyLarge
-                    title: searchField.text.length > 0 ? Services.I18nService.getTranslation(
-                                                             "cheatroot.empty_no_match",
-                                                             "Ningún atajo coincide con") + " \u201c"
-                                                         + searchField.text + "\u201d" : (
-                                                             Services.HyprlandKeybinds.failed
-                                                             ? Services.I18nService.getTranslation(
-                                                                   "cheatroot.empty_error",
-                                                                   "No se pudieron leer los atajos (¿hyprctl disponible?)") :
-                                                               Services.I18nService.getTranslation(
-                                                                   "cheatroot.empty_no_binds",
-                                                                   "No se encontraron atajos documentados"))
+                        iconSize: 52
+                        iconOpacity: 0.55
+                        iconColor: Services.HyprlandKeybinds.failed && searchField.text.length === 0
+                                   ? Appearance.md3.error : Appearance.md3.on_surface_variant
+                        titleSize: Appearance.typeScale.bodyLarge
+                        title: searchField.text.length > 0 ? Services.I18nService.getTranslation(
+                                                                 "cheatsheet.empty_no_match",
+                                                                 "Ningún atajo coincide con") + " \u201c"
+                                                             + searchField.text + "\u201d" : (
+                                                                 Services.HyprlandKeybinds.failed
+                                                                 ? Services.I18nService.getTranslation(
+                                                                       "cheatsheet.empty_error",
+                                                                       "No se pudieron leer los atajos (¿hyprctl disponible?)") :
+                                                                   Services.I18nService.getTranslation(
+                                                                       "cheatsheet.empty_no_binds",
+                                                                       "No se encontraron atajos documentados"))
+                    }
                 }
+            }
+
+            StyledText {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: Services.I18nService.getTranslation("cheatsheet.hint",
+                                                          "↑/↓ mover · Ctrl+H/L o Tab categorías · Esc limpiar/cerrar")
+                color: Appearance.md3.on_surface_variant
+                font.pixelSize: Appearance.typeScale.labelMedium
+                opacity: Appearance.opacity.hintStrong
             }
         }
     }
 
+    // ----------------------------------------------------------------
+    // Datos derivados
+    // ----------------------------------------------------------------
+    readonly property int totalCategories: root.filteredCategories.length
+
+    readonly property int totalBinds: {
+        let total = 0;
+        for (let i = 0; i < root.filteredCategories.length; i++)
+            total += root.filteredCategories[i].binds.length;
+        return total;
+    }
+
+    readonly property int selectedIndex: {
+        for (let i = 0; i < root.filteredCategories.length; i++) {
+            if (root.filteredCategories[i].category === root.selectedCategory)
+                return i;
+        }
+        return -1;
+    }
+
+    readonly property var selectedEntry: root.selectedIndex >= 0 ? root.filteredCategories[root.selectedIndex] :
+                                                                   null
+
+    readonly property var selectedBinds: root.selectedEntry ? root.selectedEntry.binds : []
+
+    /// Icono Material de cada categoría conocida; "keyboard" para el resto.
+    function iconForCategory(category) {
+        switch (category) {
+        case "Ventanas":
+            return "window";
+        case "Scrolling":
+            return "swap_vert";
+        case "Espacios":
+            return "space_dashboard";
+        case "Apps":
+            return "apps";
+        case "Sistema":
+            return "settings";
+        case "Multimedia":
+            return "music_note";
+        case "Redimensionar":
+            return "aspect_ratio";
+        case "Submapas":
+            return "layers";
+        default:
+            return "keyboard";
+        }
+    }
+
     // --- Filtering ---
-    // Antes: indexOf() literal sobre b.searchText — exigía substring exacto
-    // y no toleraba ni orden aproximado ni typos ("clw" no encontraba
-    // "Close Window"). Ahora usa Services.FuzzySearch (el mismo motor
-    // reusable en cualquier menú del shell): matchea por subsecuencia
-    // con scoring, y ordena los binds de cada categoría por relevancia.
-    // Cuando hay query, además las categorías se reordenan por su mejor
-    // match, para que la categoría más relevante aparezca primero.
+    // Usa Services.FuzzySearch (subsecuencia + scoring). Mientras hay query,
+    // las categorías sin coincidencias desaparecen de la barra lateral y la
+    // que mejor puntúa queda seleccionada.
     property var filteredCategories: {
         const query = searchField.text.trim();
         const grouped = Services.HyprlandKeybinds.groupedKeybinds;
@@ -595,9 +757,8 @@ Item {
             if (matches.length > 0)
                 result.push({
                                 category: cat,
-                                binds: matches.map(m => m.item) // ya vienen ordenados por score desc
-                                       ,
-                                score: matches[0].score           // mejor score de la categoría
+                                binds: matches.map(m => m.item),
+                                score: matches[0].score
                             });
         }
 
@@ -608,47 +769,34 @@ Item {
     }
 
     onFilteredCategoriesChanged: {
-        // Reset focus to the first item whenever search results change,
-        // y vuelve arriba: sin esto el Flickable se quedaba a mitad de
-        // lista tras filtrar y parecía que no había resultados.
+        // Mientras se escribe, salta siempre a la categoría con mejor
+        // puntuación (la primera tras ordenar). Sin búsqueda se conserva
+        // la pestaña activa si sigue existiendo.
+        const searching = searchField.text.trim().length > 0;
+        let found = false;
+        for (let i = 0; i < root.filteredCategories.length; i++) {
+            if (root.filteredCategories[i].category === root.selectedCategory) {
+                found = true;
+                break;
+            }
+        }
+        if (searching || !found) {
+            root.selectedCategory = root.filteredCategories.length > 0 ? root.filteredCategories[0].category :
+                                                                         "";
+        }
+
         root.activeBindIndex = 0;
         scrollAnim.stop();
-        flick.contentY = 0;
+        contentFlick.contentY = 0;
+        Qt.callLater(root.scrollToActiveItem);
+        Qt.callLater(root.ensureCategoryVisible);
     }
 
-    // --- Fixed column width + responsive column count ---
-    readonly property int columnWidth: 380
-
-    readonly property int desiredColumnCount: width > 1500 ? 3 : (width > 950 ? 2 : 1)
-
-    property int columnCount: Math.max(1, Math.min(desiredColumnCount, filteredCategories.length || 1))
-
-    // --- Balanced column distribution (greedy bin-packing by estimated height) ---
-    property var columns: {
-        const cats = root.filteredCategories;
-        const count = root.columnCount;
-        const cols = [];
-        const heights = [];
-        for (let c = 0; c < count; c++) {
-            cols.push([]);
-            heights.push(0);
-        }
-
-        const sorted = cats.slice().sort((a, b) => b.binds.length - a.binds.length);
-
-        for (let i = 0; i < sorted.length; i++) {
-            const entry = sorted[i];
-            const estHeight = 60 + entry.binds.length * 46;
-            let minIdx = 0;
-            for (let c = 1; c < count; c++) {
-                if (heights[c] < heights[minIdx])
-                    minIdx = c;
-            }
-            cols[minIdx].push(Object.assign({}, entry, {
-                                                colIdx: minIdx
-                                            }));
-            heights[minIdx] += estHeight + 20;
-        }
-        return cols;
+    onSelectedCategoryChanged: {
+        root.activeBindIndex = 0;
+        scrollAnim.stop();
+        contentFlick.contentY = 0;
+        Qt.callLater(root.scrollToActiveItem);
+        Qt.callLater(root.ensureCategoryVisible);
     }
 }

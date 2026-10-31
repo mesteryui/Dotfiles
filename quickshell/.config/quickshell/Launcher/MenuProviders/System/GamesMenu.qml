@@ -7,7 +7,7 @@ MenuDefinition {
     sectionId: "games"
     titleFallback: "Juegos"
     titleKey: "sysmenu.section_games"
-    iconName: "sports_esports"
+    icon: "sports_esports"
     parentId: "main"
 
     entries: [shell("game-steam", "Steam", "steam-setup", "sports_esports",
