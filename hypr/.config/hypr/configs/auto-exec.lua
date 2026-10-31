@@ -1,5 +1,6 @@
 -- configs/auto-exec.lua
 hl.on("hyprland.start", function()
+	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets,pkcs11")
 	hl.exec_cmd("udiskie &")
 	hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 	-- Sin FONTCONFIG_FILE heredado: quickshell encadena su
@@ -10,7 +11,6 @@ hl.on("hyprland.start", function()
 	-- la shell retenía ~40 MB extra de heap fragmentado (medido: 660→621 MB).
 	-- `env` en vez de prefijo VAR= para no depender de shell en exec_cmd.
 	hl.exec_cmd("qs -d -n")
-	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
 	--hl.exec_cmd("emacs --fg-daemon")
 	hl.exec_cmd("trash-empty 30")
 	--hl.exec_cmd("snappy-switcher --daemon")

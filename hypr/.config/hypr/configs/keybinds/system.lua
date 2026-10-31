@@ -24,11 +24,15 @@ hl.bind(
 )
 
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Sistema: Alternar pseudotiling" })
-hl.bind(
-	mainMod .. " + ALT + J",
-	hl.dsp.layout("togglesplit"),
-	{ description = "Sistema: Alternar división de ventana" }
-)
+
+-- [Código original conservado como referencia]
+-- Movido a configs/keybinds/layout.lua para que funcione según el layout
+-- (dwindle: togglesplit; master: orientationcycle).
+-- hl.bind(
+-- 	mainMod .. " + ALT + J",
+-- 	hl.dsp.layout("togglesplit"),
+-- 	{ description = "Sistema: Alternar división de ventana" }
+-- )
 hl.bind(
 	mainMod .. " + W",
 	hl.dsp.global("quickshell:wallpaperSelectorToggle"),

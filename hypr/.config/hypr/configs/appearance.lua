@@ -1,11 +1,11 @@
 -- configs/appearance.lua
 hl.config({
 	general = {
-		gaps_in = 5,
-		gaps_out = 10,
+		gaps_in = 10,
+		gaps_out = 12,
 		gaps_workspaces = 50,
 		border_size = 2,
-		allow_tearing = false,
+		allow_tearing = true,
 		no_focus_fallback = true,
 		col = {
 			active_border = { colors = { Colors.primary }, angle = 45 },
@@ -13,7 +13,7 @@ hl.config({
 		},
 		resize_on_border = true,
 		resize_corner = 3,
-		layout = "dwindle",
+		layout = "scrolling",
 	},
 	cursor = {
 		zoom_factor = 1,
@@ -23,6 +23,7 @@ hl.config({
 		no_hardware_cursors = true,
 		enable_hyprcursor = true,
 		no_warps = false,
+		warp_on_monitor_change = 2,
 		persistent_warps = false,
 		warp_on_change_workspace = 1,
 		inactive_timeout = 7,
@@ -67,29 +68,74 @@ hl.config({
 	},
 })
 
+local base_color_hex = Colors.surface -- Esto te devuelve "0xff1a1111"
+
+-- 3. Función para cambiar o inyectar una opacidad (alfa) personalizada (0.0 a 1.0)
+local function set_opacity(color_str, opacity)
+	-- 1. Convertimos la cadena "0xff1a1111" a un número entero de 32 bits
+	local hex_number = tonumber(color_str:gsub("^0x", ""), 16)
+	if not hex_number then
+		return color_str
+	end
+
+	-- 2. Extraemos la parte RGB (ignorando el byte más alto que es el alfa original)
+	-- Operación AND para quedarnos solo con los últimos 24 bits (R, G, B)
+	local rgb_part = hex_number % 0x1000000
+
+	-- 3. Calculamos el nuevo valor alfa (0 a 255) a partir de tu decimal (ej. 0.25)
+	local alpha_int = math.floor(opacity * 255 + 0.5)
+
+	-- 4. Combinamos el nuevo alfa (desplazándolo 24 bits a la izquierda) con la parte RGB
+	local new_color_number = (alpha_int * 0x1000000) + rgb_part
+
+	-- 5. Devolvemos el formato hexadecimal exacto de 8 dígitos que exige Hyprland
+	return string.format("0x%08x", new_color_number)
+end
+
+-- Probamos con un 25% de opacidad (0.25)
+local acrylic_tint = set_opacity(base_color_hex, 0.80)
+
 hl.config({
 	decoration = {
-		rounding = 18,
+		rounding = 20,
 		rounding_power = 2,
 		active_opacity = 1.0,
-		inactive_opacity = 0.95,
+		inactive_opacity = 0.94,
 		dim_inactive = false,
+		wobble = {
+			enabled = true,
+			mesh = 16,
+			stiffness = 350,
+			damping = 25,
+			mass = 3,
+			value_epsilon = 0.25,
+			intensity = 0.4,
+		},
 		blur = {
 			enabled = true,
 			size = 10,
 			passes = 2,
-			noise = 0,
-			contrast = 2,
+			noise = 0.0,
+			contrast = 2.0,
 			brightness = 0.8,
-			vibrancy = 0.35,
+			vibrancy = 0.5,
 			vibrancy_darkness = 0.35,
 			special = false,
+			new_optimizations = true,
+			variant = "kawase",
+			acrylic = {
+				aberration = 0.038,
+				bulb = 48.0,
+				clarity = 0.84,
+				refraction = 32.0,
+				tint = acrylic_tint,
+			},
 		},
 		shadow = {
 			enabled = true,
 			--offset = "0 1",
 			range = 25,
-			render_power = 10,
+			render_power = 4,
 			offset = { 0, 2 },
 			color = Colors.shadow,
 		},
@@ -113,5 +159,24 @@ hl.config({
 		force_split = 2,
 		preserve_split = true,
 		--special_scale_factor = 0.8,
+	},
+	scrolling = {
+		column_width = 0.5,
+		direction = "right",
+		fullscreen_on_one_column = true,
+		focus_fit_method = 1,
+		-- Hyprland limita cada valor a [0.05, 1.0]; 1.8 se recortaba a 1.0 sin
+		-- avisar. Se deja el valor real para que W recorra lo que de verdad
+		-- existe.
+		explicit_column_widths = "0.333, 0.5, 0.667, 1.0",
+		follow_focus = true,
+		-- Igual que en dwindle/master, intercambiar en el borde no debe
+		-- teletransportar la ventana al otro extremo: la experiencia de
+		-- SUPER+ALT+H/L se mantiene consistente entre layouts.
+		wrap_swapcol = false,
+		-- El foco genérico no consulta esta opción y `no_focus_fallback` está
+		-- activo, así que en el borde no se envuelve. Se deja en false para
+		-- que la configuración refleje el comportamiento real.
+		wrap_focus = false,
 	},
 })

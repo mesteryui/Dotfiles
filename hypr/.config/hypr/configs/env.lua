@@ -54,8 +54,6 @@ hl.env("XCURSOR_THEME", cursor_theme)
 hl.env("XCURSOR_SIZE", cursor_size)
 --hl.env("QT_QUICK_CONTROLS_STYLE", "Fusion")
 hl.env("QT_SCALE_FACTOR", "1") -- ajustar según tu monitor scale
---hl.env("GDK_BACKEND", "wayland,x11,*")
---hl.env("QT_QPA_PLATFORM","wayland;xcb")
 hl.env("GDK_SCALE", 2)
 hl.env("MOZ_ENABLE_WAYLAND", 1)
 hl.env("OZONE_PLATFORM", "wayland")
@@ -87,7 +85,7 @@ hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
 -- [Hyprsunset]). Se apaga solo el aviso de Quickshell.
 hl.env("QT_LOGGING_RULES", "qt.qpa.wayland.textinput=false;quickshell.io.socket.warning=false")
 
-hl.env("GDK_BACKEND", "wayland,x11")
+hl.env("GDK_BACKEND", "wayland,x11,*")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("SDL_VIDEODRIVER", "wayland,x11,windows")
 hl.env("CLUTTER_BACKEND", "wayland")
