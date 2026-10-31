@@ -1,6 +1,9 @@
 {
     "appearance": {
         "darkMode": true,
+        "deckFrost": true,
+        "deckFrostOnBattery": true,
+        "deckFrostStrength": 0.45,
         "expressive": "Google Sans Flex",
         "fontSans": "Google Sans Flex",
         "matugen": {
@@ -10,7 +13,7 @@
         "reading": "Google Sans Flex"
     },
     "bar": {
-        "barType": "partial_hug",
+        "barType": "notch",
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"
@@ -25,7 +28,7 @@
     },
     "nightLight": {
         "gamma": 100,
-        "temperature": 3631
+        "temperature": 4318
     },
     "notifications": {
         "timeout": 8
@@ -35,7 +38,7 @@
         "countTime": 14
     },
     "weather": {
-        "autoLocation": true,
+        "autoLocation": false,
         "city": "Vigo,ES",
         "reloadTime": 10
     }
