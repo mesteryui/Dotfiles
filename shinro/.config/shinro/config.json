@@ -28,7 +28,7 @@
     },
     "nightLight": {
         "gamma": 100,
-        "temperature": 4318
+        "temperature": 5514
     },
     "notifications": {
         "timeout": 8
