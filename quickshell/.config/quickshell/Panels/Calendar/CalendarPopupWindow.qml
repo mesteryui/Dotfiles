@@ -39,14 +39,18 @@ BarPopupWindow {
         id: bg
 
         anchors.fill: parent
+        surfaceRadius: Appearance.shape.card
+        baseColor: Appearance.md3.surface
     }
 
-    // Sombra: source se asigna en onCompleted para evitar warning
+    // Sombra: source se asigna de forma declarativa para evitar warning
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
+    // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
     MultiEffect {
         id: panelShadow
 
         anchors.fill: bg
+        source: bg
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowBlur: 0.85
@@ -55,15 +59,12 @@ BarPopupWindow {
         blurMax: 32
         shadowOpacity: Appearance.elevation2.opacity
         z: -1
-        Component.onCompleted: panelShadow.source = bg
     }
 
     // ── Content ───────────────────────────────────────────────
     CalendarContent {
-        anchors {
-            fill: parent
-            margins: Appearance.spacing.large
-        }
+        anchors.fill: bg
+        margins: Appearance.spacing.large
 
         currentMonth: root.currentMonth
         currentYear: root.currentYear
