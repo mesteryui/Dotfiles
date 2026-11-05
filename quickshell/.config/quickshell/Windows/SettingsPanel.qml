@@ -74,19 +74,6 @@ Scope {
             // ── Sombra: source se asigna de forma declarativa para evitar warning
             // "ShaderEffect: 'source' does not have a matching property" ──
             // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
-            MultiEffect {
-                id: panelShadow
-
-                anchors.fill: bg
-                source: bg
-                shadowEnabled: true
-                shadowColor: Appearance.md3.shadow
-                shadowOpacity: Appearance.elevation4.opacity
-                shadowBlur: Appearance.elevation4.blur
-                shadowVerticalOffset: Appearance.elevation4.offsetY
-                shadowHorizontalOffset: 2
-                z: -1
-            }
 
             // ── Content (lazy) ────────────────────────────────────────
             // SettingsPanelContent es pesado y el panel pasa el 99% del tiempo

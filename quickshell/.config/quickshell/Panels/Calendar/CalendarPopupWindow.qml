@@ -7,6 +7,7 @@ import qs.Shared.Background
 import qs.Primitives
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 import Quickshell.Hyprland
 
 BarPopupWindow {
@@ -15,6 +16,10 @@ BarPopupWindow {
     implicitWidth: 320
     implicitHeight: 400
     grabFocus: true
+
+    // Color sólido del wrapper: se ve alrededor del fondo redondeado
+    // (perímetro exterior de las esquinas del rectángulo con radius).
+    // El wrapper no es transparente.
 
     // ── Estado ────────────────────────────────────────────────
     property date currentDate: new Date()
@@ -41,25 +46,17 @@ BarPopupWindow {
         anchors.fill: parent
         surfaceRadius: Appearance.shape.card
         baseColor: Appearance.md3.surface
+        // Sin borde interno: el borde del fondo es el perímetro visible
+        // del rectángulo redondeado contra el wrapper transparente.
+        // Un borde como hijo interno de PopupBackground queda tapado por
+        // el Content (hermano pintado después), así que no tiene sentido.
+        showBorder: true
     }
 
     // Sombra: source se asigna de forma declarativa para evitar warning
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
     // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
-    MultiEffect {
-        id: panelShadow
 
-        anchors.fill: bg
-        source: bg
-        shadowEnabled: true
-        shadowColor: Appearance.md3.shadow
-        shadowBlur: 0.85
-        shadowVerticalOffset: 6
-        shadowHorizontalOffset: 0
-        blurMax: 32
-        shadowOpacity: Appearance.elevation2.opacity
-        z: -1
-    }
 
     // ── Content ───────────────────────────────────────────────
     CalendarContent {

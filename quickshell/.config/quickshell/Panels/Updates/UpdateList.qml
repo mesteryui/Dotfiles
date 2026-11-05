@@ -1,3 +1,4 @@
+import qs.Core
 import qs.Shared.Background
 import qs.Panels.Updates.Content
 import qs.Primitives
@@ -24,14 +25,21 @@ BarPopupWindow {
 
     // ── Background ───────────────────────────────────────────
     PopupBackground {
+        id: bg
+
         anchors.fill: parent
+        surfaceRadius: Appearance.shape.card
+        baseColor: Appearance.md3.surface
+        showBorder: true
     }
 
     // ── Content ──────────────────────────────────────────────
+    // Llena bg (con clip y radius), no el padre directo, y no renderiza
+    // bordes propios.
     UpdateListContent {
         id: listContent
 
-        anchors.fill: parent
+        anchors.fill: bg
         onUpdateRequested: root.visible = false
     }
 }

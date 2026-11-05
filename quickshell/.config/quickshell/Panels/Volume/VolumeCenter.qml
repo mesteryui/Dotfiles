@@ -28,12 +28,11 @@ Scope {
         component: PanelWindow {
             id: root
 
-            color: "transparent"
             visible: scope.shown
 
             implicitWidth: (contentLoader.item ? contentLoader.item.implicitWidth : 300) + 24
             implicitHeight: (contentLoader.item ? contentLoader.item.implicitHeight : 200) + 24
-
+            color: "transparent"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
             HyprlandFocusGrab {
@@ -65,35 +64,24 @@ Scope {
                 Accessible.name: I18nService.getTranslation("panel.volume", "Volumen")
 
                 anchors.fill: parent
+                surfaceRadius: Appearance.shape.card
+                baseColor: Appearance.md3.surface
+                showBorder: true
             }
 
-            // Sombra: source se asigna en onCompleted para evitar warning
-            // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-            MultiEffect {
-                id: panelShadow
-
-                anchors.fill: bg
-                shadowEnabled: true
-                shadowColor: Appearance.md3.shadow
-                shadowBlur: 0.85
-                shadowVerticalOffset: 6
-                shadowHorizontalOffset: 0
-                blurMax: 32
-                shadowOpacity: Appearance.elevation2.opacity
-                z: -1
-                Component.onCompleted: panelShadow.source = bg
-            }
 
             // Síncrono a propósito: el contenido mide según datos vivos (número
             // de dispositivos, volúmenes) y en async la ventana abría en tamaño
             // de fallback y saltaba al real, desplazando los sliders a la vista.
             // Es un popup pequeño: instanciar en el mismo frame no se nota y al
             // cerrar se sigue destruyendo (ahorro intacto).
+            // El contenido llena bg (con clip y radius), no el padre
+            // directo, y no renderiza bordes propios.
             Loader {
                 id: contentLoader
 
                 anchors {
-                    fill: parent
+                    fill: bg
                     margins: Appearance.spacing.medium
                 }
                 active: root.visible

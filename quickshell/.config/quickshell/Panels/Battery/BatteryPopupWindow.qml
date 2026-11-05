@@ -9,6 +9,7 @@ BarPopupWindow {
     implicitHeight: popupContent.implicitHeight + 24
 
     PopupBackground {
+        id: bg
         anchors.fill: parent
     }
 

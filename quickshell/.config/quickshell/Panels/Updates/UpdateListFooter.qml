@@ -13,6 +13,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: Qt.alpha(Appearance.md3.surface_variant, 0.3)
+        radius: Appearance.shape.card
     }
 
     // ── Content ──────────────────────────────────────────────

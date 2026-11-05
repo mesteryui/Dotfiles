@@ -36,8 +36,10 @@ Scope {
         component: PanelWindow {
             id: root
 
-            color: Appearance.md3.surface
-
+            // Color sólido del wrapper: se ve alrededor del fondo redondeado
+            // (perímetro exterior de las esquinas del rectángulo con radius).
+            // El wrapper no es transparente.
+            color: "transparent"
             implicitWidth: 410
 
             WlrLayershell.layer: WlrLayer.Overlay
@@ -148,23 +150,10 @@ Scope {
                 anchors.fill: parent
                 surfaceRadius: Appearance.shape.huge
                 baseColor: Appearance.md3.surface
-            }
-
-            // Sombra: source se asigna de forma declarativa para evitar el warning
-            // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-            // bg tiene layer.enabled vía PopupBackground, así que su textura está lista.
-            MultiEffect {
-                id: panelShadow
-
-                anchors.fill: bg
-                source: bg
-                shadowEnabled: true
-                shadowColor: Appearance.md3.shadow ?? "#000000"
-                shadowOpacity: Appearance.elevation4.opacity
-                shadowBlur: Appearance.elevation4.blur
-                shadowVerticalOffset: Appearance.elevation4.offsetY
-                shadowHorizontalOffset: 2
-                z: -1
+                // Sin borde interno: el borde visual lo da el radio del fondo
+                // contra el wrapper de color sólido. Un borde como hijo interno
+                // de PopupBackground queda tapado por el Content, así que no tiene sentido.
+                showBorder: true
             }
 
             // ── Content (lazy) ────────────────────────────────────────

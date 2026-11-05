@@ -1,6 +1,7 @@
 // MprisSubwindow — Wrapper
 // Gestiona estado de posición, timers, focus y ensambla Background + Content.
 
+import qs.Core
 import qs.Core.Services
 import qs.Shared.Background
 import qs.Primitives
@@ -12,6 +13,8 @@ BarPopupWindow {
 
     implicitWidth: 360
     implicitHeight: mprisContent.implicitHeight
+
+    color: Appearance.md3.surface
 
     readonly property var player: MprisService.activePlayer
 
@@ -135,14 +138,21 @@ BarPopupWindow {
 
     // ── Background ────────────────────────────────────────────
     PopupBackground {
+        id: bg
+
         anchors.fill: parent
+        surfaceRadius: Appearance.shape.card
+        baseColor: Appearance.md3.surface
+        showBorder: false
     }
 
     // ── Content ───────────────────────────────────────────────
+    // Llena bg (con clip y radius), no el padre directo, y no renderiza
+    // bordes propios.
     MprisContent {
         id: mprisContent
 
-        anchors.fill: parent
+        anchors.fill: bg
         currentPosition: root.currentPosition
         onSeekRequested: newPosition => {
             const p = MprisService.activePlayer;
