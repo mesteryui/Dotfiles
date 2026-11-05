@@ -36,7 +36,7 @@ Scope {
         component: PanelWindow {
             id: root
 
-            color: "transparent"
+            color: Appearance.md3.surface
 
             implicitWidth: 410
 
@@ -146,17 +146,18 @@ Scope {
                 Accessible.role: Accessible.Dialog
                 Accessible.name: I18nService.getTranslation("panel.controls", "Centro de control")
                 anchors.fill: parent
-
-                radius: Appearance.shape.huge
-                color: Appearance.md3.surface
+                surfaceRadius: Appearance.shape.huge
+                baseColor: Appearance.md3.surface
             }
 
-            // Sombra: source se asigna en onCompleted para evitar warning
+            // Sombra: source se asigna de forma declarativa para evitar el warning
             // "ShaderEffect: 'source' does not have a matching property" del primer frame.
+            // bg tiene layer.enabled vía PopupBackground, así que su textura está lista.
             MultiEffect {
                 id: panelShadow
 
                 anchors.fill: bg
+                source: bg
                 shadowEnabled: true
                 shadowColor: Appearance.md3.shadow ?? "#000000"
                 shadowOpacity: Appearance.elevation4.opacity
@@ -164,7 +165,6 @@ Scope {
                 shadowVerticalOffset: Appearance.elevation4.offsetY
                 shadowHorizontalOffset: 2
                 z: -1
-                Component.onCompleted: panelShadow.source = bg
             }
 
             // ── Content (lazy) ────────────────────────────────────────
@@ -172,12 +172,7 @@ Scope {
             Loader {
                 id: contentLoader
 
-                anchors {
-                    top: bg.top
-                    left: bg.left
-                    right: bg.right
-                    bottom: bg.bottom
-                }
+                anchors.fill: bg
                 active: root.visible
                 // Async para no congelar el hilo QML al abrir (el contenido
                 // trae SysInfoTab + bluetooth/audio; en sync el slide se
