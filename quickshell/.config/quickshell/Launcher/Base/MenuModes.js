@@ -1,6 +1,8 @@
 // --- MenuModes (base común de menús) ---
-// Cada menú es distinto (apps, sistema, archivos, web, emoji, calc,
+// Cada menú es distinto (apps, sistema, archivos, emoji, calc,
 // clipboard) pero comparte la misma base: { modeId, selectorChar, previewMode }.
+// La búsqueda web ya no es un modo propio: se ofrece como alternativa cuando
+// no hay resultados en el modo "todo".
 //   selectorChar  → carácter selector que fuerza el menú al teclearlo
 //                   ("" = menú por defecto, sin prefijo).
 //   previewMode   → "always" (clip: texto completo/imagen),
@@ -24,7 +26,6 @@ function defs() {
         { modeId: "todo", selectorChar: "", previewMode: "never", view: "list" },
         { modeId: "system", selectorChar: ">", previewMode: "conditional", view: "list" },
         { modeId: "files", selectorChar: "/", previewMode: "conditional", view: "list" },
-        { modeId: "web", selectorChar: "@", previewMode: "never", view: "list" },
         { modeId: "emoji", selectorChar: ".", previewMode: "never", view: "grid" },
         { modeId: "calc", selectorChar: "=", previewMode: "never", view: "list" },
         { modeId: "clip", selectorChar: ":", previewMode: "always", view: "list" }

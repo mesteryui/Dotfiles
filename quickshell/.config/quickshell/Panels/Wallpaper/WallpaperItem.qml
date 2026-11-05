@@ -17,14 +17,30 @@ Item {
     property int surfaceRadius: Appearance.shape.windowRounding
 
     readonly property bool isSelected: ListView.isCurrentItem
+    // Distancia al elemento seleccionado (0 = centro, 1 = vecino inmediato…)
+    readonly property int distance: Math.abs(ListView.view.currentIndex - index)
+    // Lado respecto al centro: -1 izquierda, 0 centro, 1 derecha
+    readonly property real side: index < ListView.view.currentIndex ? -1 :
+                                index > ListView.view.currentIndex ? 1 : 0
 
     implicitWidth: 300
     implicitHeight: 220
 
-    // Transformación Coverflow: Escala, transparencia e índice Z según selección
+    // ── Transformación Coverflow ─────────────────────────────────────────
+    // Escala y transparencia según selección; los no seleccionados se
+    // ven un poco más pequeños y oscuros para que el centro resalte.
     scale: isSelected ? 1.08 : 0.86
     opacity: isSelected ? 1.0 : 0.60
-    z: isSelected ? 10 : (100 - Math.abs(ListView.view.currentIndex - index))
+    z: isSelected ? 10 : (100 - distance)
+
+    // Desplazamiento parallax lateral: cuanto más lejos del centro, más se
+    // desplaza. Al navegar se mueve con spring para un efecto de "cola"
+    // más chulo y orgánico que un simple deslizamiento lineal.
+    property real parallaxX: side * distance * 44
+
+    transform: [
+        Translate { x: parallaxX; y: 0 }
+    ]
 
     Behavior on scale {
         SpringAnimation {
@@ -40,8 +56,16 @@ Item {
             easing.type: Easing.OutCubic
         }
     }
+    Behavior on parallaxX {
+        SpringAnimation {
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: Appearance.motion.springSnappy.epsilon
+        }
+    }
 
-    // ── Fondo y Sombra Elevada ──────────────────────────────────────────────
+    // ── Fondo y Sombra Elevada ───────────────────────────────────────────
     SurfaceBackground {
         id: background
 
@@ -51,7 +75,7 @@ Item {
                                          Appearance.md3.surface_container_low
     }
 
-    // ── Contenido de la Tarjeta ─────────────────────────────────────────────
+    // ── Contenido de la Tarjeta ──────────────────────────────────────────
     WallpaperItemContent {
         anchors.fill: parent
         isSelected: delegateRoot.isSelected
@@ -64,7 +88,7 @@ Item {
         listCurrentIndex: ListView.view ? ListView.view.currentIndex : -1
     }
 
-    // ── Captura de Interacción ──────────────────────────────────────────────
+    // ── Captura de Interacción ──────────────────────────────────────────
     MouseArea {
         id: mouse
 

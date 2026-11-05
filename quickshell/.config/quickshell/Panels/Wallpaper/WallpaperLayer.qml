@@ -17,8 +17,8 @@ Variants {
 
         // Monitor de Hyprland dueño de esta pantalla; puede ser null en el
         // arranque. activeWorkspace es la workspace visible del monitor.
-        readonly property var monitor: Hyprland.monitors.values.find(m => m.name
-                                                                          === delegateScope.modelData.name)
+        readonly property var monitor: modelData ? Hyprland.monitors.values.find(m => m.name
+                                                                                    === modelData.name) : null
         readonly property int windowsHere: {
             const mon = delegateScope.monitor;
             if (!mon || !mon.activeWorkspace)

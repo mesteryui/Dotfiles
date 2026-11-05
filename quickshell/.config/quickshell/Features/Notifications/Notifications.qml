@@ -24,7 +24,7 @@ Scope {
             }
         }
         Variants {
-            model: Quickshell.screens
+            model: Quickshell.screens ?? []
             delegate: NotificationPopups {
                 required property ShellScreen modelData
 

@@ -5,7 +5,7 @@ import Quickshell.Hyprland
 RowLayout {
 
     Repeater {
-        model: Hyprland.workspaces
+        model: Hyprland.workspaces ?? []
         delegate: WorkspaceButton {
             isActive: Hyprland.focusedWorkspace?.id === modelData.id
         }

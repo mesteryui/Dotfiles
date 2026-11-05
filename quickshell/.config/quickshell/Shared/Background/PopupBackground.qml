@@ -22,6 +22,11 @@ Rectangle {
         }
     }
 
+    // layer.enabled es necesario para que MultiEffect (sombra) pueda leer
+    // la textura de este elemento como source. Sin él, el primer frame
+    // lanza el warning "ShaderEffect: 'source' does not have a matching property".
+    layer.enabled: true
+
     // Borde encima de todo el contenido clippeado
     Rectangle {
         anchors.fill: parent

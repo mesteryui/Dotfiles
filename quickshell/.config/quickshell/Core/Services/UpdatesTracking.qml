@@ -40,10 +40,11 @@ Singleton {
         if (!NetworkService?.hasInternet)
             return;
         // Solo inicial y sin colisionar: si ya hay un chequeo o una
-        // actualización en curso, se da por cumplido y no se duplica.
+        // actualización en curso, no se duplica ahora pero tampoco se da
+        // por cumplido el chequeo de arranque: se reintentará en el siguiente
+        // tick del startupTimer (que sigue armado) hasta que se ejecute.
         if (countUpdates.running || root.checking || root.updating) {
-            root.startupCheckDone = true;
-            startupTimer.stop();
+            startupTimer.restart();
             return;
         }
         root.startupCheckDone = true;

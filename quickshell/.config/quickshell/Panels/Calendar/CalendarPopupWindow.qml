@@ -64,7 +64,7 @@ BarPopupWindow {
     // ── Content ───────────────────────────────────────────────
     CalendarContent {
         anchors.fill: bg
-        margins: Appearance.spacing.large
+        anchors.margins: Appearance.spacing.large
 
         currentMonth: root.currentMonth
         currentYear: root.currentYear

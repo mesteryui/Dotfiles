@@ -93,7 +93,7 @@ Singleton {
         property bool darkMode: true
         // Deck frost: desenfoque del wallpaper cuando hay ventanas en la
         // workspace activa. Se puede apagar desde Ajustes > Interfaz.
-        property bool deckFrost: true
+        property bool deckFrost: false
         property real deckFrostStrength: 0.45
         // Por defecto también con batería: el blur solo trabaja al abrir/cerrar
         // ventana, no en reposo. Se puede apagar desde Ajustes > Interfaz.

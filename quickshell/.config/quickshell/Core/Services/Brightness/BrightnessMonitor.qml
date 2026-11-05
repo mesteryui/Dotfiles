@@ -18,7 +18,7 @@ QtObject {
     // Device backlight resuelto por el servicio ("" = sin backlight).
     property string backlightDevice: ""
 
-    readonly property string screenName: modelData.name
+    readonly property string screenName: modelData ? modelData.name : ""
     readonly property bool isDdc: ddcInfo !== null
     readonly property string busNum: ddcInfo?.busNum ?? ""
     // Etiqueta para sliders ("eDP-1", "HDMI-A-1 · DDC"...).

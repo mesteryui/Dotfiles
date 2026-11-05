@@ -1,4 +1,5 @@
 //@ pragma UseQApplication
+//@ pragma Env QS_NO_RELOAD_POPUP=1
 //@ pragma DefaultEnv QSG_RENDER_LOOP=threaded
 //@ pragma DefaultEnv QS_DROP_EXPENSIVE_FONTS=1
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic

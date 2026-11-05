@@ -71,12 +71,14 @@ Scope {
                 baseColor: Appearance.md3.surface
             }
 
-            // ── Sombra: source se asigna en onCompleted para evitar warning
+            // ── Sombra: source se asigna de forma declarativa para evitar warning
             // "ShaderEffect: 'source' does not have a matching property" ──
+            // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
             MultiEffect {
                 id: panelShadow
 
                 anchors.fill: bg
+                source: bg
                 shadowEnabled: true
                 shadowColor: Appearance.md3.shadow
                 shadowOpacity: Appearance.elevation4.opacity
@@ -84,7 +86,6 @@ Scope {
                 shadowVerticalOffset: Appearance.elevation4.offsetY
                 shadowHorizontalOffset: 2
                 z: -1
-                Component.onCompleted: panelShadow.source = bg
             }
 
             // ── Content (lazy) ────────────────────────────────────────

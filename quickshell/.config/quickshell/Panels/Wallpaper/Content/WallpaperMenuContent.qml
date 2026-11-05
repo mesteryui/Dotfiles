@@ -114,11 +114,11 @@ Item {
                 continue;
             const name = String(source.get(i, "fileName") ?? "");
             entries.push({
-                             "filePath": path,
-                             "name": name,
-                             "group": group,
-                             "sat": colorService.satFor(path)
-                         });
+                "filePath": path,
+                "name": name,
+                "group": group,
+                "sat": colorService.satFor(path)
+            });
         }
         if (root.query.trim() !== "")
             entries = Services.FuzzySearch.filterItems(root.query, entries, entry => entry.name);
@@ -181,11 +181,11 @@ Item {
     }
 
     // Diferir la reconstrucción: coalescea ráfagas (cada tecla de búsqueda,
-    // llegada de colores + cambio de carpeta a la vez).
+    // llegada de colores + cambio de carpeta a la vez). 120 ms es suficiente
+    // para que se sienta instantáneo sin saturar la CPU al escribir.
     Timer {
         id: rebuildTimer
-
-        interval: 80
+        interval: 120
         repeat: false
         onTriggered: root.rebuildModel()
     }
@@ -194,7 +194,6 @@ Item {
         function onCountChanged() {
             rebuildTimer.restart();
         }
-
         target: Services.WallpaperService.wallpaperList
     }
 
@@ -202,7 +201,6 @@ Item {
         function onColorsChanged() {
             rebuildTimer.restart();
         }
-
         target: Services.WallpaperColorService
     }
 
@@ -234,7 +232,6 @@ Item {
 
                 StyledText {
                     id: countText
-
                     anchors.centerIn: parent
                     text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / "
                           + wallpaperList.count
@@ -258,7 +255,6 @@ Item {
 
                     StyledText {
                         id: hint1
-
                         anchors.centerIn: parent
                         text: root.label("wallpaper.hint_navigate", "← → Navegar")
                         font.pixelSize: Appearance.typeScale.labelSmall
@@ -276,7 +272,6 @@ Item {
 
                     StyledText {
                         id: hint2
-
                         anchors.centerIn: parent
                         text: root.label("wallpaper.hint_apply", "↵ Aplicar")
                         font.pixelSize: Appearance.typeScale.labelSmall
@@ -369,12 +364,12 @@ Item {
                 focus: true
 
                 pixelAligned: true
-                // Buffer de carrusel: ~2-3 tarjetas por lado (antes 1200).
-                // Suficiente para el scroll animado (300ms) sin retener
-                // de más; si notas recarga al hacer flick rápido, subir.
-                cacheBuffer: 800
+                // Buffer de carrusel reducido: ~2 tarjetas por lado. Suficiente
+                // para el scroll animado sin retener delegados de más (menos
+                // memoria, menos decodados de frames de vídeo simultáneos).
+                cacheBuffer: 400
                 snapMode: ListView.SnapToItem
-                highlightMoveDuration: 300
+                highlightMoveDuration: 180 // más rápido, sin easing pesado
                 highlightFollowsCurrentItem: true
 
                 // Centrado estricto tipo Carrusel / Coverflow
@@ -387,8 +382,6 @@ Item {
                 // Relleno invisible a ambos lados: sin esto, el primer y el
                 // último fondo nunca pueden centrarse (el contentX no puede
                 // pasar de los bordes) y queda ese hueco vacío/asimétrico.
-                // El ancho coincide con el mismo cálculo del highlightRange
-                // (150 = mitad del ancho de tarjeta) para que quede simétrico.
                 header: Item {
                     width: Math.max(0, wallpaperList.width / 2 - 150)
                     height: 1
@@ -401,7 +394,6 @@ Item {
                 // Desplazamiento por rueda de ratón / touchpad
                 WheelHandler {
                     id: wheelHandler
-
                     orientation: Qt.Horizontal | Qt.Vertical
                     onWheel: event => {
                         if (event.angleDelta.y < 0 || event.angleDelta.x > 0) {
@@ -412,15 +404,13 @@ Item {
                     }
                 }
 
-                // Navegación por teclado
+                // Navegación por teclado (ciclo infinito)
                 Keys.onLeftPressed: {
                     currentIndex === 0 ? currentIndex = wallpaperList.count - 1 : decrementCurrentIndex();
                 }
-
                 Keys.onRightPressed: {
                     currentIndex === wallpaperList.count - 1 ? currentIndex = 0 : incrementCurrentIndex();
                 }
-
                 Keys.onReturnPressed: root.applyCurrentWallpaper()
 
                 // Escribir (o borrar) con el carrusel enfocado lleva al

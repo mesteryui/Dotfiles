@@ -32,7 +32,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Widgets
 import M3Shapes
 
 // Scope ligero: el IPC vive aquí para responder antes de cargar.
@@ -177,8 +176,6 @@ Scope {
                     return tr("launcher.tab_system", "Sistema");
                 case "files":
                     return tr("launcher.tab_files", "Archivos");
-                case "web":
-                    return tr("launcher.tab_web", "Web");
                 case "emoji":
                     return tr("launcher.tab_emoji", "Emojis");
                 case "calc":
@@ -192,7 +189,7 @@ Scope {
             // (LazyLoader, primera apertura), no al arrancar el shell: el scan
             // inicial de DesktopEntries se lanza en el primer acceso. Solo se
             // usa para el texto "Cargando…" cuando aún no hay ninguna.
-            property int appCount: DesktopEntries.applications.values.length
+            property int appCount: DesktopEntries ? DesktopEntries.applications.values.length : 0
 
             function prefixOf(modeId) {
                 return MenuModes.prefixOf(modeId);
@@ -205,8 +202,6 @@ Scope {
                     return MaterialShape.Cookie6Sided;
                 case "files":
                     return MaterialShape.Bun;
-                case "web":
-                    return MaterialShape.Oval;
                 case "emoji":
                     return MaterialShape.Flower;
                 case "calc":
@@ -224,8 +219,6 @@ Scope {
                     return "settings";
                 case "files":
                     return "folder";
-                case "web":
-                    return "public";
                 case "emoji":
                     return "mood";
                 case "calc":
@@ -538,6 +531,13 @@ Scope {
                     scope.shown = false;
                     return;
                 }
+                // Entrada de búsqueda web (inyectada cuando no hay resultados de apps).
+                if (it.isWebSearch === true) {
+                    launcher.runCmd(["xdg-open",
+                        "https://duckduckgo.com/?q=" + encodeURIComponent(launcher.query) + "&ia=web"]);
+                    scope.shown = false;
+                    return;
+                }
                 // Navegación entre secciones: no cierra el menú.
                 if (it.kind === "menuback" || (it.kind === "system" && it.isSubmenu)) {
                     launcher.goSection(it.section);
@@ -727,7 +727,8 @@ Scope {
                 // nunca se guardan QObjects vivos de DesktopEntries en el
                 // modelo (un rescan los destruye y el DelegateModel acabaría
                 // leyendo memoria muerta -> SIGSEGV al teclear).
-                const base = LauncherApps.uniqueApps([...DesktopEntries.applications.values]);
+                const apps = DesktopEntries ? DesktopEntries.applications.values : [];
+                const base = LauncherApps.uniqueApps([...apps]);
                 launcher.sortedBase = LauncherApps.alphaSort(base.map(e => LauncherApps.snapshotEntry(e)));
             }
 
@@ -777,7 +778,23 @@ Scope {
                         return out.concat(LauncherApps.alphaSort(fresh));
                     }
                     const pool = q === "" ? LauncherApps.alphaSort(base) : launcher.todoFilter(q, base);
-                    return LauncherApps.pinFirst(pool, pins);
+                    let out = LauncherApps.pinFirst(pool, pins);
+                    // Búsqueda web como una entrada más de la lista (estilo ryoku).
+                    // Aparece siempre que haya una consulta, incluso si hay resultados de apps.
+                    if (q !== "") {
+                        out.push({
+                            isDesktopApp: false,
+                            isWebSearch: true,
+                            id: "__web_search__",
+                            title: launcher.tr("launcher.web_search_title", "Buscar en la web"),
+                            sub: launcher.tr("launcher.web_search_sub", "Buscar en DuckDuckGo") + " · " + q,
+                            icon: "web",
+                            appIcon: "",
+                            ch: "",
+                            cat: ""
+                        });
+                    }
+                    return out;
                 }
             }
 
@@ -1198,7 +1215,7 @@ Scope {
                                         return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
                                     return launcher.tr("launcher.empty_no_results", "Sin resultados");
                                 }
-                                // Acción M3 (spec empty-states): reintentar fd.
+                                // Acción M3 (spec empty-states): reintentar fd (archivos).
                                 actionVisible: launcher.activeMode === "files" && fileSearch.failed
                                 actionText: launcher.tr("launcher.files_retry", "Reintentar")
                                 onActionClicked: fileSearch.refresh()

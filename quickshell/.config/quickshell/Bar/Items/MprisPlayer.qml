@@ -16,6 +16,7 @@ Item {
     SurfaceBackground {
         anchors.fill: parent
         active: titleInteraction.pressed
+        radius: Appearance.shape.large
     }
 
     //visible: Services.MprisService.players.length > 0

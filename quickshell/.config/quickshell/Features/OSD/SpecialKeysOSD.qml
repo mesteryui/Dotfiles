@@ -21,10 +21,21 @@ BaseOSD {
 
     property int keyShape: MaterialShape.Circle
 
+    // Ignorar el primer disparo de cada señal: es la sincronización de
+    // arranque (KeyboardThings lee j/devices al cargar y pasa de false al
+    // estado real). Sin esto, el OSD de "Bloq Num"/"Bloq Mayús" salta solo
+    // al iniciar la sesión aunque el usuario no haya pulsado ninguna tecla.
+    property bool _capsInicial: true
+    property bool _numInicial: true
+
     Connections {
         target: KeyboardThings
 
         function onCapsLockOnChanged() {
+            if (_capsInicial) {
+                _capsInicial = false;
+                return;
+            }
             const capsActive = KeyboardThings.capsLockOn;
             keyOSD.osdText = I18nService.getTranslation("osd.caps_lock.label", "Bloq Mayús %1").arg(
                         capsActive ? I18nService.getTranslation("osd.caps_lock.activated", "Activado") :
@@ -34,6 +45,10 @@ BaseOSD {
         }
 
         function onNumsLockChanged() {
+            if (_numInicial) {
+                _numInicial = false;
+                return;
+            }
             const numLockActive = KeyboardThings.numsLock;
             keyOSD.osdText = "Bloq Num " + (numLockActive ? "activado" : "desactivado");
             keyOSD.keyShape = numLockActive ? MaterialShape.Cookie4Sided : MaterialShape.Circle;

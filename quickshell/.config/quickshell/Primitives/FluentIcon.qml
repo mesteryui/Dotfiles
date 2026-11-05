@@ -20,7 +20,11 @@ Kirigami.Icon {
     roundToIconSize: false
     color: Appearance.md3.on_surface
     isMask: true
-    animated: true
+    // animated: false: los iconos de barra/panel son estáticos. Con
+    // animated: true Kirigami mantiene maquinaria de animación SVG en cada
+    // instancia (decodado + temporizador de frames) incluso sin frames que
+    // animar. Con false se decodifica una vez y se reusa el caché.
+    animated: false
 
     Component.onCompleted: {
         if (icon === "") {

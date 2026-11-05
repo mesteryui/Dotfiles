@@ -89,7 +89,7 @@ Scope {
 
             // Modelo ya filtrado: el ListView solo ve ventanas reales, así
             // que currentIndex/count/scroll cuadran sin saltar fantasmas.
-            readonly property var realToplevels: Hyprland.toplevels.values.filter(root.isRealToplevel)
+            readonly property var realToplevels: Hyprland.toplevels ? Hyprland.toplevels.values.filter(root.isRealToplevel) : []
 
             readonly property int realWindowCount: realToplevels.length
             // Hay más ventanas de las que caben: mostrar ayudas de scroll

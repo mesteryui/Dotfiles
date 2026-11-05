@@ -8,7 +8,7 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property alias persistence: persitenceStates
+    property alias persistence: persistenceStates
     property bool ready: false
 
     Timer {
@@ -47,7 +47,7 @@ Singleton {
         }
 
         JsonAdapter {
-            id: persitenceStates
+            id: persistenceStates
 
             property string currentWallpaper: ""
             // IDs (.desktop) de apps fijadas en el launcher, en orden.

@@ -13,7 +13,8 @@ import Quickshell.Wayland
 Scope {
     id: root
 
-    readonly property int animDuration: 220
+    // Apertura/cierre del panel más rápido que antes (220 -> 160 ms).
+    readonly property int animDuration: 160
     // Fuente única del monitor enfocado (con fallback a la primera pantalla).
     property var focusedScreen: Screens.focusedScreen
     property bool showing: false
@@ -132,7 +133,7 @@ Scope {
                         to: 0.0
                         duration: root.animDuration
                         easing.type: Easing.Bezier
-                        easing.bezierCurve: Appearance.motion.emphasized
+                        easing.bezierCurve: Appearance.motion.standard
                     }
                     ScaleAnimator {
                         target: animatedContainer

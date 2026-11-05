@@ -32,10 +32,15 @@ Singleton {
     // haya terminado de actualizar el estado real.
     // Sin este retardo la lectura sale rancia y el OSD de
     // desactivado nunca se muestra (no hay cambio -> no hay señal).
+    // repeat: false: solo disparan una vez tras una pulsación de Bloq Mayús /
+    // Bloq Num. refreshCapsLock() los vuelve a armar. Se elimina así el
+    // sondeo continuo del socket j/devices (antes cada 60 ms y 220 ms para
+    // siempre), que era la mayor fuente de wakeups y lecturas JSON innecesarias.
     Timer {
         id: debounce
 
         interval: 60
+        repeat: false
         onTriggered: root.queryDevices()
     }
 
@@ -43,6 +48,7 @@ Singleton {
         id: confirmDebounce
 
         interval: 220
+        repeat: false
         onTriggered: root.queryDevices()
     }
 

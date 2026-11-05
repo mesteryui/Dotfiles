@@ -7,9 +7,9 @@ import Quickshell
 import Quickshell.Wayland
 
 // Una ventana de fondo estático por pantalla (la crea WallpaperLayer).
-// Transición en dos fases (idéntica siempre): fundido a negro rápido
-// + fundido de entrada con zoom sutil. Sin fundido en negro = punto
-// medio embarrado en pares de distinto brillo.
+// Transición en dos fases: fundido de salida rápido + fundido de entrada
+// con zoom sutil. Ahora más rápido y con spring en el zoom para que el
+// cambio de fondo se sienta más vivo.
 PanelWindow {
     id: root
 
@@ -61,7 +61,11 @@ PanelWindow {
         // Sin esto un wallhaven de 17MB se decodifica entero (~30MB de
         // textura por cara, x2 en fundido). Patrón igual que lockscreen.
 
-        readonly property real targetScale: Math.max(1, Screen.devicePixelRatio)
+        // targetScale acota el decodado a los píxeles físicos de la pantalla.
+        // Se limita a 2 como máximo: por encima no se gana nitidez visible en
+        // escritorio y solo se inflan las texturas del wallpaper (y, durante
+        // el crossfade, hay dos de ellas simultáneas).
+        readonly property real targetScale: Math.min(2, Math.max(1, Screen.devicePixelRatio))
         sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
         sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
     }
@@ -83,7 +87,11 @@ PanelWindow {
         id: wallpaperPlane
 
         anchors.fill: parent
-        layer.enabled: frost.active
+        // Con fondo de vídeo en reproducción no tiene sentido mantener el
+        // FBO de desenfoque: cada frame costaría GPU desenfocando contenido
+        // que ya se mueve. Se apaga inmediatamente (sin esperar a que el
+        // Behavior de `blur` llegue a 0, que tarda ~200ms).
+        layer.enabled: frost.active && !root.videoEnabled
         layer.effect: WallpaperFrostEffect {
             amount: frost.blur
             maxRadius: frost.blurMax
@@ -105,6 +113,8 @@ PanelWindow {
     // NOTA: el target se asigna imperativo en start/stop, NUNCA por
     // binding (`target: fadeX.targetImage` se reevalúa diferido y el
     // start() corría con el target viejo: fundidos muertos al nacer).
+
+    // Fase 1: apagar lo visible — más rápido que antes (normal -> fast).
     NumberAnimation {
         id: fadeOut
 
@@ -112,7 +122,7 @@ PanelWindow {
 
         property: "opacity"
         to: 0
-        duration: Appearance.motion.normal
+        duration: Appearance.motion.fast
         easing.type: Easing.Bezier
         easing.bezierCurve: Appearance.motion.standard
         onFinished: {
@@ -120,36 +130,47 @@ PanelWindow {
                 root.beginHiddenLoad();
         }
     }
-    NumberAnimation {
-        id: fadeIn
 
-        property Image targetImage
+    // Fase 2: fundido de entrada + zoom de entrada en paralelo.
+    // Ahora con duraciones más rápidas (slowest -> normal) y spring en el
+    // zoom para que el cambio de fondo tenga un efecto más vivo.
+    ParallelAnimation {
+        id: fadeInZoom
 
-        property: "opacity"
-        to: 1
-        duration: Appearance.motion.slowest
-        easing.type: Easing.Bezier
-        easing.bezierCurve: Appearance.motion.standard
-        onFinished: {
-            if (!fadeIn.targetImage)
-                return;
-            const shown = fadeIn.targetImage === imgA ? imgB : imgA;
-            shown.opacity = 0;
-            shown.scale = 1.04;
-            shown.source = "";
-            root.frontIsA = fadeIn.targetImage === imgA;
+        NumberAnimation {
+            id: fadeIn
+
+            property Image targetImage
+
+            property: "opacity"
+            to: 1
+            duration: Appearance.motion.normal
+            easing.type: Easing.Bezier
+            easing.bezierCurve: Appearance.motion.standard
+            onFinished: {
+                if (!fadeIn.targetImage)
+                    return;
+                const shown = fadeIn.targetImage === imgA ? imgB : imgA;
+                shown.opacity = 0;
+                shown.scale = 1.04;
+                shown.source = "";
+                root.frontIsA = fadeIn.targetImage === imgA;
+                root.shownSource = root._fadeTargetSrc;
+            }
         }
-    }
-    NumberAnimation {
-        id: zoomIn
 
-        property Image targetImage
+        SpringAnimation {
+            id: zoomIn
 
-        property: "scale"
-        to: 1
-        duration: Appearance.motion.slowest
-        easing.type: Easing.Bezier
-        easing.bezierCurve: Appearance.motion.standard
+            property Image targetImage
+
+            property: "scale"
+            to: 1
+            spring: Appearance.motion.springSnappy.spring
+            damping: Appearance.motion.springSnappy.damping
+            mass: Appearance.motion.springSnappy.mass
+            epsilon: Appearance.motion.springSnappy.epsilon
+        }
     }
 
     // Espera de decodificado con token anti-carreras (ver beginFade).
@@ -178,7 +199,13 @@ PanelWindow {
         if (Services.WallpaperService.isVideo(src))
             Services.VideoFrameService.ensureFrame(src);
         const eff = Services.WallpaperService.staticSourceFor(src);
-        img.source = eff !== "" ? Qt.resolvedUrl(eff) : "";
+        const resolved = eff !== "" ? Qt.resolvedUrl(eff) : "";
+        // Guardia: si la imagen ya tiene esa misma fuente, no se re-asigna.
+        // Evita re-decodificar y re-subir la textura a GPU al volver a
+        // aplicar el mismo fondo (p. ej. tras restaurar o alternar fondos).
+        if (img.source === resolved)
+            return;
+        img.source = resolved;
     }
 
     // Capa de video (opcional): solo existe mientras el fondo objetivo es
@@ -261,7 +288,7 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Appearance.motion.slowest
+                duration: Appearance.motion.normal
                 easing.type: Easing.Bezier
                 easing.bezierCurve: Appearance.motion.standard
             }
@@ -269,36 +296,38 @@ PanelWindow {
     }
 
     // Fuente reactiva para el reproductor (cubre cambios video->video sin
-    // recargar el Loader).
-    Binding {
-        target: videoLoader.item
-        property: "videoSource"
-        value: root.videoEnabled ? Qt.resolvedUrl(root.source) : ""
-        when: videoLoader.status === Loader.Ready
+    // recargar el Loader). Usamos `Connections` con `target: root` en vez de
+    // `Binding { target: videoLoader.item }`: cuando el Loader se descarga y
+    // vuelve a cargar, el `item` cambia y un `Binding` apuntando al `item`
+    // viejo quedaría colgado y no se reanudaría sobre el nuevo. Las conexiones
+    // a `root` sí se limpian solas al destruir el componente.
+    Connections {
+        target: root
+
+        function onSourceChanged() {
+            if (videoLoader.status === Loader.Ready && videoLoader.item)
+                videoLoader.item.videoSource = Qt.resolvedUrl(root.source);
+        }
+
+        function onWantPlayingChanged() {
+            if (videoLoader.status === Loader.Ready && videoLoader.item)
+                videoLoader.item.playing = root.wantPlaying;
+        }
     }
 
-    // Intención de reproducción en un solo sitio (binding + onLoaded +
-    // vigilante la comparten): pausa en modo juego y bajo la pantalla de
+    // Intención de reproducción en un solo sitio (onLoaded + vigilante +
+    // conexiones de arriba): pausa en modo juego y bajo la pantalla de
     // bloqueo (ahí el vídeo queda totalmente tapado: decodificar es 100%
     // desperdicio). Al desbloquear reanuda solo.
     readonly property bool wantPlaying: !Services.GameMode.enabled && !Services.LockState.locked
 
-    // Pausa en modo juego y en bloqueo: el video se congela en el ultimo
-    // frame y reanuda solo al salir.
-    Binding {
-        target: videoLoader.item
-        property: "playing"
-        value: root.wantPlaying
-        when: videoLoader.status === Loader.Ready
-    }
-
     // Vigilante de reproducción: si el backend se queda clavado en pausa
     // (o un Binding se pierde entre recargas), re-emite play. Solo corre
     // con vídeo activo Y con intención de reproducir: en bloqueo/juego no
-    // despierta el backend cada 3s. Nunca reproduce en modo juego ni
+    // despierta el backend cada 6s. Nunca reproduce en modo juego ni
     // bloqueado.
     Timer {
-        interval: 3000
+        interval: 6000
         repeat: true
         running: root.videoEnabled && root.wantPlaying
         onTriggered: {
@@ -373,15 +402,18 @@ PanelWindow {
     function startFade(img) {
         img.opacity = 0;
         img.scale = 1.04;
-        fadeIn.targetImage = img;
-        zoomIn.targetImage = img;
         // Asignación imperativa (ver nota arriba): el binding diferido
         // llegaría tarde al start().
+        fadeIn.targetImage = img;
+        zoomIn.targetImage = img;
         fadeIn.target = img;
         zoomIn.target = img;
-        fadeIn.start();
-        zoomIn.start();
+        fadeInZoom.start();
     }
+
+    // Se guarda aquí para asignar shownSource solo al terminar el fundido
+    // y así no perder cambios rápidos de fondo a mitad de transición.
+    property string _fadeTargetSrc: ""
 
     onSourceChanged: root.applyBg()
 
@@ -390,6 +422,12 @@ PanelWindow {
             Services.VideoSupport.ensureProbed();
         root.applyBg();
     }
+
+    // Al destruir la capa (p. ej. monitor desconectado) mientras una imagen
+    // espera a decodificarse, soltar la conexión imperativa de
+    // beginFade() para que ni el closure ni el handler queden colgados
+    // referenciando al Image.
+    Component.onDestruction: root.clearReadyWait()
 
     // Petición pendiente mientras se apaga el actual.
     property string pendingSrc: ""
@@ -404,6 +442,7 @@ PanelWindow {
             // Ya visible (o en camino): parar un apagado heredado y
             // reponer el frontal, sin tocar la espera de decodificado.
             fadeOut.stop();
+            fadeInZoom.stop();
             const front = root.frontIsA ? imgA : imgB;
             front.opacity = 1;
             root.hasPending = false;
@@ -411,8 +450,7 @@ PanelWindow {
         }
         if (src === "") {
             root.clearReadyWait();
-            fadeIn.stop();
-            zoomIn.stop();
+            fadeInZoom.stop();
             fadeOut.stop();
             root.hasPending = false;
             imgA.source = "";
@@ -426,8 +464,7 @@ PanelWindow {
         // Arranque: sin transición, puesta directa.
         if (root.isInitialLoad) {
             root.isInitialLoad = false;
-            fadeIn.stop();
-            zoomIn.stop();
+            fadeInZoom.stop();
             fadeOut.stop();
             root.clearReadyWait();
             root.hasPending = false;
@@ -444,11 +481,10 @@ PanelWindow {
         }
         // Interrumpido a mitad de transición: degradar a fundido simple
         // (directo a fase 2, sin apagar a medias).
-        const interrupted = fadeOut.running || fadeIn.running;
+        const interrupted = fadeOut.running || fadeInZoom.running;
         // Fase 1: apagar lo visible; al terminar, beginHiddenLoad enciende
         // lo nuevo (si no hay nada visible o venía interrumpido: directo).
-        fadeIn.stop();
-        zoomIn.stop();
+        fadeInZoom.stop();
         fadeOut.stop();
         root.clearReadyWait();
         root.pendingSrc = src;
@@ -472,9 +508,9 @@ PanelWindow {
         root.hasPending = false;
         if (src === "")
             return;
+        root._fadeTargetSrc = src;
         const hidden = root.frontIsA ? imgB : imgA;
         root.setHiddenSource(hidden, src);
         root.beginFade(hidden);
-        root.shownSource = src;
     }
 }
