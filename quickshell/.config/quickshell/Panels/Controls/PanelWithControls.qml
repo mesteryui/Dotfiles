@@ -85,7 +85,8 @@ Scope {
             // ── Datos ─────────────────────────────────────────────────────
             property string username: Quickshell.env("USER")
 
-            // Sin proceso `hostname` dedicado: viene del bucle de SystemInfoService.
+            // Hostname y recursos del sistema vienen del socket de shinro
+            // a través de SystemInfoService (medio primario, siempre conectado).
             property string hostname: SystemInfoService.hostname
 
             readonly property var btAdapter: BluetoothService.currentAdapter
@@ -102,43 +103,6 @@ Scope {
             Shortcut {
                 sequence: "Escape"
                 onActivated: scope.shown = false
-            }
-
-            // Demanda pareada sobre SystemInfoService: adquirir al abrir y liberar
-            // al cerrar (con guardia para no desbalancear el contador si visible
-            // cambia dos veces seguidas al mismo valor, y liberación al destruir).
-            property bool _sysInfoAcquired: false
-
-            function syncSysInfoDemand() {
-                if (scope.shown && !root._sysInfoAcquired) {
-                    SystemInfoService.acquire();
-                    root._sysInfoAcquired = true;
-                } else if (!scope.shown && root._sysInfoAcquired) {
-                    SystemInfoService.release();
-                    root._sysInfoAcquired = false;
-                }
-            }
-
-            Component.onDestruction: {
-                if (root._sysInfoAcquired)
-                    SystemInfoService.release();
-            }
-
-            onVisibleChanged: {
-                // Foco inicial silencioso: el teclado funciona desde el primer
-                // momento pero sin anillo visible hasta que se pulse una tecla.
-                // El contenido es lazy: puede no existir aún en la primera apertura
-                // (onLoaded del Loader lo enfoca al completarse).
-                syncSysInfoDemand();
-                if (visible)
-                    Qt.callLater(() => contentLoader.item?.focusDefault?.());
-            }
-
-            // En la primera apertura el item se crea ya visible: onVisibleChanged
-            // no se dispara al crear, así que se adquiere la demanda aquí.
-            Component.onCompleted: {
-                if (scope.shown)
-                    syncSysInfoDemand();
             }
 
             PopupBackground {

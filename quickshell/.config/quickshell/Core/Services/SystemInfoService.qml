@@ -7,26 +7,117 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    // ── Intervalo de actualización (ms) ───────────────────────────
-    // No se toca por regla de no cambiar comportamiento: 2000 fijo.
-    readonly property int pollInterval: 2000
-
-    // ── Demanda (multiconsumidor) ───────────────────────────────
-    // Cualquiera que necesite datos en vivo —paneles o servicios— llama a
-    // acquire() al empezar y release() al terminar. El bucle corre mientras
-    // haya al menos un cliente. `hasData` garantiza una primera lectura al
-    // arrancar aunque nadie lo pida todavía.
-    property int demandCount: 0
+    // ── Estado ──────────────────────────────────────────────────
     property bool hasData: false
 
-    function acquire() {
-        root.demandCount += 1;
+    // ── Socket Unix del backend shinro ──────────────────────────
+    // Conexión persistente: el backend empuja datos cada 2 s y nunca cierra.
+    // Quickshell no reconecta solo tras un error, así que lo hacemos con
+    // reconnectTimer (mismo patrón que Hyprsunset.qml).
+    readonly property string socketPath: {
+        const rt = Quickshell.env("XDG_RUNTIME_DIR");
+        if (rt)
+            return rt + "/shinro";
+        const uid = Quickshell.env("UID");
+        return uid ? "/run/user/" + uid + "/shinro" : "";
     }
 
-    function release() {
-        if (root.demandCount > 0)
-            root.demandCount -= 1;
+    function fmtBytes(bytes) {
+        const b = bytes ?? 0;
+        if (b <= 0)
+            return "0G";
+        const gib = b / (1024 * 1024 * 1024);
+        if (gib >= 1)
+            return gib.toFixed(gib >= 10 ? 0 : 1) + "G";
+        return (b / (1024 * 1024)).toFixed(0) + "M";
     }
+
+    Socket {
+        id: shinroSocket
+        path: root.socketPath
+
+        parser: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                try {
+                    const msg = JSON.parse(data);
+                    if (msg.type !== "update" || msg.module !== "system")
+                        return;
+
+                    const d = msg.data;
+
+                    _cpu.usage = (d.cpu_percent ?? 0) / 100;
+                    _cpu.coreCount = d.cpu_cores ?? 0;
+
+                    _temp.value = d.temperature_c ?? -1;
+
+                    _mem.usage = (d.ram_percent ?? 0) / 100;
+                    _mem.totalMiB = Math.round((d.ram_total_gb ?? 0) * 1024);
+                    _mem.usedMiB = Math.round((d.ram_used_gb ?? 0) * 1024);
+                    _mem.availableMiB = Math.max(0, _mem.totalMiB - _mem.usedMiB);
+                    _mem.swapTotalMiB = Math.round(d.swap_total_mib ?? 0);
+                    _mem.swapUsedMiB = Math.round(d.swap_used_mib ?? 0);
+                    _mem.swapUsage = (d.swap_percent ?? 0) / 100;
+
+                    _uptime.seconds = d.uptime_seconds ?? 0;
+                    const secs = _uptime.seconds;
+                    const days = Math.floor(secs / 86400);
+                    const hours = Math.floor((secs % 86400) / 3600);
+                    const mins = Math.floor((secs % 3600) / 60);
+                    if (days > 0)
+                        _uptime.formatted = days + "d " + hours + "h " + mins + "m";
+                    else if (hours > 0)
+                        _uptime.formatted = hours + "h " + mins + "m";
+                    else
+                        _uptime.formatted = mins + "m";
+
+                    _host.name = d.hostname || "";
+
+                    _disk.total = root.fmtBytes(d.disk_total_bytes);
+                    _disk.used = root.fmtBytes(d.disk_used_bytes);
+                    _disk.usage = (d.disk_percent ?? 0) / 100;
+                    _disk.usagePct = Math.round(d.disk_percent ?? 0) + "%";
+
+                    root.hasData = true;
+                } catch (e) {
+                    console.warn("[SystemInfoService] mensaje inválido:", e);
+                }
+            }
+        }
+
+        onConnectionStateChanged: {
+            if (!shinroSocket.connected)
+                return;
+            // Suscribirse al módulo system. El backend responde con un
+            // snapshot inmediato y luego empuja cada 2 s. No se envía
+            // `location`: este servicio no consume clima y no debe
+            // sobrescribir la ubicación del WeatherService.
+            shinroSocket.write(JSON.stringify({
+                type: "hello",
+                intervals: { system: 2, weather: 0 }
+            }) + "\n");
+            shinroSocket.flush();
+        }
+
+        onError: error => {
+            // No tocar `connected` aquí: Quickshell emite errorOccurred desde
+            // QLocalSocket y modificar el estado reentra en onSocketError,
+            // provocando un deleteLater() sobre un socket ya liberado
+            // (segfault). reconnectTimer reintenta cuando `connected` pase a
+            // false (o si nunca llegó a conectarse).
+        }
+    }
+
+    // Reconexión: solo corre mientras no haya conexión.
+    Timer {
+        id: reconnectTimer
+        interval: 2000
+        repeat: true
+        running: root.socketPath !== "" && !shinroSocket.connected
+        onTriggered: shinroSocket.connected = true
+    }
+
+    Component.onCompleted: shinroSocket.connected = true
 
     // ── API pública: CPU ──────────────────────────────────────────
     readonly property real cpuUsage: _cpu.usage
@@ -61,8 +152,6 @@ Singleton {
     readonly property real uptimeSecs: _uptime.seconds
 
     // ── API pública: Host ─────────────────────────────────────────
-    // Sale del MISMO bucle (sin proceso extra): lo consume el panel de
-    // control en vez de lanzar `hostname` al arrancar.
     readonly property string hostname: _host.name
 
     // ── API pública: Disco ────────────────────────────────────────
@@ -74,130 +163,21 @@ Singleton {
 
     readonly property real diskUsage: _disk.usage
 
-    // ═════════════════════════════════════════════════════════════
-    // Internals: Motor Centralizado Asíncrono
-    // ═════════════════════════════════════════════════════════════
-
-    Process {
-        id: sysProcess
-        // Bucle infinito en bash que extrae toda la info en una sola pasada.
-        // Mantiene 1 solo proceso vivo, reduciendo la carga del hilo principal.
-
-        command: ["bash", "-c", `while true; do
-                cat /proc/stat
-                echo '---SEP---'
-                cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0
-                echo '---SEP---'
-                cat /proc/meminfo
-                echo '---SEP---'
-                cat /proc/uptime
-                echo '---SEP---'
-                df -h /
-                echo '---SEP---'
-                cat /proc/sys/kernel/hostname 2>/dev/null || hostname
-                echo '===END==='
-                sleep ${root.pollInterval / 1000}
-            done`]
-        running: root.demandCount > 0 || !root.hasData
-
-        stdout: SplitParser {
-            // Este delimitador agrupa todo el ciclo en un solo callback
-            splitMarker: "===END===\n"
-
-            onRead: data => {
-                const chunks = data.split("---SEP---\n");
-                if (chunks.length >= 5) {
-                    _cpu.parse(chunks[0]);
-                    _temp.parse(chunks[1]);
-                    _mem.parse(chunks[2]);
-                    _uptime.parse(chunks[3]);
-                    _disk.parse(chunks[4]);
-                    if (!root.hasData)
-                        root.hasData = true;
-                }
-                // Sección añadida al final a propósito: no desplaza índices.
-                if (chunks.length >= 6)
-                    _host.parse(chunks[5]);
-            }
-        }
-    }
-
-    // ── Adaptadores de Datos ──────────────────────────────────────
+    // ── Adaptadores de Datos (QtObjects para mantener la API) ─────
 
     QtObject {
-        id: _disk
-
-        property string total: "0G"
-        property string used: "0G"
-        property string usagePct: "0%"
+        id: _cpu
         property real usage: 0.0
-
-        function parse(raw) {
-            const lines = raw.trim().split("\n");
-            if (lines.length < 2)
-                return;
-            const parts = lines[1].trim().split(/\s+/);
-            if (parts.length >= 6) {
-                total = parts[1];
-                used = parts[2];
-                usagePct = parts[4];
-                usage = parseInt(parts[4]) / 100;
-            }
-        }
+        property int coreCount: 0
     }
 
     QtObject {
         id: _temp
-
         property int value: 0
-
-        function parse(raw) {
-            const t = parseInt(raw.trim());
-            if (!isNaN(t))
-                value = Math.round(t / 1000);
-        }
-    }
-
-    QtObject {
-        id: _cpu
-
-        property real usage: 0.0
-        property int coreCount: 0
-        property real _prevTotal: 0
-        property real _prevIdle: 0
-
-        function parse(raw) {
-            const parts = raw.split("\n")[0].trim().split(/\s+/);
-
-            const user = parseInt(parts[1]);
-            const nice = parseInt(parts[2]);
-            const system = parseInt(parts[3]);
-            const idle = parseInt(parts[4]);
-            const iowait = parseInt(parts[5]);
-            const irq = parseInt(parts[6]);
-            const softirq = parseInt(parts[7]);
-            const steal = parseInt(parts[8]) || 0;
-
-            const totalIdle = idle + iowait;
-            const totalBusy = user + nice + system + irq + softirq + steal;
-            const total = totalIdle + totalBusy;
-
-            const dTotal = total - _prevTotal;
-            const dIdle = totalIdle - _prevIdle;
-
-            if (dTotal > 0)
-                usage = Math.max(0.0, Math.min(1.0, (dTotal - dIdle) / dTotal));
-
-            _prevTotal = total;
-            _prevIdle = totalIdle;
-
-            coreCount = raw.split("\n").filter(l => /^cpu\d+/.test(l)).length;
-        }
     }
 
     QtObject {
         id: _mem
-
         property int totalMiB: 0
         property int usedMiB: 0
         property int availableMiB: 0
@@ -205,61 +185,24 @@ Singleton {
         property int swapTotalMiB: 0
         property int swapUsedMiB: 0
         property real swapUsage: 0.0
-
-        function parse(raw) {
-            function get(key) {
-                const m = raw.match(new RegExp(`^${key}:\\s+(\\d+)`, "m"));
-                return m ? parseInt(m[1]) : 0;
-            }
-
-            const totalKiB = get("MemTotal");
-            const availableKiB = get("MemAvailable");
-            const swapTotalKiB = get("SwapTotal");
-            const swapFreeKiB = get("SwapFree");
-
-            totalMiB = Math.round(totalKiB / 1024);
-            availableMiB = Math.round(availableKiB / 1024);
-            usedMiB = totalMiB - availableMiB;
-            usage = totalMiB > 0 ? usedMiB / totalMiB : 0.0;
-
-            swapTotalMiB = Math.round(swapTotalKiB / 1024);
-            swapUsedMiB = Math.round((swapTotalKiB - swapFreeKiB) / 1024);
-            swapUsage = swapTotalMiB > 0 ? swapUsedMiB / swapTotalMiB : 0.0;
-        }
     }
 
     QtObject {
         id: _host
-
         property string name: ""
-
-        function parse(raw) {
-            const h = raw.trim().split("\n")[0].trim();
-            if (h !== "")
-                name = h;
-        }
     }
 
     QtObject {
         id: _uptime
-
         property real seconds: 0
         property string formatted: ""
+    }
 
-        function parse(raw) {
-            const secs = parseFloat(raw.split(" ")[0]);
-            seconds = secs;
-
-            const d = Math.floor(secs / 86400);
-            const h = Math.floor((secs % 86400) / 3600);
-            const m = Math.floor((secs % 3600) / 60);
-
-            if (d > 0)
-                formatted = `${d}d ${h}h ${m}m`;
-            else if (h > 0)
-                formatted = `${h}h ${m}m`;
-            else
-                formatted = `${m}m`;
-        }
+    QtObject {
+        id: _disk
+        property string total: "0G"
+        property string used: "0G"
+        property string usagePct: "0%"
+        property real usage: 0.0
     }
 }

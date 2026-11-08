@@ -66,16 +66,6 @@ Item {
         }
     }
 
-    function volumeIcon(vol: real): string {
-        if (vol <= 0.001)
-            return "volume_off";
-        if (vol < 0.33)
-            return "volume_mute";
-        if (vol < 0.66)
-            return "volume_down";
-        return "volume_up";
-    }
-
     // ── Contenedor Principal ──────────────────────────────────
     ColumnLayout {
         id: mainColumn

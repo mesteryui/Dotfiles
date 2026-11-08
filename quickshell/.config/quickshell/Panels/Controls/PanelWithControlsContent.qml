@@ -9,7 +9,6 @@ import qs.Panels.Controls.Tabs
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell.Io
 import Quickshell.Networking
 
 Item {

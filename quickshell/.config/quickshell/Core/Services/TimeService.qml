@@ -157,6 +157,17 @@ Singleton {
     Component.onCompleted: {
         root._now = new Date();
         root.tick = 0;
+        // Si la pantalla ya está bloqueada al inicializar el singleton,
+        // `lockedChanged` no se disparará (no hay transición), así que
+        // activamos forceNow y el timer del lockscreen aquí directamente.
+        if (LockState.locked && root.lockscreenTimer) {
+            root.forceNow = true;
+            root._now = new Date();
+            root.lockTick = 0;
+            root.tick = root.tick + 1;
+            root.lockscreenTimer.start();
+            root.timeChanged();
+        }
     }
 
     // ---- Gestión de bloqueo/desbloqueo ----
@@ -172,18 +183,24 @@ Singleton {
                 root._now = new Date();
                 root.tick = root.tick + 1;
                 root.lockTick = 0;
-                root.lockscreenTimer.start();
+                if (root.lockscreenTimer) {
+                    root.lockscreenTimer.start();
+                }
                 root.timeChanged();
             } else {
                 // PANTALLA DESBLOQUEADA: parar timer del lockscreen, apagar
                 // forceNow a los 2 s y volver a SystemClock.
-                root.lockscreenTimer.stop();
+                if (root.lockscreenTimer) {
+                    root.lockscreenTimer.stop();
+                }
                 root.lockTick = 0;
                 root.forceNow = true;
                 root._now = new Date();
                 root.tick = root.tick + 1;
                 root.timeChanged();
-                root.resetForceNow.restart();
+                if (root.resetForceNow) {
+                    root.resetForceNow.restart();
+                }
             }
         }
     }

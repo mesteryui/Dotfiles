@@ -4,8 +4,8 @@ pragma ComponentBehavior: Bound
 import qs.Core.Modules
 import "WeatherFormat.js" as WeatherFormat
 import QtQuick
-import QtPositioning
 import Quickshell
+import Quickshell.Io
 
 Singleton {
     id: root
@@ -16,31 +16,23 @@ Singleton {
     readonly property bool configGpsEnabled: ConfigService.configs.weather.autoLocation ?? false
 
     // --- Estados para la Interfaz de Usuario (UI) ---
-    readonly property bool isLoading: root._geocodeXhr !== null || root._forecastXhr !== null
-                                      || root._reverseXhr !== null || root._alertsXhr !== null
-                                      || root._aqiXhr !== null
+    readonly property bool isLoading: root._socketPending
     property bool isError: false
     property string errorMessage: ""
     property double lastFetchTimestamp: 0
-    // Reintento con backoff ante errores (15s, 30s, 60s… tope 5min).
     property int _retryCount: 0
 
-    // Override de sesión para GPS
-    property bool _gpsSessionFallback: false
-    readonly property bool gpsActive: root.configGpsEnabled && !root._gpsSessionFallback
+    property bool _socketPending: false
+    property bool socketConnected: false
 
     // Icono dinámico reactivo (Día / Noche)
     readonly property string icon: Icons.getWeatherIcon(data.wCode, data.isDay)
     readonly property string temperature: data.temp
 
-    // --- Ubicación y Caché ---
+    // --- Ubicación (reflejada del backend vía socket) ---
     property var location: ({
                                 valid: false,
-                                lat: 0,
-                                lon: 0,
-                                cachedCity: "",
-                                // Para avisos MeteoAlarm: slug del feed del país + tokens
-                                // de texto (ciudad, provincia, región) para emparejar zonas.
+                                city: "",
                                 countrySlug: "",
                                 matchTokens: []
                             })
@@ -67,116 +59,105 @@ Singleton {
                             lastRefresh: "--:--",
                             forecast: [],
                             hourlyByDay: [],
-                            // Avisos MeteoAlarm: 0 nada, 2 amarillo, 3 naranja, 4 rojo.
                             alertLevel: 0,
                             alertCount: 0,
                             alerts: [],
-                            // Calidad del aire (European AQI): -1 desconocido.
                             aqi: -1,
-                            // 0 desconocido, 1 buena … 6 pésima.
                             aqiLevel: 0
                         })
 
-    // Peticiones en curso
-    property var _geocodeXhr: null
-    property var _forecastXhr: null
-    property var _reverseXhr: null
-    property var _alertsXhr: null
-    property var _aqiXhr: null
     property double lastAlertsTimestamp: 0
 
-    // Etiqueta de ciudad resuelta por geocodificación inversa (modo GPS).
-    // Así se muestra "Madrid, Comunidad de Madrid" en vez de "Mi ubicación".
     property string _gpsLabel: ""
-    // Evita arrancar el PositionSource (y loguear) dos veces al inicio:
-    // onCompleted + onGpsActiveChanged tras cargar ConfigService.
-    property bool _gpsRunning: false
-    // Guardia anti-doble-fetch al arrancar: onCompleted corre con city=""
-    // y al cargar config.json onCityChanged/onGpsActiveChanged relanzan
-    // getData. Se difiere el fetch inicial hasta ConfigService.ready.
     property bool _bootFetchDone: false
 
-    onConfigGpsEnabledChanged: {
-        if (root.configGpsEnabled)
-            root._gpsSessionFallback = false;
+    // ── Socket Unix del backend shinro (datos de clima) ──
+    // Conexión persistente: el backend empuja tras el hello y nunca cierra.
+    readonly property string socketPath: {
+        const rt = Quickshell.env("XDG_RUNTIME_DIR");
+        if (rt)
+            return rt + "/shinro";
+        const uid = Quickshell.env("UID");
+        return uid ? "/run/user/" + uid + "/shinro" : "";
     }
 
-    onGpsActiveChanged: {
-        root._syncPositionSource();
-        // Durante el arranque (config aún sin cargar) no se pide nada:
-        // el fetch único lo dispara onConfigReady una vez.
-        if (!ConfigService.ready || !root._bootFetchDone)
-            return;
-        // Al salir de GPS el Timer se reactiva pero esperaría un ciclo
-        // entero: si el parte está caducado, pedirlo ya (sin cambiar
-        // el intervalo ni el comportamiento en GPS).
-        if (!root.gpsActive && Date.now() - root.lastFetchTimestamp >= root.fetchInterval)
-            root.getData();
-    }
+    Socket {
+        id: shinroSocket
+        path: root.socketPath
 
-    onCityChanged: {
-        // Arranque: city pasa de "" al valor de config.json; no se
-        // fetch aquí, ya lo hace onConfigReady una sola vez.
-        if (!ConfigService.ready || !root._bootFetchDone)
-            return;
-        root.location.valid = false;
-        root.location.cachedCity = "";
-        root.getData();
-    }
+        parser: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                try {
+                    const msg = JSON.parse(data);
+                    if (msg.type === "error") {
+                        root._socketPending = false;
+                        console.warn("[WeatherService] " + msg.message);
+                        return;
+                    }
+                    if (msg.type !== "update" || msg.module !== "weather")
+                        return;
 
-    Connections {
-        target: NetworkService
-
-        function onCurrentNetworkChanged() {
-            if (NetworkService?.currentNetwork !== null) {
-                if (root.isError || root.data.lastRefresh === "--:--") {
-                    root.getData();
+                    root._socketPending = false;
+                    const d = msg.data;
+                    if (!d || !d.current || !d.daily || !d.hourly) {
+                        console.warn("[WeatherService] payload de socket incompleto");
+                        return;
+                    }
+                    // El backend entrega la misma forma que Open-Meteo más
+                    // _cityLabel, _aqi y _alerts ya procesados.
+                    root.refineData(d, true);
+                } catch (e) {
+                    console.warn("[WeatherService] mensaje inválido:", e);
                 }
             }
         }
-    }
 
-    function _syncPositionSource() {
-        if (root.gpsActive) {
-            if (root._gpsRunning)
+        onConnectionStateChanged: {
+            if (!shinroSocket.connected)
                 return;
-            root._gpsRunning = true;
-            console.info("[WeatherService] Iniciando servicio GPS.");
-            // El Loader activa async: si el item ya existe se arranca aquí,
-            // si no lo arranca onLoaded al completarse.
-            const p = positionLoader.item;
-            if (p && !p.active)
-                p.start();
-        } else {
-            root._gpsRunning = false;
-            // Al desactivar, el Loader destruye la fuente (= stop): sin
-            // paradas a ciegas que spameen "geoclue2: Already stopped".
+            root._sendHello();
+        }
+
+        onError: error => {
+            // No tocar `connected` aquí: reentrar en onSocketError de
+            // Quickshell provoca un segfault. reconnectTimer se encarga de
+            // reintentar cuando `connected` pase a false.
         }
     }
 
-    // Limpia nombres del proveedor: quita sufijos tipo " [Galicia]" y
-    // espacios sobrantes. Así "Vigo, Galicia [Galicia]" queda "Vigo, Galicia".
-    // (Implementación en WeatherFormat.js, aquí solo el delegue.)
-    function cleanPlaceName(s) {
-        return WeatherFormat.cleanPlaceName(s);
+    Timer {
+        id: reconnectTimer
+        interval: 2000
+        repeat: true
+        running: root.socketPath !== "" && !shinroSocket.connected
+        onTriggered: shinroSocket.connected = true
     }
 
-    // Construye "Ciudad, Región" sin repetir el mismo nombre dos veces.
-    function buildCityLabel(place, region, fallback) {
-        return WeatherFormat.buildCityLabel(place, region, fallback);
+    onConfigGpsEnabledChanged: {
+        if (!ConfigService.ready || !root._bootFetchDone)
+            return;
+        // El modo (auto/manual) viaja en el hello: renegociar para que el
+        // backend use la ubicación correcta.
+        root._sendHello();
     }
 
-    // Idioma de 2 letras para las APIs de geocodificación, según el
-    // idioma resuelto de la shell (no hardcodeado).
-    function _geoLang() {
-        const l = (I18nService.language || "en_US").toLowerCase();
-        if (l.startsWith("es"))
-            return "es";
-        if (l.startsWith("en"))
-            return "en";
-        if (l.startsWith("eo"))
-            return "en";
-        return l.slice(0, 2);
+    onCityChanged: {
+        if (!ConfigService.ready || !root._bootFetchDone)
+            return;
+        root.location.valid = false;
+        root.location.city = "";
+        // El backend guarda la ciudad en el hello. Renegociar aquí evita que
+        // siga empujando el clima de la ciudad anterior.
+        root._sendHello();
+    }
+
+    onFetchIntervalChanged: {
+        if (!ConfigService.ready || !root._bootFetchDone)
+            return;
+        // El intervalo viaja en el hello: el backend reconfigura el pump en
+        // caliente, sin esperar al tick anterior ni reconectar.
+        root._sendHello();
     }
 
     function degreesToCompass(deg) {
@@ -192,11 +173,13 @@ Singleton {
         return d.toLocaleDateString(Qt.locale(), "ddd");
     }
 
-    function refineData(json) {
+    function aqiLevelOf(value) {
+        return WeatherFormat.aqiLevelOf(value);
+    }
+
+    function refineData(json, fromSocket = false) {
         const daily = json?.daily || {};
         const hourly = json?.hourly || {};
-        // Respuesta vacía (sin días ni horas): no es éxito. Se conserva
-        // el parte anterior y se marca error en vez de pintar 0°C/0%.
         if ((daily.time || []).length === 0 || (hourly.time || []).length === 0) {
             root.isError = true;
             root.errorMessage = "Datos incompletos";
@@ -205,6 +188,13 @@ Singleton {
             return;
         }
         let temp = {};
+        // Valores por defecto completos: los paneles leen aqi/alerts aunque
+        // el proveedor aún no los haya rellenado.
+        temp.aqi = -1;
+        temp.aqiLevel = 0;
+        temp.alertLevel = 0;
+        temp.alertCount = 0;
+        temp.alerts = [];
         const current = json?.current || {};
         const unit = "°C";
 
@@ -229,7 +219,6 @@ Singleton {
         const visibVals = hourly.visibility || [];
         let visibMeters = 0;
         if (visibTimes.length > 0 && visibVals.length > 0) {
-            // Buscar la visibilidad de la hora actual (o la más cercana pasada)
             const nowIso = new Date().toISOString().slice(0, 13);
             let idx = visibTimes.findIndex(t => t.slice(0, 13) >= nowIso);
             if (idx < 0)
@@ -247,7 +236,6 @@ Singleton {
         const sunrises = daily.sunrise || [];
         const sunsets = daily.sunset || [];
 
-        // Mínima / máxima de hoy (índice 0)
         temp.tempMin = Math.round(minTemps[0] ?? 0) + unit;
         temp.tempMax = Math.round(maxTemps[0] ?? 0) + unit;
         temp.precipProb = ((precipProbs[0] ?? 0)) + "%";
@@ -255,17 +243,16 @@ Singleton {
 
         for (let i = 1; i < dates.length; i++) {
             temp.forecast.push({
-                                   date: dates[i],
-                                   dayLabel: root.dayLabel(dates[i], i),
-                                   wCode: codes[i] ?? 0,
-                                   maxTemp: Math.round(maxTemps[i] ?? 0),
-                                   minTemp: Math.round(minTemps[i] ?? 0),
-                                   precipProb: (precipProbs[i] ?? 0),
-                                   unit: unit
-                               });
+                date: dates[i],
+                dayLabel: root.dayLabel(dates[i], i),
+                wCode: codes[i] ?? 0,
+                maxTemp: Math.round(maxTemps[i] ?? 0),
+                minTemp: Math.round(minTemps[i] ?? 0),
+                precipProb: (precipProbs[i] ?? 0),
+                unit: unit
+            });
         }
 
-        // --- Detalle por horas: hoy + 3 siguientes (máx. 4 días) ---
         const hTimes = hourly.time || [];
         const hTemps = hourly.temperature_2m || [];
         const hCodes = hourly.weather_code || [];
@@ -284,32 +271,49 @@ Singleton {
                     continue;
                 const timePart = (hTimes[h].split("T")[1] || "").slice(0, 5);
                 hours.push({
-                               time: hTimes[h],
-                               hourLabel: timePart,
-                               temp: Math.round(hTemps[h] ?? 0),
-                               wCode: hCodes[h] ?? 0,
-                               isDay: hIsDay[h] ?? 1,
-                               precipProb: (hProbs[h] ?? 0)
-                           });
+                    time: hTimes[h],
+                    hourLabel: timePart,
+                    temp: Math.round(hTemps[h] ?? 0),
+                    wCode: hCodes[h] ?? 0,
+                    isDay: hIsDay[h] ?? 1,
+                    precipProb: (hProbs[h] ?? 0)
+                });
             }
             temp.hourlyByDay.push({
-                                      date: dates[d],
-                                      shortDate: dayDate.slice(8, 10) + "/" + dayDate.slice(5, 7),
-                                      dayLabel: root.dayLabel(dates[d], d),
-                                      wCode: codes[d] ?? 0,
-                                      maxTemp: Math.round(maxTemps[d] ?? 0),
-                                      minTemp: Math.round(minTemps[d] ?? 0),
-                                      precipProb: (precipProbs[d] ?? 0),
-                                      uvMax: (uvMaxs[d] ?? 0),
-                                      sunrise: (sunrises[d] || "").split("T")[1]?.slice(0, 5) ?? "--:--",
-                                      sunset: (sunsets[d] || "").split("T")[1]?.slice(0, 5) ?? "--:--",
-                                      unit: unit,
-                                      hours: hours
-                                  });
+                date: dates[d],
+                shortDate: dayDate.slice(8, 10) + "/" + dayDate.slice(5, 7),
+                dayLabel: root.dayLabel(dates[d], d),
+                wCode: codes[d] ?? 0,
+                maxTemp: Math.round(maxTemps[d] ?? 0),
+                minTemp: Math.round(minTemps[d] ?? 0),
+                precipProb: (precipProbs[d] ?? 0),
+                uvMax: (uvMaxs[d] ?? 0),
+                sunrise: (sunrises[d] || "").split("T")[1]?.slice(0, 5) ?? "--:--",
+                sunset: (sunsets[d] || "").split("T")[1]?.slice(0, 5) ?? "--:--",
+                unit: unit,
+                hours: hours
+            });
         }
 
         const now = new Date();
         temp.lastRefresh = now.toLocaleTimeString(Qt.locale(), "hh:mm");
+
+        // AQI y avisos: vienen ya procesados del backend.
+        if (json._aqi !== undefined && json._aqi !== null) {
+            temp.aqi = json._aqi;
+            temp.aqiLevel = root.aqiLevelOf(json._aqi);
+        }
+        if (Array.isArray(json._alerts)) {
+            temp.alertLevel = json._alerts.length > 0 ? json._alerts[0].level : 0;
+            temp.alertCount = json._alerts.length;
+            temp.alerts = json._alerts;
+        }
+
+        // Refleja la ciudad resuelta por el backend.
+        if (json?._cityLabel) {
+            root.location.city = json._cityLabel;
+            root.location.valid = true;
+        }
 
         root.data = temp;
         root.isError = false;
@@ -317,10 +321,6 @@ Singleton {
         root.lastFetchTimestamp = Date.now();
         root._retryCount = 0;
         retryTimer.stop();
-        // Los avisos cadencian aparte (30 min): no bloquean el parte.
-        root.fetchAlerts(false);
-        // El AQI cambia despacio pero pesa poco: con cada parte.
-        root.fetchAqi();
     }
 
     function _retryDelay() {
@@ -329,10 +329,7 @@ Singleton {
     }
 
     function _scheduleRetry() {
-        // Solo un reintento pendiente y sin petición en vuelo.
         if (retryTimer.running)
-            return;
-        if (root._forecastXhr !== null || root._geocodeXhr !== null || root._reverseXhr !== null)
             return;
         retryTimer.interval = root._retryDelay();
         root._retryCount++;
@@ -341,7 +338,6 @@ Singleton {
 
     Timer {
         id: retryTimer
-
         repeat: false
         onTriggered: {
             if (root.isError || root.data.lastRefresh === "--:--")
@@ -349,359 +345,34 @@ Singleton {
         }
     }
 
-    // En modo GPS sin fix durante demasiado tiempo el parte quedaría
-    // congelado (PositionSource no emite). Si caduca, reintenta con la
-    // última ubicación conocida en vez de esperar al siguiente fix.
-    Timer {
-        id: gpsStaleTimer
-
-        running: root.gpsActive
-        repeat: true
-        interval: root.fetchInterval
-        onTriggered: {
-            if (root.gpsActive && Date.now() - root.lastFetchTimestamp >= root.fetchInterval)
-                root.getData();
-        }
-    }
-
-    function _request(xhrPropName, url, label, onSuccess, onFailure) {
-        // Sin abort(): abortar un TLS en handshake loguea a nivel C++
-        // "QIODevice::read (QSslSocket): device not open" sin categoría
-        // filtrable. Se huérfana la anterior (handlers a no-op) y se
-        // ignora su resultado; gasta una petición extra pero no ruido.
-        const prevXhr = root[xhrPropName];
-        if (prevXhr) {
-            try {
-                prevXhr.onreadystatechange = () => {};
-                prevXhr.onerror = () => {};
-                prevXhr.ontimeout = () => {};
-            } catch (e) {}
-            root[xhrPropName] = null;
-        }
-
-        const xhr = new XMLHttpRequest();
-        root[xhrPropName] = xhr;
-        xhr.timeout = 10000;
-
-        // onFailure opcional: si se proporciona, el fallo no marca error
-        // global sino que delega (p. ej. la geocodificación inversa usa
-        // una etiqueta de respaldo en vez de romper el panel). El delegado
-        // es quien loguea (una sola línea por fallo): aquí no se avisa
-        // para no duplicar cada aviso (antes salían "(respaldo)" + la del
-        // delegado, p. ej. AQI/Alerts sin conexión).
-        // status 0 / "Error de red" = sin red al arrancar: aviso tenue
-        // ("Sin conexión") en vez de Log.error con "Error HTTP 0".
-        function handleError(msg) {
-            const offline = msg === "Sin conexión" || msg === "Error de red";
-            if (onFailure) {
-                onFailure(msg);
-            } else if (offline) {
-                root.isError = true;
-                root.errorMessage = "Sin conexión";
-                console.warn(`[WeatherService] ${label}: sin conexión (reintentando)`);
-                root._scheduleRetry();
-            } else {
-                root.isError = true;
-                root.errorMessage = msg;
-                console.error(`[WeatherService] ${label} falló: ${msg}`);
-                root._scheduleRetry();
-            }
-        }
-
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (xhr !== root[xhrPropName])
-                return;
-            root[xhrPropName] = null;
-
-            if (xhr.status !== 200) {
-                // status 0 = sin red/DNS al arrancar, no un HTTP real.
-                if (xhr.status === 0)
-                    handleError("Sin conexión");
-                else
-                    handleError(`Error HTTP ${xhr.status}`);
-                return;
-            }
-            try {
-                onSuccess(JSON.parse(xhr.responseText));
-            } catch (e) {
-                handleError("Error al procesar datos");
-            }
-        };
-
-        xhr.onerror = () => {
-            if (xhr !== root[xhrPropName])
-                return;
-            root[xhrPropName] = null;
-            handleError("Error de red");
-        };
-
-        xhr.ontimeout = () => {
-            if (xhr !== root[xhrPropName])
-                return;
-            root[xhrPropName] = null;
-            handleError("Tiempo de espera agotado");
-        };
-
-        xhr.open("GET", url);
-        xhr.send();
-    }
-
-    function fetchForecast(cityLabel) {
-        const url = "https://api.open-meteo.com/v1/forecast" + `?latitude=${root.location.lat}&longitude=${root.location.lon}`
-              + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,is_day"
-              + "&hourly=temperature_2m,weather_code,precipitation_probability,is_day,visibility"
-              + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max"
-              + "&forecast_days=4" + "&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm"
-              + "&timezone=auto";
-
-        root._request("_forecastXhr", url, "Forecast", json => {
-            json._cityLabel = cityLabel;
-            root.refineData(json);
-        });
-    }
-
-    function geocodeCity() {
-        if (!root.city || root.city.trim() === "") {
-            root.isError = true;
-            root.errorMessage = "Ciudad no configurada";
-            return;
-        }
-
-        const parts = root.city.split(",").map(p => p.trim());
-        const name = parts[0];
-        const countryCode = parts.length > 1 ? parts[1].toUpperCase() : "";
-
-        const url = "https://geocoding-api.open-meteo.com/v1/search" + `?name=${encodeURIComponent(name)}&count=5&language=${root._geoLang()}&format=json`;
-
-        root._request("_geocodeXhr", url, "Geocoding", json => {
-            const results = json?.results || [];
-            if (results.length === 0) {
-                root.isError = true;
-                root.errorMessage = `Ciudad no encontrada`;
-                console.error(`[WeatherService] No se encontró "${root.city}"`);
-                return;
-            }
-
-            const match = countryCode ? (results.find(r => r.country_code === countryCode) || results[0]) :
-                                        results[0];
-
-            root.location = {
-                valid: true,
-                lat: match.latitude,
-                lon: match.longitude,
-                cachedCity: root.city,
-                countrySlug: root._alertsSlug(match.country_code),
-                matchTokens: root._alertTokens([match.name, match.admin1, match.admin2, match.admin3,
-                                                match.admin4])
-            };
-
-            const cityLabel = root.buildCityLabel(match.name, match.admin1, root.city);
-            root.fetchForecast(cityLabel);
-        });
-    }
-
-    // Geocodificación inversa: convierte las coordenadas GPS en nombre
-    // de ciudad, en el idioma de la shell. Si falla, reutiliza la última
-    // etiqueta conocida y solo como último recurso el genérico traducido.
-    function reverseGeocode() {
-        const fallback = root._gpsLabel !== "" ? root._gpsLabel : I18nService.getTranslation(
-                                                     "weather.my_location", "Mi ubicación");
-        const url = "https://api.bigdatacloud.net/data/reverse-geocode-client" + `?latitude=${root.location.lat}&longitude=${root.location.lon}&localityLanguage=${root._geoLang()}`;
-
-        root._request("_reverseXhr", url, "ReverseGeocode", json => {
-            const label = root.buildCityLabel(json?.city || json?.locality || "", json?.principalSubdivision || json
-                                              ?.countryName || "", fallback);
-            root._gpsLabel = label;
-            root.location = Object.assign({}, root.location, {
-                                              countrySlug: root._alertsSlug(json?.countryCode),
-                                              matchTokens: root._alertTokens([json?.city, json?.locality, json
-                                                                              ?.principalSubdivision, json
-                                                                              ?.countryName])
-                                          });
-            root.fetchForecast(label);
-        }, () => {
-            root.fetchForecast(fallback);
-        });
-    }
-
-    // ---- Avisos MeteoAlarm (sin clave, feed JSON por país) ----
-    // Slug verificado del feed: feeds-{slug}. Sin slug no hay avisos.
-    // (Implementación en WeatherFormat.js.)
-    function _alertsSlug(countryCode) {
-        return WeatherFormat.alertsSlug(countryCode);
-    }
-
-    // Tokens para emparejar zonas ("Miño de Pontevedra" casa con
-    // "Pontevedra"). Sin geometrías en el feed, el texto manda.
-    function _alertTokens(parts) {
-        return WeatherFormat.alertTokens(parts);
-    }
-
-    function _alertLevelOf(info) {
-        const params = info?.parameter || [];
-        for (let i = 0; i < params.length; i++) {
-            if (params[i]?.valueName !== "awareness_level")
-                continue;
-            const color = String(params[i]?.value ?? "").split(";")[1]?.trim().toLowerCase() ?? "";
-            if (color === "red")
-                return 4;
-            if (color === "orange")
-                return 3;
-            if (color === "yellow")
-                return 2;
-            return 0;
-        }
-        return 0;
-    }
-
-    // Info en el idioma de la shell (eo -> en), si existe.
-    function _alertInfo(alert) {
-        const infos = alert?.info || [];
-        if (infos.length === 0)
-            return null;
-        const lang = (I18nService.language || "en_US").toLowerCase().slice(0, 2);
-        const want = lang === "eo" ? "en" : lang;
-        for (let i = 0; i < infos.length; i++)
-            if (String(infos[i]?.language || "").toLowerCase().startsWith(want))
-                return infos[i];
-        for (let j = 0; j < infos.length; j++)
-            if (String(infos[j]?.language || "").toLowerCase().startsWith("en"))
-                return infos[j];
-        return infos[0];
-    }
-
-    function parseAlerts(json) {
-        const now = Date.now();
-        const tokens = root.location.matchTokens || [];
-        const out = [];
-        const seen = {};
-        const warnings = json?.warnings || [];
-        for (let i = 0; i < warnings.length; i++) {
-            const alert = warnings[i]?.alert;
-            if (!alert || alert.status !== "Actual" || (alert.msgType !== "Alert" && alert.msgType
-                                                        !== "Update"))
-                continue;
-            const info = root._alertInfo(alert);
-            if (!info)
-                continue;
-            const level = root._alertLevelOf(info);
-            if (level < 2)
-                continue;
-            const onset = Date.parse(info.onset ?? info.effective ?? "");
-            const expires = Date.parse(info.expires ?? "");
-            if (isNaN(expires) || expires <= now || isNaN(onset) || onset > now + 24 * 3600 * 1000)
-                continue;
-            const areas = info.area || [];
-            for (let a = 0; a < areas.length; a++) {
-                const desc = String(areas[a]?.areaDesc ?? "");
-                const norm = desc.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                let hit = false;
-                for (let t = 0; t < tokens.length; t++)
-                    if (norm.includes(tokens[t])) {
-                        hit = true;
-                        break;
-                    }
-                if (!hit)
-                    continue;
-                const key = (alert.identifier ?? i) + "|" + desc;
-                if (seen[key])
-                    continue;
-                seen[key] = true;
-                out.push({
-                             level: level,
-                             event: info.event ?? "",
-                             area: desc,
-                             onset: info.onset ?? "",
-                             expires: info.expires ?? "",
-                             description: info.description ?? ""
-                         });
-            }
-        }
-        out.sort((a, b) => (b.level - a.level) || (Date.parse(a.onset) - Date.parse(b.onset)));
-        const d = Object.assign({}, root.data);
-        d.alertLevel = out.length > 0 ? out[0].level : 0;
-        d.alertCount = out.length;
-        d.alerts = out;
-        root.data = d;
-        root.lastAlertsTimestamp = Date.now();
-    }
-
-    function fetchAlerts(force) {
-        if (!root.location.valid || !root.location.countrySlug)
-            return;
-        if (!force && Date.now() - root.lastAlertsTimestamp < 30 * 60 * 1000)
-            return;
-        // Sin pisar petición en vuelo: evita huérfanas en racha.
-        if (root._alertsXhr !== null)
-            return;
-        const url = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + root.location.countrySlug;
-        root._request("_alertsXhr", url, "Alerts", json => root.parseAlerts(json), msg => {
-            console.warn("[WeatherService] Alerts: " + msg + " (sin avisos)");
-            // Sin avisos fiables: limpiar en vez de dejar caducados fijos.
-            const d = Object.assign({}, root.data);
-            d.alertLevel = 0;
-            d.alertCount = 0;
-            d.alerts = [];
-            root.data = d;
-        });
-    }
-
-    // ---- Calidad del aire (Open-Meteo, sin clave) ----
-    function aqiLevelOf(value) {
-        return WeatherFormat.aqiLevelOf(value);
-    }
-
-    function fetchAqi() {
-        if (!root.location.valid)
-            return;
-        if (root._aqiXhr !== null)
-            return;
-        const url = "https://air-quality-api.open-meteo.com/v1/air-quality" + `?latitude=${root.location.lat}&longitude=${root.location.lon}` + "&current=european_aqi&timezone=auto";
-        root._request("_aqiXhr", url, "AirQuality", json => {
-            const value = json?.current?.european_aqi ?? -1;
-            const d = Object.assign({}, root.data);
-            d.aqi = value;
-            d.aqiLevel = root.aqiLevelOf(value);
-            root.data = d;
-        }, msg => {
-            console.warn("[WeatherService] AirQuality: " + msg + " (sin AQI)");
-            const d = Object.assign({}, root.data);
-            d.aqi = -1;
-            d.aqiLevel = 0;
-            root.data = d;
-        });
+    // Suscribe este cliente al módulo weather. El backend responde con un
+    // snapshot inmediato y luego empuja según el intervalo. Es idempotente:
+    // reenviarlo actualiza ciudad/modo/idioma sin reiniciar los pumps.
+    function _sendHello() {
+        if (!shinroSocket.connected)
+            return false;
+        root._socketPending = true;
+        shinroSocket.write(JSON.stringify({
+            type: "hello",
+            location: {
+                mode: root.configGpsEnabled ? "auto" : "manual",
+                city: root.city
+            },
+            intervals: {
+                system: 0,
+                weather: Math.max(1, Math.round(root.fetchInterval / 1000))
+            },
+            lang: (I18nService.language || "es").toLowerCase().slice(0, 2)
+        }) + "\n");
+        shinroSocket.flush();
+        return true;
     }
 
     function getData() {
-        if (NetworkService?.currentNetwork === null) {
-            root.isError = true;
-            root.errorMessage = "Sin conexión";
-            return;
-        }
-        // Elegante y sin cambiar comportamiento visible: si ya hay una
-        // petición de ubicación/pronóstico en vuelo (Timer + GPS pueden
-        // coincidir), no abortarla para relanzarla igual; deja terminarla.
-        // _request ya aborta la anterior, así que esto solo ahorra tráfico.
-        if (root._forecastXhr !== null || root._geocodeXhr !== null || root._reverseXhr !== null)
-            return;
-
-        if (root.gpsActive && root.location.valid) {
-            // Etiqueta ya resuelta: directa; si no, geocodificación inversa.
-            if (root._gpsLabel !== "")
-                root.fetchForecast(root._gpsLabel);
-            else
-                root.reverseGeocode();
-            return;
-        }
-
-        if (root.location.valid && root.location.cachedCity === root.city) {
-            root.fetchForecast(root.city);
-            return;
-        }
-
-        root.geocodeCity();
+        // Solo hay una vía: el socket del backend. Si no está conectado,
+        // reconnectTimer se encarga de reintentar y al conectar envía el
+        // hello automáticamente (onConnectionStateChanged).
+        root._sendHello();
     }
 
     function forceRefresh() {
@@ -711,9 +382,7 @@ Singleton {
     }
 
     Component.onCompleted: {
-        root._syncPositionSource();
-        // Fetch inicial único: si la config ya está (reload en caliente)
-        // directo; si no, espera a onConfigReady (una vez).
+        shinroSocket.connected = true;
         if (ConfigService.ready) {
             root._bootFetchDone = true;
             root.getData();
@@ -726,108 +395,8 @@ Singleton {
         function onReadyChanged() {
             if (ConfigService.ready && !root._bootFetchDone) {
                 root._bootFetchDone = true;
-                root._syncPositionSource();
                 root.getData();
             }
         }
-    }
-
-    // El PositionSource vive en un Loader: el plugin QtPositioning + el
-    // cliente geoclue solo se cargan si el GPS está activado en config.
-    // Con GPS off el arranque nunca los toca (mismo patrón de aislamiento
-    // que QtMultimedia en AnimatedWallpaperPlayer).
-    Loader {
-        id: positionLoader
-
-        active: root.gpsActive
-        asynchronous: true
-        sourceComponent: positionComp
-        onLoaded: {
-            // El item nace parado: se arranca solo si la intención sigue
-            // vigente (pudo desactivarse mientras cargaba en async).
-            if (root._gpsRunning && positionLoader.item && !positionLoader.item.active)
-                positionLoader.item.start();
-        }
-    }
-
-    Component {
-        id: positionComp
-
-        PositionSource {
-            id: posSrc
-
-            updateInterval: root.fetchInterval
-            name: "geoclue2"
-
-            PluginParameter {
-                name: "desktopId"
-                value: "com.shinro.shell"
-            }
-
-            onPositionChanged: {
-                if (position.latitudeValid && position.longitudeValid) {
-                    const accuracy = position.horizontalAccuracyValid ? position.horizontalAccuracy : -1;
-                    if (accuracy >= 0 && accuracy > 5000)
-                        return;
-
-                    const newLat = position.coordinate.latitude;
-                    const newLon = position.coordinate.longitude;
-                    // Si apenas nos hemos movido y ya hay etiqueta, no
-                    // repetimos la geocodificación inversa: directa al forecast.
-                    const sameSpot = root.location.valid && root._gpsLabel !== "" && Math.abs(root.location.lat
-                                                                                              - newLat) < 0.01
-                          && Math.abs(root.location.lon - newLon) < 0.01;
-
-                    root.location = {
-                        valid: true,
-                        lat: newLat,
-                        lon: newLon,
-                        cachedCity: "",
-                        countrySlug: root.location.countrySlug ?? "",
-                        matchTokens: root.location.matchTokens ?? []
-                    };
-                    if (sameSpot)
-                        root.fetchForecast(root._gpsLabel);
-                    else
-                        root.reverseGeocode();
-                } else {
-                    if (!root.location.valid)
-                        root._gpsSessionFallback = true;
-                }
-            }
-
-            onValidityChanged: {
-                if (!posSrc.valid) {
-                    root.location = {
-                        valid: false,
-                        lat: 0,
-                        lon: 0,
-                        cachedCity: "",
-                        countrySlug: "",
-                        matchTokens: []
-                    };
-                    root._gpsSessionFallback = true;
-                }
-            }
-        }
-    }
-
-    // Timer seguro y nativo para polling asíncrono.
-    // Mismo comportamiento de siempre; solo se rearma al cambiar el
-    // intervalo de config (antes seguía con el ciclo viejo hasta el
-    // siguiente disparo) y no pisa peticiones en vuelo (ver getData).
-    Timer {
-        id: pollTimer
-
-        running: !root.gpsActive
-        repeat: true
-        interval: root.fetchInterval
-        triggeredOnStart: false
-        onTriggered: root.getData()
-    }
-
-    onFetchIntervalChanged: {
-        if (!root.gpsActive)
-            pollTimer.restart();
     }
 }

@@ -14,7 +14,6 @@ BarPopupWindow {
     implicitWidth: 360
     implicitHeight: mprisContent.implicitHeight
 
-    color: Appearance.md3.surface
 
     readonly property var player: MprisService.activePlayer
 
@@ -143,7 +142,7 @@ BarPopupWindow {
         anchors.fill: parent
         surfaceRadius: Appearance.shape.card
         baseColor: Appearance.md3.surface
-        showBorder: false
+        showBorder: true
     }
 
     // ── Content ───────────────────────────────────────────────
