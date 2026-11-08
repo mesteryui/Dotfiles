@@ -13,7 +13,6 @@ shinro-backend/
 ├── internal/weather                   # clima (wttr.in / Open-Meteo)
 ├── internal/geo                       # ubicación: Geoclue (D-Bus) o ciudad (manual)
 ├── internal/socket                    # servidor Unix socket, protocolo JSON
-├── quickshell-integration/            # ejemplos QML para Quickshell
 ├── go.mod
 ├── go.sum
 └── README.md
@@ -147,49 +146,10 @@ systemctl --user enable --now shinro-backend
 ## Integración con Quickshell (shinro)
 
 Quickshell incluye el componente `Quickshell.Io.Socket` para Unix sockets.
-No es necesario un archivo JSON intermedio: se lee directamente desde QML.
-
-Ejemplos en `quickshell-integration/`:
-
-| Archivo | Descripción |
-|---------|-------------|
-| `ShinroSocket.qml` | Componente reutilizable que se conecta al socket `shinro` |
-| `SystemBar.qml` | Filtra `module === "system"` (RAM, CPU, swap, uptime, temperatura) |
-| `WeatherWidget.qml` | Filtra `module === "weather"` (temperatura, condición, humedad) |
-| `shell.qml` | Ejemplo de shell completa con ambos componentes |
-
-### Uso básico en QML
-
-```qml
-import Quickshell.Io
-
-Socket {
-    id: shinroSocket
-    path: "/run/user/" + Qt.application.uid + "/shinro"
-    connected: true
-
-    onConnected: {
-        shinroSocket.write(JSON.stringify({
-            type: "hello",
-            location: { mode: "manual", city: "Madrid" },
-            intervals: { system: 5, weather: 600 }
-        }));
-        shinroSocket.flush();
-    }
-
-    onMessage: (msg) => {
-        var data = JSON.parse(msg);
-        if (data.module === "system") {
-            // actualizar UI de sistema
-        } else if (data.module === "weather") {
-            // actualizar UI de clima
-        }
-    }
-}
-```
-
-Dos componentes distintos pueden conectarse al **mismo** socket `shinro` y cada
-uno filtra por el campo `module` para recibir solo los datos que le interesan.
+La shell de Quickshell en `.config/quickshell/Core/Services/` ya conecta
+directamente al socket `shinro` (`WeatherService.qml` y
+`SystemInfoService.qml`) y filtra por el campo `module` para recibir solo
+los datos que le interesan.
 
 ## Notas
 
