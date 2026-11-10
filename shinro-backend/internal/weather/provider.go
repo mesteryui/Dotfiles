@@ -28,6 +28,10 @@ type Snapshot struct {
 	AQI       int     `json:"_aqi"`
 	Alerts    []Alert `json:"_alerts"`
 
+	// Offline indica que los datos son de caché (último parte válido) porque
+	// no hay conexión a Internet en este momento.
+	Offline bool `json:"_offline"`
+
 	// Campos planos de compatibilidad (barra / consumidores simples).
 	City      string  `json:"city"`
 	TempC     float64 `json:"temp_c"`
@@ -83,7 +87,6 @@ type Alert struct {
 
 // Provider consulta Open-Meteo y MeteoAlarm.
 type Provider struct {
-	geo          geo.Provider
 	client       *http.Client
 	alertsClient *http.Client
 
@@ -97,6 +100,12 @@ type Provider struct {
 	// país no vuelve a descargar ~2 MB.
 	alertsMu    sync.Mutex
 	alertsFeeds map[string]alertsFeedEntry
+
+	// lastSnapshot guarda el último parte obtenido con éxito para servirlo
+	// mientras no haya conexión a Internet.
+	mu           sync.Mutex
+	lastSnapshot Snapshot
+	haveSnapshot bool
 }
 
 type flightCall struct {
@@ -110,27 +119,34 @@ type alertsFeedEntry struct {
 	at   time.Time
 }
 
-// New crea un proveedor de clima vinculado al proveedor de ubicación.
-func New(g geo.Provider) *Provider {
+// newTransport crea un transporte HTTP reutilizable con keep-alive y pooling
+// de conexiones, clave cuando el clima hace varias peticiones en paralelo.
+func newTransport() *http.Transport {
+	return &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+		DisableCompression:  false,
+	}
+}
+
+// New crea un proveedor de clima.
+func New() *Provider {
 	return &Provider{
-		geo:          g,
-		client:       &http.Client{Timeout: 10 * time.Second},
-		alertsClient: &http.Client{Timeout: 6 * time.Second},
+		client:       &http.Client{Timeout: 10 * time.Second, Transport: newTransport()},
+		alertsClient: &http.Client{Timeout: 6 * time.Second, Transport: newTransport()},
 		flights:      make(map[string]*flightCall),
 		alertsFeeds:  make(map[string]alertsFeedEntry),
 	}
 }
 
-// Snapshot resuelve la ubicación y devuelve todos los datos del parte.
-func (w *Provider) Snapshot(lang string) (Snapshot, error) {
+// Snapshot devuelve todos los datos del parte para la ciudad dada.
+func (w *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 	if lang == "" {
 		lang = "es"
 	}
 
-	loc, err := w.geo.Location()
-	if err != nil {
-		return Snapshot{}, fmt.Errorf("ubicación: %w", err)
-	}
+	loc := geo.Location{Mode: geo.ModeManual, City: city}
 
 	key := fmt.Sprintf("%s|%s|%.6f|%.6f|%s", loc.Mode, loc.City, loc.Lat, loc.Lon, lang)
 
@@ -145,12 +161,49 @@ func (w *Provider) Snapshot(lang string) (Snapshot, error) {
 	w.flightsMu.Unlock()
 
 	call.snap, call.err = w.snapshotFor(loc, lang)
+	if call.err == nil {
+		// Guardar el último parte válido para servirlo mientras falte red.
+		w.mu.Lock()
+		w.lastSnapshot = call.snap
+		w.haveSnapshot = true
+		w.mu.Unlock()
+	} else {
+		// Sin red: servir el último parte válido marcado como offline, si lo
+		// hay, para que el cliente no se quede sin datos. Si nunca hubo parte
+		// válido, se propaga el error.
+		if snap, ok := w.cachedOrOffline(call.err); ok {
+			call.snap = snap
+			call.err = nil
+		}
+	}
 
 	w.flightsMu.Lock()
 	delete(w.flights, key)
 	w.flightsMu.Unlock()
 	close(call.done)
 	return call.snap, call.err
+}
+
+// cachedOrOffline devuelve el último parte válido marcado como offline si
+// existe; si no, devuelve false y el error original se propaga.
+func (w *Provider) cachedOrOffline(err error) (Snapshot, bool) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if !w.haveSnapshot {
+		return Snapshot{}, false
+	}
+	snap := w.lastSnapshot
+	snap.Offline = true
+	return snap, true
+}
+
+// offlineOrError devuelve el último parte válido marcado como offline si
+// existe; si no, devuelve el error recibido.
+func (w *Provider) offlineOrError(err error) (Snapshot, error) {
+	if snap, ok := w.cachedOrOffline(err); ok {
+		return snap, nil
+	}
+	return Snapshot{}, err
 }
 
 // snapshotFor hace el trabajo real del parte para una ubicación ya resuelta.

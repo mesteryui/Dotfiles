@@ -96,6 +96,20 @@ o
 {"type":"get","module":"weather"}
 ```
 
+### Health check (`ping`)
+
+El módulo `ping` permite comprobar que el backend responde sin depender
+de system o weather:
+
+```json
+{"type":"get","module":"ping"}
+```
+
+Responde:
+```json
+{"type":"update","module":"ping","data":{"ok":"true"}}
+```
+
 ## Geoclue (ubicación automática)
 
 El backend intenta conectar a GeoClue2 vía D-Bus de sesión (`org.freedesktop.GeoClue2`).
@@ -118,6 +132,15 @@ go build -o shinro-backend ./cmd/shinro-backend
 ```bash
 ./shinro-backend
 ```
+
+### Variables de entorno
+
+| Variable | Descripción | Predeterminado |
+|----------|-------------|----------------|
+| `SHINRO_LOG_LEVEL` | Nivel de log: `debug`, `info`, `warn`, `error` | `info` |
+| `SHINRO_CONNECTIVITY_INTERVAL` | Intervalo de chequeo de conectividad (p. ej. `30s`, `1m`) | `30s` |
+| `SHINRO_CONNECTIVITY_URL` | URL usada para detectar si hay Internet | endpoint de Open-Meteo |
+| `SHINRO_SOCKET_PATH` | Ruta del socket Unix | `/run/user/$UID/shinro` |
 
 Se recomienda lanzar como servicio de usuario con systemd:
 
