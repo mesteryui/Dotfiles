@@ -51,38 +51,38 @@ func New() *Provider {
 }
 
 // Stats devuelve una instantánea de CPU, RAM, swap, uptime y temperatura.
-func (p *Provider) Stats() (Stats, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+func (provider *Provider) Stats() (Stats, error) {
+	provider.mu.Lock()
+	defer provider.mu.Unlock()
 
 	var s Stats
 
-	if err := p.memory(&s); err != nil {
+	if err := provider.memory(&s); err != nil {
 		return s, err
 	}
-	if err := p.cpu(&s); err != nil {
+	if err := provider.cpu(&s); err != nil {
 		return s, err
 	}
-	if err := p.swap(&s); err != nil {
+	if err := provider.swap(&s); err != nil {
 		return s, err
 	}
-	if err := p.uptime(&s); err != nil {
+	if err := provider.uptime(&s); err != nil {
 		return s, err
 	}
 	// La temperatura no es crítica: si falla, dejamos -1.
-	if err := p.temperature(&s); err != nil {
+	if err := provider.temperature(&s); err != nil {
 		s.TemperatureC = -1
 	}
 	// El disco tampoco es crítico: si falla, queda a cero.
-	_ = p.disk(&s)
+	_ = provider.disk(&s)
 
 	s.CPUCount = runtime.NumCPU()
-	s.Hostname = p.hostname()
+	s.Hostname = provider.hostname()
 
 	return s, nil
 }
 
-func (p *Provider) memory(s *Stats) error {
+func (provider *Provider) memory(s *Stats) error {
 	f, err := os.Open("/proc/meminfo")
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func parseKb(line string) uint64 {
 	return v
 }
 
-func (p *Provider) cpu(s *Stats) error {
+func (provider *Provider) cpu(s *Stats) error {
 	f, err := os.Open("/proc/stat")
 	if err != nil {
 		return err
@@ -153,12 +153,12 @@ func (p *Provider) cpu(s *Stats) error {
 	}
 
 	now := time.Now()
-	if p.prevCPUTimes != nil {
-		prevIdle := p.prevCPUTimes.idle + p.prevCPUTimes.iowait
+	if provider.prevCPUTimes != nil {
+		prevIdle := provider.prevCPUTimes.idle + provider.prevCPUTimes.iowait
 		curIdle := cur.idle + cur.iowait
-		prevTotal := p.prevCPUTimes.user + p.prevCPUTimes.nice + p.prevCPUTimes.system +
-			p.prevCPUTimes.idle + p.prevCPUTimes.iowait + p.prevCPUTimes.irq +
-			p.prevCPUTimes.softirq + p.prevCPUTimes.steal
+		prevTotal := provider.prevCPUTimes.user + provider.prevCPUTimes.nice + provider.prevCPUTimes.system +
+			provider.prevCPUTimes.idle + provider.prevCPUTimes.iowait + provider.prevCPUTimes.irq +
+			provider.prevCPUTimes.softirq + provider.prevCPUTimes.steal
 		curTotal := cur.user + cur.nice + cur.system + cur.idle + cur.iowait +
 			cur.irq + cur.softirq + cur.steal
 
@@ -166,12 +166,12 @@ func (p *Provider) cpu(s *Stats) error {
 			s.CPUPercent = float64(curTotal-prevTotal-(curIdle-prevIdle)) / float64(curTotal-prevTotal) * 100
 		}
 	}
-	p.prevCPUTimes = &cur
-	p.prevTime = now
+	provider.prevCPUTimes = &cur
+	provider.prevTime = now
 	return nil
 }
 
-func (p *Provider) swap(s *Stats) error {
+func (provider *Provider) swap(s *Stats) error {
 	f, err := os.Open("/proc/meminfo")
 	if err != nil {
 		return err
@@ -202,7 +202,7 @@ func (p *Provider) swap(s *Stats) error {
 }
 
 // disk devuelve el uso del sistema de archivos raíz.
-func (p *Provider) disk(s *Stats) error {
+func (provider *Provider) disk(s *Stats) error {
 	var st syscall.Statfs_t
 	if err := syscall.Statfs("/", &st); err != nil {
 		return err
@@ -221,7 +221,7 @@ func (p *Provider) disk(s *Stats) error {
 	return nil
 }
 
-func (p *Provider) uptime(s *Stats) error {
+func (provider *Provider) uptime(s *Stats) error {
 	f, err := os.Open("/proc/uptime")
 	if err != nil {
 		return err
@@ -244,7 +244,7 @@ func (p *Provider) uptime(s *Stats) error {
 	return nil
 }
 
-func (p *Provider) hostname() string {
+func (provider *Provider) hostname() string {
 	// Leer /proc/sys/kernel/hostname primero (más directo)
 	data, err := os.ReadFile("/proc/sys/kernel/hostname")
 	if err == nil {
@@ -258,7 +258,7 @@ func (p *Provider) hostname() string {
 	return "localhost"
 }
 
-func (p *Provider) temperature(s *Stats) error {
+func (provider *Provider) temperature(s *Stats) error {
 	// Busca la primera zona térmica disponible en /sys/class/thermal
 	entries, err := os.ReadDir("/sys/class/thermal")
 	if err != nil {

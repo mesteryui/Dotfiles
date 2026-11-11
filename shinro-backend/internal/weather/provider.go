@@ -141,7 +141,7 @@ func New() *Provider {
 }
 
 // Snapshot devuelve todos los datos del parte para la ciudad dada.
-func (w *Provider) Snapshot(city string, lang string) (Snapshot, error) {
+func (provider *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 	if lang == "" {
 		lang = "es"
 	}
@@ -150,64 +150,64 @@ func (w *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 
 	key := fmt.Sprintf("%s|%s|%.6f|%.6f|%s", loc.Mode, loc.City, loc.Lat, loc.Lon, lang)
 
-	w.flightsMu.Lock()
-	if call, ok := w.flights[key]; ok {
-		w.flightsMu.Unlock()
+	provider.flightsMu.Lock()
+	if call, ok := provider.flights[key]; ok {
+		provider.flightsMu.Unlock()
 		<-call.done
 		return call.snap, call.err
 	}
 	call := &flightCall{done: make(chan struct{})}
-	w.flights[key] = call
-	w.flightsMu.Unlock()
+	provider.flights[key] = call
+	provider.flightsMu.Unlock()
 
-	call.snap, call.err = w.snapshotFor(loc, lang)
+	call.snap, call.err = provider.snapshotFor(loc, lang)
 	if call.err == nil {
 		// Guardar el último parte válido para servirlo mientras falte red.
-		w.mu.Lock()
-		w.lastSnapshot = call.snap
-		w.haveSnapshot = true
-		w.mu.Unlock()
+		provider.mu.Lock()
+		provider.lastSnapshot = call.snap
+		provider.haveSnapshot = true
+		provider.mu.Unlock()
 	} else {
 		// Sin red: servir el último parte válido marcado como offline, si lo
 		// hay, para que el cliente no se quede sin datos. Si nunca hubo parte
 		// válido, se propaga el error.
-		if snap, ok := w.cachedOrOffline(call.err); ok {
+		if snap, ok := provider.cachedOrOffline(call.err); ok {
 			call.snap = snap
 			call.err = nil
 		}
 	}
 
-	w.flightsMu.Lock()
-	delete(w.flights, key)
-	w.flightsMu.Unlock()
+	provider.flightsMu.Lock()
+	delete(provider.flights, key)
+	provider.flightsMu.Unlock()
 	close(call.done)
 	return call.snap, call.err
 }
 
 // cachedOrOffline devuelve el último parte válido marcado como offline si
 // existe; si no, devuelve false y el error original se propaga.
-func (w *Provider) cachedOrOffline(err error) (Snapshot, bool) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	if !w.haveSnapshot {
+func (provider *Provider) cachedOrOffline(err error) (Snapshot, bool) {
+	provider.mu.Lock()
+	defer provider.mu.Unlock()
+	if !provider.haveSnapshot {
 		return Snapshot{}, false
 	}
-	snap := w.lastSnapshot
+	snap := provider.lastSnapshot
 	snap.Offline = true
 	return snap, true
 }
 
 // offlineOrError devuelve el último parte válido marcado como offline si
 // existe; si no, devuelve el error recibido.
-func (w *Provider) offlineOrError(err error) (Snapshot, error) {
-	if snap, ok := w.cachedOrOffline(err); ok {
+func (provider *Provider) offlineOrError(err error) (Snapshot, error) {
+	if snap, ok := provider.cachedOrOffline(err); ok {
 		return snap, nil
 	}
 	return Snapshot{}, err
 }
 
 // snapshotFor hace el trabajo real del parte para una ubicación ya resuelta.
-func (w *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) {
+func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) {
 	var lat, lon float64
 	var cityLabel, countryCode string
 	var tokens []string
@@ -216,7 +216,7 @@ func (w *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) 
 	case loc.Lat != 0 || loc.Lon != 0:
 		lat, lon = loc.Lat, loc.Lon
 		cityLabel = loc.City
-		if rc, err := w.reverseGeocode(lat, lon, lang); err == nil {
+		if rc, err := provider.reverseGeocode(lat, lon, lang); err == nil {
 			if cityLabel == "" {
 				cityLabel = rc.label
 			}
@@ -226,7 +226,7 @@ func (w *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) 
 			tokens = tokensFor(cityLabel)
 		}
 	case loc.City != "":
-		g, err := w.geocode(loc.City, lang)
+		g, err := provider.geocode(loc.City, lang)
 		if err != nil {
 			return Snapshot{}, fmt.Errorf("geocodificar %q: %w", loc.City, err)
 		}
@@ -250,15 +250,15 @@ func (w *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) 
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		fc, forecastErr = w.fetchForecast(lat, lon)
+		fc, forecastErr = provider.fetchForecast(lat, lon)
 	}()
 	go func() {
 		defer wg.Done()
-		aqi = w.fetchAQI(lat, lon)
+		aqi = provider.fetchAQI(lat, lon)
 	}()
 	go func() {
 		defer wg.Done()
-		alerts = w.fetchAlerts(countryCode, tokens, lang)
+		alerts = provider.fetchAlerts(countryCode, tokens, lang)
 	}()
 	wg.Wait()
 
@@ -282,7 +282,7 @@ func (w *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) 
 
 // ── Open-Meteo: previsión ────────────────────────────────────────
 
-func (w *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
+func (provider *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 	u := fmt.Sprintf(
 		"https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f"+
 			"&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,"+
@@ -297,7 +297,7 @@ func (w *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 	)
 
 	var out Snapshot
-	if err := w.getJSON(u, &out); err != nil {
+	if err := provider.getJSON(u, &out); err != nil {
 		return Snapshot{}, fmt.Errorf("Open-Meteo forecast: %w", err)
 	}
 	if len(out.Daily.Time) == 0 || len(out.Hourly.Time) == 0 {
@@ -308,7 +308,7 @@ func (w *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 
 // ── Open-Meteo: calidad del aire ────────────────────────────────
 
-func (w *Provider) fetchAQI(lat, lon float64) int {
+func (provider *Provider) fetchAQI(lat, lon float64) int {
 	u := fmt.Sprintf(
 		"https://air-quality-api.open-meteo.com/v1/air-quality"+
 			"?latitude=%f&longitude=%f&current=european_aqi&timezone=auto",
@@ -319,7 +319,7 @@ func (w *Provider) fetchAQI(lat, lon float64) int {
 			EuropeanAQI *int `json:"european_aqi"`
 		} `json:"current"`
 	}
-	if err := w.getJSON(u, &data); err != nil || data.Current.EuropeanAQI == nil {
+	if err := provider.getJSON(u, &data); err != nil || data.Current.EuropeanAQI == nil {
 		return -1
 	}
 	return *data.Current.EuropeanAQI
@@ -345,7 +345,7 @@ type geocodeResult struct {
 	Admin4      string  `json:"admin4"`
 }
 
-func (w *Provider) geocode(city, lang string) (geoInfo, error) {
+func (provider *Provider) geocode(city, lang string) (geoInfo, error) {
 	parts := strings.SplitN(city, ",", 2)
 	name := strings.TrimSpace(parts[0])
 	countryCode := ""
@@ -362,7 +362,7 @@ func (w *Provider) geocode(city, lang string) (geoInfo, error) {
 	var data struct {
 		Results []geocodeResult `json:"results"`
 	}
-	if err := w.getJSON(u, &data); err != nil {
+	if err := provider.getJSON(u, &data); err != nil {
 		return geoInfo{}, err
 	}
 	if len(data.Results) == 0 {
@@ -388,7 +388,7 @@ func (w *Provider) geocode(city, lang string) (geoInfo, error) {
 	}, nil
 }
 
-func (w *Provider) reverseGeocode(lat, lon float64, lang string) (geoInfo, error) {
+func (provider *Provider) reverseGeocode(lat, lon float64, lang string) (geoInfo, error) {
 	u := fmt.Sprintf(
 		"https://api.bigdatacloud.net/data/reverse-geocode-client"+
 			"?latitude=%f&longitude=%f&localityLanguage=%s",
@@ -401,7 +401,7 @@ func (w *Provider) reverseGeocode(lat, lon float64, lang string) (geoInfo, error
 		CountryCode     string `json:"countryCode"`
 		CountryName     string `json:"countryName"`
 	}
-	if err := w.getJSON(u, &data); err != nil {
+	if err := provider.getJSON(u, &data); err != nil {
 		return geoInfo{}, err
 	}
 	place := data.City
@@ -455,14 +455,14 @@ type meteoAlarmResponse struct {
 	} `json:"warnings"`
 }
 
-func (w *Provider) fetchAlerts(countryCode string, tokens []string, lang string) []Alert {
+func (provider *Provider) fetchAlerts(countryCode string, tokens []string, lang string) []Alert {
 	out := make([]Alert, 0)
 	slug := alertsSlug(countryCode)
 	if slug == "" || len(tokens) == 0 {
 		return out
 	}
 
-	feed := w.alertsFeed(slug)
+	feed := provider.alertsFeed(slug)
 	if feed == nil {
 		return out
 	}
@@ -525,23 +525,23 @@ func (w *Provider) fetchAlerts(countryCode string, tokens []string, lang string)
 // alertsFeed devuelve el feed MeteoAlarm del país, cacheado 5 minutos.
 // Se cachea el feed crudo (no los avisos filtrados) para que cambiar de
 // ciudad dentro del mismo país no vuelva a descargar ~2 MB.
-func (w *Provider) alertsFeed(slug string) *meteoAlarmResponse {
-	w.alertsMu.Lock()
-	if entry, ok := w.alertsFeeds[slug]; ok && time.Since(entry.at) < 5*time.Minute {
+func (provider *Provider) alertsFeed(slug string) *meteoAlarmResponse {
+	provider.alertsMu.Lock()
+	if entry, ok := provider.alertsFeeds[slug]; ok && time.Since(entry.at) < 5*time.Minute {
 		data := entry.data
-		w.alertsMu.Unlock()
+		provider.alertsMu.Unlock()
 		return data
 	}
-	w.alertsMu.Unlock()
+	provider.alertsMu.Unlock()
 
 	var data meteoAlarmResponse
-	if err := w.getJSONWith(w.alertsClient, "https://feeds.meteoalarm.org/api/v1/warnings/feeds-"+slug, &data); err != nil {
+	if err := provider.getJSONWith(provider.alertsClient, "https://feeds.meteoalarm.org/api/v1/warnings/feeds-"+slug, &data); err != nil {
 		return nil
 	}
 
-	w.alertsMu.Lock()
-	w.alertsFeeds[slug] = alertsFeedEntry{data: &data, at: time.Now()}
-	w.alertsMu.Unlock()
+	provider.alertsMu.Lock()
+	provider.alertsFeeds[slug] = alertsFeedEntry{data: &data, at: time.Now()}
+	provider.alertsMu.Unlock()
 	return &data
 }
 
@@ -606,11 +606,11 @@ func alertsSlug(countryCode string) string {
 
 // ── Utilidades ──────────────────────────────────────────────────
 
-func (w *Provider) getJSON(u string, dst any) error {
-	return w.getJSONWith(w.client, u, dst)
+func (provider *Provider) getJSON(u string, dst any) error {
+	return provider.getJSONWith(provider.client, u, dst)
 }
 
-func (w *Provider) getJSONWith(client *http.Client, u string, dst any) error {
+func (provider *Provider) getJSONWith(client *http.Client, u string, dst any) error {
 	resp, err := client.Get(u)
 	if err != nil {
 		return err
