@@ -44,7 +44,7 @@ output_path = "~/.config/cava/config"
 
 
 [templates.kitty]
-input_path = '/home/oscar/.config/matugen/templates/kitty-kolors.conf'
+input_path = '/home/oscar/.config/matugen/templates/kitty-colors.conf'
 output_path = '/home/oscar/.config/kitty/colors.conf'
 post_hook = 'pkill -SIGUSR2 kitty'
 
