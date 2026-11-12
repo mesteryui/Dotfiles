@@ -107,6 +107,11 @@
       "activated": "Activado",
       "deactivated": "Desactivado",
       "label": "Bloq Mayús %1"
+    },
+    "num_lock": {
+      "activated": "Activado",
+      "deactivated": "Desactivado",
+      "label": "Bloq Num %1"
     }
   },
   "panel": {

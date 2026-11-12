@@ -24,6 +24,8 @@ Singleton {
 
     property bool _socketPending: false
     property bool socketConnected: false
+    // Datos del clima servidos desde caché (sin conexión a Internet).
+    property bool isOffline: false
 
     // Icono dinámico reactivo (Día / Noche)
     readonly property string icon: Icons.getWeatherIcon(data.wCode, data.isDay)
@@ -63,7 +65,8 @@ Singleton {
                             alertCount: 0,
                             alerts: [],
                             aqi: -1,
-                            aqiLevel: 0
+                            aqiLevel: 0,
+                            isOffline: false
                         })
 
     property double lastAlertsTimestamp: 0
@@ -104,6 +107,10 @@ Singleton {
                         console.warn("[WeatherService] payload de socket incompleto");
                         return;
                     }
+                    // Si el backend sirve datos en caché por falta de red,
+                    // reflejamos el estado offline para que la UI pueda
+                    // indicarlo al usuario.
+                    root.isOffline = d._offline === true;
                     // El backend entrega la misma forma que Open-Meteo más
                     // _cityLabel, _aqi y _alerts ya procesados.
                     root.refineData(d, true);
@@ -195,6 +202,7 @@ Singleton {
         temp.alertLevel = 0;
         temp.alertCount = 0;
         temp.alerts = [];
+        temp.isOffline = root.isOffline;
         const current = json?.current || {};
         const unit = "°C";
 
@@ -399,4 +407,17 @@ Singleton {
             }
         }
     }
+
+    /* Desactivado para pruebas: que el backend sea el único responsable
+       de empujar el clima al recuperar la red (vía su monitor de
+       conectividad y wakeWeatherClients). Quickshell no pide getData().
+    Connections {
+        target: NetworkService
+
+        function onHasInternetChanged() {
+            if (NetworkService.hasInternet && root._bootFetchDone)
+                root.getData();
+        }
+    }
+    */
 }

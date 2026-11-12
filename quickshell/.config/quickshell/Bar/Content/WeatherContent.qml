@@ -26,5 +26,14 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: WeatherService.temperature
         }
+
+        // Indicador de datos en caché (sin conexión a Internet).
+        StyledText {
+            visible: WeatherService.data.isOffline
+            text: "!"
+            color: Appearance.md3.error
+            font.pixelSize: Appearance.font.pixelSize.larger
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 }

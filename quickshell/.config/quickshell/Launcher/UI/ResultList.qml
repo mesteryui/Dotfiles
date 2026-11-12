@@ -1,11 +1,17 @@
 // --- ResultList: lista de resultados del launcher ---
 // ListView + delegate + navegación con cycle + flash de borde.
 // Vista por menú (ver Base/MenuModes.js `viewFor`): "list" (filas con
-// título+sub) o "grid" (cuadrícula de iconos, hoy emojis). La API hacia
-// AppLauncher no cambia: listModel, activeMode, isPinnedFn, count,
-// currentIndex, currentData, resetView(), moveSelection(delta) y las
-// señales activated(item) / highlighted(item). En grid se suma
-// moveGrid(dx, dy) para navegar en 2D. No conoce modos ni servicios.
+// título+sub) o "grid" (cuadrícula de iconos). La API hacia AppLauncher
+// no cambia: listModel, activeMode, isPinnedFn, count, currentIndex,
+// currentData, resetView(), moveSelection(delta) y las señales
+// activated(item) / highlighted(item). En grid se suma moveGrid(dx, dy).
+// No conoce modos ni servicios.
+//
+// Rendimiento: el swap de modelo se hace diferido en dos pasos
+// (null → nuevo) para evitar SIGSEGV en QQuickItemView::setModel.
+// El reciclaje de delegados (reuseItems) se deja desactivado a propósito:
+// con el swap en dos pasos el pool se lee a medio reasignar y las cajas
+// muestran contenido vacío o de la fila anterior.
 pragma ComponentBehavior: Bound
 
 import qs.Core
@@ -35,8 +41,7 @@ Item {
     // aún no existen cuando se emite el highlight y currentItem es null
     // -> el preview no se pedía nunca y nada lo reintentaba. Por índice
     // siempre es válido en cuanto el modelo está aplicado. `count` como
-    // dependencia cubre los updates internos sin cambio de identidad
-    // (ScriptModel del modo todo).
+    // dependencia cubre los updates internos sin cambio de identidad.
     readonly property var currentData: {
         const c = root.count;
         void c;
@@ -48,11 +53,6 @@ Item {
     // origen es un array JS, la vista lo envuelve en un modelo interno
     // (Array.isArray falla y no hay .values) y todo resolvía a null.
     // El binding listModel crudo sí conserva los arrays reales.
-    // OJO2: en modo todo el modelo es un ScriptModel cuyo `values` es
-    // list<var> (array-like: tiene length e índice pero Array.isArray
-    // es false y puede no traer .map). Por eso se normaliza a Array JS
-    // real: sin esto itemAt() devolvía null en modo todo y Enter no
-    // ejecutaba nada (el click sí, porque el delegate pasa modelData).
     function _asArray(v) {
         if (!v)
             return null;
@@ -71,6 +71,13 @@ Item {
         const m = root.listModel;
         if (Array.isArray(m))
             return m;
+        // ListModel: convertir a array plano para poder indexar.
+        if (m && typeof m.count === "number" && typeof m.get === "function") {
+            const arr = [];
+            for (let i = 0; i < m.count; i++)
+                arr.push(m.get(i));
+            return arr;
+        }
         if (m && m.values !== undefined) {
             const arr = root._asArray(m.values);
             if (arr)
@@ -90,10 +97,10 @@ Item {
 
     signal highlighted(var item)
 
-    // Generación del filtro (la pone AppLauncher): distingue "nueva
-    // búsqueda" (query/modo/sección => ir arriba) de "refresco de datos"
-    // (snapshot de fd, Supr en clip, rescan .desktop => conservar
-    // selección y scroll).
+    // Generación del filtro: distingue "nueva búsqueda" (query/modo =>
+    // ir arriba) de "refresco de datos" (snapshot de fd, Supr en clip,
+    // rescan .desktop => conservar selección y scroll). Solo cambia con
+    // el filtro efectivo.
     property int filterEpoch: 0
 
     property int _seenEpoch: -1
@@ -104,8 +111,8 @@ Item {
 
     // Clave estable del item para conservar la selección entre swaps de
     // modelo: al estrechar el filtro, el item sigue seleccionado si aún
-    // está en la lista (comportamiento rofi/walker). Por modo porque cada
-    // menú identifica sus items de forma distinta.
+    // está en la lista (comportamiento rofi/walker). Por modo porque
+    // cada menú identifica sus items de forma distinta.
     function _keyOf(item) {
         if (!item)
             return "";
@@ -137,11 +144,7 @@ Item {
         return -1;
     }
 
-    // Vecinos del item actual (±2) para prefetch de previews: al moverse,
-    // el siguiente highlight suele ser caché y se siente instantáneo.
-    // OJO: se indexa sobre el array crudo (ver _rawArray), no sobre el
-    // modelo de la vista, y se recorta al conteo visible por si el modelo
-    // aún no se aplicó del todo.
+    // Vecinos del item actual (±2) para prefetch de previews.
     function neighborItems() {
         const arr = root._rawArray();
         if (!arr || arr.length === 0)
@@ -166,21 +169,18 @@ Item {
     // item (típico tecleando con un solo resultado), no se reconstruye.
     property string _shownKey: ""
 
-    // Última clave válida de selección (ver _keyOf): sobrevive a los
-    // huecos con modelo null para restaurar al aterrizar el nuevo.
+    // Última clave válida de selección: sobrevive a los huecos con
+    // modelo null para restaurar al aterrizar el nuevo.
     property string _lastKey: ""
 
-    // Anota la selección actual como clave. Solo con item válido: durante
-    // la demolición (currentData null) se conserva la anterior.
+    // Anota la selección actual como clave. Solo con item válido.
     function _noteIndex() {
         const cur = root.currentData;
         if (cur)
             root._lastKey = root._keyOf(cur);
     }
 
-    // Asienta vista tras un cambio de modelo o de conteo. Vía única para
-    // no duplicar políticas entre _requestApply y onCountChanged (los
-    // updates internos del ScriptModel en modo todo no pasan por apply).
+    // Asienta vista tras un cambio de modelo o de conteo.
     // Nueva búsqueda => primer item; refresco => conservar sitio.
     function _settle() {
         const v = root.isGrid ? grid : view;
@@ -194,13 +194,9 @@ Item {
             return;
         }
         if (isFilter) {
-            // Nueva búsqueda/modo/sección: siempre al primer item.
             v.currentIndex = 0;
             v.positionViewAtBeginning();
         } else {
-            // Refresco de datos (snapshot fd, Supr en clip, rescan):
-            // conservar sitio; recortar solo si quedó fuera de rango y
-            // asegurar visible sin saltos.
             const idx = root._indexOfKey(root._lastKey);
             if (idx >= 0)
                 v.currentIndex = idx;
@@ -212,9 +208,6 @@ Item {
         }
         root._noteIndex();
         root._swapping = false;
-        // Preview único por asentamiento: durante el swap los pasos
-        // intermedios (índice -1, delegados a medio crear) no lo tocan, y si
-        // sigue el mismo item (teclear con un solo resultado) ni se pide.
         const _cur = root.currentData;
         const _k = root._keyOf(_cur);
         if (_k !== root._shownKey || !isFilter) {
@@ -223,23 +216,13 @@ Item {
         }
     }
 
-    // Durante el swap de modelo por tecla (ver _requestApply) los
-    // delegados se destruyen/recrean y el índice pasa por -1: con este
-    // flag los velos no animan (snap) y el preview se actualiza una sola
-    // vez al asentar, en vez de parpadear por cada paso intermedio.
+    // Durante el swap de modelo los delegados se destruyen/recrean y el
+    // índice pasa por -1: con este flag los velos no animan y el preview
+    // se actualiza una sola vez al asentar.
     property bool _swapping: false
 
-    // Aplicación diferida del modelo (anti-SIGSEGV).
-    // Cada tecla/cambio de modo reevalúa `listModel` con una identidad
-    // nueva (ScriptModel vs array fresco). Bindear `view.model` directo a
-    // eso llamaba a QQuickItemView::setModel de forma síncrona en mitad de
-    // notificaciones del DelegateModel en curso -> SIGSEGV leyendo
-    // delegados a medio construir/destruir (10 coredumps con el mismo
-    // stack, tb. con items 100% planos del modo sistema). Por eso el swap
-    // es diferido y en dos pasos: primero null (el modelo viejo se
-    // desengancha limpio) y en el siguiente tick el nuevo. El contador de
-    // generación descarta pasadas obsoletas si llegan varios cambios
-    // seguidos (tecleo rápido).
+    // Aplicación del modelo. El swap se hace en dos pasos diferidos
+    // (null → nuevo) para evitar SIGSEGV en QQuickItemView::setModel.
     property int _modelGen: 0
 
     function _requestApply() {
@@ -252,39 +235,12 @@ Item {
             const wantView = root.isGrid ? null : m;
             const wantGrid = root.isGrid ? m : null;
             if (view.model === wantView && grid.model === wantGrid) {
-                // Modelo sin cambios de identidad (p. ej. el ScriptModel del
-                // modo todo, que sólo cambia de filas): ningún swap va a
-                // llamar a _settle, así que si esto era un filtro nuevo
-                // asentamos aquí (primer resultado) en el siguiente tick.
                 if (root.filterEpoch !== root._seenEpoch)
                     Qt.callLater(() => root._settle());
                 root._swapping = false;
                 return;
             }
-            // Atajo anti-parpadeo: si el filtro deja un único resultado y es
-            // el mismo item ya visible (teclear con un solo match), no se toca
-            // el modelo: ni se destruye el delegado ni cambia la selección ni
-            // se pide el preview. Solo en cambios de filtro (en refrescos de
-            // datos los flags del item pueden haber cambiado y el swap sigue).
-            // No hay setModel en curso aquí, así que tocar el índice es seguro.
-            if (root.filterEpoch !== root._seenEpoch) {
-                const arr = root._rawArray();
-                const v = root.isGrid ? grid : view;
-                const shown = v.currentItem;
-                if (arr && arr.length === 1 && v.count === 1 && shown) {
-                    const k = root._keyOf(arr[0]);
-                    if (k !== "" && k === root._keyOf(shown.modelData)) {
-                        root._seenEpoch = root.filterEpoch;
-                        root._lastKey = k;
-                        if (v.currentIndex !== 0)
-                            v.currentIndex = 0;
-                        root._swapping = false;
-                        return;
-                    }
-                }
-            }
-            // La selección a conservar vive en _lastKey (ver _noteIndex):
-            // sobrevive a los huecos con modelo null.
+            // Swap diferido en dos pasos.
             view.model = null;
             grid.model = null;
             Qt.callLater(() => {
@@ -294,9 +250,6 @@ Item {
                     grid.model = root.listModel;
                 else
                     view.model = root.listModel;
-                // Índice+scroll en otro tick más: tocarlos en el mismo tick
-                // del setModel reentra en el DelegateModel (SIGSEGV).
-                // _settle() centraliza la política (ver arriba).
                 Qt.callLater(() => {
                     if (gen !== root._modelGen)
                         return;
@@ -308,22 +261,15 @@ Item {
 
     onListModelChanged: root._requestApply()
 
-    // Cambio de filtro (query/modo/sección): además de por el modelo, puede
-    // venir sin cambio de identidad del mismo (ScriptModel del modo todo),
-    // así que se re-solicita el asentamiento para volver al primer resultado.
+    // Cambio de filtro (query/modo/sección): puede venir sin cambio de
+    // identidad del modelo, así que se re-solicita el asentamiento.
     onFilterEpochChanged: root._requestApply()
 
     Component.onCompleted: root._requestApply()
 
-    // Selección al principio (apertura). Diferido un frame: onOpened lo
-    // llama en el mismo tick en que cambian debouncedQuery/activeMode
-    // (setModel en curso); tocar currentIndex/scroll de forma síncrona
-    // ahí reentra en el DelegateModel a medio resetear y tira el shell
-    // (SIGSEGV en QQuickItemView::setModel). Con callLater el modelo ya
-    // está estable cuando se recoloca la vista.
+    // Selección al principio (apertura).
     function resetView() {
         Qt.callLater(() => {
-            // Apertura: sin herencia de la sesión anterior.
             root._lastKey = "";
             if (root.isGrid) {
                 grid.currentIndex = 0;
@@ -332,17 +278,12 @@ Item {
                 view.currentIndex = 0;
                 view.positionViewAtBeginning();
             }
-            // Preview dirigido por datos (no necesita delegados): si hay un
-            // swap en curso, _settle lo confirmará o corregirá sin parpadeo.
             root._shownKey = root._keyOf(root.currentData);
             root.highlighted(root.currentData);
         });
     }
 
-    // Al cambiar de vista (lista <-> cuadrícula), aplica el modelo a la
-    // vista que toca y recoloca el scroll para no heredar huecos de la
-    // otra vista. Diferido por el mismo motivo que resetView: el swap de
-    // modelos aún está en curso.
+    // Al cambiar de vista (lista <-> cuadrícula).
     onIsGridChanged: {
         root._requestApply();
         Qt.callLater(() => {
@@ -351,16 +292,12 @@ Item {
         });
     }
 
-    // Mueve la selección con cycle: del último vuelve al primero y viceversa.
-    // Al dar la vuelta se avisa discreto: línea fina en el borde hacia
-    // donde se saltó (arriba = al primero, abajo = al último).
+    // Mueve la selección con cycle.
     property bool wrapFlash: false
-
     property int wrapDir: 0
 
     Timer {
         id: wrapTimer
-
         interval: 220
         onTriggered: root.wrapFlash = false
     }
@@ -385,10 +322,7 @@ Item {
         v.positionViewAtIndex(i, root.isGrid ? GridView.Contain : ListView.Contain);
     }
 
-    // Movimiento 2D para la cuadrícula con clamp por filas/columnas:
-    // el vertical no da la vuelta a toda la lista (se queda en la primera
-    // o última fila) y la última fila corta recorta la columna. En lista
-    // equivale a lineal (dy como delta) por seguridad.
+    // Movimiento 2D para la cuadrícula.
     function moveGrid(dx, dy) {
         if (!root.isGrid) {
             root.moveSelection(dx + dy);
@@ -416,37 +350,23 @@ Item {
         visible: !root.isGrid
         clip: true
         spacing: Appearance.spacing.extraSmall
-        // Delegados ya instanciados fuera de vista (~4 por lado):
-        // scroll rápido sin crear/destruir en cada frame.
-        // Sin reciclaje de delegados (reuseItems): con swaps de modelo por
-        // cada tecla, el pool reciclado se leía a medio resetear
-        // (SIGSEGV en setModel). Las listas son cortas y el filtrado ya va
-        // con debounce: crear/destruir es despreciable aquí.
+        // Delegados ya instanciados fuera de vista: scroll rápido sin
+        // crear/destruir en cada frame.
         cacheBuffer: 224
+        // Sin reciclaje de delegados: el swap de modelo en dos pasos
+        // (null → nuevo) devuelve los delegados al pool y el reciclado se
+        // lee a medio reasignar, dejando cajas vacías o con el contenido
+        // anterior. Las listas son cortas y el filtrado va con debounce:
+        // crear/destruir es despreciable aquí.
         reuseItems: false
-        // Sin binding currentIndex<-count: escribir currentIndex de forma
-        // síncrona durante el reset del DelegateModel (setModel en curso
-        // por cada tecla) reentra en QtQmlModels y tira el shell con
-        // SIGSEGV en QQuickItemView::setModel. El índice se gestiona solo
-        // vía callLater (onCountChanged / resetView).
         currentIndex: -1
         highlightMoveDuration: 100
         keyNavigationEnabled: false
-        // Sin binding de modelo: lo aplica _requestApply() diferido y en
-        // dos pasos (ver arriba). Un binding directo re-evaluaba setModel
-        // síncrono por cada tecla/cambio de modo -> SIGSEGV.
+        // Sin binding de modelo: lo aplica _requestApply() diferido.
 
         onCountChanged: {
-            // Todo diferido: este handler corre en mitad del reset del
-            // modelo; mutar currentIndex/scroll aquí mismo reentra en
-            // QtQmlModels. _settle() aplica la política única (nueva
-            // búsqueda => arriba/restaurar; refresco => conservar sitio).
             Qt.callLater(() => {
                 root._settle();
-                // El reseteo del modelo no siempre emite currentIndexChanged
-                // (el índice puede conservar el valor) y el currentItem aún
-                // puede ser nulo: el preview único lo emite _settle al final
-                // (ver _swapping), no cada paso intermedio.
             });
         }
         onCurrentIndexChanged: {
@@ -469,43 +389,42 @@ Item {
                 return root.activeMode === "todo" && d && d.isDesktopApp === true;
             }
             readonly property string dispTitle: isRawApp ? (modelData.name || "") : (modelData.title || "")
-            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : ((
-                                                                                                          modelData.cat
-                                                                                                          ? modelData.cat
-                                                                                                            + " · " : "")
-                                                                                                      + (modelData.sub
-                                                                                                         || ""))
-            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon
-                                                                                       || "")
+            // `cat` (categoría/sección) NO se muestra en el sub: el modo
+            // actual ya se sabe por el modo/chips. Mostrarlo duplica
+            // información y alarga la sub innecesariamente.
+            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : (modelData.sub || "")
+            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon || "")
             readonly property string dispIcon: modelData.icon || "circle"
             readonly property string dispCh: modelData.ch || ""
-            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(
-                                                   modelData.id)
+            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(modelData.id)
 
-            // Selección efectiva: con un solo resultado, pinta seleccionado
-            // desde el primer frame (el índice 0 llega un tick después del
-            // swap y si no la fila parpadea sin/con selección por tecla).
-            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1
-                                                                                         && root._swapping)
+            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1 && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: entryDelegate.dispTitle
             Accessible.description: entryDelegate.dispSub
 
-            width: view.width
-            height: 56
+            // width: parent.width ocupa todo el ancho del ListView; el
+            // RowLayout interno (fillWidth) reparte el resto. `parent` es
+            // null mientras el delegado entra/sale del pool: sin la guarda
+            // QML avisa de "Cannot read property 'width' of null".
+            width: parent ? parent.width : 0
+            height: 64
             radius: Appearance.shape.large
             color: "transparent"
+            clip: true
 
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: Appearance.spacing.small
                 spacing: Appearance.spacing.medium
+                Layout.fillWidth: true
 
                 // Icono según tipo
                 Item {
                     Layout.preferredWidth: 32
                     Layout.preferredHeight: 32
+                    Layout.maximumWidth: 32
 
                     AppIcon {
                         anchors.fill: parent
@@ -533,11 +452,16 @@ Item {
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 0
+                    Layout.maximumWidth: 9999
+                    spacing: 4
 
                     StyledText {
                         Layout.fillWidth: true
+                        Layout.maximumWidth: 9999
                         text: entryDelegate.dispTitle
+                        // Contenido del usuario (portapapeles, nombres de
+                        // archivo): nunca interpretarlo como rich text.
+                        textFormat: Text.PlainText
                         font.pixelSize: Appearance.typeScale.bodyMedium
                         color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                            Appearance.md3.on_surface
@@ -545,7 +469,9 @@ Item {
                     }
                     StyledText {
                         Layout.fillWidth: true
+                        Layout.maximumWidth: 9999
                         text: entryDelegate.dispSub
+                        textFormat: Text.PlainText
                         font.pixelSize: Appearance.typeScale.labelMedium
                         color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                            Appearance.md3.on_surface_variant
@@ -567,7 +493,6 @@ Item {
 
             M3StateLayer {
                 id: stateLayer
-
                 anchors.fill: parent
                 radius: parent.radius
                 tint: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -575,8 +500,6 @@ Item {
                 animate: !root._swapping
             }
 
-            // Seleccionado por teclado (M3 list selected-state): fill tonal,
-            // distinto del velo de hover para no confundir ratón y teclado.
             M3SelectionFill {
                 anchors.fill: parent
                 radius: parent.radius
@@ -589,9 +512,6 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onEntered: {
                     stateLayer.hovered = true;
-                    // El puntero no roba la selección al teclado: tras
-                    // navegar con teclas se ignora el hover unos ms
-                    // (jitter del ratón al teclear/moverse).
                     if (Date.now() - root._lastKeyNav > 300)
                         view.currentIndex = entryDelegate.index;
                 }
@@ -611,23 +531,17 @@ Item {
         clip: true
         cellWidth: 56
         cellHeight: 56
-        // Igual que la lista: sin reciclaje (ver comentario en view).
         cacheBuffer: 224
+        // Mismo motivo que en la lista: el reciclaje de delegados con el
+        // swap de modelo (null → nuevo) deja contenido obsoleto.
         reuseItems: false
-        // Igual que la lista: sin binding currentIndex<-count (reentrancia
-        // en el DelegateModel durante setModel -> SIGSEGV). Gestión
-        // imperativa diferida en onCountChanged / resetView.
         currentIndex: -1
         highlightMoveDuration: 100
         keyNavigationEnabled: false
-        // Sin binding de modelo: lo aplica _requestApply() (ver arriba).
 
         onCountChanged: {
-            // Igual que la lista: asentar diferido con la política única
-            // (ver _settle) en vez de ir arriba siempre.
             Qt.callLater(() => {
                 root._settle();
-                // Preview único en _settle (igual que la lista).
             });
         }
         onCurrentIndexChanged: {
@@ -647,8 +561,7 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispFav: modelData.isFavorite ?? false
             readonly property bool dispRecent: (modelData.isRecent ?? false) && !gridDelegate.dispFav
-            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1
-                                                                                        && root._swapping)
+            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1 && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIcon
@@ -687,7 +600,6 @@ Item {
                 }
             }
 
-            // Estrella de favorito (Ctrl+Mayús+F), como el badge ★ de la lista.
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
@@ -699,8 +611,6 @@ Item {
                 visible: gridDelegate.dispFav
             }
 
-            // Reloj de reciente, como el badge ↻ de la lista.
-            // Si es favorito y reciente, gana la estrella.
             MaterialIcon {
                 anchors.top: parent.top
                 anchors.right: parent.right
@@ -714,7 +624,6 @@ Item {
 
             M3StateLayer {
                 id: gridStateLayer
-
                 anchors.fill: parent
                 radius: parent.radius
                 tint: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -722,8 +631,6 @@ Item {
                 animate: !root._swapping
             }
 
-            // Seleccionado por teclado: fill tonal (igual que la lista,
-            // con el mismo arreglo anti-parpadeo de un solo resultado).
             M3SelectionFill {
                 anchors.fill: parent
                 radius: parent.radius
@@ -736,7 +643,6 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onEntered: {
                     gridStateLayer.hovered = true;
-                    // Igual que la lista: el hover no roba al teclado.
                     if (Date.now() - root._lastKeyNav > 300)
                         grid.currentIndex = gridDelegate.index;
                 }
@@ -749,7 +655,6 @@ Item {
     }
 
     // Líneas de borde al dar la vuelta a la lista (wrap).
-    // Sin MouseArea: no interceptan clics, solo se ven.
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right

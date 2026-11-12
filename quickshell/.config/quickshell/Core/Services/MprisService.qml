@@ -218,12 +218,14 @@ Singleton {
             const p = root.activePlayer;
             if (!p)
                 return;
-            // Firefox expone org.mpris.MediaPlayer2.firefox.instance_* pero su
-            // objeto /org/mpris/MediaPlayer2 desaparece (pestaña cerrada, sin
-            // medio): cada Get de Position falla con ServiceUnknown /
-            // UnknownMethod y quickshell.dbus.properties lo loguea como WARN.
-            // positionSupported es la puerta documentada (position vale 0 si
-            // es false); sin ella no se toca D-Bus.
+            // Si el reproductor ya desapareció del bus D-Bus (pestaña de
+            // Firefox cerrada, sin medio) ya no está en Mpris.players: no se
+            // toca su Position y se evita que quickshell.dbus.properties
+            // loguee ServiceUnknown ("The name is not activatable").
+            // positionSupported es la puerta documentada; sin ella no se toca
+            // D-Bus.
+            if (Mpris.players.indexOf(p) < 0)
+                return;
             if (!p.positionSupported)
                 return;
             if (p.canSeek || p.canControl) {

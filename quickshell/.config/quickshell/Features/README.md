@@ -19,7 +19,11 @@
   instantiates `VolumeOSD`, `BrightnessOSD`,
   `KeyboardBrightnessOSD`, `MicOSD`, `SpecialKeysOSD`, `GameModeOSD`,
   `BatteryOSD`; bases `BaseOSD.qml`, `PercentageOSD.qml`,
-  `IconTextOSD.qml`.
+  `IconTextOSD.qml`. `SpecialKeysOSD` (Bloq Mayús / Bloq Num) se pinta
+  con los avisos `KeyboardThings.capsLockRefreshed` /
+  `numLockRefreshed` (cambio real detectado en la lectura de estado), no
+  con el cambio de valor: así sale siempre que el estado cambia y nunca
+  al arrancar.
 - `WindowSwitcher/` — `Switcher.qml` alt-tab (`Scope` + IPC
   `switcher` `toggle`/`close` + `LazyLoader`-loaded `PanelWindow`,
   `cycle`/`activateCurrent`, skips non-toplevels).

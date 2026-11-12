@@ -15,7 +15,8 @@
 // needsPreview(modeId, item) decide si el panel lateral de preview es
 // imprescindible para el item actual:
 //   clip   → siempre (ver texto completo o imagen).
-//   files  → solo image/text/pdf/audio/video (miniatura o texto).
+//   files  → solo image/text/pdf/audio/video (miniatura o texto);
+//            binary/other no tienen preview y el panel se oculta.
 //   system → solo si trae imagePath (ej. temas fastfetch con preview).
 //   resto  → nunca.
 

@@ -1,3 +1,13 @@
+// --- BrightnessService (Singleton) ---
+// Fachada multi-monitor: un BrightnessMonitor por pantalla (ver
+// BrightnessMonitor.qml) + API maestra compatible con el servicio antiguo
+// (brightness/ready/setBrightness/adjustBrightness + IPC increment/decrement).
+// - Interno (eDP): sysfs vía FileView, instantáneo y reactivo.
+// - Externo HDMI: DDC/CI vía ddcutil (lento, con debounce). Sin ddcutil el
+//   HDMI queda como no soportado y el interno funciona igual que antes.
+// - syncAll=false (persistido, por defecto): teclas y slider van al monitor
+//   enfocado (como end-4/caelestia). Con syncAll=true mueven todas al mismo %.
+//   (toggleSync o config persistida).
 pragma Singleton
 pragma ComponentBehavior: Bound
 
@@ -8,14 +18,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-// Fachada multi-monitor: un BrightnessMonitor por pantalla (ver
-// BrightnessMonitor.qml) + API maestra compatible con el servicio antiguo
-// (brightness/ready/setBrightness/adjustBrightness + IPC increment/decrement).
-// - Interno (eDP): sysfs vía FileView, instantáneo y reactivo.
-// - Externo HDMI: DDC/CI vía ddcutil (lento, con debounce). Sin ddcutil el
-//   HDMI queda como no soportado y el interno funciona igual que antes.
-// - syncAll=false (persistido, por defecto): teclas y slider van al monitor
-//   enfocado (como end-4/caelestia). Con syncAll=true mueven todas al mismo %.
 Singleton {
     id: root
 
@@ -82,8 +84,8 @@ Singleton {
             }
             if (!found) {
                 const m = monitorComp.createObject(root, {
-                                                       modelData: screens[s]
-                                                   });
+                                                        modelData: screens[s]
+                                                    });
                 if (m) {
                     root.monitors.push(m);
                     changed = true;
@@ -231,7 +233,7 @@ Singleton {
             if (code === 127 && !root._ddcWarned) {
                 root._ddcWarned = true;
                 console.info(
-                            "[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
+                    "[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
             }
             root.detectReady = true;
             root._detecting = false;
@@ -287,8 +289,8 @@ Singleton {
             const monitor = root.getMonitor(query);
             if (!monitor)
                 return "Invalid monitor: " + query + " (try active/all/" + root.monitors.map(m
-                                                                                             => m.screenName).join(
-                            ", ") + ")";
+                    => m.screenName).join(
+                    ", ") + ")";
             const r = DdcUtils.parseSetValue(value, monitor.brightness);
             if (!r.ok)
                 return "Invalid value: " + r.error;

@@ -154,7 +154,6 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.shutdown")
                         buttonIcon: "power_settings_new"
-                        buttonShape: MaterialShape.Circle
                         accentColor: Appearance.md3.error
                         command: "systemctl poweroff"
                         KeyNavigation.left: logoutBtn
@@ -167,7 +166,6 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.reboot")
                         buttonIcon: "restart_alt"
-                        buttonShape: MaterialShape.Cookie6Sided
                         command: "systemctl reboot"
                         KeyNavigation.left: shutdownBtn
                         KeyNavigation.right: suspendBtn
@@ -179,7 +177,6 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.suspend")
                         buttonIcon: "bedtime"
-                        buttonShape: MaterialShape.ClamShell
                         command: "systemctl suspend"
                         KeyNavigation.left: rebootBtn
                         KeyNavigation.right: lockBtn
@@ -191,7 +188,6 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.lock")
                         buttonIcon: "lock"
-                        buttonShape: MaterialShape.Diamond
                         command: "qs ipc call lockscreen lock"
                         KeyNavigation.left: suspendBtn
                         KeyNavigation.right: logoutBtn
@@ -203,7 +199,6 @@ Scope {
 
                         buttonText: Services.I18nService.getTranslation("power.logout")
                         buttonIcon: "logout"
-                        buttonShape: MaterialShape.Arrow
                         // Mismos bytes que `hyprctl dispatch 'hl.dsp.exit()'`,
                         // por el socket y sin fork (ver GenericButton).
                         hyprlandIpcCommand: "dispatch hl.dsp.exit()"

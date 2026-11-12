@@ -21,37 +21,26 @@ BaseOSD {
 
     property int keyShape: MaterialShape.Circle
 
-    // Ignorar el primer disparo de cada señal: es la sincronización de
-    // arranque (KeyboardThings lee j/devices al cargar y pasa de false al
-    // estado real). Sin esto, el OSD de "Bloq Num"/"Bloq Mayús" salta solo
-    // al iniciar la sesión aunque el usuario no haya pulsado ninguna tecla.
-    property bool _capsInicial: true
-    property bool _numInicial: true
-
+    // El OSD se pinta con los avisos del servicio (pulsación real del
+    // usuario detectada en la lectura de estado), no con el cambio de
+    // valor: así sale siempre que el estado cambia (aunque el kernel tarde
+    // en reflejar el LED) y nunca sale solo al arrancar.
     Connections {
         target: KeyboardThings
 
-        function onCapsLockOnChanged() {
-            if (_capsInicial) {
-                _capsInicial = false;
-                return;
-            }
-            const capsActive = KeyboardThings.capsLockOn;
-            keyOSD.osdText = I18nService.getTranslation("osd.caps_lock.label", "Bloq Mayús %1").arg(
-                        capsActive ? I18nService.getTranslation("osd.caps_lock.activated", "Activado") :
-                                     I18nService.getTranslation("osd.caps_lock.deactivated", "Desactivado"));
-            keyOSD.keyShape = capsActive ? MaterialShape.Diamond : MaterialShape.Circle;
+        function onCapsLockRefreshed(active) {
+            const state = active ? I18nService.getTranslation("osd.caps_lock.activated", "Activado") :
+                                   I18nService.getTranslation("osd.caps_lock.deactivated", "Desactivado");
+            keyOSD.osdText = I18nService.getTranslation("osd.caps_lock.label", "Bloq Mayús %1").arg(state);
+            keyOSD.keyShape = active ? MaterialShape.Diamond : MaterialShape.Circle;
             keyOSD.show();
         }
 
-        function onNumsLockChanged() {
-            if (_numInicial) {
-                _numInicial = false;
-                return;
-            }
-            const numLockActive = KeyboardThings.numsLock;
-            keyOSD.osdText = "Bloq Num " + (numLockActive ? "activado" : "desactivado");
-            keyOSD.keyShape = numLockActive ? MaterialShape.Cookie4Sided : MaterialShape.Circle;
+        function onNumLockRefreshed(active) {
+            const state = active ? I18nService.getTranslation("osd.num_lock.activated", "Activado") :
+                                   I18nService.getTranslation("osd.num_lock.deactivated", "Desactivado");
+            keyOSD.osdText = I18nService.getTranslation("osd.num_lock.label", "Bloq Num %1").arg(state);
+            keyOSD.keyShape = active ? MaterialShape.Cookie4Sided : MaterialShape.Circle;
             keyOSD.show();
         }
     }

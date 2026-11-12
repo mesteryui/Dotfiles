@@ -27,8 +27,9 @@ Singleton {
     property bool forceNow: false
 
     // Fuente de hora efectiva para la sesión desbloqueada. SystemClock escribe
-    // aquí vía onDateChanged cada minuto.
-    property date _now: new Date()
+    // aquí vía onDateChanged cada minuto. Usar `var` (no `date`) porque
+    // `property date` es read-only en QML y no se puede reasignar.
+    property var _now: new Date()
 
     // Tick de cambio normal (sesión desbloqueada). Se incrementa en eventos
     // reales de resincronización.
@@ -46,9 +47,10 @@ Singleton {
 
     readonly property var locale: I18nService.locale
 
-    // Barra: "mar 14:32". Binding reactivo. Cuando forceNow está activo
+    // Barra: "mar 14:32". Binding reactivo: depende de `tick` para forzar
+    // reevaluación cuando cambie el tiempo. Cuando forceNow está activo
     // (pantalla bloqueada), lee de new Date() directamente.
-    readonly property string barText: root.formatBarText() + (root.tick >= 0 ? "" : "")
+    readonly property string barText: root.formatBarText() + (root.tick !== undefined ? "" : "")
 
     function pad(n) { return n < 10 ? "0" + n : n; }
 
@@ -70,7 +72,7 @@ Singleton {
     // directamente cuando está bloqueado (forceNow), independientemente de
     // SystemClock. Depende de lockTick para forzar reevaluación cada segundo
     // durante el bloqueo.
-    readonly property string timeText: root.formatTimeText() + (root.lockTick >= 0 ? "" : "")
+    readonly property string timeText: root.formatTimeText() + (root.lockTick !== undefined ? "" : "")
 
     function formatTimeText() {
         var d = root.date;
@@ -119,7 +121,7 @@ Singleton {
         id: driftGuardTimer
         interval: 30000
         repeat: true
-        running: true
+        running: false
         onTriggered: root.checkDrift()
     }
 
@@ -128,7 +130,7 @@ Singleton {
         id: forcedResyncTimer
         interval: 60000
         repeat: true
-        running: true
+        running: false
         onTriggered: {
             root._now = new Date();
             root.resyncCount = root.resyncCount + 1;

@@ -173,15 +173,9 @@ Singleton {
 
         // qmllint disable signal-handler-parameters
         onError: err => {
-            // Un connectToServer() fallido (daemon no corriendo todavía) no
-            // siempre dispara onSocketDisconnected en Quickshell, así que
-            // forzamos el ciclo connected=false -> true para que el próximo
-            // tick de reconnectTimer pueda reintentar realmente.
-            // Un aviso por episodio: si el daemon no existe, no spamea.
-            if (!root._offlineWarned) {
-                root._offlineWarned = true;
-                console.warn("[Hyprsunset] error de socket:", err);
-            }
+            // Errores de conexión (daemon no corriendo, socket inexistente) son
+            // esperados: reconnectTimer ya se encarga de reintentar
+            // silenciosamente. No hace falta warn por cada intento fallido.
             socket.connected = false;
         }
         // qmllint enable signal-handler-parameters

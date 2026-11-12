@@ -1,0 +1,13 @@
+[Unit]
+Description=shinro backend socket (system + weather)
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/oscar/.dotfiles/shinro-backend/shinro-backend
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

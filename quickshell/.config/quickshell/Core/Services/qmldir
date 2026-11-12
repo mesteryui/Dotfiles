@@ -6,6 +6,7 @@ singleton BluetoothService 1.0 BluetoothService.qml
 singleton ClipboardService 1.0 ClipboardService.qml
 singleton ConfigService 1.0 ConfigService.qml
 singleton DistroService 1.0 DistroService.qml
+singleton FilesService 1.0 FilesService.qml
 singleton FuzzySearch 1.0 FuzzySearch.qml
 singleton GameMode 1.0 GameMode.qml
 singleton HyprlandIpc 1.0 HyprlandIpc.qml

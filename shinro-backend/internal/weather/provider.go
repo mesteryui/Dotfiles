@@ -4,6 +4,7 @@ package weather
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -106,6 +107,8 @@ type Provider struct {
 	mu           sync.Mutex
 	lastSnapshot Snapshot
 	haveSnapshot bool
+
+	isOnlineFn func() bool
 }
 
 type flightCall struct {
@@ -140,10 +143,43 @@ func New() *Provider {
 	}
 }
 
+// SetHTTPTransport permite sobrescribir el transporte HTTP (útil para pruebas unitarias).
+func (provider *Provider) SetHTTPTransport(transport http.RoundTripper) {
+	provider.client.Transport = transport
+	provider.alertsClient.Transport = transport
+}
+
+// SetConnectivityCheck configura una función para comprobar si hay conexión a Internet.
+func (provider *Provider) SetConnectivityCheck(fn func() bool) {
+	provider.mu.Lock()
+	defer provider.mu.Unlock()
+	provider.isOnlineFn = fn
+}
+
+// IsOnline devuelve true si hay conexión a Internet conocida.
+func (provider *Provider) IsOnline() bool {
+	provider.mu.Lock()
+	fn := provider.isOnlineFn
+	provider.mu.Unlock()
+	if fn != nil {
+		return fn()
+	}
+	return true
+}
+
 // Snapshot devuelve todos los datos del parte para la ciudad dada.
 func (provider *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 	if lang == "" {
 		lang = "es"
+	}
+
+	// Si se sabe con certeza que no hay conexión, servir directamente la caché
+	// sin esperar a que expiren los timeouts de red.
+	if !provider.IsOnline() {
+		if snap, ok := provider.cachedOrOffline(errors.New("sin conexión a Internet")); ok {
+			return snap, nil
+		}
+		return Snapshot{}, errors.New("sin conexión a Internet (sin datos en caché)")
 	}
 
 	loc := geo.Location{Mode: geo.ModeManual, City: city}

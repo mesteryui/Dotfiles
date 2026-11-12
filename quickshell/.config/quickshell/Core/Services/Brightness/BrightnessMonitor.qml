@@ -1,3 +1,7 @@
+// --- BrightnessMonitor (QtObject) ---
+// Un monitor físico: interno (sysfs/backlight, rápido y reactivo) o
+// externo HDMI (DDC/CI, lento: lectura ~1s, escritura con debounce).
+// Lo crea BrightnessService (uno por pantalla vía Variants).
 pragma ComponentBehavior: Bound
 
 import "DdcUtils.js" as DdcUtils
@@ -5,9 +9,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Un monitor físico: interno (sysfs/backlight, rápido y reactivo) o
-// externo HDMI (DDC/CI, lento: lectura ~1s, escritura con debounce).
-// Lo crea BrightnessService (uno por pantalla vía Variants).
 QtObject {
     id: monitor
 

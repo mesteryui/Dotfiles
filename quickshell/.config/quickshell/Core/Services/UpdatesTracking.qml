@@ -30,6 +30,7 @@ Singleton {
             if (countUpdates.running) {
                 console.warn("[Updates] timeout chequeando, mato checkupdates");
                 countUpdates.running = false;
+                root.failed = true;
             }
         }
     }

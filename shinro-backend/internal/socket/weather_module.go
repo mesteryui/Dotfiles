@@ -12,6 +12,11 @@ type weatherModule struct {
 	wthProvider *weather.Provider
 }
 
+// RequiresInternet implementa OnlineDependentModule.
+func (m *weatherModule) RequiresInternet() bool {
+	return true
+}
+
 // Name implementa Module.
 func (m *weatherModule) Name() string { return "weather" }
 
@@ -63,7 +68,11 @@ func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) (
 
 	if sub && !started {
 		c.pumpWthStarted = true
+		c.setModStarted(m.Name(), true)
 		go pumpModule(m, c, c.done)
+	} else if sub && started {
+		// Ya iniciado: reconfiguración (nueva ciudad o intervalo) -> despertar para refresco inmediato
+		c.signalMod(m.Name())
 	}
 
 	return sub, nil
@@ -105,6 +114,9 @@ func (m *weatherModule) SendUpdate(c *client) error {
 		"data":   w,
 	})
 	c.write(writeBuf(msg))
+	if !w.Offline && c.server != nil && c.server.connMon != nil {
+		c.server.connMon.ReportSuccess()
+	}
 	logger.Debug("weather update enviado",
 		"client", c.conn.RemoteAddr(),
 		"city", w.CityLabel,

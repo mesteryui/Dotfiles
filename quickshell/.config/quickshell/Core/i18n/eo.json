@@ -107,6 +107,11 @@
       "activated": "Aktivigita",
       "deactivated": "Malaktivigita",
       "label": "Majuskloj %1"
+    },
+    "num_lock": {
+      "activated": "Aktivigita",
+      "deactivated": "Malaktivigita",
+      "label": "Numerbrelo %1"
     }
   },
   "panel": {

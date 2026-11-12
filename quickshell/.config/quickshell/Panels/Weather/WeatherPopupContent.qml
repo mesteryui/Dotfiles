@@ -95,6 +95,17 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // Indicador de datos en caché (sin conexión a Internet).
+                StyledText {
+                    visible: WeatherService.data.isOffline
+                    text: I18nService.getTranslation("weather.data_offline", "Datos sin actualizar")
+                    color: Appearance.md3.error
+                    font.pixelSize: Appearance.typeScale.labelSmall
+                    font.weight: Font.Medium
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
+
                 // Mínima / máxima de hoy (humedad y viento solo en la rejilla)
                 StyledText {
                     text: I18nService.getTranslation("weather.max_min", "Máx %1 · Mín %2").arg(

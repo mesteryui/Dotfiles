@@ -1,5 +1,6 @@
 // --- FileMenu (lógica pura del modo archivos, en Modes/) ---
-// Clasificación por extensión, comando fd, mapeo snapshot→items,
+// Clasificación para preview (el backend manda MIME + kind; fileMedia queda
+// como fallback por extensión para backends antiguos), mapeo snapshot→items,
 // ordenado y comando de apertura. Sin estado ni singletons:
 // LauncherFileSearch/AppLauncher aportan snapshot/query/textos y los
 // servicios (FuzzySearch, xdg-open).
@@ -20,18 +21,10 @@ function fileUrl(path) {
     return "file://" + p.split("/").map(encodeURIComponent).join("/");
 }
 
-const fileExcludes = [
-    ".git", ".cache", ".local", ".var", ".cargo", ".npm", ".bun",
-    ".gradle", ".pub-cache", ".dart-tool", ".mozilla", ".floorp",
-    ".thunderbird", ".wine", ".steam", ".stremio-server", ".bitmonero",
-    ".vscode-oss", ".vscode-oss-shared", ".renpy", ".vm-space", ".java",
-    "node_modules", "__pycache__", ".venv"
-];
-
 function fileMedia(path, isDir) {
     if (isDir)
         return "other";
-    if (/\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(path))
+    if (/\.(png|jpe?g|webp|gif|bmp|svg|avif|ico)$/i.test(path))
         return "image";
     if (/\.(mp3|flac|m4a|aac|ogg|opus|wav|wma|aiff|ape)$/i.test(path))
         return "audio";
@@ -44,45 +37,53 @@ function fileMedia(path, isDir) {
     return "other";
 }
 
-function fdCommand(home, query) {
-    // Solo ficheros dentro de $HOME (o sus subrutas): sin directorios.
-    const cmd = ["fd", "--type", "f"];
-    for (let i = 0; i < fileExcludes.length; i++)
-        cmd.push("--exclude", fileExcludes[i]);
-    if (query === "") {
-        // Sin patrón `fd` tomaría $HOME como patrón y no devolvería nada.
-        cmd.push("--max-results", "200", ".", home);
-    } else {
-        // Con query: todo incluido ocultos, en literal. El "--" evita que
-        // una query como "-e" se interprete como flag (flag injection).
-        cmd.push("--hidden", "--fixed-strings", "--max-results", "100", "--", query, home);
-    }
-    return cmd;
+// Categoría de preview según el backend (Result.kind). Es la fuente de
+// verdad: cubre MIME por extensión y por contenido, incluidos archivos sin
+// extensión. Si el backend es antiguo y no manda `kind`, se cae a la
+// heurística por extensión de fileMedia().
+function mediaFor(e) {
+    if (!e)
+        return "other";
+    if (e.isDir)
+        return "other";
+    const k = String(e.kind || "");
+    if (k === "image" || k === "text" || k === "audio" || k === "video" || k === "pdf" || k === "binary")
+        return k;
+    return fileMedia(e.path, e.isDir);
 }
 
-// snapshot [{path, name, isDir}] → items del launcher (sin filtrar).
+// Icono Material para una categoría de preview.
+function iconFor(media, isDir) {
+    if (isDir)
+        return "folder";
+    switch (media) {
+    case "image":
+        return "image";
+    case "audio":
+        return "audio_file";
+    case "video":
+        return "video_file";
+    case "pdf":
+        return "picture_as_pdf";
+    case "text":
+        return "article";
+    case "binary":
+        return "data_object";
+    default:
+        return "description";
+    }
+}
+
+// snapshot [{path, name, isDir, kind}] → items del launcher (sin filtrar).
 function mapSnapshot(snapshot, cat) {
     const out = [];
     for (let i = 0; i < snapshot.length; i++) {
         const e = snapshot[i];
-        const media = fileMedia(e.path, e.isDir);
-        let icon = "description";
-        if (media === "image")
-            icon = "image";
-        else if (media === "audio")
-            icon = "audio_file";
-        else if (media === "video")
-            icon = "video_file";
-        else if (media === "pdf")
-            icon = "picture_as_pdf";
-        else if (media === "text")
-            icon = "article";
-        else if (e.isDir)
-            icon = "folder";
+        const media = mediaFor(e);
         out.push({ kind: "file", title: e.name, sub: e.path,
-                   icon: icon,
+                   icon: iconFor(media, e.isDir),
                    appIcon: "", ch: "", imagePath: media === "image" ? fileUrl(e.path) : "",
-                   cat: cat, path: e.path, media: media });
+                   cat: cat, path: e.path, media: media, mime: e.mime || "" });
     }
     return out;
 }

@@ -28,17 +28,13 @@ import Quickshell
 ShellRoot {
     id: root
 
-    // watchFiles en false en uso diario: en true cualquier toque
-    // a un QML recarga toda la shell (útil en dev, ruido en prod).
-    // En false además se sueltan los watchers inotify de todo el árbol.
-    // Actívalo solo para desarrollar (qs -p recarga el módulo editado).
-    settings.watchFiles: true
 
     Component.onCompleted: {
         Qt.application.organization = "shinro";
         Qt.application.domain = "shinro.org";
         Qt.application.name = "shinro";
         ConfigService.load();
+        KeyboardThings;
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).
         ThemeApplier.init();
         // qmlls/qmllint leen el VFS generado por quickshell (buildDir de

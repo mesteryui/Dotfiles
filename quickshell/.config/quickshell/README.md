@@ -47,6 +47,13 @@ openEmoji/openSystem/openMenu/reloadMenus), `dashboard` (toggle),
 `ui.settings`, `ui.powermenu`, `ui.wallpaperMenu` (toggleWallpaperMenu),
 `lockscreen`.
 
+Atajos globales (`GlobalShortcut` de Hyprland, se listan con
+`hyprctl globalshortcuts`; se ligan con `hl.dsp.global("<appid>:<name>")`):
+`quickshell:launcher` (toggle del launcher), `quickshell:windowSwitcher`,
+`quickshell:cheatsheetToggle`, `quickshell:wallpaperSelectorToggle`,
+`quickshell:audio_panel`, `quickshell:lock`, `quickshell:capsLock`,
+`quickshell:toggle_gamemode`.
+
 Conventions: tokens vía `Appearance.md3` (+ `base16`, `palette`;
 nunca hardcodear), opacidades de estado vía `Appearance.state`
 (`hovered 0.08` / `pressed 0.12` / `disabled 0.38`), formas/radios vía

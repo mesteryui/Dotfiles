@@ -280,12 +280,22 @@ func (s *Server) readLoop(c *client) {
 // handleHello procesa el handshake, responde y arranca el empuje periódico
 // de cada módulo suscrito.
 func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
-	for _, name := range s.registry.Names() {
-		m := s.registry.Get(name)
-		if m == nil {
-			continue
+	// Extraer ubicación si viene en raw para responder el handshake
+	if locRaw, ok := raw["location"]; ok {
+		var loc struct {
+			Mode geo.Mode `json:"mode"`
+			City string   `json:"city"`
 		}
-		m.HandleHello(c, raw)
+		if err := json.Unmarshal(locRaw, &loc); err == nil {
+			c.mu.Lock()
+			if loc.Mode != "" {
+				c.mode = loc.Mode
+			}
+			if loc.City != "" {
+				c.city = loc.City
+			}
+			c.mu.Unlock()
+		}
 	}
 
 	c.mu.Lock()
@@ -299,8 +309,18 @@ func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
 		"mode": mode,
 		"city": city,
 	})
+	// Responder primero para garantizar que hello sea el primer mensaje en la cola
 	c.write(writeBuf(resp))
 	logger.Debug("handshake respondido", "client", c.conn.RemoteAddr(), "mode", mode, "city", city)
+
+	// Procesar las suscripciones de cada módulo
+	for _, name := range s.registry.Names() {
+		m := s.registry.Get(name)
+		if m == nil {
+			continue
+		}
+		m.HandleHello(c, raw)
+	}
 }
 
 // handleGet responde con un snapshot inmediato del módulo pedido.
@@ -325,8 +345,8 @@ func (s *Server) handleGet(c *client, raw map[string]json.RawMessage) {
 }
 
 // watchConnectivity observa los cambios de conectividad y, al recuperar la
-// red, fuerza un refresco inmediato del clima en todos los clientes
-// suscritos sin esperar al próximo tick programado.
+// red, fuerza un refresco inmediato de los módulos online (clima, etc.) en todos
+// los clientes suscritos sin esperar al próximo tick programado.
 func (s *Server) watchConnectivity(ctx context.Context) {
 	if s.connMon == nil {
 		return
@@ -340,8 +360,8 @@ func (s *Server) watchConnectivity(ctx context.Context) {
 		case state := <-ch:
 			switch state {
 			case connectivity.StateOnline:
-				logger.Info("conectividad recuperada, refrescando clima de clientes")
-				s.wakeWeatherClients()
+				logger.Info("conectividad recuperada, refrescando módulos online de clientes")
+				s.wakeOnlineClients()
 			case connectivity.StateOffline:
 				logger.Info("sin conexión a Internet, se servirán datos en caché si existen")
 			}
@@ -349,20 +369,56 @@ func (s *Server) watchConnectivity(ctx context.Context) {
 	}
 }
 
-// wakeWeatherClients despierta el pump de weather de cada cliente suscrito
-// para que obtenga un parte nuevo inmediatamente.
-func (s *Server) wakeWeatherClients() {
+// wakeOnlineClients despierta los pumps de todos los módulos dependientes de Internet
+// (como weather) para que obtengan datos frescos de inmediato.
+func (s *Server) wakeOnlineClients() {
 	s.mu.Lock()
 	clients := make([]*client, 0, len(s.clients))
 	for c := range s.clients {
-		if c.isSubscribed("weather") {
+		clients = append(clients, c)
+	}
+	s.mu.Unlock()
+
+	for _, c := range clients {
+		for _, name := range s.registry.Names() {
+			m := s.registry.Get(name)
+			if m == nil {
+				continue
+			}
+			if IsOnlineModule(m) && c.isSubscribed(name) {
+				c.signalMod(name)
+			}
+		}
+	}
+}
+
+// wakeWeatherClients despierta el pump de weather de cada cliente suscrito.
+func (s *Server) wakeWeatherClients() {
+	s.wakeOnlineClients()
+}
+
+// wakeClipboardClients empuja el historial actualizado a todos los clientes
+// suscritos al portapapeles. El módulo clipboard no usa pump periódico (sus
+// cambios llegan por eventos a través de SetBroadcast), así que aquí se envía
+// el listado directamente en lugar de solo despertar el pump.
+func (s *Server) WakeClipboardClients() {
+	s.mu.Lock()
+	clients := make([]*client, 0, len(s.clients))
+	for c := range s.clients {
+		if c.isSubscribed("clipboard") {
 			clients = append(clients, c)
 		}
 	}
 	s.mu.Unlock()
 
+	m := s.registry.Get("clipboard")
+	if m == nil {
+		return
+	}
 	for _, c := range clients {
-		c.signalMod("weather")
+		if err := m.SendUpdate(c); err != nil {
+			logger.Warn("clipboard: error enviando update", "client", c.conn.RemoteAddr(), "error", err)
+		}
 	}
 }
 
@@ -392,6 +448,12 @@ func pumpModule(m Module, c *client, done <-chan struct{}) {
 		defer c.server.pumpsWG.Done()
 	}
 
+	// Envío inicial inmediato al comenzar la suscripción.
+	// Si hay internet (o datos locales/caché), se entrega de inmediato al cliente.
+	if err := m.SendUpdate(c); err != nil {
+		logger.Warn("módulo: error enviando update inicial", "module", m.Name(), "client", c.conn.RemoteAddr(), "error", err)
+	}
+
 	for {
 		interval := c.modInterval(m.Name())
 		if interval <= 0 {
@@ -406,8 +468,10 @@ func pumpModule(m Module, c *client, done <-chan struct{}) {
 			return
 		case <-wake:
 			timer.Stop()
-			// Volver al inicio para releer el intervalo y enviar de inmediato.
-			continue
+			// Refresco forzado al recibir señal de wake (por ej. recuperación de internet o cambio de configuración)
+			if err := m.SendUpdate(c); err != nil {
+				logger.Warn("módulo: error enviando update tras wake", "module", m.Name(), "client", c.conn.RemoteAddr(), "error", err)
+			}
 		case <-timer.C:
 			if err := m.SendUpdate(c); err != nil {
 				logger.Warn("módulo: error enviando update", "module", m.Name(), "client", c.conn.RemoteAddr(), "error", err)

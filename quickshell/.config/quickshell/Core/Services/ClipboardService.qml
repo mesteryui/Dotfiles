@@ -1,16 +1,17 @@
 // --- ClipboardService (Singleton) ---
-// Historial del portapapeles vía cliphist
-// (`cliphist list | decode | delete | wipe` + `wl-copy`).
-// Borrado por id con `echo <id> | cliphist delete` (delete-query borra por
-// contenido y no sirve para una entrada concreta).
-// Soporta texto e imágenes: las entradas `[[ binary data ... ]]` se marcan
-// como imagen y al previsualizar/copiar se decodifican a /tmp.
+// Historial del portapapeles vía shinro-backend (socket Unix, módulo clipboard).
+// Soporta texto e imágenes con historial persistente, deduplicación por hash,
+// thumbnails y entradas starred.
 //
-// Requiere el daemon (añadido a hypr auto-exec):
-//   wl-paste --type text --watch cliphist store &
-//   wl-paste --type image --watch cliphist store &
+// Requiere shinro-backend ejecutándose:
+//   systemctl --user enable --now shinro-backend
+//
+// Protocolo: {"type":"get","module":"clipboard","action":...} sobre
+// $XDG_RUNTIME_DIR/shinro (una petición por conexión).
 
 pragma Singleton
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -18,168 +19,239 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    // Al cambiar el idioma se reconstruye el snapshot (subs traducidos).
     readonly property string langWatch: I18nService.language
 
     onLangWatchChanged: rebuildSnapshot()
 
     property ListModel entries: ListModel {}
-    // Snapshot plano para bindings: entries se llena por streaming y leerlo
-    // en vivo desde `results` disparaba binding loops. Solo se reasigna al
-    // completar el listado.
-
     property var snapshot: []
 
     property bool ready: false
-
-    // cliphist no limita el historial por defecto. El launcher solo
-    // necesita las entradas recientes: cargar miles duplicaba texto en
-    // `entries` y en `snapshot` sin aportar nada útil.
-    readonly property int maxEntries: 300
+    readonly property int maxEntries: 100
 
     property string error: ""
-
     property bool refreshing: false
 
-    readonly property string previewDir: "/tmp/qs-clipboard"
+    // ── Socket ──────────────────────────────────────────────────
+    readonly property string socketPath: {
+        const rt = Quickshell.env("XDG_RUNTIME_DIR");
+        if (rt)
+            return rt + "/shinro";
+        const uid = Quickshell.env("UID");
+        return uid ? "/run/user/" + uid + "/shinro" : "";
+    }
 
-    property string copyId: ""
+    Socket {
+        id: shinroSocket
+        path: root.socketPath
 
-    property bool copyIsImage: false
+        parser: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                try {
+                    const msg = JSON.parse(data);
+                    if (msg.type === "error") {
+                        root._handleBackendError(msg.message || "backend");
+                        return;
+                    }
+                    if (msg.type !== "update" || msg.module !== "clipboard")
+                        return;
+                    root._handleClipboardMsg(msg);
+                } catch (e) {
+                    console.warn("[ClipboardService] mensaje inválido:", e);
+                }
+            }
+        }
 
-    property string previewId: ""
-    // Cola para no perder peticiones si se pulsa muy rápido:
-    // solo gana la última (igual que FilePreviewService).
+        onConnectionStateChanged: {
+            if (!shinroSocket.connected) {
+                // No dejar refrescos colgados si el backend desaparece.
+                requestTimeout.stop();
+                root._pending = [];
+                root.refreshing = false;
+                root.error = "disconnected";
+                return;
+            }
+            shinroSocket.write(JSON.stringify({
+                type: "hello",
+                intervals: { clipboard: 0 }
+            }) + "\n");
+            shinroSocket.flush();
+            // Recuperar el historial automáticamente al (re)conectar.
+            root.refresh();
+        }
 
-    property string pendingCopyId: ""
+        onError: error => {
+            // No modificar connected aquí (ver SystemInfoService).
+            root._failRequest("socket");
+        }
+    }
 
-    property bool pendingCopyIsImage: false
+    // Reconexión
+    Timer {
+        id: reconnectTimer
+        interval: 2000
+        repeat: true
+        running: root.socketPath !== "" && !shinroSocket.connected
+        onTriggered: shinroSocket.connected = true
+    }
 
-    property bool hasPendingCopy: false
-
-    property string pendingPreviewId: ""
-
-    property var pendingDeleteQueue: []
-
-    property bool pendingRefresh: false
-    // Watchdogs: ningún cliphist/wl-copy colgado debe wedgar su cola.
-
-    property Timer listWatchdog: Timer {
+    // Si el backend no responde, liberar el estado en vez de quedarse
+    // "refrescando" para siempre.
+    Timer {
+        id: requestTimeout
         interval: 10000
-        onTriggered: {
-            if (listProc.running) {
-                console.warn("ClipboardService: timeout listando");
-                listProc.running = false;
-            }
+        repeat: false
+        onTriggered: root._failRequest("timeout")
+    }
+
+    Component.onCompleted: shinroSocket.connected = true
+
+    // ── Peticiones pendientes (cola FIFO) ───────────────────────
+    // El backend responde en orden sobre la misma conexión. Una cola evita
+    // que dos peticiones solapadas se pisen (p. ej. refresh + get-text).
+    property var _pending: []
+    property int pendingId: 0
+
+    function _failRequest(reason) {
+        requestTimeout.stop();
+        root._pending = [];
+        root.refreshing = false;
+        root.error = String(reason || "error");
+        // No spammear consola en cada reconexión fallida: el backend shinro
+        // puede no estar corriendo; el estado `error` ya se expone para la UI.
+    }
+
+    // Error devuelto por el backend para UNA petición: consume solo esa
+    // entrada de la cola. Las demás siguen vivas y sus respuestas no se
+    // atribuyen a la acción equivocada.
+    function _handleBackendError(message) {
+        if (root._pending.length > 0)
+            root._pending.shift();
+        if (root._pending.length === 0)
+            requestTimeout.stop();
+        root.refreshing = false;
+        root.error = String(message || "backend");
+        // No spammear consola en cada error de backend: el estado `error` ya
+        // se expone para la UI.
+    }
+
+    function _send(action, extra) {
+        if (!shinroSocket.connected) {
+            root._failRequest("disconnected");
+            return false;
         }
+        const payload = { type: "get", module: "clipboard", action: action };
+        for (const k in extra)
+            payload[k] = extra[k];
+
+        root._pending.push({
+            action: action,
+            id: extra && extra.id !== undefined ? extra.id : 0
+        });
+        requestTimeout.restart();
+        shinroSocket.write(JSON.stringify(payload) + "\n");
+        shinroSocket.flush();
+        return true;
     }
 
-    property Timer copyWatchdog: Timer {
-        interval: 10000
-        onTriggered: {
-            if (copyProc.running) {
-                console.warn("ClipboardService: timeout copiando id=" + root.copyId);
-                copyProc.running = false;
-            }
-        }
-    }
-
-    property Timer previewWatchdog: Timer {
-        interval: 15000
-        onTriggered: {
-            if (previewProc.running) {
-                console.warn("ClipboardService: timeout preview id=" + root.previewId);
-                previewProc.running = false;
-            }
-        }
-    }
-
-    property Timer textWatchdog: Timer {
-        interval: 10000
-        onTriggered: {
-            if (textProc.running) {
-                console.warn("ClipboardService: timeout texto id=" + root.textCid);
-                textProc.running = false;
-            }
-        }
-    }
-
-    property Timer delWatchdog: Timer {
-        interval: 10000
-        onTriggered: {
-            if (delProc.running) {
-                console.warn("ClipboardService: timeout delete id=" + delProc.currentId);
-                delProc.running = false;
-            }
-        }
-    }
-
-    signal previewReady(string cid)
-    // El decode falló (entrada expirada, binario corrupto...): sin esta
-    // señal el preview se quedaría esperando eternamente en blanco y
-    // reintentando el decode en cada highlight. El display muestra
-    // fallback y no lo reintenta en la sesión.
-
-    signal previewFailed(string cid)
-
-    // Cola de prefetch (baja prioridad): cids vecinos al actual. Se
-    // reemplaza en cada highlight y solo corre en idle: la petición real
-    // (previewImage/pendingPreviewId) siempre pasa delante.
-    property var prefetchQueue: []
-
-    function prefetchNeighbors(cids) {
-        const out = [];
-        for (let i = 0; i < cids.length && out.length < 6; i++) {
-            const id = String(cids[i]).trim();
-            if (!isValidId(id) || id === root.previewId || id === root.pendingPreviewId)
-                continue;
-            if (out.indexOf(id) < 0)
-                out.push(id);
-        }
-        root.prefetchQueue = out;
-        root._pumpPreview();
-    }
-
-    function clearPrefetch() {
-        root.prefetchQueue = [];
-    }
-
-    function _pumpPreview() {
-        // OJO: el Process se referencia por su id directo (previewProc):
-        // los id NO son propiedades (root.previewProc es undefined y
-        // lanzaba TypeError, abortando update() antes de pedir nada).
-        if (previewProc.running || root.pendingPreviewId !== "")
+    function _handleClipboardMsg(msg) {
+        const data = msg.data;
+        const head = root._pending.length > 0 ? root._pending[0] : null;
+        // Un listado puede llegar sin petición: el backend lo empuja cuando
+        // cambia el historial (copia externa, borrado, starred...). No debe
+        // consumir la cola; solo las respuestas a un `list` en vuelo se
+        // atribuyen a esa petición.
+        if (Array.isArray(data) && (!head || head.action !== "list")) {
+            root._handleList(data);
             return;
-        if (root.prefetchQueue.length === 0)
+        }
+        const req = head;
+        if (req)
+            root._pending.shift();
+        if (root._pending.length === 0)
+            requestTimeout.stop();
+        if (!req)
             return;
-        root.startPreview(root.prefetchQueue[0]);
-        root.prefetchQueue = root.prefetchQueue.slice(1);
+
+        switch (req.action) {
+        case "list":
+            root._handleList(data);
+            break;
+        case "copy-text":
+        case "copy-image":
+        case "recopy":
+        case "paste":
+        case "star":
+        case "stats":
+            break;
+        case "delete":
+        case "clear":
+            root.refresh();
+            break;
+        case "get-text":
+            if (data && data.kind === "text") {
+                root.textContent = data.content || "";
+                root.textReady(String(data.id !== undefined ? data.id : req.id));
+            }
+            break;
+        }
     }
 
-    function shEscape(s) {
-        // Copia local a propósito: Core no debe depender del módulo
-        // qs.Launcher (ver Launcher/Base/ShellUtils.js, misma semántica).
-        return String(s).replace(/'/g, "'\\''");
-    }
-
-    function isValidId(cid) {
-        return /^[0-9]+$/.test(String(cid).trim());
-    }
-
+    // ── Historial ───────────────────────────────────────────────
     function refresh() {
-        // Si el listado está en curso, no lo abortamos: marcamos
-        // pendiente y se refresca solo al terminar (evita lista vacía).
-        if (listProc.running) {
-            pendingRefresh = true;
+        if (refreshing)
+            return;
+        if (!shinroSocket.connected) {
+            root.error = "disconnected";
+            root.refreshing = false;
             return;
         }
-        entries.clear();
-        // No vaciamos `snapshot` aquí: se reasigna al completar.
-        // Así la lista no parpadea en vacío en cada Supr.
         error = "";
         refreshing = true;
-        listProc.running = true;
-        listWatchdog.restart();
+        root._send("list", {});
+    }
+
+    function _handleList(data) {
+        refreshing = false;
+        entries.clear();
+        if (!Array.isArray(data)) {
+            root.ready = true;
+            root.rebuildSnapshot();
+            return;
+        }
+        for (let i = 0; i < data.length; i++) {
+            const e = data[i];
+            const isImg = e.kind === "image";
+            const isBin = e.kind === "binary";
+            // Etiqueta legible incluso si el preview viene vacío (binarios,
+            // texto vacío importado): una fila sin título parece una caja
+            // rota.
+            let label = e.preview || "";
+            if (isImg)
+                label = "Imagen";
+            else if (isBin)
+                label = "Binario";
+            else if (label === "")
+                label = "Texto";
+            entries.append({
+                cid: String(e.id),
+                text: label,
+                raw: "",
+                isImage: isImg,
+                _backendId: e.id,
+                _kind: e.kind,
+                _mime: e.mime,
+                _size: e.size,
+                _w: e.w || 0,
+                _h: e.h || 0,
+                // El backend serializa la ruta como "thumb" (Entry.ThumbPath).
+                _thumbPath: e.thumb || e.thumbPath || "",
+                _starred: e.starred || false
+            });
+        }
+        root.ready = true;
+        root.rebuildSnapshot();
     }
 
     function rebuildSnapshot() {
@@ -187,387 +259,103 @@ Singleton {
         for (let i = 0; i < entries.count; i++) {
             const e = entries.get(i);
             out.push({
-                         cid: e.cid,
-                         text: e.text,
-                         raw: e.raw,
-                         isImage: e.isImage
-                     });
+                cid: e.cid,
+                text: e.text,
+                raw: e.raw,
+                isImage: e.isImage,
+                thumb: e._thumbPath || "",
+                w: e._w || 0,
+                h: e._h || 0,
+                size: e._size || 0,
+                starred: e._starred === true
+            });
         }
         snapshot = out;
     }
 
+    // ── Copiar ──────────────────────────────────────────────────
     function copyEntry(cid, isImage) {
-        const id = String(cid).trim();
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: copy con id inválido '" + cid + "'");
+        const id = parseInt(cid, 10);
+        if (isNaN(id))
             return;
-        }
-        // Si ya hay una copia en curso, encolamos solo la última.
-        if (copyProc.running) {
-            pendingCopyId = id;
-            pendingCopyIsImage = !!isImage;
-            hasPendingCopy = true;
-            return;
-        }
-        startCopy(id, !!isImage);
+        root._send("recopy", { id: id });
     }
 
-    function startCopy(id, isImage) {
-        // Defensa en profundidad: los llamadores ya validan, pero este
-        // id termina en `sh -c` y no debe llegar sin filtrar.
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: startCopy con id inválido");
-            return;
-        }
-        copyId = id;
-        copyIsImage = isImage;
-        // Asignación imperativa: evita la carrera de usar `command:`
-        // ligado a la propiedad y `running = true` en la misma función
-        // (el proceso podía arrancar con el id anterior).
-        if (isImage)
-            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id)
-                                + "' | wl-copy --type image/png"];
-        else
-            copyProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' | wl-copy"];
-        copyProc.running = true;
-        copyWatchdog.restart();
-    }
-
-    // Copia texto arbitrario al portapapeles (vía única para emoji y
-    // calculadora del launcher). Desacoplado como el resto de
-    // lanzamientos: no bloquea ni interfiere con copias en curso de
-    // entradas del historial (esas siguen su propia cola en copyProc).
-    // El texto viaja como argumento $1, NUNCA interpolado en el shell:
-    // ni siquiera un portapapeles hostil puede escapar el quoting.
     function copyText(text) {
         const t = String(text ?? "");
         if (t === "")
             return false;
-        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "wl-copy-text", t]);
+        root._send("copy-text", { text: t });
         return true;
     }
 
-    // Devuelve la ruta donde quedará el preview (emite previewReady al terminar)
-    function previewImage(cid) {
-        const id = String(cid).trim();
-        if (!isValidId(id))
-            return "";
-        // Si hay preview en curso, solo gana el último (navegación rápida).
-        if (previewProc.running) {
-            pendingPreviewId = id;
-            return previewDir + "/preview-" + id + ".png";
-        }
-        startPreview(id);
-        return previewDir + "/preview-" + id + ".png";
-    }
-
-    function startPreview(id) {
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: startPreview con id inválido");
+    // ── Eliminar / limpiar ──────────────────────────────────────
+    function deleteEntry(cid) {
+        const id = parseInt(cid, 10);
+        if (isNaN(id))
             return;
-        }
-        previewId = id;
-        // Tmp + mv atómico: antes `> "$OUT"` truncaba el cacheado bueno
-        // antes de saber si el decode iba a funcionar.
-        previewProc.command = ["sh", "-c", "mkdir -p '" + shEscape(previewDir) + "' && OUT='" + shEscape(
-                                   previewDir) + "/preview-" + shEscape(id)
-                               + ".png' && ([ -s \"$OUT\" ] || { TMP=\"$OUT.tmp.$$\"; cliphist decode '"
-                               + shEscape(id)
-                               + "' > \"$TMP\" && mv -f \"$TMP\" \"$OUT\"; rm -f \"$TMP\"; })"];
-        previewProc.running = true;
-        previewWatchdog.restart();
+        root._send("delete", { id: id });
     }
 
-    // Texto completo de una entrada de texto (`cliphist list` solo trae la
-    // primera línea truncada; para la preview hay que hacer `decode`).
-    // Tope 20000 caracteres en el acumulador; si se corta, se marca con "…".
+    function clear() {
+        root._send("clear", {});
+    }
+
+    // ── Starred ─────────────────────────────────────────────────
+    function star(cid, starred) {
+        const id = parseInt(cid, 10);
+        if (isNaN(id))
+            return;
+        root._send("star", { id: id, starred: !!starred });
+    }
+
+    // ── Stats ───────────────────────────────────────────────────
+    function stats() {
+        root._send("stats", {});
+    }
+
+    // ── Preview imagen ──────────────────────────────────────────
+    property string previewDir: "/tmp/qs-clipboard"
+
+    function previewImage(cid) {
+        const id = parseInt(cid, 10);
+        if (isNaN(id))
+            return "";
+        for (let i = 0; i < entries.count; i++) {
+            const e = entries.get(i);
+            if (e.cid === String(id) && e.isImage && e._thumbPath)
+                return e._thumbPath;
+        }
+        return "";
+    }
+
+    // ── Texto completo ──────────────────────────────────────────
     property string textCid: ""
-
     property string textContent: ""
-
     property string textAcc: ""
-
     property string pendingTextId: ""
 
     signal textReady(string cid)
 
-    // Pide el texto completo; devuelve el cacheado si ya es de este cid,
-    // "" si queda pendiente (llega vía textReady). Solo gana el último
-    // si se navega rápido (igual que previewImage).
     function requestText(cid) {
-        const id = String(cid).trim();
-        if (!isValidId(id))
+        const id = parseInt(cid, 10);
+        if (isNaN(id))
             return "";
-        if (id === textCid && textContent !== "")
-            return textContent;
-        if (textProc.running) {
-            pendingTextId = id;
-            return "";
-        }
-        startTextRequest(id);
+        root.pendingId = id;
+        root.textCid = String(id);
+        root.textContent = "";
+        root._send("get-text", { id: id });
         return "";
     }
 
-    function startTextRequest(id) {
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: startTextRequest con id inválido");
-            return;
-        }
-        textCid = id;
-        textContent = "";
-        textAcc = "";
-        pendingTextId = "";
-        textProc.command = ["sh", "-c", "cliphist decode '" + shEscape(id) + "' 2>/dev/null | head -c 20000"];
-        textProc.running = true;
-        textWatchdog.restart();
+    // ── Prefetch (API mantenida, sin efecto real en este backend) ─
+    property var prefetchQueue: []
+
+    function prefetchNeighbors(cids) {
+        root.prefetchQueue = [];
     }
 
-    function deleteEntry(cid) {
-        const id = String(cid).trim();
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: delete con id inválido '" + cid + "'");
-            return;
-        }
-        // Encolar: pulsar Supr rápido ya no pierde borrados (tope 50,
-        // los más viejos se descartan con aviso en vez de crecer sin fin).
-        if (delProc.running) {
-            if (pendingDeleteQueue.length >= 50) {
-                console.warn("ClipboardService: cola de borrado llena, descarto " + pendingDeleteQueue.shift(
-                                 ));
-            }
-            pendingDeleteQueue.push(id);
-            return;
-        }
-        startDelete(id);
-    }
-
-    function startDelete(id) {
-        if (!isValidId(id)) {
-            console.warn("ClipboardService: startDelete con id inválido");
-            return;
-        }
-        // NOTA: antes era `cliphist delete-query <id>`, que borra POR
-        // CONTENIDO (todo lo que contenga ese texto) y podía borrar
-        // varias entradas ajenas o ninguna. Lo correcto para un id es
-        // `echo <id> | cliphist delete`.
-        delProc.command = ["sh", "-c", "printf '%s' '" + shEscape(id) + "' | cliphist delete"];
-        // Guardamos el id en curso para limpiar su preview al terminar.
-        delProc.currentId = id;
-        delProc.running = true;
-        delWatchdog.restart();
-    }
-
-    function wipe() {
-        wipeProc.running = true;
-    }
-
-    // Tope de 40 previews en caché (las entradas viejas se regeneran solas).
-    // find+sort por mtime: no parsea `ls` y aguanta espacios en nombres.
-    Process {
-        id: trimProc
-
-        command: ["sh", "-c", "d='" + root.shEscape(root.previewDir)
-            + "'; [ -d \"$d\" ] || exit 0; find \"$d\" -maxdepth 1 -type f -printf '%T@ %p\\n' 2>/dev/null | sort -rn | tail -n +41 | cut -d' ' -f2- | xargs -r rm -f"]
-    }
-
-    Process {
-        id: mkdirProc
-
-        command: ["mkdir", "-p", root.previewDir]
-        Component.onCompleted: mkdirProc.running = true
-        // qmllint disable signal-handler-parameters
-        onExited: code => {
-            if (code !== 0)
-                console.warn("ClipboardService: no se pudo crear " + root.previewDir);
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    // cliphist list -> "<id>\t<preview>"
-    Process {
-        id: listProc
-
-        command: ["cliphist", "list"]
-        stdout: SplitParser {
-            onRead: data => {
-                if (root.entries.count >= root.maxEntries)
-                    return;
-                const line = data.trim();
-                if (line === "" || line.startsWith("opening db"))
-                    return;
-                const tab = line.indexOf("\t");
-                if (tab < 0)
-                    return;
-                const cid = line.slice(0, tab).trim();
-                const txt = line.slice(tab + 1).trim();
-                const isImg = txt.indexOf("[[ binary data") === 0;
-                root.entries.append({
-                                        cid: cid,
-                                        text: isImg ? ("Imagen · " + cid) : txt,
-                                        raw: txt,
-                                        isImage: isImg
-                                    });
-            }
-        }
-        // qmllint disable signal-handler-parameters
-        onExited: code => {
-            root.listWatchdog.stop();
-            root.refreshing = false;
-            root.ready = true;
-            if (code === 127)
-                root.error = I18nService.getTranslation("launcher.clipboard_error",
-                                                        "Sin historial (¿daemon cliphist activo?)")
-                        + " (cliphist no instalado)";
-            else if (code !== 0)
-                root.error = I18nService.getTranslation("launcher.clipboard_error",
-                                                        "Sin historial (¿daemon cliphist activo?)");
-            root.rebuildSnapshot();
-            if (!trimProc.running)
-                trimProc.running = true;
-            // Refresh pedido mientras listábamos (ej. Supr durante refresh).
-            if (root.pendingRefresh) {
-                root.pendingRefresh = false;
-                // diferir un tick para no reentrar en el mismo onExited
-                Qt.callLater(() => root.refresh());
-            }
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    Process {
-        id: copyProc
-        // qmllint disable signal-handler-parameters
-
-        onExited: code => {
-            root.copyWatchdog.stop();
-            if (code !== 0)
-                console.warn("ClipboardService: copy falló id=" + root.copyId + " (" + code + ")");
-            // Si se pidió otra copia mientras tanto, ejecuta solo la última.
-            if (root.hasPendingCopy) {
-                const nid = root.pendingCopyId;
-                const nimg = root.pendingCopyIsImage;
-                root.hasPendingCopy = false;
-                root.pendingCopyId = "";
-                root.startCopy(nid, nimg);
-            }
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    Process {
-        id: previewProc
-        // qmllint disable signal-handler-parameters
-
-        onExited: code => {
-            root.previewWatchdog.stop();
-            const finishedId = root.previewId;
-            if (code === 0)
-                root.previewReady(finishedId);
-            else {
-                console.warn("ClipboardService: preview falló id=" + finishedId);
-                root.previewFailed(finishedId);
-            }
-            // Navegación rápida: atiende el último preview pendiente. Solo
-            // si no hay pendiente corre el prefetch (nunca le quita el
-            // turno a lo real).
-            if (root.pendingPreviewId !== "") {
-                const nid = root.pendingPreviewId;
-                root.pendingPreviewId = "";
-                root.startPreview(nid);
-            } else {
-                root._pumpPreview();
-            }
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    Process {
-        id: textProc
-
-        stdout: SplitParser {
-            onRead: data => {
-                if (root.textAcc.length < 20000)
-                    root.textAcc += data + "\n";
-            }
-        }
-        // qmllint disable signal-handler-parameters
-        onExited: code => {
-            root.textWatchdog.stop();
-            if (code === 0) {
-                let t = root.textAcc;
-                if (t.endsWith("\n"))
-                    t = t.slice(0, -1);
-                // head -c cortó: el acumulador llegó al tope.
-                if (root.textAcc.length >= 20000)
-                    t += "\n…";
-                root.textContent = t;
-            } else {
-                console.warn("ClipboardService: texto falló id=" + root.textCid);
-                root.textContent = "";
-            }
-            root.textReady(root.textCid);
-            // Navegación rápida: atiende el último texto pendiente.
-            if (root.pendingTextId !== "") {
-                const nid = root.pendingTextId;
-                root.pendingTextId = "";
-                root.startTextRequest(nid);
-            }
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    Process {
-        id: delProc
-
-        property string currentId: ""
-        // qmllint disable signal-handler-parameters
-
-        onExited: code => {
-            root.delWatchdog.stop();
-            if (code !== 0)
-                console.warn("ClipboardService: delete falló id=" + delProc.currentId);
-            else if (delProc.currentId !== "")
-                // Limpia el preview cacheado de la entrada borrada para
-                // no mostrar una imagen fantasma si el id se recicla.
-                cleanProc.clean(delProc.currentId);
-            delProc.currentId = "";
-            if (root.pendingDeleteQueue.length > 0) {
-                root.startDelete(root.pendingDeleteQueue.shift());
-                return;
-            }
-            root.refresh();
-        }
-        // qmllint enable signal-handler-parameters
-    }
-
-    Process {
-        id: cleanProc
-        // Borrado puntual de un preview; sin señales, no interfiere.
-
-        function clean(cid) {
-            const id = String(cid).trim();
-            // clean() es invocable y su arg termina en `sh -c`: validar
-            // aquí también, no solo en el llamador (deleteEntry).
-            if (!root.isValidId(id)) {
-                console.warn("ClipboardService: clean con id inválido");
-                return;
-            }
-            cleanProc.command = ["sh", "-c", "rm -f '" + root.shEscape(root.previewDir) + "/preview-"
-                                 + root.shEscape(id) + ".png'"];
-            cleanProc.running = true;
-        }
-    }
-
-    Process {
-        id: wipeProc
-
-        command: ["cliphist", "wipe"]
-        // qmllint disable signal-handler-parameters
-        onExited: code => {
-            if (code !== 0)
-                console.warn("ClipboardService: wipe falló (" + code + ")");
-            root.refresh();
-        }
-        // qmllint enable signal-handler-parameters
+    function clearPrefetch() {
+        root.prefetchQueue = [];
     }
 }

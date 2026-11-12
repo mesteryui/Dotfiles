@@ -38,7 +38,8 @@ emoji en `~/.local/state/quickshell/emoji.json` con debounce).
 ## Piezas y quién hace qué
 
 * `AppLauncher.qml` — ventana (`600/900x640`, clic-fuera cierra,
-  `HyprlandFocusGrab` + `WlrLayershell`), IPC, modos (`typedMode`,
+  `HyprlandFocusGrab` + `WlrLayershell`), IPC, `GlobalShortcut`
+  (`quickshell:launcher`), modos (`typedMode`,
   `activeMode`, `query`, `goSection`, `toggleModeImpl`), dispatch de
   `results` (`todo/system/emoji/clip/file/calc/webResults`) y
   `activateItem` (`app`→`entry.execute()`; `system`→submenú navega,
@@ -112,6 +113,28 @@ emoji en `~/.local/state/quickshell/emoji.json` con debounce).
 `toggle`, `toggleMode <todo|system|files|web|emoji|calc|clip>`,
 `openClipboard`, `openEmoji`, `openSystem`, `openMenu <sección>`,
 `reloadMenus` (re-escanea providers, devuelve `"menus=… rev=…"`).
+
+## Atajo global (`GlobalShortcut`)
+
+`AppLauncher.qml` registra un `GlobalShortcut` en el `Scope` (no en la
+`PanelWindow`): vive fuera del `LazyLoader`, así que responde desde el
+arranque sin instanciar la ventana.
+
+| id | descripción | acción |
+|---|---|---|
+| `quickshell:launcher` | Toggle the launcher | mismo toggle que el IPC (`scope.toggleLauncher()`): abre en modo `todo` o cierra |
+
+Se liga en la config de Hyprland con el dispatcher `global`:
+
+```lua
+hl.bind("ALT + SPACE", hl.dsp.global("quickshell:launcher"),
+	{ description = "Apps: Abrir menu" })
+```
+
+(`hyprctl globalshortcuts` lista los atajos registrados.) El protocolo
+nativo de Hyprland (`hyprland_global_shortcuts_v1`) no necesita
+xdg-desktop-portal. Ojo: `appid:name` no puede repetirse entre
+instancias de quickshell.
 
 ## Añadir un modo
 

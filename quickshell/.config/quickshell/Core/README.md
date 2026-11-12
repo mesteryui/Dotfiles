@@ -29,7 +29,12 @@
   de copiado), `ConfigService` (`configs.*`, `ready`, `load()`),
   `DistroService`, `FuzzySearch` (+ `FuzzyMatch.js` puro),
   `GameMode`, `HyprlandKeybinds`, `HyprlandSubmap`, `Hyprsunset`,
-  `I18nService`, `IdleInhibitedService`, `KeyboardThings` (`load()`),
+  `I18nService`, `IdleInhibitedService`, `KeyboardThings` (Bloq Mayús /
+  Bloq Num: lee `j/devices` por `HyprlandIpc` y guarda el estado POR
+  TECLADO —Hyprland lo reporta por dispositivo, no global—, detecta
+  cuál cambió y avisa con `capsLockRefreshed` / `numLockRefreshed`;
+  vía rápida = atajos globales `quickshell:capsLock` /
+  `quickshell:numLock`, red de seguridad = sondeo de 350 ms),
   `LockState`, `MprisService`, `NetworkService`, `NotificationData` +
   `NotificationService`, `PolkitService`, `RandomPhraseses`,
   `SystemInfoService`, `ThemeApplier` (`init()`), `TimeService`,

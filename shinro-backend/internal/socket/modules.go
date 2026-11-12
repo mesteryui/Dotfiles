@@ -36,6 +36,21 @@ type Module interface {
 	Pump(c *client, wake <-chan struct{}, done <-chan struct{})
 }
 
+// OnlineDependentModule es implementado por módulos que requieren conexión a Internet
+// (por ejemplo weather) para que el servidor pueda refrescarlos automáticamente cuando
+// se recupera la conectividad.
+type OnlineDependentModule interface {
+	RequiresInternet() bool
+}
+
+// IsOnlineModule comprueba si un módulo depende de conectividad a Internet.
+func IsOnlineModule(m Module) bool {
+	if om, ok := m.(OnlineDependentModule); ok {
+		return om.RequiresInternet()
+	}
+	return m.Name() == "weather"
+}
+
 // Registry guarda los módulos registrados por nombre.
 type Registry struct {
 	mu    sync.Mutex

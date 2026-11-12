@@ -107,6 +107,11 @@
       "activated": "Activated",
       "deactivated": "Deactivated",
       "label": "Caps Lock %1"
+    },
+    "num_lock": {
+      "activated": "Activated",
+      "deactivated": "Deactivated",
+      "label": "Num Lock %1"
     }
   },
   "panel": {

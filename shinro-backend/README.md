@@ -110,6 +110,32 @@ Responde:
 {"type":"update","module":"ping","data":{"ok":"true"}}
 ```
 
+### Portapapeles (`clipboard`)
+
+Exposes el historial del portapapeles Wayland (historial persistente,
+deduplicación por hash, thumbnails, starred, auto-prune semanal). El cliente
+se suscribe enviando `"intervals": {"clipboard": 0}` (o mayor) en el `hello`;
+los cambios se empujan al instante vía `SetBroadcast` sin pump periódico.
+
+Acciones mediante `{"type":"get","module":"clipboard","action":...}`:
+
+- `list` — devuelve el historial completo.
+- `copy-text` (`text`) / `copy-image` (`path`) — copia al portapapeles y al historial.
+- `paste` — devuelve el contenido actual.
+- `delete` (`id`) / `clear` — borra entradas.
+- `star` (`id`, `starred`) — marca/desmarca starred.
+- `stats` — resumen de almacenamiento.
+- `get-text` (`id`) — contenido completo (texto) o preview (imagen).
+- `recopy` (`id`) — vuelve a poner en el portapapeles y promueve al frente.
+- `watch` (`enable`) — activa/desactiva el watch de cambios externos.
+
+### Archivos (`files`)
+
+Búsqueda difusa y concurrente de archivos en `$HOME` (sin fd ni find) mediante
+`{"type":"get","module":"files","action":"search","query":"...","limit":20}`.
+Devuelve `query` y `results` con `path`, `name`, `size`, `is_dir`, `mime`,
+`kind`. Los resultados se cachean para búsquedas progresivas letra a letra.
+
 ## Geoclue (ubicación automática)
 
 El backend intenta conectar a GeoClue2 vía D-Bus de sesión (`org.freedesktop.GeoClue2`).
@@ -139,7 +165,7 @@ go build -o shinro-backend ./cmd/shinro-backend
 |----------|-------------|----------------|
 | `SHINRO_LOG_LEVEL` | Nivel de log: `debug`, `info`, `warn`, `error` | `info` |
 | `SHINRO_CONNECTIVITY_INTERVAL` | Intervalo de chequeo de conectividad (p. ej. `30s`, `1m`) | `30s` |
-| `SHINRO_CONNECTIVITY_URL` | URL usada para detectar si hay Internet | endpoint de Open-Meteo |
+| `SHINRO_CONNECTIVITY_URL` | URL usada para detectar si hay Internet | `http://www.google.com/generate_204` (con fallback) |
 | `SHINRO_SOCKET_PATH` | Ruta del socket Unix | `/run/user/$UID/shinro` |
 
 Se recomienda lanzar como servicio de usuario con systemd:

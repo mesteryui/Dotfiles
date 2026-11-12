@@ -220,6 +220,9 @@ QtObject {
         if (item.kind === "clip" && item.isImage) {
             root.previewCid = item.cid;
             root.previewPath = Services.ClipboardService.previewImage(item.cid);
+            // La miniatura ya viene generada por el backend: si existe, el
+            // preview está listo sin decode adicional.
+            root.previewOk = root.previewPath !== "";
         } else if (ItemKinds.isClipText(item)) {
             // Texto completo vía decode (con fallback a la línea del listado
             // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto
@@ -236,27 +239,7 @@ QtObject {
         }
     }
 
-    property Connections clipboardConn: Connections {
-        target: Services.ClipboardService
 
-        function onPreviewReady(cid) {
-            if (cid === root.previewCid)
-                root.previewOk = true;
-        }
-
-        function onPreviewFailed(cid) {
-            if (cid === root.previewCid && !root.previewOk) {
-                if (root.failedCids.indexOf(cid) < 0)
-                    root.failedCids = [...root.failedCids, cid];
-                root.previewError = root.previewFailedMessage();
-            }
-        }
-
-        function onTextReady(cid) {
-            if (cid === root.clipTextCid)
-                root.clipText = Services.ClipboardService.textContent;
-        }
-    }
 
     property Connections filePreviewConn: Connections {
         target: FilePreviewService
@@ -276,6 +259,18 @@ QtObject {
         function onMetaReady(path, title, artist, album, duration) {
             if (path === root.metaPath)
                 root.metaText = root._composeMeta(title, artist, album, duration);
+        }
+    }
+
+    // Cuando llega el contenido completo del portapapeles (get-text),
+    // asignarlo a clipText si es para el item actualmente seleccionado.
+    property Connections clipConn: Connections {
+        target: Services.ClipboardService
+
+        function onTextReady(cid) {
+            if (cid === root.clipTextCid) {
+                root.clipText = Services.ClipboardService.textContent || "";
+            }
         }
     }
 

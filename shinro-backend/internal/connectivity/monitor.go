@@ -1,12 +1,12 @@
 // Package connectivity detecta cambios de conectividad a Internet.
 //
-// Por defecto intenta usar NetworkManager D-Bus del sistema como fuente
-// principal (señales en tiempo real, sin polling). Si NetworkManager no está
-// disponible, cae a polling HTTP ligero a una URL de control.
+// Por defecto combina NetworkManager D-Bus del sistema como fuente de eventos
+// instantáneos en tiempo real con una verificación HTTP ligera a un endpoint de control.
+// Si NetworkManager no está disponible, realiza comprobaciones periódicas HTTP.
 //
 // Cuando la conectividad cambia (offline -> online o viceversa) avisa a los
 // suscriptores por un canal, para que el backend pueda refrescar los datos
-// que dependen de la red (clima) sin esperar al siguiente tick programado.
+// que dependen de la red (clima) de inmediato sin esperar al siguiente tick.
 package connectivity
 
 import (
@@ -41,15 +41,17 @@ func (s State) String() string {
 
 // Monitor vigila la conectividad y emite el estado en cada cambio.
 type Monitor struct {
-	checkURL string
-	interval time.Duration
-	client   *http.Client
+	checkURL    string
+	fallbackURL string
+	interval    time.Duration
+	client      *http.Client
 
 	nm *nmMonitor // nil si NetworkManager no está disponible
 
-	mu    sync.Mutex
-	state State
-	subs  map[chan State]struct{}
+	mu           sync.Mutex
+	state        State
+	subs         map[chan State]struct{}
+	forceCheckCh chan struct{}
 }
 
 // newTransport crea un transporte HTTP reutilizable con keep-alive.
@@ -57,44 +59,46 @@ func newTransport() *http.Transport {
 	return &http.Transport{
 		MaxIdleConns:        10,
 		MaxIdleConnsPerHost: 2,
-		IdleConnTimeout:     60 * time.Second,
+		IdleConnTimeout:     30 * time.Second,
 	}
 }
 
-// New crea un monitor. Intenta usar NetworkManager D-Bus como fuente
-// principal. Si no está disponible, usará polling HTTP a checkURL cuando se
-// llame a Run.
-// Si checkURL está vacía se usa un endpoint de Open-Meteo;
+// New crea un monitor de conectividad.
+// Intenta usar NetworkManager D-Bus para eventos en tiempo real.
+// Si checkURL está vacía se usa un endpoint de conectividad ligero y confiable;
 // si interval <= 0 se usan 30 segundos.
 func New(checkURL string, interval time.Duration) *Monitor {
+	fallback := ""
 	if checkURL == "" {
-		checkURL = "https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current=temperature_2m"
+		checkURL = "http://www.google.com/generate_204"
+		fallback = "http://ping.archlinux.org/nm-check.txt"
 	}
 	if interval <= 0 {
 		interval = 30 * time.Second
 	}
 
 	m := &Monitor{
-		checkURL: checkURL,
-		interval: interval,
-		client:   &http.Client{Timeout: 5 * time.Second, Transport: newTransport()},
-		state:    StateUnknown,
-		subs:     make(map[chan State]struct{}),
+		checkURL:     checkURL,
+		fallbackURL:  fallback,
+		interval:     interval,
+		client:       &http.Client{Timeout: 4 * time.Second, Transport: newTransport()},
+		state:        StateUnknown,
+		subs:         make(map[chan State]struct{}),
+		forceCheckCh: make(chan struct{}, 1),
 	}
 
-	// Intentar usar NetworkManager como fuente principal.
+	// Intentar usar NetworkManager como fuente de eventos en tiempo real.
 	m.nm = newNMMonitor()
 	if m.nm != nil {
-		logger.Info("conectividad", "fuente", "networkmanager-dbus")
+		logger.Info("conectividad", "fuente", "networkmanager-dbus+http", "check_url", m.checkURL)
 	} else {
-		logger.Info("conectividad", "fuente", "polling-http", "interval", interval)
+		logger.Info("conectividad", "fuente", "polling-http", "interval", interval, "check_url", m.checkURL)
 	}
 
 	return m
 }
 
 // Run ejecuta el bucle de monitoreo hasta que se cancele el contexto.
-// Usa NetworkManager si está disponible, polling HTTP en caso contrario.
 func (m *Monitor) Run(ctx context.Context) {
 	if m.nm != nil {
 		m.runNM(ctx)
@@ -103,50 +107,93 @@ func (m *Monitor) Run(ctx context.Context) {
 	}
 }
 
-// runNM ejecuta el bucle usando NetworkManager como fuente de eventos.
+// runNM ejecuta el bucle reactivo usando NetworkManager más verificación y heartbeat.
 func (m *Monitor) runNM(ctx context.Context) {
 	ch := m.nm.Subscribe()
 	defer m.nm.Unsubscribe(ch)
 
+	// Verificación inicial inmediata
+	m.verifyAndSetState("nm-init")
+
+	ticker := time.NewTicker(m.interval)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case nmState := <-ch:
-			online := nmState == nmConnectivityFull
-			m.updateState(online, nmStateString(nmState))
+		case nmOnline := <-ch:
+			if !nmOnline {
+				// Desconexión inmediata de NetworkManager: pasar a offline al instante
+				m.updateState(false, "networkmanager-down")
+			} else {
+				// Señal de conexión: verificar internet de inmediato
+				m.verifyAndSetState("networkmanager-up")
+			}
+		case <-ticker.C:
+			// Heartbeat periódico para detectar pérdidas o recuperaciones de WAN no señaladas
+			m.verifyAndSetState("heartbeat")
+		case <-m.forceCheckCh:
+			m.verifyAndSetState("manual-check")
 		}
 	}
 }
 
-// runPolling ejecuta el bucle de comprobación HTTP periódica.
+// runPolling ejecuta el bucle de comprobación periódica cuando NetworkManager no está disponible.
 func (m *Monitor) runPolling(ctx context.Context) {
-	for {
-		online := m.check()
-		m.updateState(online, "polling")
+	m.verifyAndSetState("polling-init")
 
+	ticker := time.NewTicker(m.interval)
+	defer ticker.Stop()
+
+	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(m.interval):
+		case <-ticker.C:
+			m.verifyAndSetState("polling")
+		case <-m.forceCheckCh:
+			m.verifyAndSetState("manual-check")
 		}
 	}
 }
 
-// check devuelve true si la URL de control responde con 2xx.
+// verifyAndSetState realiza la comprobación de conectividad y actualiza el estado.
+func (m *Monitor) verifyAndSetState(source string) {
+	// Si NM afirma estar desconectado sin ambigüedad, marcar offline directamente
+	if m.nm != nil && m.nm.isDefinitelyOffline() {
+		m.updateState(false, source+"(nm-offline)")
+		return
+	}
+
+	online := m.check()
+	m.updateState(online, source)
+}
+
+// check devuelve true si el endpoint de control responde correctamente (2xx).
 func (m *Monitor) check() bool {
-	req, err := http.NewRequest(http.MethodGet, m.checkURL, nil)
+	if m.checkURLWith(m.checkURL) {
+		return true
+	}
+	if m.fallbackURL != "" && m.checkURLWith(m.fallbackURL) {
+		return true
+	}
+	return false
+}
+
+func (m *Monitor) checkURLWith(u string) bool {
+	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return false
 	}
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", "shinro-connectivity/1.0")
 	req.Header.Set("Cache-Control", "no-cache")
 	resp, err := m.client.Do(req)
 	if err != nil {
 		return false
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body) // libera la conexión HTTP
+	io.Copy(io.Discard, resp.Body)
 	return resp.StatusCode >= 200 && resp.StatusCode < 300
 }
 
@@ -159,13 +206,14 @@ func (m *Monitor) updateState(online bool, source string) {
 	} else {
 		m.state = StateOffline
 	}
+	changed := m.state != prev
 	subs := make([]chan State, 0, len(m.subs))
 	for ch := range m.subs {
 		subs = append(subs, ch)
 	}
 	m.mu.Unlock()
 
-	if m.state != prev {
+	if changed {
 		logger.Info("conectividad", "prev", prev, "current", m.state, "fuente", source)
 		for _, ch := range subs {
 			select {
@@ -175,6 +223,20 @@ func (m *Monitor) updateState(online bool, source string) {
 			}
 		}
 	}
+}
+
+// CheckNow solicita una verificación de conectividad inmediata.
+func (m *Monitor) CheckNow() {
+	select {
+	case m.forceCheckCh <- struct{}{}:
+	default:
+	}
+}
+
+// ReportSuccess puede ser llamado cuando una petición externa (p. ej. clima)
+// tuvo éxito comprobado con Internet, actualizando el estado de inmediato a Online.
+func (m *Monitor) ReportSuccess() {
+	m.updateState(true, "external-success")
 }
 
 // Subscribe devuelve un canal que recibe el estado cada vez que cambia.

@@ -5,7 +5,7 @@
 //     >  sistema (menús personalizados: secciones MenuDefinition de
 //        MenuProviders/System/ + MenuProviders/*.qml, estáticos o
 //        dinámicos vía refresh())
-//     /  archivos (fd en $HOME)
+//     /  archivos (shinro-backend, $HOME)
 //     @  búsqueda web (DuckDuckGo)
 //     .  emojis/símbolos (EmojiService: catálogo + librería python,
 //        grupos, recientes/favoritos; Enter copia -> wl-copy)
@@ -50,6 +50,14 @@ Scope {
     // Sección pedida por IPC antes de que exista el item (se aplica en onLoaded).
     property string _pendingSection: ""
 
+    // Toggle único: lo comparten el IPC (`qs ipc call launcher toggle`) y
+    // el atajo global (GlobalShortcut). Resetear `forcedMode` hace que
+    // abra siempre en modo "todo" (sin prefijo forzado).
+    function toggleLauncher(): void {
+        scope.forcedMode = "";
+        scope.shown = !scope.shown;
+    }
+
     // Comprueba si los .desktop cambiaron y, solo entonces, fuerza el
     // rescan de DesktopEntries. Vive fuera del LazyLoader para conservar
     // la huella entre aperturas. Ver DesktopEntryRefresh.qml.
@@ -61,8 +69,7 @@ Scope {
         target: "launcher"
 
         function toggle(): void {
-            scope.forcedMode = "";
-            scope.shown = !scope.shown;
+            scope.toggleLauncher();
         }
         function openClipboard(): void {
             toggleMode("clip");
@@ -116,6 +123,20 @@ Scope {
             }
             scope.forcedMode = (m === "todo") ? "" : m;
             scope.shown = true;
+        }
+    }
+
+    // Atajo global del compositor: se registra como `quickshell:launcher`
+    // (protocolo global shortcuts de Hyprland, sin xdg-desktop-portal) y
+    // se liga en la config de Hyprland con `hl.dsp.global(...)`.
+    // Vive en el scope, no en la PanelWindow: responde desde el arranque
+    // sin instanciar la ventana. Mismo toggle que el IPC.
+    // qmllint disable unresolved-type
+    GlobalShortcut {
+        name: "launcher"
+        description: "Toggle the launcher"
+        onPressed: {
+            scope.toggleLauncher();
         }
     }
 
@@ -312,6 +333,9 @@ Scope {
                 resultList.resetView();
                 // Cada apertura empieza escribiendo, no navegando.
                 launcher.navResults = false;
+                // Cargar listado inicial de archivos al abrir el menú.
+                if (scope.forcedMode === "files" || launcher.activeMode === "files")
+                    fileSearch.refresh();
                 if (scope.forcedMode === "clip" || scope.forcedMode === "")
                     Services.ClipboardService.refresh();
                 // Modelos live del menú de sistema (búsqueda global + badges "Actual",
@@ -330,6 +354,7 @@ Scope {
                 // Sin selecciones a medias al cerrar: el diferido no debe pintar
                 // nada de una sesión ya cerrada.
                 preview.reset();
+                fileSearch.snapshot = [];
             }
 
             // Implementación del IPC toggleMode (la firma IPC vive en el scope y
@@ -440,6 +465,8 @@ Scope {
                     Services.ClipboardService.refresh();
                 if (scope.shown && activeMode === "emoji")
                     EmojiService.ensureLib();
+                if (scope.shown && activeMode === "files")
+                    fileSearch.refresh();
             }
 
             // ---------- helpers ----------
@@ -601,7 +628,7 @@ Scope {
             }
 
             // ---------- resultados ----------
-            // Búsqueda de archivos (fd + snapshot en LauncherFileSearch).
+            // Búsqueda de archivos (shinro-backend + snapshot en LauncherFileSearch).
             LauncherFileSearch {
                 id: fileSearch
 
@@ -610,6 +637,12 @@ Scope {
             }
 
             property var results: {
+                // Dependencias reactivas: al llegar datos del backend
+                // (files vía resultsReady, clipboard vía socket) se
+                // reevalúa esta propiedad y se vuelven a calcular los
+                // resultados del modo.
+                const _smLen = fileSearch.snapshot.length;
+                const _clipLen = Services.ClipboardService.snapshot.length;
                 // lang: reevaluar al cambiar el idioma (los items llevan textos traducidos)
                 const lang = Services.I18nService.language;
                 const q = launcher.debouncedQuery;
@@ -621,7 +654,7 @@ Scope {
                 if (m === "clip")
                     return clipResults(q);
                 if (m === "files")
-                    return fileResultsList(q);
+                    return fileSearch.snapshot;
                 if (m === "calc")
                     return calcResults(q);
                 if (m === "web")
@@ -803,24 +836,27 @@ Scope {
             // ya indica la sección).
             function sectionItems(id) {
                 const info = SystemMenuRegistry.sectionInfo(id);
-                const out = [];
-                if (info.parentId !== "") {
-                    const parent = SystemMenuRegistry.sectionInfo(info.parentId);
-                    out.push({
-                                 kind: "menuback",
-                                 title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
-                                 sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
-                                 icon: "arrow_back",
-                                 appIcon: "",
-                                 ch: "",
-                                 imagePath: "",
-                                 cat: "",
-                                 shell: "",
-                                 isSubmenu: false,
-                                 section: info.parentId
-                             });
-                }
-                return out.concat(SystemMenuRegistry.sectionResultItems(id));
+                const items = SystemMenuRegistry.sectionResultItems(id);
+                // En la sección raíz no hay "Atrás": devuelve la caché
+                // directamente (mismo objeto) para que listModel no cambie
+                // de identidad y no se dispare swap de modelo innecesario.
+                if (info.parentId === "")
+                    return items;
+                const parent = SystemMenuRegistry.sectionInfo(info.parentId);
+                const out = [{
+                             kind: "menuback",
+                             title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
+                             sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
+                             icon: "arrow_back",
+                             appIcon: "",
+                             ch: "",
+                             imagePath: "",
+                             cat: "",
+                             shell: "",
+                             isSubmenu: false,
+                             section: info.parentId
+                         }];
+                return out.concat(items);
             }
 
             // Todo lo buscable del menú de sistema (vía única del Registry).
@@ -909,20 +945,32 @@ Scope {
                 const snap = Services.ClipboardService.snapshot;
                 for (let i = 0; i < snap.length; i++) {
                     const e = snap[i];
+                    // El preview del backend puede traer saltos de línea o
+                    // tabs (texto multilínea copiado). La fila tiene altura
+                    // fija: se colapsa a una sola línea para el título. El
+                    // texto completo sigue en fullText para búsqueda/preview.
+                    const isImg = e.isImage === true;
+                    const oneLine = String(e.text || "").replace(/\s+/g, " ").trim();
+                    let title = oneLine.length > 90 ? oneLine.slice(0, 90) + "…" : oneLine;
+                    if (isImg) {
+                        const dims = e.w > 0 && e.h > 0 ? " · " + e.w + "×" + e.h : "";
+                        const kb = e.size > 0 ? " · " + Math.round(e.size / 1024) + " KB" : "";
+                        title = "Imagen" + dims + kb;
+                    }
                     out.push({
                                  kind: "clip",
-                                 title: e.text.length > 90 ? e.text.slice(0, 90) + "…" : e.text,
-                                 sub: e.isImage ? tr("launcher.clip_image_subtitle",
-                                                     "Imagen · Enter copia · preview →") : tr(
-                                                      "launcher.clip_text_subtitle",
-                                                      "Texto · Enter copia · Supr borra"),
-                                 icon: e.isImage ? "image" : "content_paste",
-                                 appIcon: "",
+                                 title: title,
+                                 sub: isImg ? tr("launcher.clip_image_subtitle",
+                                                 "Imagen · Enter copia · preview →") : tr(
+                                                  "launcher.clip_text_subtitle",
+                                                  "Texto · Enter copia · Supr borra"),
+                                 icon: isImg ? "image" : "content_paste",
+                                 appIcon: isImg && e.thumb ? ("file://" + e.thumb) : "",
                                  ch: "",
                                  imagePath: "",
                                  cat: cat,
                                  cid: e.cid,
-                                 isImage: e.isImage,
+                                 isImage: isImg,
                                  fullText: e.text
                              });
                 }
@@ -942,11 +990,32 @@ Scope {
                 ]);
             }
 
-            // Resultados de archivos: mapeo (FileMenu) + fuzzy. El orden base
-            // ya viene ordenado del snapshot (ver LauncherFileSearch).
+            // Resultados de archivos: lee FilesService.results (socket del
+            // backend) + fuzzy. El backend excluye directorios ocultos y
+            // rutas de caché/dependencias.
             function fileResultsList(q) {
                 const cat = tr("launcher.category_file", "Archivo");
-                const out = FileMenu.mapSnapshot(fileSearch.snapshot, cat);
+                const res = Services.FilesService.results;
+                const out = [];
+                for (let i = 0; i < res.count; i++) {
+                    const e = res.get(i);
+                    // `kind` lo decide el backend por MIME (extensión + contenido).
+                    const media = FileMenu.mediaFor(e);
+                    out.push({
+                        kind: "file",
+                        title: e.name,
+                        sub: e.path,
+                        icon: FileMenu.iconFor(media, e.isDir),
+                        appIcon: "",
+                        ch: "",
+                        imagePath: media === "image" ? FileMenu.fileUrl(e.path) : "",
+                        cat: cat,
+                        path: e.path,
+                        media: media,
+                        mime: e.mime || ""
+                    });
+                }
+                FileMenu.sortSnapshot(out);
                 if (q === "")
                     return out;
                 // Nombre 1.0 > ruta 0.25. nameFirst conserva el boost extra de
@@ -1167,7 +1236,7 @@ Scope {
                                 // mismo SIGSEGV que con el toggle por IPC.
                                 // Modo todo: ScriptModel vivo de DesktopEntries.
                                 // Resto de modos: array plano de `results`.
-                                listModel: !scope.shown ? null : (launcher.activeMode === "todo" ? appModel :
+                                listModel: !scope.shown ? [] : (launcher.activeMode === "todo" ? appModel :
                                                                                                    launcher.results)
                                 activeMode: launcher.activeMode
                                 // Generación del filtro (ver filterEpoch): distingue
@@ -1208,14 +1277,14 @@ Scope {
                                                 ? Services.ClipboardService.error : launcher.tr(
                                                       "launcher.clipboard_empty", "Portapapeles vacío");
                                     if (launcher.activeMode === "files" && fileSearch.failed)
-                                        return launcher.tr("launcher.files_fd_missing",
-                                                           "Búsqueda no disponible (¿fd instalado?)");
+                                        return launcher.tr("launcher.files_backend_unavailable",
+                                                           "Búsqueda no disponible (¿shinro-backend en ejecución?)");
                                     if (launcher.activeMode === "todo" && launcher.query === ""
                                             && launcher.appCount === 0)
                                         return launcher.tr("launcher.loading_apps", "Cargando aplicaciones…");
                                     return launcher.tr("launcher.empty_no_results", "Sin resultados");
                                 }
-                                // Acción M3 (spec empty-states): reintentar fd (archivos).
+                                // Acción M3 (spec empty-states): reintentar búsqueda (archivos).
                                 actionVisible: launcher.activeMode === "files" && fileSearch.failed
                                 actionText: launcher.tr("launcher.files_retry", "Reintentar")
                                 onActionClicked: fileSearch.refresh()

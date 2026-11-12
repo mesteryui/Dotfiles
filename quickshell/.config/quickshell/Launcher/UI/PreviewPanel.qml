@@ -24,10 +24,35 @@ Rectangle {
     // Error del preview actual (decode de imagen imposible, etc.).
     // "": sin error (comportamiento de siempre).
     property string previewError: ""
+    // El preview de imagen actual falló al decodificarse (archivo
+    // borrado, ilegible o corrupto): se oculta la imagen rota y se avisa.
+    // Son internas (previewError viene de LauncherPreview y no se toca).
+    property bool imageDecodeFailed: false
+    property string imageDecodeError: ""
     // Metadatos del tema de audio actual ("artista — título\nálbum · 3:24").
     // "": sin metadatos.
     property string metaText: ""
     property string fileTooLargeText: "Archivo demasiado grande para previsualizar"
+
+    // Truncado inteligente para el cuerpo del portapapeles:
+    // - Colapsa saltos de línea excesivos (más de 2 seguidos → 2)
+    // - Colapsa espacios múltiples (excepto indentación de línea)
+    // - Si supera 5000 caracteres, trunca y avisa
+    function smartClipText(text) {
+        if (!text)
+            return "";
+        let cleaned = String(text);
+        // Colapsar 3+ saltos de línea consecutivos en 2
+        cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+        // Colapsar 2+ espacios/tabs consecutivos en 1 (dentro de línea)
+        cleaned = cleaned.replace(/[ \t]{2,}/g, " ");
+        // Trim final
+        cleaned = cleaned.replace(/\s+$/, "");
+        const maxLen = 5000;
+        if (cleaned.length > maxLen)
+            return cleaned.slice(0, maxLen) + "\n\n…[contenido truncado, " + (cleaned.length - maxLen) + " caracteres más]";
+        return cleaned;
+    }
 
     readonly property bool hasPreview: MenuModes.needsPreview(root.activeMode, root.cur)
 
@@ -44,6 +69,7 @@ Rectangle {
 
         // Imagen: archivos de imagen, carátulas/thumbs multimedia o clipboard
         Image {
+            id: previewImage
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 340
             Layout.preferredHeight: 300
@@ -55,8 +81,7 @@ Rectangle {
             // Decodificar acotado: más rápido y menos memoria.
             sourceSize.width: 680
             sourceSize.height: 600
-            visible: root.cur && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(root.cur)
-                                                                        && root.previewOk))
+            visible: root.cur && !root.imageDecodeFailed && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(root.cur) && root.previewOk))
             source: {
                 if (!root.cur)
                     return "";
@@ -65,6 +90,18 @@ Rectangle {
                 if (root.previewOk)
                     return "file://" + root.previewPath;
                 return "";
+            }
+            // Si el fichero de preview desaparece o no se puede decodificar
+            // (p. ej. miniatura del portapapeles ya podada del /tmp), se oculta
+            // la imagen rota y se avisa en vez de dejar un hueco en blanco.
+            onStatusChanged: {
+                if (status === Image.Error) {
+                    root.imageDecodeFailed = true;
+                    root.imageDecodeError = previewImage.errorString;
+                } else if (status === Image.Ready || status === Image.Null) {
+                    root.imageDecodeFailed = false;
+                    root.imageDecodeError = "";
+                }
             }
         }
 
@@ -185,6 +222,20 @@ Rectangle {
             font.pixelSize: Appearance.typeScale.labelMedium
             color: Appearance.md3.error
         }
+        // Fallo al decodificar la imagen del preview (archivo borrado,
+        // ilegible o corrupto): aviso explícito en vez de hueco en blanco.
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            maximumLineCount: 4
+            elide: Text.ElideRight
+            visible: root.imageDecodeFailed && root.cur
+            text: root.imageDecodeError !== "" ? root.imageDecodeError
+                                               : "No se pudo cargar la imagen"
+            font.pixelSize: Appearance.typeScale.labelMedium
+            color: Appearance.md3.error
+        }
         // Texto del portapapeles (clip texto): bloque con scroll que
         // ocupa todo el alto libre. Muestra el decode completo en
         // cuanto llega; mientras tanto, la línea del listado.
@@ -203,8 +254,8 @@ Rectangle {
                 width: parent.width
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                text: root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText
-                                                                           || root.cur.title) || "") : "")
+                text: root.smartClipText(root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText
+                                                                           || root.cur.title) || "") : ""))
                 font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface
             }

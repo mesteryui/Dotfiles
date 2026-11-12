@@ -45,7 +45,10 @@ func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) (b
 
 	if sub && !started {
 		c.pumpSysStarted = true
+		c.setModStarted(m.Name(), true)
 		go pumpModule(m, c, c.done)
+	} else if sub && started {
+		c.signalMod(m.Name())
 	}
 	return sub, nil
 }
