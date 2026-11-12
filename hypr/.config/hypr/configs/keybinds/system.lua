@@ -11,6 +11,7 @@ hl.bind(
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd(menu_layout_changer), { description = "Sistema: Abrir menú principal" })
 hl.bind("ALT + L", hl.dsp.global("quickshell:lock"), { description = "Sistema: Bloquear pantalla" })
 hl.bind("Caps_Lock", hl.dsp.global("quickshell:capsLock"), { locked = true })
+hl.bind("Num_Lock", hl.dsp.global("quickshell:numLock"), { locked = true })
 --hl.bind()
 hl.bind(
 	"ALT + N",

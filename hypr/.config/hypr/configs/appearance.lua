@@ -5,7 +5,7 @@ hl.config({
 		gaps_out = 12,
 		gaps_workspaces = 50,
 		border_size = 2,
-		allow_tearing = true,
+		allow_tearing = false,
 		no_focus_fallback = true,
 		col = {
 			active_border = { colors = { Colors.primary }, angle = 45 },
@@ -101,7 +101,8 @@ hl.config({
 		rounding_power = 2,
 		active_opacity = 1.0,
 		inactive_opacity = 0.94,
-		dim_inactive = false,
+		dim_inactive = true,
+		dim_strength = 0.15,
 		wobble = {
 			enabled = true,
 			mesh = 16,

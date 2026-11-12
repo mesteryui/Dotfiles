@@ -42,8 +42,30 @@ local function obtain_cursor_size()
 	return cursor_size
 end
 
+local function obtain_theme()
+	local home = os.getenv("HOME")
+	local path = home .. "/.config/gtk-3.0/settings.ini"
+	local f = io.open(path, "r")
+	local cursor_theme = "Adwaita"
+
+	if not f then
+		return cursor_theme
+	end
+
+	for line in f:lines() do
+		local name = line:match("gtk%-theme%-name%s*=%s*(.*)")
+		if name then
+			cursor_theme = name:gsub("^[\"']", ""):gsub("[\"']$", ""):gsub("%s*$", "")
+			break
+		end
+	end
+	f:close()
+	return cursor_theme
+end
+
 local cursor_theme = obtain_cursor()
 local cursor_size = obtain_cursor_size()
+--hl.env("GTK_THEME", obtain_theme())
 hl.env("LIBINPUT_DEFAULT_POINTER_ACCEL", 0)
 hl.env("WLR_NO_HARDWARE_CURSORS", 1)
 hl.env("HYPRCURSOR_THEME", cursor_theme)

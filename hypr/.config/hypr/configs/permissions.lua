@@ -16,7 +16,6 @@ hl.permission({ binary = "asus-wmi-hotkeys", type = "keyboard", mode = "allow" }
 hl.permission({ binary = "power-button", type = "keyboard", mode = "allow" })
 hl.permission({ binary = "video-bus", type = "keyboard", mode = "allow" })
 hl.permission({ binary = "at-translated-set-2-keyboard", type = "keyboard", mode = "allow" })
-
 -- Teclado interno de ASUS (el identificador largo)
 hl.permission({ binary = "asue140d:00-04f3:31b9-keyboard", type = "keyboard", mode = "allow" })
 -- Regla Global (Seguridad)

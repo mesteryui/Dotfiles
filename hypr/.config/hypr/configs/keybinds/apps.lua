@@ -1,6 +1,10 @@
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal), { description = "Apps: Ejecutar la terminal" })
 hl.bind(mainMod .. " + F", hl.dsp.exec_cmd(fileManager), { description = "Apps: Abrir el gestor de archivos" })
-hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu), { description = "Apps: Abrir menu" })
+hl.bind(
+	"ALT + SPACE",
+	hl.dsp.global("quickshell:launcher"),
+	{ description = "Apps: Abrir menu" }
+)
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(system_menu), { description = "Apps: Abrir menú del sistema" })
 hl.bind(
 	"ALT + K",
@@ -19,7 +23,7 @@ hl.bind(
 )
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(browser), { description = "Apps: Abrir el navegador web" })
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(emacs), { description = "Apps: Abrir GNU Emacs" })
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("Telegram"), { description = "Apps: Abrir Telegram" })
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("materialgram"), { description = "Apps: Abrir Telegram" })
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("equibop"), { description = "Apps: Abrir Vesktop (Discord)" })
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zapzap"), { description = "Apps: Abrir ZapZap (WhatsApp)" })
 

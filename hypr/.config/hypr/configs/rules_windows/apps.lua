@@ -3,37 +3,8 @@
 
 -- Telegram: evitar enfocar automáticamente al activarse para no interrumpir el flujo de trabajo
 hl.window_rule({
-	match = { class = "org.telegram.desktop" },
+	match = { class = "io.github.kukuruzka165.materialgram" },
 	focus_on_activate = false,
-})
-
--- Navegadores: forzar opacidad completa para no interferir con la legibilidad
---hl.window_rule({
---    match = { class = "^(firefox|zen)$" },
---    opacity = "1.0 override",
---})
---
-hl.window_rule({
-	name = "virtualbox-manager",
-	match = {
-		class = "^VirtualBox Manager$",
-	},
-
-	float = true,
-	size = "1100 700",
-	center = true,
-	suppress_event = "maximize",
-})
-
-hl.window_rule({
-	name = "virtualbox-machine",
-	match = {
-		class = "^VirtualBox Machine$",
-	},
-
-	float = true,
-	size = "1280 800",
-	center = true,
 })
 
 hl.window_rule({ match = { class = "^(plasma-changeicons)$" }, float = true })
