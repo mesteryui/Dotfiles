@@ -15,9 +15,9 @@
   `NotificationService.centerOpen`) + `NotificationHistoryCard.qml`
   (`M3SelectionFill` + `M3StateLayer`) + `NotificationPopups.qml` +
   `NotificationToastCard.qml`.
-- `OSD/` (11 files) — `OsdManager.qml` (`Scope` grouping, no window)
+- `OSD/` (10 files) — `OsdManager.qml` (`Scope` grouping, no window)
   instantiates `VolumeOSD`, `BrightnessOSD`,
-  `KeyboardBrightnessOSD`, `MicOSD`, `SpecialKeysOSD`, `GameModeOSD`,
+  `MicOSD`, `SpecialKeysOSD`, `GameModeOSD`,
   `BatteryOSD`; bases `BaseOSD.qml`, `PercentageOSD.qml`,
   `IconTextOSD.qml`. `SpecialKeysOSD` (Bloq Mayús / Bloq Num) se pinta
   con los avisos `KeyboardThings.capsLockRefreshed` /

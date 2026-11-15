@@ -14,7 +14,6 @@ BarPopupWindow {
     implicitWidth: 360
     implicitHeight: mprisContent.implicitHeight
 
-
     readonly property var player: MprisService.activePlayer
 
     // Portada: cadena declarativa, sin onXChanged con efectos secundarios.

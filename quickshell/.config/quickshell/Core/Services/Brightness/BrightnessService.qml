@@ -84,8 +84,8 @@ Singleton {
             }
             if (!found) {
                 const m = monitorComp.createObject(root, {
-                                                        modelData: screens[s]
-                                                    });
+                                                       modelData: screens[s]
+                                                   });
                 if (m) {
                     root.monitors.push(m);
                     changed = true;
@@ -233,7 +233,7 @@ Singleton {
             if (code === 127 && !root._ddcWarned) {
                 root._ddcWarned = true;
                 console.info(
-                    "[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
+                            "[Brightness] ddcutil ausente: monitores DDC deshabilitados (instala ddcutil + grupo i2c para HDMI)");
             }
             root.detectReady = true;
             root._detecting = false;
@@ -289,8 +289,8 @@ Singleton {
             const monitor = root.getMonitor(query);
             if (!monitor)
                 return "Invalid monitor: " + query + " (try active/all/" + root.monitors.map(m
-                    => m.screenName).join(
-                    ", ") + ")";
+                                                                                             => m.screenName).join(
+                            ", ") + ")";
             const r = DdcUtils.parseSetValue(value, monitor.brightness);
             if (!r.ok)
                 return "Invalid value: " + r.error;

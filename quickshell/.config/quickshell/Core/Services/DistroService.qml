@@ -9,6 +9,7 @@
 // Para cambiar el icono de una distro basta con sustituir el SVG en
 // assets/ manteniendo el nombre que devuelve `iconFor()`.
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell

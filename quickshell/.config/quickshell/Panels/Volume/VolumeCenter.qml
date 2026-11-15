@@ -69,7 +69,6 @@ Scope {
                 showBorder: true
             }
 
-
             // Síncrono a propósito: el contenido mide según datos vivos (número
             // de dispositivos, volúmenes) y en async la ventana abría en tamaño
             // de fallback y saltaba al real, desplazando los sliders a la vista.

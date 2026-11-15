@@ -392,13 +392,17 @@ Item {
             // `cat` (categoría/sección) NO se muestra en el sub: el modo
             // actual ya se sabe por el modo/chips. Mostrarlo duplica
             // información y alarga la sub innecesariamente.
-            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : (modelData.sub || "")
-            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon || "")
+            readonly property string dispSub: isRawApp ? (modelData.comment || modelData.id || "") : (
+                                                             modelData.sub || "")
+            readonly property string dispAppIcon: isRawApp ? (modelData.icon || "") : (modelData.appIcon
+                                                                                       || "")
             readonly property string dispIcon: modelData.icon || "circle"
             readonly property string dispCh: modelData.ch || ""
-            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(modelData.id)
+            readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(
+                                                   modelData.id)
 
-            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1 && root._swapping)
+            readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1
+                                                                                         && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: entryDelegate.dispTitle
@@ -561,7 +565,8 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispFav: modelData.isFavorite ?? false
             readonly property bool dispRecent: (modelData.isRecent ?? false) && !gridDelegate.dispFav
-            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1 && root._swapping)
+            readonly property bool effSelected: gridDelegate.GridView.isCurrentItem || (grid.count === 1
+                                                                                        && root._swapping)
 
             Accessible.role: Accessible.ListItem
             Accessible.name: gridDelegate.dispCh !== "" ? gridDelegate.dispCh : gridDelegate.dispIcon

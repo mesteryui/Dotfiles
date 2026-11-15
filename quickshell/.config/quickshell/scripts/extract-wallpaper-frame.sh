@@ -9,7 +9,10 @@
 # Cada vídeo siempre mapea al mismo archivo de salida (el llamador genera el
 # nombre de forma determinista a partir de la ruta del vídeo).
 #
-# Sale 0 si la salida queda lista (extraída o ya vigente), != 0 si falla.
+# Optimizado:
+# - Fast seek con -noaccurate_seek -ss 1 (salta por keyframe sin decodificar previo)
+# - Escalado acelerado a máx 1280px con fast_bilinear (archivos más ligeros y decodificación ultra-rápida)
+# - Multi-hilo (-threads 4)
 
 set -u
 
@@ -39,8 +42,9 @@ if ! command -v ffmpeg >/dev/null 2>&1; then
 fi
 
 tmp="${out%.*}.tmp.$$.jpg"
-# -ss 1: frame fijo del segundo 1 (patrón uniforme para todos los fondos).
-if ffmpeg -y -v error -ss 1 -i "$video" -frames:v 1 -q:v 3 "$tmp"; then
+
+# Extracción acelerada y optimizada
+if ffmpeg -y -v error -noaccurate_seek -ss 1 -i "$video" -frames:v 1 -vf "scale=min(1280\,iw):-2:flags=fast_bilinear" -threads 4 -q:v 4 "$tmp"; then
     mv -f "$tmp" "$out"
     exit 0
 else

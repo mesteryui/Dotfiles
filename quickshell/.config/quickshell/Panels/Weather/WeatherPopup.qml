@@ -9,7 +9,6 @@ BarPopupWindow {
     implicitWidth: content.implicitWidth + 20
     implicitHeight: content.implicitHeight + 10
 
-
     PopupBackground {
         id: bg
 

@@ -20,6 +20,10 @@ Scope {
 
     property bool shown: false
 
+    // Métricas al vivo solo mientras el panel está abierto (ver
+    // SystemInfoService.setLive): en reposo el backend no calcula CPU/RAM.
+    onShownChanged: SystemInfoService.setLive(scope.shown)
+
     IpcHandler {
         target: "dashboard"
 

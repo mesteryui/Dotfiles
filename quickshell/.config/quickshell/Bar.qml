@@ -59,9 +59,9 @@ Variants {
             // de `Appearance.shape` evita NaN/undefined en el primer frame,
             // antes de que exista el singleton.
             readonly property int notchOuterRadius: {
-                const height = root.barHeight || 36
-                const fallback = Appearance.shape ? Appearance.shape.screenRounding : 16
-                return Math.max(0, Math.min(fallback, Math.floor(height * 0.6)))
+                const height = root.barHeight || 36;
+                const fallback = Appearance.shape ? Appearance.shape.screenRounding : 16;
+                return Math.max(0, Math.min(fallback, Math.floor(height * 0.6)));
             }
 
             // Radio de las esquinas interiores del notch (las del cuerpo, en
@@ -69,9 +69,9 @@ Variants {
             // queda libre bajo la esquina cóncava para que ambos arcos no se
             // solapen en barras muy bajas.
             readonly property int notchInnerRadius: {
-                const height = root.barHeight || 36
-                const fallback = Appearance.shape ? Appearance.shape.medium : 12
-                return Math.max(0, Math.min(fallback, height - root.notchOuterRadius))
+                const height = root.barHeight || 36;
+                const fallback = Appearance.shape ? Appearance.shape.medium : 12;
+                return Math.max(0, Math.min(fallback, height - root.notchOuterRadius));
             }
 
             // Margen exterior en modo flotante / laterales del contenido.

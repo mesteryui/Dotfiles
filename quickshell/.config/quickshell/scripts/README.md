@@ -23,6 +23,18 @@
   no magic opacities — is a code-review rule, see root `README.md`.)
 - `location.py` — Geoclue helper for weather: `obtain_cordinates()`
   returns `latitud`/`longitud`/`precision` (Neighborhood accuracy).
+- `sync-system-fonts.sh [SANS MONO]` — sistema de fuentes centralizado:
+  vuelca la fuente de la shell (`shinro/config.json` →
+  `appearance.fontSans`/`monospace`; sin argumentos la lee) a fontconfig
+  (`conf.d/90-shell-fonts.conf`, aliases sans-serif/system-ui/monospace;
+  el prefijo `90-` ordena antes de `99-default-fonts.conf` y en
+  fontconfig el primer archivo leído gana en `<alias><prefer>`),
+  qtengine (`theme.font`/`fontFixed`, solo la familia) y GTK
+  (`gtk-font-name` en `gtk-3.0`/`gtk-4.0` `settings.ini` + `gsettings`,
+  conservando el tamaño de cada destino). Idempotente, con `flock` y
+  escrituras atómicas. Lo lanza `FontSyncService` al arrancar la shell y
+  al cambiar la fuente en Ajustes; las apps abiertas no recargan, surten
+  efecto al reabrirlas.
 - `extract-wallpaper-frame.sh <video> <salida.jpg>` — frame fijo del
   segundo 1 para fondos animados (póster, lockscreen, matugen).
   Idempotente: si la salida existe y es más nueva que el vídeo, sale 0

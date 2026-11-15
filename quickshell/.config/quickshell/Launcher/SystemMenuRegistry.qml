@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 // --- SystemMenuRegistry = UnifiedMenuRegistry (Singleton) ---
 // FACHADA ÚNICA del sistema unificado de menús personalizados.

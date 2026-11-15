@@ -25,10 +25,11 @@ Rectangle {
     // "": sin error (comportamiento de siempre).
     property string previewError: ""
     // El preview de imagen actual falló al decodificarse (archivo
-    // borrado, ilegible o corrupto): se oculta la imagen rota y se avisa.
-    // Son internas (previewError viene de LauncherPreview y no se toca).
+    // borrado, ilegible o corrupto): se oculta la imagen rota y se avisa
+    // con un mensaje fijo — Qt6 no expone `Image.errorString` en
+    // QQuickImage, así que leerlo daba undefined y reventaba el assign.
+    // Es interna (previewError viene de LauncherPreview y no se toca).
     property bool imageDecodeFailed: false
-    property string imageDecodeError: ""
     // Metadatos del tema de audio actual ("artista — título\nálbum · 3:24").
     // "": sin metadatos.
     property string metaText: ""
@@ -50,7 +51,8 @@ Rectangle {
         cleaned = cleaned.replace(/\s+$/, "");
         const maxLen = 5000;
         if (cleaned.length > maxLen)
-            return cleaned.slice(0, maxLen) + "\n\n…[contenido truncado, " + (cleaned.length - maxLen) + " caracteres más]";
+            return cleaned.slice(0, maxLen) + "\n\n…[contenido truncado, " + (cleaned.length - maxLen)
+                    + " caracteres más]";
         return cleaned;
     }
 
@@ -81,7 +83,9 @@ Rectangle {
             // Decodificar acotado: más rápido y menos memoria.
             sourceSize.width: 680
             sourceSize.height: 600
-            visible: root.cur && !root.imageDecodeFailed && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(root.cur) && root.previewOk))
+            visible: root.cur && !root.imageDecodeFailed && ((root.cur.imagePath || "") !== "" || (ItemKinds.hasLivePreview(
+                                                                                                       root.cur)
+                                                                                                   && root.previewOk))
             source: {
                 if (!root.cur)
                     return "";
@@ -97,10 +101,8 @@ Rectangle {
             onStatusChanged: {
                 if (status === Image.Error) {
                     root.imageDecodeFailed = true;
-                    root.imageDecodeError = previewImage.errorString;
                 } else if (status === Image.Ready || status === Image.Null) {
                     root.imageDecodeFailed = false;
-                    root.imageDecodeError = "";
                 }
             }
         }
@@ -231,8 +233,7 @@ Rectangle {
             maximumLineCount: 4
             elide: Text.ElideRight
             visible: root.imageDecodeFailed && root.cur
-            text: root.imageDecodeError !== "" ? root.imageDecodeError
-                                               : "No se pudo cargar la imagen"
+            text: "No se pudo cargar la imagen"
             font.pixelSize: Appearance.typeScale.labelMedium
             color: Appearance.md3.error
         }
@@ -254,8 +255,10 @@ Rectangle {
                 width: parent.width
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                text: root.smartClipText(root.clipText !== "" ? root.clipText : (root.cur ? ((root.cur.fullText
-                                                                           || root.cur.title) || "") : ""))
+                text: root.smartClipText(root.clipText !== "" ? root.clipText : (root.cur ? ((
+                                                                                                 root.cur.fullText
+                                                                                                 || root.cur.title)
+                                                                                             || "") : ""))
                 font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface
             }

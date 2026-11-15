@@ -4,15 +4,22 @@
 //   video → fotograma (ffmpegthumbnailer, 384px: el panel muestra 340)
 //   pdf   → primera página (pdftoppm, 72 dpi: sobra para 340px)
 //   imagen → se muestra directa (no pasa por aquí)
-// Caché en /tmp/qs-filepreview/<sha>.jpg (clave = ruta+mtime+tamaño,
-// tope 60 ficheros; los pdf usan .png). El shell resuelve la ruta final
-// y la devuelve por stdout (QSOUT:). Peticiones rápidas seguidas: solo
-// gana la última.
+// Caché en $XDG_RUNTIME_DIR/qs-filepreview/<sha>.jpg (clave =
+// ruta+mtime+tamaño, tope 60 ficheros; los pdf usan .png). El shell
+// resuelve la ruta final y la devuelve por stdout (QSOUT:). Peticiones
+// rápidas seguidas: solo gana la última.
+//
+// Por qué no /tmp: el directorio temporal global es escribible por
+// cualquier usuario y su nombre es predecible, así que otro proceso
+// podría colgar un symlink ahí y redirigir la escritura de la caché
+// (ataque por symlink) o sembrar miniaturas ajenas. $XDG_RUNTIME_DIR es
+// privado del usuario (0700) y ya se usa para el socket del backend.
 // Además: prefetch de vecinos (cola de baja prioridad: la petición actual
 // siempre pasa delante) y metadatos de audio vía ffprobe (título, artista,
 // álbum, duración) para mostrar en el panel.
 
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import "Base/ShellUtils.js" as ShellUtils
 import QtQuick
@@ -22,7 +29,16 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string cacheDir: "/tmp/qs-filepreview"
+    readonly property string cacheDir: {
+        const rt = Quickshell.env("XDG_RUNTIME_DIR");
+        // Runtime dir del usuario (privado). Sin él (sesión sin systemd
+        // --user) se cae a ~/.cache, también de propiedad del usuario,
+        // nunca al /tmp global.
+        if (rt)
+            return rt + "/qs-filepreview";
+        const home = Quickshell.env("HOME");
+        return (home ? home + "/.cache" : "/var/tmp") + "/qs-filepreview";
+    }
 
     property string reqPath: ""
     property string resolvedOut: ""
@@ -111,7 +127,7 @@ Singleton {
     // Escape común (ver Base/ShellUtils.js, única implementación en Launcher).
 
     function trimSnippet() {
-        return "; d='" + root.cacheDir
+        return "; d='" + ShellUtils.shellEscape(root.cacheDir)
                 + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -t \"$d\" | tail -n +61 | (cd \"$d\" && xargs -r rm -f); fi";
     }
 
@@ -131,8 +147,8 @@ Singleton {
             extract = "pdftoppm -png -f 1 -l 1 -singlefile -r 72 '" + p + "' \"" + base + "\" 2>/dev/null";
         else
             extract = "ffmpegthumbnailer -i '" + p + "' -o \"" + out + "\" -s 384 2>/dev/null";
-        return "mkdir -p '" + root.cacheDir + "' && OUT=" + out + " && ([ -s \"$OUT\" ] || " + extract
-                + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
+        return "mkdir -p '" + ShellUtils.shellEscape(root.cacheDir) + "' && OUT=" + out
+                + " && ([ -s \"$OUT\" ] || " + extract + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
     }
 
     property string textReqPath: ""

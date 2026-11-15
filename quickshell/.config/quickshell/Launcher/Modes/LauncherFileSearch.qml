@@ -29,8 +29,8 @@ QtObject {
     // llenar FilesService.results), en lugar de onCountChanged (que se
     // dispara por cada append individual).
     Component.onCompleted: {
-        Services.FilesService.resultsReady.connect(root._onResultsReady)
-        Services.FilesService.errorChanged.connect(root._onServiceError)
+        Services.FilesService.resultsReady.connect(root._onResultsReady);
+        Services.FilesService.errorChanged.connect(root._onServiceError);
     }
 
     function _onResultsReady(query) {
@@ -93,30 +93,30 @@ QtObject {
             // `kind` lo decide el backend por MIME (extensión + contenido).
             const media = FileMenu.mediaFor(e);
             out.push({
-                kind: "file",
-                title: e.name,
-                sub: e.path,
-                icon: FileMenu.iconFor(media, e.isDir),
-                appIcon: "",
-                ch: "",
-                imagePath: media === "image" ? FileMenu.fileUrl(e.path) : "",
-                path: e.path,
-                media: media,
-                mime: e.mime || ""
-            });
+                         kind: "file",
+                         title: e.name,
+                         sub: e.path,
+                         icon: FileMenu.iconFor(media, e.isDir),
+                         appIcon: "",
+                         ch: "",
+                         imagePath: media === "image" ? FileMenu.fileUrl(e.path) : "",
+                         path: e.path,
+                         media: media,
+                         mime: e.mime || ""
+                     });
         }
         FileMenu.sortSnapshot(out);
         const q = root.query;
         if (q !== "") {
             const matches = Services.FuzzySearch.filterItemsMulti(q, out, it => [
-                {
-                    text: it.title,
-                    weight: 1
-                },
-                {
-                    text: it.sub,
-                    weight: 0.25
-                }
+            {
+                text: it.title,
+                weight: 1
+            },
+            {
+                text: it.sub,
+                weight: 0.25
+            }
             ]);
             root.snapshot = FileMenu.nameFirst(matches, q);
         } else {

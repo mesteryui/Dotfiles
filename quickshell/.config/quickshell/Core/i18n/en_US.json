@@ -382,7 +382,8 @@
     "no_match_hint": "Try removing a filter",
     "no_results": "No wallpapers found",
     "search": "Search wallpapers…",
-    "title": "Wallpapers"
+    "title": "Wallpapers",
+    "walls": "WALLS"
   },
   "weather": {
     "feels_like": "Feels like %1",

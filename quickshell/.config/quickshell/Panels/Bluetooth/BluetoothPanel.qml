@@ -11,7 +11,6 @@ BarPopupWindow {
     implicitWidth: popupContent.implicitWidth + 24
     implicitHeight: popupContent.implicitHeight + 24
 
-
     Shortcut {
         sequence: "Escape"
         onActivated: root.visible = false
@@ -28,7 +27,6 @@ BarPopupWindow {
 
     // Sombra: source se asigna en onCompleted para evitar warning
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-
 
     // El contenido llena bg (con clip y radius), no el padre directo, y no
     // renderiza bordes propios.

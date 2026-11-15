@@ -99,7 +99,7 @@ Singleton {
         // ventana, no en reposo. Se puede apagar desde Ajustes > Interfaz.
         property bool deckFrostOnBattery: true
         property string fontSans: "Google Sans Flex"
-        property string monospace: "JetBrains Mono Nerd Font"
+        property string monospace: "JetBrainsMono Nerd Font"
         property string reading: "Google Sans Flex"
         property string expressive: "Google Sans Flex"
         property Matugen matugen: Matugen {}

@@ -26,7 +26,9 @@ ColumnLayout {
     readonly property int hours: clockLock.date.getHours()
     readonly property int minutes: clockLock.date.getMinutes()
 
-    function pad(n) { return n < 10 ? "0" + n : n; }
+    function pad(n) {
+        return n < 10 ? "0" + n : n;
+    }
 
     // Fecha arriba estilo Pixel ("At a Glance"), con clima.
     RowLayout {
@@ -43,9 +45,8 @@ ColumnLayout {
             font.variableAxes: Appearance.font.variableAxes.title
             font.family: Appearance.font.sans
 
-            text: root.compact
-                ? clockLock.date.toLocaleDateString(Qt.locale(), "ddd, d MMM")
-                : clockLock.date.toLocaleDateString(Qt.locale(), "dddd, d MMMM")
+            text: root.compact ? clockLock.date.toLocaleDateString(Qt.locale(), "ddd, d MMM") :
+                                 clockLock.date.toLocaleDateString(Qt.locale(), "dddd, d MMMM")
         }
 
         // Clima "At a Glance" estilo Pixel: icono + temperatura.
@@ -86,8 +87,8 @@ ColumnLayout {
         font.weight: root.compact ? Font.DemiBold : Font.Bold
         // Números tabulares: el ancho no salta al cambiar de minuto.
         font.features: ({
-                        "tnum": 1
-                    })
+                            "tnum": 1
+                        })
         lineHeight: 1.0
 
         // Reloj del lockscreen con SystemClock propio: "14:32"

@@ -243,8 +243,7 @@ Singleton {
 
         readonly property string sans: ConfigService.configs.appearance.fontSans ?? "Google Sans Flex"
 
-        readonly property string mono: ConfigService.configs.appearance.monospace
-                                       ?? "JetBrains Mono Nerd Font"
+        readonly property string mono: ConfigService.configs.appearance.monospace ?? "JetBrainsMono Nerd Font"
 
         readonly property string reading: ConfigService.configs.appearance.reading ?? "Google Sans Flex"
 

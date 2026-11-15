@@ -21,7 +21,9 @@ Item {
     readonly property int minutes: clockBar.date.getMinutes()
     readonly property string weekdayText: clockBar.date.toLocaleDateString(Qt.locale(), "ddd")
 
-    function pad(n) { return n < 10 ? "0" + n : n; }
+    function pad(n) {
+        return n < 10 ? "0" + n : n;
+    }
 
     StyledText {
         id: clockText

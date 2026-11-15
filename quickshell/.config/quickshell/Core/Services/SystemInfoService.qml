@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
@@ -10,8 +11,50 @@ Singleton {
     // ── Estado ──────────────────────────────────────────────────
     property bool hasData: false
 
+    // ── Régimen de empuje ───────────────────────────────────────
+    // Este servicio solo lo consume el dashboard (SysInfoTab); en reposo
+    // nadie mira las métricas, así que el backend no debe calcularlas
+    // cada 2 s. `setLive(true)` al abrir el panel pide 2 s y
+    // `setLive(false)` al cerrarlo vuelve a 300 s (el snapshot inicial
+    // de la suscripción ya pinta los valores al abrir).
+    //
+    // El backend arranca el pump con el primer hello y lo reinicia solo
+    // al reconectar: cambiar el intervalo exige reenviar el hello (ver
+    // system_module.go: interval <= 0 deja el pump muerto para siempre,
+    // por eso jamás se manda 0).
+    readonly property int idleInterval: 300
+
+    readonly property int liveInterval: 2
+
+    property int pushInterval: idleInterval
+
+    function setLive(on: bool): void {
+        const next = on ? root.liveInterval : root.idleInterval;
+        if (root.pushInterval === next)
+            return;
+        root.pushInterval = next;
+        root._sendHello();
+    }
+
+    function _sendHello(): void {
+        if (!shinroSocket.connected)
+            return;
+        // Suscribirse al módulo system. El backend responde con un
+        // snapshot inmediato y luego empuja cada pushInterval segundos.
+        // No se envía `location`: este servicio no consume clima y no
+        // debe sobrescribir la ubicación del WeatherService.
+        shinroSocket.write(JSON.stringify({
+                                              type: "hello",
+                                              intervals: {
+                                                  system: root.pushInterval,
+                                                  weather: 0
+                                              }
+                                          }) + "\n");
+        shinroSocket.flush();
+    }
+
     // ── Socket Unix del backend shinro ──────────────────────────
-    // Conexión persistente: el backend empuja datos cada 2 s y nunca cierra.
+    // Conexión persistente: el backend empuja datos y nunca cierra.
     // Quickshell no reconecta solo tras un error, así que lo hacemos con
     // reconnectTimer (mismo patrón que Hyprsunset.qml).
     readonly property string socketPath: {
@@ -88,15 +131,9 @@ Singleton {
         onConnectionStateChanged: {
             if (!shinroSocket.connected)
                 return;
-            // Suscribirse al módulo system. El backend responde con un
-            // snapshot inmediato y luego empuja cada 2 s. No se envía
-            // `location`: este servicio no consume clima y no debe
-            // sobrescribir la ubicación del WeatherService.
-            shinroSocket.write(JSON.stringify({
-                type: "hello",
-                intervals: { system: 2, weather: 0 }
-            }) + "\n");
-            shinroSocket.flush();
+            // (Re)suscribirse con el intervalo vigente: tras una
+            // reconexión el backend no conoce este cliente.
+            root._sendHello();
         }
 
         onError: error => {

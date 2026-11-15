@@ -382,7 +382,8 @@
     "no_match_hint": "Provu forigi filtrilon",
     "no_results": "Neniuj fonbildoj trovitaj",
     "search": "Serĉi fonbildojn…",
-    "title": "Fonbildoj"
+    "title": "Fonbildoj",
+    "walls": "FONBILDOJ"
   },
   "weather": {
     "feels_like": "Sentas kiel %1",

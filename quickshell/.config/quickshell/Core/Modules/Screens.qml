@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Hyprland
@@ -10,8 +11,8 @@ import Quickshell.Hyprland
 Singleton {
     id: root
 
-    readonly property var focusedScreen: Quickshell.screens ? (
-        Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
-        ?? Quickshell.screens[0]
-    ) : null
+    readonly property var focusedScreen: Quickshell.screens ? (Quickshell.screens.find(s => s.name
+                                                                                            === Hyprland.focusedMonitor
+                                                                                            ?.name)
+                                                               ?? Quickshell.screens[0]) : null
 }

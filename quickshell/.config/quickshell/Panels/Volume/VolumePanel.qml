@@ -12,7 +12,6 @@ BarPopupWindow {
     implicitWidth: popupContent.implicitWidth + 24
     implicitHeight: popupContent.implicitHeight + 24
 
-
     // Escape cierra. M/mute se maneja en el foco:
     // bigButton con Enter/Espacio, sliders con M.
     Shortcut {

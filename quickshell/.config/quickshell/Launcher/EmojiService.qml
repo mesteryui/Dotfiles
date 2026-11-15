@@ -21,6 +21,7 @@
 // `revision` como dependencia reactiva (igual que MenuStore).
 
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import qs.Core.Modules
 import qs.Core.Services

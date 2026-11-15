@@ -28,7 +28,6 @@ import Quickshell
 ShellRoot {
     id: root
 
-
     Component.onCompleted: {
         Qt.application.organization = "shinro";
         Qt.application.domain = "shinro.org";
@@ -37,12 +36,15 @@ ShellRoot {
         KeyboardThings;
         // Aplica el tema persistido al arrancar (no-op sin wallpaper).
         ThemeApplier.init();
+        // Vuelca la fuente de la shell a GTK/Qt/fontconfig (idempotente;
+        // repara drift si config.json se editó a mano).
         // qmlls/qmllint leen el VFS generado por quickshell (buildDir de
         // `.qmlls.ini`), pero este no incluye los `qmldir` manuales (Services,
         // Brightness): el editor no resuelve `import qs.Core.Services`. El
         // script los copia al VFS (idempotente, one-shot, no bloquea el arranque).
         Quickshell.execDetached(["bash", Quickshell.shellDir + "/scripts/qmlls-sync.sh"]);
     }
+    ReloadPopup {}
 
     // Cada componente pesado es un Scope ligero con LazyLoader interno:
     // el IPC/atajos responden desde el arranque y la ventana solo se

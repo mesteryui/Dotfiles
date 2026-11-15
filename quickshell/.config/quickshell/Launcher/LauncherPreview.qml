@@ -239,8 +239,6 @@ QtObject {
         }
     }
 
-
-
     property Connections filePreviewConn: Connections {
         target: FilePreviewService
 

@@ -105,7 +105,7 @@ Item {
                         StyledText {
                             visible: Services.WeatherService.data.isOffline
                             text: Services.I18nService.getTranslation("weather.data_offline",
-                                                                       "Datos sin actualizar")
+                                                                      "Datos sin actualizar")
                             color: Appearance.md3.error
                             font.pixelSize: Appearance.typeScale.labelSmall
                             font.weight: Font.Medium

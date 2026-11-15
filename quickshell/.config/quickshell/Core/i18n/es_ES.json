@@ -382,7 +382,8 @@
     "no_match_hint": "Prueba a quitar algún filtro",
     "no_results": "No se encontraron fondos",
     "search": "Buscar fondos…",
-    "title": "Fondos de Pantalla"
+    "title": "Fondos de Pantalla",
+    "walls": "FONDOS"
   },
   "weather": {
     "feels_like": "Sensación %1",

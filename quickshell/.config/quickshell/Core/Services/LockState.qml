@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 // Estado de bloqueo de sesión, espejo escribible de LockScreen.
 // Existe para que cualquiera (p. ej. un proveedor de fondos) reaccione

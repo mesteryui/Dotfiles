@@ -364,8 +364,14 @@ PanelWindow {
                 ScrollBar.vertical: StyledScrollBar {
                     id: historyScrollBar
                 }
-                Keys.onDownPressed: { moveCursor(1); event.accepted = true; }
-                Keys.onUpPressed: { moveCursor(-1); event.accepted = true; }
+                Keys.onDownPressed: event => {
+                    historyList.moveCursor(1);
+                    event.accepted = true;
+                }
+                Keys.onUpPressed: event => {
+                    historyList.moveCursor(-1);
+                    event.accepted = true;
+                }
                 // Tab/Shift+Tab ciclan entre la lista y los botones de cabecera
                 // (activeFocusOnTab) sin salir del panel.
                 delegate: NotificationHistoryCard {

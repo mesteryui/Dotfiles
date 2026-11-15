@@ -3,6 +3,7 @@
 // por defecto, sus niveles/mute, y la lista de dispositivos disponibles para poder
 // cambiar de altavoz o de micrófono desde la UI (p. ej. AudioPopupWindow).
 pragma Singleton
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire

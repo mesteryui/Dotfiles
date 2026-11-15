@@ -276,8 +276,8 @@ Item {
                             },
                             {
                                 value: "notch",
-                                text: Services.I18nService.getTranslation(
-                                          "settings.interface.bar.type_notch", "Notch")
+                                text: Services.I18nService.getTranslation("settings.interface.bar.type_notch",
+                                                                          "Notch")
                             },
                             {
                                 value: "no_floating",

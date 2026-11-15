@@ -27,7 +27,9 @@
   `AudioService`, `AuthService`, `BatteryService`, `BluetoothService`,
   `ClipboardService` (`cliphist`, `copyText`/`copyEntry` = vía única
   de copiado), `ConfigService` (`configs.*`, `ready`, `load()`),
-  `DistroService`, `FuzzySearch` (+ `FuzzyMatch.js` puro),
+  `DistroService`, `FontSyncService` (`init()`, vuelca
+  `appearance.fontSans`/`monospace` a fontconfig/qtengine/GTK vía
+  `scripts/sync-system-fonts.sh`), `FuzzySearch` (+ `FuzzyMatch.js` puro),
   `GameMode`, `HyprlandKeybinds`, `HyprlandSubmap`, `Hyprsunset`,
   `I18nService`, `IdleInhibitedService`, `KeyboardThings` (Bloq Mayús /
   Bloq Num: lee `j/devices` por `HyprlandIpc` y guarda el estado POR
@@ -44,7 +46,7 @@
   `WallpaperService`, `WeatherService`
   (+ `WeatherFormat.js` puro). Submódulo `Brightness/` (módulo
   `qs.Core.Services.Brightness`): singletons `BrightnessService`,
-  `KbdBacklight` + `BrightnessMonitor` + `DdcUtils.js`.
+  `BrightnessMonitor` + `DdcUtils.js`.
   Lógica pura de formato en `.js` hermanos (p. ej.
   `WeatherFormat.js`), nunca dentro del singleton. Regla de
   robustez: todo `Process`/`XHR` con timeout + kill, `failed`/`error`

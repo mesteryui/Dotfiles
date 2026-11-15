@@ -13,6 +13,7 @@
 // acordate de agregar la línea correspondiente ahí también.
 
 pragma Singleton
+pragma ComponentBehavior: Bound
 import "FuzzyMatch.js" as FuzzyMatch
 import QtQuick
 import Quickshell

@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
@@ -118,12 +119,13 @@ Singleton {
     // Red de seguridad: el atajo global depende de que el compositor
     // entregue la tecla (permisos, keymap, atajo enlazado...). Si eso no
     // ocurre, el estado del teclado sigue cambiando y aquí se detecta: el
-    // OSD sale como tarde 350 ms, pero sale. Es mucho más barato que el
-    // sondeo continuo que había antes (60 ms + 220 ms en bucle).
+    // OSD sale como tarde 1 s, pero sale. Es mucho más barato que el
+    // sondeo continuo que había antes (60 ms + 220 ms en bucle): con un
+    // atajo que casi nunca falla no compensa preguntar más a menudo.
     Timer {
         id: pollTimer
 
-        interval: 350
+        interval: 1000
         repeat: true
         running: true
         onTriggered: root.queryDevices()

@@ -73,9 +73,11 @@ Singleton {
                 return;
             }
             shinroSocket.write(JSON.stringify({
-                type: "hello",
-                intervals: { clipboard: 0 }
-            }) + "\n");
+                                                  type: "hello",
+                                                  intervals: {
+                                                      clipboard: 0
+                                                  }
+                                              }) + "\n");
             shinroSocket.flush();
             // Recuperar el historial automáticamente al (re)conectar.
             root.refresh();
@@ -141,14 +143,18 @@ Singleton {
             root._failRequest("disconnected");
             return false;
         }
-        const payload = { type: "get", module: "clipboard", action: action };
+        const payload = {
+            type: "get",
+            module: "clipboard",
+            action: action
+        };
         for (const k in extra)
             payload[k] = extra[k];
 
         root._pending.push({
-            action: action,
-            id: extra && extra.id !== undefined ? extra.id : 0
-        });
+                               action: action,
+                               id: extra && extra.id !== undefined ? extra.id : 0
+                           });
         requestTimeout.restart();
         shinroSocket.write(JSON.stringify(payload) + "\n");
         shinroSocket.flush();
@@ -235,20 +241,20 @@ Singleton {
             else if (label === "")
                 label = "Texto";
             entries.append({
-                cid: String(e.id),
-                text: label,
-                raw: "",
-                isImage: isImg,
-                _backendId: e.id,
-                _kind: e.kind,
-                _mime: e.mime,
-                _size: e.size,
-                _w: e.w || 0,
-                _h: e.h || 0,
-                // El backend serializa la ruta como "thumb" (Entry.ThumbPath).
-                _thumbPath: e.thumb || e.thumbPath || "",
-                _starred: e.starred || false
-            });
+                               cid: String(e.id),
+                               text: label,
+                               raw: "",
+                               isImage: isImg,
+                               _backendId: e.id,
+                               _kind: e.kind,
+                               _mime: e.mime,
+                               _size: e.size,
+                               _w: e.w || 0,
+                               _h: e.h || 0,
+                               // El backend serializa la ruta como "thumb" (Entry.ThumbPath).
+                               _thumbPath: e.thumb || e.thumbPath || "",
+                               _starred: e.starred || false
+                           });
         }
         root.ready = true;
         root.rebuildSnapshot();
@@ -259,16 +265,16 @@ Singleton {
         for (let i = 0; i < entries.count; i++) {
             const e = entries.get(i);
             out.push({
-                cid: e.cid,
-                text: e.text,
-                raw: e.raw,
-                isImage: e.isImage,
-                thumb: e._thumbPath || "",
-                w: e._w || 0,
-                h: e._h || 0,
-                size: e._size || 0,
-                starred: e._starred === true
-            });
+                         cid: e.cid,
+                         text: e.text,
+                         raw: e.raw,
+                         isImage: e.isImage,
+                         thumb: e._thumbPath || "",
+                         w: e._w || 0,
+                         h: e._h || 0,
+                         size: e._size || 0,
+                         starred: e._starred === true
+                     });
         }
         snapshot = out;
     }
@@ -278,14 +284,18 @@ Singleton {
         const id = parseInt(cid, 10);
         if (isNaN(id))
             return;
-        root._send("recopy", { id: id });
+        root._send("recopy", {
+                       id: id
+                   });
     }
 
     function copyText(text) {
         const t = String(text ?? "");
         if (t === "")
             return false;
-        root._send("copy-text", { text: t });
+        root._send("copy-text", {
+                       text: t
+                   });
         return true;
     }
 
@@ -294,7 +304,9 @@ Singleton {
         const id = parseInt(cid, 10);
         if (isNaN(id))
             return;
-        root._send("delete", { id: id });
+        root._send("delete", {
+                       id: id
+                   });
     }
 
     function clear() {
@@ -306,7 +318,10 @@ Singleton {
         const id = parseInt(cid, 10);
         if (isNaN(id))
             return;
-        root._send("star", { id: id, starred: !!starred });
+        root._send("star", {
+                       id: id,
+                       starred: !!starred
+                   });
     }
 
     // ── Stats ───────────────────────────────────────────────────
@@ -315,8 +330,8 @@ Singleton {
     }
 
     // ── Preview imagen ──────────────────────────────────────────
-    property string previewDir: "/tmp/qs-clipboard"
-
+    // (La miniatura vive en disco, en el thumb que manda el backend;
+    // aquí no se cachea nada en /tmp propio: ver FilePreviewService.)
     function previewImage(cid) {
         const id = parseInt(cid, 10);
         if (isNaN(id))
@@ -344,7 +359,9 @@ Singleton {
         root.pendingId = id;
         root.textCid = String(id);
         root.textContent = "";
-        root._send("get-text", { id: id });
+        root._send("get-text", {
+                       id: id
+                   });
         return "";
     }
 

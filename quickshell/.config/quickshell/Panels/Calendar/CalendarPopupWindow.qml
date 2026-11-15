@@ -57,7 +57,6 @@ BarPopupWindow {
     // "ShaderEffect: 'source' does not have a matching property" del primer frame.
     // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
 
-
     // ── Content ───────────────────────────────────────────────
     CalendarContent {
         anchors.fill: bg

@@ -80,9 +80,11 @@ Singleton {
                 return;
             }
             shinroSocket.write(JSON.stringify({
-                type: "hello",
-                intervals: { files: 0 }
-            }) + "\n");
+                                                  type: "hello",
+                                                  intervals: {
+                                                      files: 0
+                                                  }
+                                              }) + "\n");
             shinroSocket.flush();
             if (root._pendingSearch)
                 root._doSearch();
@@ -133,12 +135,17 @@ Singleton {
 
     // ── Petición ────────────────────────────────────────────────
     property string pendingQuery: ""
-    property string lastSentQuery: ""   // última query enviada al backend (para descartar respuestas obsoletas)
+    property string lastSentQuery:
+        ""   // última query enviada al backend (para descartar respuestas obsoletas)
     property int pendingLimit: 20
     property bool _pendingSearch: false
 
     function _send(action, extra) {
-        const payload = { type: "get", module: "files", action: action };
+        const payload = {
+            type: "get",
+            module: "files",
+            action: action
+        };
         for (const k in extra)
             payload[k] = extra[k];
         shinroSocket.write(JSON.stringify(payload) + "\n");
@@ -164,16 +171,16 @@ Singleton {
         for (let i = 0; i < data.results.length; i++) {
             const r = data.results[i];
             root.results.append({
-                path: r.path || "",
-                name: r.name || "",
-                size: r.size || 0,
-                isDir: r.is_dir || false,
-                // Tipo MIME y categoría de preview que calcula el backend
-                // (image/text/audio/video/pdf/binary/other). La UI decide
-                // con `kind`; `mime` es informativo.
-                mime: r.mime || "",
-                kind: r.kind || ""
-            });
+                                    path: r.path || "",
+                                    name: r.name || "",
+                                    size: r.size || 0,
+                                    isDir: r.is_dir || false,
+                                    // Tipo MIME y categoría de preview que calcula el backend
+                                    // (image/text/audio/video/pdf/binary/other). La UI decide
+                                    // con `kind`; `mime` es informativo.
+                                    mime: r.mime || "",
+                                    kind: r.kind || ""
+                                });
         }
         root.refreshing = false;
         root.searching = false;
@@ -225,7 +232,10 @@ Singleton {
         root.searching = true;
         root.error = "";
         requestTimeout.restart();
-        root._send("search", { query: q, limit: root.pendingLimit });
+        root._send("search", {
+                       query: q,
+                       limit: root.pendingLimit
+                   });
     }
 
     function clear() {

@@ -560,8 +560,8 @@ Scope {
                 }
                 // Entrada de búsqueda web (inyectada cuando no hay resultados de apps).
                 if (it.isWebSearch === true) {
-                    launcher.runCmd(["xdg-open",
-                        "https://duckduckgo.com/?q=" + encodeURIComponent(launcher.query) + "&ia=web"]);
+                    launcher.runCmd(["xdg-open", "https://duckduckgo.com/?q=" + encodeURIComponent(
+                                         launcher.query) + "&ia=web"]);
                     scope.shown = false;
                     return;
                 }
@@ -816,16 +816,17 @@ Scope {
                     // Aparece siempre que haya una consulta, incluso si hay resultados de apps.
                     if (q !== "") {
                         out.push({
-                            isDesktopApp: false,
-                            isWebSearch: true,
-                            id: "__web_search__",
-                            title: launcher.tr("launcher.web_search_title", "Buscar en la web"),
-                            sub: launcher.tr("launcher.web_search_sub", "Buscar en DuckDuckGo") + " · " + q,
-                            icon: "web",
-                            appIcon: "",
-                            ch: "",
-                            cat: ""
-                        });
+                                     isDesktopApp: false,
+                                     isWebSearch: true,
+                                     id: "__web_search__",
+                                     title: launcher.tr("launcher.web_search_title", "Buscar en la web"),
+                                     sub: launcher.tr("launcher.web_search_sub", "Buscar en DuckDuckGo")
+                                          + " · " + q,
+                                     icon: "web",
+                                     appIcon: "",
+                                     ch: "",
+                                     cat: ""
+                                 });
                     }
                     return out;
                 }
@@ -843,19 +844,21 @@ Scope {
                 if (info.parentId === "")
                     return items;
                 const parent = SystemMenuRegistry.sectionInfo(info.parentId);
-                const out = [{
-                             kind: "menuback",
-                             title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
-                             sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
-                             icon: "arrow_back",
-                             appIcon: "",
-                             ch: "",
-                             imagePath: "",
-                             cat: "",
-                             shell: "",
-                             isSubmenu: false,
-                             section: info.parentId
-                         }];
+                const out = [
+                          {
+                              kind: "menuback",
+                              title: tr("launcher.back_prefix", "Atrás · ") + parent.title,
+                              sub: tr("launcher.back_subtitle", "Volver a la sección anterior"),
+                              icon: "arrow_back",
+                              appIcon: "",
+                              ch: "",
+                              imagePath: "",
+                              cat: "",
+                              shell: "",
+                              isSubmenu: false,
+                              section: info.parentId
+                          }
+                      ];
                 return out.concat(items);
             }
 
@@ -1002,18 +1005,18 @@ Scope {
                     // `kind` lo decide el backend por MIME (extensión + contenido).
                     const media = FileMenu.mediaFor(e);
                     out.push({
-                        kind: "file",
-                        title: e.name,
-                        sub: e.path,
-                        icon: FileMenu.iconFor(media, e.isDir),
-                        appIcon: "",
-                        ch: "",
-                        imagePath: media === "image" ? FileMenu.fileUrl(e.path) : "",
-                        cat: cat,
-                        path: e.path,
-                        media: media,
-                        mime: e.mime || ""
-                    });
+                                 kind: "file",
+                                 title: e.name,
+                                 sub: e.path,
+                                 icon: FileMenu.iconFor(media, e.isDir),
+                                 appIcon: "",
+                                 ch: "",
+                                 imagePath: media === "image" ? FileMenu.fileUrl(e.path) : "",
+                                 cat: cat,
+                                 path: e.path,
+                                 media: media,
+                                 mime: e.mime || ""
+                             });
                 }
                 FileMenu.sortSnapshot(out);
                 if (q === "")
@@ -1171,7 +1174,7 @@ Scope {
                     }
                 }
                 anchors.centerIn: parent
-                color: Qt.alpha(Appearance.md3.surface,0.90)
+                color: Qt.alpha(Appearance.md3.surface, 0.90)
                 radius: Appearance.shape.huge
                 bordered: true
 
@@ -1237,7 +1240,7 @@ Scope {
                                 // Modo todo: ScriptModel vivo de DesktopEntries.
                                 // Resto de modos: array plano de `results`.
                                 listModel: !scope.shown ? [] : (launcher.activeMode === "todo" ? appModel :
-                                                                                                   launcher.results)
+                                                                                                 launcher.results)
                                 activeMode: launcher.activeMode
                                 // Generación del filtro (ver filterEpoch): distingue
                                 // nueva búsqueda (ir arriba) de refresco de datos

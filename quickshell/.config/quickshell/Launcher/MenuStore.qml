@@ -36,6 +36,7 @@
 // (la reasignación de `providers` reevalúa los bindings).
 
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import qs.Core.Modules
 import QtQuick
