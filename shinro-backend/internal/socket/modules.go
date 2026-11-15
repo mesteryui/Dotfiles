@@ -18,22 +18,19 @@ type Module interface {
 	// Name devuelve el identificador del módulo ("system", "weather", ...).
 	Name() string
 
-	// HandleHello procesa el handshake para este módulo. Devuelve true si el
-	// cliente se suscribe a este módulo. El módulo puede usar c para leer la
-	// configuración del handshake y debe devolver un canal de wake (puede ser
-	// nil si no soporta despertares externos).
-	HandleHello(c *client, raw map[string]json.RawMessage) (subscribed bool, wake <-chan struct{})
+	// HandleHello procesa el handshake para este módulo. El módulo puede usar
+	// c para leer la configuración del handshake y registrar su suscripción
+	// con c.setSubscribed / c.setModInterval.
+	HandleHello(c *client, raw map[string]json.RawMessage)
 
 	// HandleGet responde a una petición puntual {"type":"get","module":<name>}.
-	HandleGet(c *client, raw map[string]json.RawMessage)
+	//
+	// Devuelve el error si el módulo no pudo atender la petición, para que
+	// el servidor pueda anotarlo en el informe de salud del módulo.
+	HandleGet(c *client, raw map[string]json.RawMessage) error
 
 	// SendUpdate envía una actualización inmediata al cliente.
 	SendUpdate(c *client) error
-
-	// Pump devuelve el intervalo en segundos (<= 0 = desactivado) y ejecuta el
-	// bucle periódico hasta que done se cierre. wake despierta el bucle para
-	// reevaluar el intervalo o forzar un envío inmediato.
-	Pump(c *client, wake <-chan struct{}, done <-chan struct{})
 }
 
 // OnlineDependentModule es implementado por módulos que requieren conexión a Internet
@@ -49,6 +46,25 @@ func IsOnlineModule(m Module) bool {
 		return om.RequiresInternet()
 	}
 	return m.Name() == "weather"
+}
+
+// ModuleInvalidator es implementado por los módulos que guardan datos
+// cacheados que pueden quedarse viejos (por ejemplo, mientras no hay red).
+//
+// El servidor lo llama cuando la conectividad se recupera, para que los
+// módulos descarten lo cacheado y pidan datos frescos.
+type ModuleInvalidator interface {
+	InvalidateCaches()
+}
+
+// ClientGone es implementado por los módulos que guardan estado por cliente
+// (por ejemplo, la última búsqueda de cada uno).
+//
+// El servidor lo llama cuando un cliente se desconecta, para que el módulo
+// suelte ese estado: si no, el mapa guardaría una entrada por cada cliente
+// que hubiera usado el módulo alguna vez, para siempre.
+type ClientGone interface {
+	ClientGone(c *client)
 }
 
 // Registry guarda los módulos registrados por nombre.
@@ -119,24 +135,6 @@ func (c *client) signalMod(name string) {
 	}
 }
 
-func (c *client) isModStarted(name string) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.modStarted == nil {
-		return false
-	}
-	return c.modStarted[name]
-}
-
-func (c *client) setModStarted(name string, started bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.modStarted == nil {
-		c.modStarted = make(map[string]bool)
-	}
-	c.modStarted[name] = started
-}
-
 func (c *client) isSubscribed(name string) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -199,11 +197,6 @@ func putBuf(buf []byte) {
 	if cap(buf) <= 1<<20 {
 		ModPool.Put(buf)
 	}
-}
-
-// wakeMod despierta el pump de un módulo para un cliente.
-func wakeMod(c *client, name string) {
-	c.signalMod(name)
 }
 
 // sendErrorToClient envía un mensaje de error al cliente y lo registra.

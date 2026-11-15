@@ -15,15 +15,18 @@ import (
 const defaultSockName = "shinro"
 
 // sockPath devuelve la ruta del socket Unix del backend.
+//
+// El orden es el mismo que usa el backend y la shell (QML):
+//
+//	$SHINRO_SOCKET_PATH  →  $XDG_RUNTIME_DIR/shinro  →  /run/user/$UID/shinro
 func sockPath() string {
 	if p := os.Getenv("SHINRO_SOCKET_PATH"); p != "" {
 		return p
 	}
-	dir := os.Getenv("XDG_RUNTIME_DIR")
-	if dir == "" {
-		dir = "/tmp"
+	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
+		return filepath.Join(dir, defaultSockName)
 	}
-	return filepath.Join(dir, defaultSockName)
+	return filepath.Join("/run/user", strconv.Itoa(os.Getuid()), defaultSockName)
 }
 
 // sendCommand envía una línea al backend y devuelve la respuesta.
@@ -76,7 +79,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "uso: shinro-shell <comando> [argumentos]")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Comandos disponibles:")
-	fmt.Fprintln(os.Stderr, "  status                 resumen del sistema (CPU, RAM, disco, red)")
+	fmt.Fprintln(os.Stderr, "  status                 resumen del sistema (CPU, RAM, disco, batería)")
 	fmt.Fprintln(os.Stderr, "  ping                   comprueba que el backend responde")
 	fmt.Fprintln(os.Stderr, "  files <texto>          búsqueda difusa de archivos en $HOME")
 	fmt.Fprintln(os.Stderr, "  clipboard <acción>     gestiona el historial del portapapeles")
@@ -85,7 +88,6 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  shinro-shell status")
 	fmt.Fprintln(os.Stderr, "  shinro-shell files documento")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard list")
-	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard copy-text \"hola mundo\"")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Usa 'shinro-shell <comando> --help' para ayuda de un comando específico.")
 	fmt.Fprintln(os.Stderr, "")
@@ -107,11 +109,16 @@ func usageStatus() {
 
 // usagePing imprime la ayuda del comando ping.
 func usagePing() {
-	fmt.Fprintln(os.Stderr, "uso: shinro-shell ping")
+	fmt.Fprintln(os.Stderr, "uso: shinro-shell ping [--json]")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Descripción:")
-	fmt.Fprintln(os.Stderr, "  Envía una petición al backend y espera una respuesta para")
-	fmt.Fprintln(os.Stderr, "  verificar que el daemon está en ejecución y responde.")
+	fmt.Fprintln(os.Stderr, "  Comprueba que el backend responde y devuelve su estado de salud:")
+	fmt.Fprintln(os.Stderr, "  estado de cada módulo (último envío, errores, duración media),")
+	fmt.Fprintln(os.Stderr, "  datos del daemon (uptime, goroutines, memoria, clientes) y la lista")
+	fmt.Fprintln(os.Stderr, "  de problemas y de cosas que se podrían mejorar.")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Opciones:")
+	fmt.Fprintln(os.Stderr, "  --json    muestra el informe en JSON en vez del resumen legible")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Ejemplo:")
 	fmt.Fprintln(os.Stderr, "  shinro-shell ping")
@@ -147,9 +154,6 @@ func usageClipboard() {
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Acciones disponibles:")
 	fmt.Fprintln(os.Stderr, "  list                         lista el historial del portapapeles")
-	fmt.Fprintln(os.Stderr, "  copy-text <texto>            copia texto al portapapeles y al historial")
-	fmt.Fprintln(os.Stderr, "  copy-image <ruta>            copia una imagen al portapapeles y al historial")
-	fmt.Fprintln(os.Stderr, "  paste                        pega el contenido actual como texto")
 	fmt.Fprintln(os.Stderr, "  delete <id>                  elimina una entrada del historial por id")
 	fmt.Fprintln(os.Stderr, "  clear                        vacía el historial (conserva starred)")
 	fmt.Fprintln(os.Stderr, "  star <id> <true|false>       marca o desmarca una entrada como favorita")
@@ -160,9 +164,6 @@ func usageClipboard() {
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Ejemplos:")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard list")
-	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard copy-text \"texto a copiar\"")
-	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard copy-image /ruta/a/imagen.png")
-	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard paste")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard delete 42")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard star 42 true")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard stats")
@@ -187,14 +188,169 @@ func runStatus() error {
 	return nil
 }
 
-// runPing ejecuta el comando ping.
-func runPing() error {
+// pingReport es el informe de salud que devuelve el módulo ping.
+type pingReport struct {
+	Type   string `json:"type"`
+	Module string `json:"module"`
+	Data   struct {
+		OK              string   `json:"ok"`
+		Status          string   `json:"status"`
+		UptimeSeconds   float64  `json:"uptime_seconds"`
+		Goroutines      int      `json:"goroutines"`
+		GoroutinesDelta int      `json:"goroutines_delta_5m"`
+		MemoryDelta     float64  `json:"memory_delta_5m"`
+		MemoryMB        float64  `json:"memory_mb"`
+		Clients         int      `json:"clients"`
+		Connectivity    string   `json:"connectivity"`
+		Problems        []string `json:"problems"`
+		Suggestions     []string `json:"suggestions"`
+		Modules         []struct {
+			Name         string             `json:"name"`
+			Status       string             `json:"status"`
+			Subscribed   bool               `json:"subscribed"`
+			Subscribers  int                `json:"subscribers"`
+			Interval     int                `json:"interval"`
+			Sends        int64              `json:"sends"`
+			Errors       int64              `json:"errors"`
+			LastSendMS   int64              `json:"last_send_ms_ago"`
+			LastDuration float64            `json:"last_duration_ms"`
+			AvgDuration  float64            `json:"avg_duration_ms"`
+			LastError    string             `json:"last_error"`
+			Timings      map[string]float64 `json:"timings"`
+		} `json:"modules"`
+	} `json:"data"`
+}
+
+// runPing ejecuta el comando ping: comprueba que el backend responde y
+// muestra su estado de salud.
+//
+// Por defecto imprime un resumen legible (es más útil para diagnosticar que
+// un JSON pelado); con --json sale el informe tal cual.
+func runPing(args []string) error {
+	asJSON := false
+	for _, arg := range args {
+		switch arg {
+		case "--json":
+			asJSON = true
+		default:
+			return fmt.Errorf("opción desconocida: %s", arg)
+		}
+	}
+
 	raw, err := callModule("ping", nil)
 	if err != nil {
 		return err
 	}
-	printJSON(raw)
+
+	if asJSON {
+		printJSON(raw)
+		return nil
+	}
+
+	var report pingReport
+	if err := json.Unmarshal([]byte(raw), &report); err != nil {
+		// Si el backend es antiguo y devuelve otro formato, al menos se
+		// imprime lo que venga.
+		printJSON(raw)
+		return nil
+	}
+	printPingSummary(&report)
 	return nil
+}
+
+// printPingSummary imprime el informe de salud en texto legible.
+func printPingSummary(r *pingReport) {
+	d := r.Data
+
+	fmt.Printf("estado: %s   Conectividad: %s\n", d.Status, d.Connectivity)
+	tendencia := "sin datos (el daemon lleva menos de 5 min en marcha)"
+	if d.GoroutinesDelta != 0 || d.MemoryDelta != 0 {
+		tendencia = fmt.Sprintf("%+d goroutines, %+.1f MB en los últimos 5 min", d.GoroutinesDelta, d.MemoryDelta)
+	}
+	fmt.Printf("uptime: %s   clientes: %d   goroutines: %d   memoria: %.1f MB\n",
+		humanDuration(d.UptimeSeconds), d.Clients, d.Goroutines, d.MemoryMB)
+	fmt.Printf("tendencia: %s\n", tendencia)
+
+	if len(d.Modules) > 0 {
+		fmt.Println()
+		fmt.Println("Módulo      Estado   Suscr.  Envíos  Errores  Último envío  Duración media")
+		for _, m := range d.Modules {
+			ultimo := "-"
+			if m.LastSendMS >= 0 {
+				ultimo = humanDurationMS(m.LastSendMS)
+			}
+			media := "-"
+			if m.AvgDuration > 0 {
+				media = fmt.Sprintf("%.1f ms", m.AvgDuration)
+			}
+			fmt.Printf("%-11s %-8s %-7d %-7d %-8d %-13s %s\n",
+				m.Name, m.Status, m.Subscribers, m.Sends, m.Errors, ultimo, media)
+		}
+	}
+
+	// Desglose del tiempo de los módulos que lo saben (el clima).
+	for _, m := range d.Modules {
+		if len(m.Timings) == 0 {
+			continue
+		}
+		partes := make([]string, 0, len(m.Timings))
+		for _, clave := range []string{"geocode_ms", "forecast_ms", "aqi_ms", "alerts_ms", "total_ms"} {
+			v, ok := m.Timings[clave]
+			if !ok {
+				continue
+			}
+			partes = append(partes, fmt.Sprintf("%s %.1f ms", strings.TrimSuffix(clave, "_ms"), v))
+		}
+		if len(partes) > 0 {
+			fmt.Printf("desglose de %s: %s\n", m.Name, strings.Join(partes, ", "))
+		}
+	}
+
+	if len(d.Problems) > 0 {
+		fmt.Println()
+		fmt.Println("Problemas:")
+		for _, p := range d.Problems {
+			fmt.Printf("  - %s\n", p)
+		}
+	}
+
+	if len(d.Suggestions) > 0 {
+		fmt.Println()
+		fmt.Println("Cosas a mejorar:")
+		for _, s := range d.Suggestions {
+			fmt.Printf("  - %s\n", s)
+		}
+	}
+}
+
+// humanDuration formatea un número de segundos de forma legible.
+func humanDuration(seconds float64) string {
+	switch {
+	case seconds < 60:
+		return fmt.Sprintf("%.0f s", seconds)
+	case seconds < 3600:
+		return fmt.Sprintf("%.0f min", seconds/60)
+	case seconds < 86400:
+		return fmt.Sprintf("%.1f h", seconds/3600)
+	default:
+		return fmt.Sprintf("%.1f días", seconds/86400)
+	}
+}
+
+// humanDurationMS formatea una duración en milisegundos de forma legible.
+func humanDurationMS(ms int64) string {
+	switch {
+	case ms < 0:
+		return "-"
+	case ms < 1000:
+		return fmt.Sprintf("%d ms", ms)
+	case ms < 60*1000:
+		return fmt.Sprintf("%.1f s", float64(ms)/1000)
+	case ms < 3600*1000:
+		return fmt.Sprintf("%d min", ms/(60*1000))
+	default:
+		return fmt.Sprintf("%.1f h", float64(ms)/(3600*1000))
+	}
 }
 
 // runFiles ejecuta el comando files/search. Acepta --limit delante o detrás
@@ -269,46 +425,6 @@ func runClipboard(args []string) error {
 			return fmt.Errorf("acción 'list' no acepta argumentos: shinro-shell clipboard list")
 		}
 		raw, err := callModule("clipboard", map[string]any{"action": "list"})
-		if err != nil {
-			return err
-		}
-		printJSON(raw)
-		return nil
-
-	case "copy-text":
-		if len(rest) == 0 {
-			return fmt.Errorf("falta el texto: shinro-shell clipboard copy-text <texto>")
-		}
-		text := strings.Join(rest, " ")
-		raw, err := callModule("clipboard", map[string]any{
-			"action": "copy-text",
-			"text":   text,
-		})
-		if err != nil {
-			return err
-		}
-		printJSON(raw)
-		return nil
-
-	case "copy-image":
-		if len(rest) == 0 {
-			return fmt.Errorf("falta la ruta: shinro-shell clipboard copy-image <ruta>")
-		}
-		raw, err := callModule("clipboard", map[string]any{
-			"action": "copy-image",
-			"path":   rest[0],
-		})
-		if err != nil {
-			return err
-		}
-		printJSON(raw)
-		return nil
-
-	case "paste":
-		if len(rest) > 0 {
-			return fmt.Errorf("acción 'paste' no acepta argumentos: shinro-shell clipboard paste")
-		}
-		raw, err := callModule("clipboard", map[string]any{"action": "paste"})
 		if err != nil {
 			return err
 		}
@@ -459,24 +575,22 @@ func main() {
 
 	// Ayuda específica por comando
 	switch command {
-	case "status", "-h", "--help", "help":
-		if command == "status" && len(args) > 0 && (args[0] == "-h" || args[0] == "--help" || args[0] == "help") {
+	case "status":
+		if len(args) > 0 && (args[0] == "-h" || args[0] == "--help" || args[0] == "help") {
 			usageStatus()
 			os.Exit(0)
 		}
-		if command == "status" {
-			if err := runStatus(); err != nil {
-				fatal(err)
-			}
-			return
+		if err := runStatus(); err != nil {
+			fatal(err)
 		}
+		return
 
 	case "ping":
 		if len(args) > 0 && (args[0] == "-h" || args[0] == "--help" || args[0] == "help") {
 			usagePing()
 			os.Exit(0)
 		}
-		if err := runPing(); err != nil {
+		if err := runPing(args); err != nil {
 			fatal(err)
 		}
 		return
@@ -508,5 +622,3 @@ func main() {
 	}
 	return
 }
-
-

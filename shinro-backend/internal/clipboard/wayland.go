@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 )
 
 // Selección a la que se refiere una operación.
@@ -266,7 +267,7 @@ func dialWL() (*wlClient, error) {
 		notify:   make(chan struct{}, 1),
 	}
 	cliente.handlers[wlDisplayID] = cliente.handleDisplay
-	go cliente.readLoop()
+	safe.Go("wayland.read", func() { cliente.readLoop() })
 
 	if err := cliente.init(); err != nil {
 		cliente.Close()
@@ -351,6 +352,11 @@ func (cliente *wlClient) init() error {
 		cliente.devices = append(cliente.devices, wlDevice{id: devID, sel: selClipboard})
 
 		// Dispositivo para la selección primaria (si el protocolo lo soporta).
+		//
+		// PENDIENTE: se crea el device y se registra su handler, pero el
+		// backend todavía no usa la selección primaria: no envía
+		// set_primary_selection ni la lee. Está preparado para cuando la
+		// interfaz de la shell lo necesite.
 		supportsPrimary := (iface == "ext") || (iface == "zwlr" && version >= 2)
 		if supportsPrimary {
 			primID := cliente.allocID()
@@ -463,8 +469,13 @@ func (cliente *wlClient) ReadCurrent() (mime string, data []byte, ok bool, err e
 	return mime, data, true, nil
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // ReadPrimary devuelve el contenido actual de la selección primaria
 // (middle-click). Same semantics as ReadCurrent.
+//
+// El backend solo gestiona la selección del portapapeles; la primaria se
+// deja preparada para cuando haga falta.
 func (cliente *wlClient) ReadPrimary() (mime string, data []byte, ok bool, err error) {
 	offer := cliente.acquireOffer(selPrimary)
 	if offer == nil {
@@ -501,8 +512,13 @@ func (cliente *wlClient) SetSelection(mime string, data []byte) error {
 	return cliente.setSelection(selClipboard, mime, data)
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // SetPrimarySelection pasa a ser dueño de la selección primaria con el mime y
 // datos dados.
+//
+// El backend solo gestiona la selección del portapapeles; la primaria se
+// deja preparada para cuando haga falta.
 func (cliente *wlClient) SetPrimarySelection(mime string, data []byte) error {
 	return cliente.setSelection(selPrimary, mime, data)
 }
@@ -543,7 +559,7 @@ func (cliente *wlClient) setSelection(sel selType, mime string, data []byte) err
 				logger.Warn("clipboard: petición de datos sin descriptor")
 				return
 			}
-			go serveSource(fd, src.data)
+			safe.Go("wayland.serve", func() { serveSource(fd, src.data) })
 		case dcSourceEvCancelled:
 			cliente.clearSource(src)
 		}

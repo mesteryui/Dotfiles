@@ -5,6 +5,7 @@ package socket
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -48,7 +49,7 @@ func (module *ClipboardModule) notifyChanged() {
 
 func (module *ClipboardModule) Name() string { return "clipboard" }
 
-func (module *ClipboardModule) HandleHello(cliente *client, raw map[string]json.RawMessage) (bool, <-chan struct{}) {
+func (module *ClipboardModule) HandleHello(cliente *client, raw map[string]json.RawMessage) {
 	// Iniciar watch externo (wl-clip-persist + polling de cambios) la primera
 	// vez que un cliente se conecta. Es idempotente.
 	module.provider.StartWatch()
@@ -63,17 +64,21 @@ func (module *ClipboardModule) HandleHello(cliente *client, raw map[string]json.
 		_ = json.Unmarshal(intRaw, &payload.Intervals)
 	}
 	if _, ok := payload.Intervals["clipboard"]; !ok {
-		return false, nil
+		return
 	}
 
 	// Suscripción sin intervalo periódico: los cambios se empujan en cuanto
 	// ocurren (ver notifyChanged), no por tick.
 	cliente.setModInterval(module.Name(), 0)
 	cliente.setSubscribed(module.Name(), true)
-	return true, nil
 }
 
-func (module *ClipboardModule) HandleGet(cliente *client, raw map[string]json.RawMessage) {
+// HandleGet atiende una acción del historial.
+//
+// Devuelve el error si la acción falló, para que el servidor lo anote en el
+// informe de salud del módulo. El cliente ya recibe el error por el socket,
+// así que aquí no se vuelve a enviar.
+func (module *ClipboardModule) HandleGet(cliente *client, raw map[string]json.RawMessage) error {
 	var action string
 	if a, ok := raw["action"]; ok {
 		_ = json.Unmarshal(a, &action)
@@ -81,57 +86,69 @@ func (module *ClipboardModule) HandleGet(cliente *client, raw map[string]json.Ra
 
 	switch action {
 	case "list":
-		module.handleList(cliente)
+		return module.handleList(cliente)
 	case "copy-text":
-		module.handleCopyText(cliente, raw)
+		return module.handleCopyText(cliente, raw)
 	case "copy-image":
-		module.handleCopyImage(cliente, raw)
+		return module.handleCopyImage(cliente, raw)
 	case "paste":
-		module.handlePaste(cliente)
+		return module.handlePaste(cliente)
 	case "delete":
-		module.handleDelete(cliente, raw)
+		return module.handleDelete(cliente, raw)
 	case "clear":
-		module.handleClear(cliente)
+		return module.handleClear(cliente)
 	case "star":
-		module.handleStar(cliente, raw)
+		return module.handleStar(cliente, raw)
 	case "stats":
-		module.handleStats(cliente)
+		return module.handleStats(cliente)
 	case "get-text":
-		module.handleGetText(cliente, raw)
+		return module.handleGetText(cliente, raw)
 	case "recopy":
-		module.handleRecopy(cliente, raw)
+		return module.handleRecopy(cliente, raw)
 	case "watch":
-		module.handleWatch(cliente, raw)
+		return module.handleWatch(cliente, raw)
 	default:
-		sendErrorToClient(cliente, module.Name(), "acción desconocida: se espera list, copy-text, copy-image, paste, delete, clear, star, stats, get-text, recopy o watch")
+		err := fmt.Errorf("acción desconocida: se espera list, copy-text, copy-image, paste, delete, clear, star, stats, get-text, recopy o watch")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 }
 
-func (module *ClipboardModule) handleList(cliente *client) {
+// handleList envía el historial completo al cliente.
+//
+// Devuelve false si el mensaje se descartó (cliente saturado), para que quien
+// llama pueda reintentarlo: el listado es una instantánea y perderlo dejaría
+// al cliente con un historial obsoleto.
+func (module *ClipboardModule) handleList(cliente *client) error {
 	entries := module.provider.List()
 	msg, _ := json.Marshal(map[string]interface{}{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   entries,
 	})
-	cliente.write(writeBuf(msg))
+	ok := cliente.write(writeBuf(msg))
 	logger.Debug("clipboard list enviado", "client", cliente.conn.RemoteAddr(), "entries", len(entries))
+	if !ok {
+		return errors.New("no se pudo encolar el listado del portapapeles")
+	}
+	return nil
 }
 
-func (module *ClipboardModule) handleCopyText(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleCopyText(cliente *client, raw map[string]json.RawMessage) error {
 	var text string
 	if t, ok := raw["text"]; ok {
 		_ = json.Unmarshal(t, &text)
 	}
 	if text == "" {
-		sendErrorToClient(cliente, module.Name(), "texto requerido para copy-text")
-		return
+		err := errors.New("texto requerido para copy-text")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 
 	entry, err := module.provider.CopyText(text)
 	if err != nil {
 		sendErrorToClient(cliente, module.Name(), "error copiando texto al portapapeles: "+err.Error())
-		return
+		return err
 	}
 
 	msg, _ := json.Marshal(map[string]interface{}{
@@ -141,22 +158,24 @@ func (module *ClipboardModule) handleCopyText(cliente *client, raw map[string]js
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard copy-text enviado", "client", cliente.conn.RemoteAddr(), "id", entry.ID, "size", entry.Size)
+	return nil
 }
 
-func (module *ClipboardModule) handleCopyImage(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleCopyImage(cliente *client, raw map[string]json.RawMessage) error {
 	var path string
 	if p, ok := raw["path"]; ok {
 		_ = json.Unmarshal(p, &path)
 	}
 	if path == "" {
-		sendErrorToClient(cliente, module.Name(), "path requerido para copy-image")
-		return
+		err := errors.New("path requerido para copy-image")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 
 	entry, err := module.provider.CopyImage(path)
 	if err != nil {
 		sendErrorToClient(cliente, module.Name(), "error copiando imagen al portapapeles: "+err.Error())
-		return
+		return err
 	}
 
 	msg, _ := json.Marshal(map[string]interface{}{
@@ -166,13 +185,14 @@ func (module *ClipboardModule) handleCopyImage(cliente *client, raw map[string]j
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard copy-image enviado", "client", cliente.conn.RemoteAddr(), "path", path, "id", entry.ID)
+	return nil
 }
 
-func (module *ClipboardModule) handlePaste(cliente *client) {
+func (module *ClipboardModule) handlePaste(cliente *client) error {
 	content, err := module.provider.Paste()
 	if err != nil {
 		sendErrorToClient(cliente, module.Name(), "error pegando del portapapeles: "+err.Error())
-		return
+		return err
 	}
 
 	msg, _ := json.Marshal(map[string]interface{}{
@@ -187,20 +207,22 @@ func (module *ClipboardModule) handlePaste(cliente *client) {
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard paste enviado", "client", cliente.conn.RemoteAddr(), "size", len(content))
+	return nil
 }
 
-func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
 		_ = json.Unmarshal(idRaw, &id)
 	}
 	if id == 0 {
-		sendErrorToClient(cliente, module.Name(), "id requerido para delete")
-		return
+		err := errors.New("id requerido para delete")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 	if err := module.provider.Delete(id); err != nil {
 		sendErrorToClient(cliente, module.Name(), err.Error())
-		return
+		return err
 	}
 	msg, _ := json.Marshal(map[string]interface{}{
 		"type":   "update",
@@ -209,9 +231,10 @@ func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard delete enviado", "client", cliente.conn.RemoteAddr(), "id", id)
+	return nil
 }
 
-func (module *ClipboardModule) handleClear(cliente *client) {
+func (module *ClipboardModule) handleClear(cliente *client) error {
 	module.provider.Clear()
 	msg, _ := json.Marshal(map[string]interface{}{
 		"type":   "update",
@@ -220,9 +243,10 @@ func (module *ClipboardModule) handleClear(cliente *client) {
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard clear enviado", "client", cliente.conn.RemoteAddr())
+	return nil
 }
 
-func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	var starred bool
 	if idRaw, ok := raw["id"]; ok {
@@ -232,12 +256,13 @@ func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.R
 		_ = json.Unmarshal(s, &starred)
 	}
 	if id == 0 {
-		sendErrorToClient(cliente, module.Name(), "id requerido para star")
-		return
+		err := errors.New("id requerido para star")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 	if err := module.provider.Star(id, starred); err != nil {
 		sendErrorToClient(cliente, module.Name(), err.Error())
-		return
+		return err
 	}
 	msg, _ := json.Marshal(map[string]interface{}{
 		"type":   "update",
@@ -246,9 +271,10 @@ func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.R
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard star enviado", "client", cliente.conn.RemoteAddr(), "id", id, "starred", starred)
+	return nil
 }
 
-func (module *ClipboardModule) handleStats(cliente *client) {
+func (module *ClipboardModule) handleStats(cliente *client) error {
 	stats := module.provider.Stats()
 	msg, _ := json.Marshal(map[string]interface{}{
 		"type":   "update",
@@ -257,21 +283,24 @@ func (module *ClipboardModule) handleStats(cliente *client) {
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard stats enviado", "client", cliente.conn.RemoteAddr())
+	return nil
 }
 
-func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
 		_ = json.Unmarshal(idRaw, &id)
 	}
 	if id == 0 {
-		sendErrorToClient(cliente, module.Name(), "id requerido para get-text")
-		return
+		err := errors.New("id requerido para get-text")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 	found := module.provider.GetEntry(id)
 	if found == nil {
-		sendErrorToClient(cliente, module.Name(), "no existe entrada "+fmt.Sprintf("%d", id))
-		return
+		err := fmt.Errorf("no existe entrada %d", id)
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 	// Para texto: devolver el contenido completo. Para imagen: devolver preview.
 	if found.Kind == "text" {
@@ -279,7 +308,7 @@ func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]jso
 		data, err := module.provider.GetContent(found.Hash)
 		if err != nil {
 			sendErrorToClient(cliente, module.Name(), "no se pudo leer el contenido de la entrada")
-			return
+			return err
 		}
 		msg, _ := json.Marshal(map[string]interface{}{
 			"type":   "update",
@@ -308,20 +337,22 @@ func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]jso
 		cliente.write(writeBuf(msg))
 	}
 	logger.Debug("clipboard get-text enviado", "client", cliente.conn.RemoteAddr(), "id", id)
+	return nil
 }
 
-func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
 		_ = json.Unmarshal(idRaw, &id)
 	}
 	if id == 0 {
-		sendErrorToClient(cliente, module.Name(), "id requerido para recopy")
-		return
+		err := errors.New("id requerido para recopy")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
 	}
 	if err := module.provider.Recopy(id); err != nil {
 		sendErrorToClient(cliente, module.Name(), err.Error())
-		return
+		return err
 	}
 	found := module.provider.GetEntry(id)
 	msg, _ := json.Marshal(map[string]interface{}{
@@ -331,9 +362,10 @@ func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json
 	})
 	cliente.write(writeBuf(msg))
 	logger.Debug("clipboard recopy enviado", "client", cliente.conn.RemoteAddr(), "id", id)
+	return nil
 }
 
-func (module *ClipboardModule) handleWatch(cliente *client, raw map[string]json.RawMessage) {
+func (module *ClipboardModule) handleWatch(cliente *client, raw map[string]json.RawMessage) error {
 	var enable bool
 	if e, ok := raw["enable"]; ok {
 		_ = json.Unmarshal(e, &enable)
@@ -357,17 +389,15 @@ func (module *ClipboardModule) handleWatch(cliente *client, raw map[string]json.
 		cliente.write(writeBuf(msg))
 		logger.Debug("clipboard watch desactivado", "client", cliente.conn.RemoteAddr())
 	}
-}
-
-// Pump es un no-op para clipboard: los cambios se empujan por eventos,
-// no por un pump periódico.
-func (module *ClipboardModule) Pump(cliente *client, wake <-chan struct{}, done <-chan struct{}) {
+	return nil
 }
 
 // SendUpdate envía el historial completo al cliente.
+//
+// Devuelve error si el mensaje no se pudo encolar (cliente saturado), para
+// que el servidor pueda reintentarlo.
 func (module *ClipboardModule) SendUpdate(cliente *client) error {
-	module.handleList(cliente)
-	return nil
+	return module.handleList(cliente)
 }
 
 // compilo-check de que implementa Module.

@@ -116,6 +116,11 @@ func TestSnapshotServesCacheWhenOffline(t *testing.T) {
 	}
 
 	// 3. Volver a caer la red: debe servir el caché marcado como offline.
+	//
+	// El proveedor tiene que saber que no hay red (como hace el monitor de
+	// conectividad en producción): las cachés de TTL (previsión, AQI) siguen
+	// sirviendo su dato, pero el parte se marca como offline.
+	w.SetConnectivityCheck(func() bool { return false })
 	w.client = newClient(failingTransport{})
 	w.alertsClient = newClient(failingTransport{})
 
@@ -131,9 +136,15 @@ func TestSnapshotServesCacheWhenOffline(t *testing.T) {
 	}
 
 	// 4. Recuperar la red con datos diferentes: se refresca y se actualiza el caché.
+	//
+	// La previsión se cachea 5 minutos (Open-Meteo actualiza cada ~15 min),
+	// así que hay que simular el caducado de la caché para forzar la
+	// petición a la red.
+	w.SetConnectivityCheck(func() bool { return true })
 	ts.forecast = forecastJSON(25.0)
 	w.client = newClient(&redirectTransport{target: srv.URL})
 	w.alertsClient = newClient(&redirectTransport{target: srv.URL})
+	w.expirarCachePrevision()
 	snap, err = w.Snapshot("Vigo", "es")
 	if err != nil {
 		t.Fatalf("esperaba éxito tras recuperar red: %v", err)

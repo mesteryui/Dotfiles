@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 )
 
 // State representa el estado de conectividad detectado.
@@ -48,10 +49,24 @@ type Monitor struct {
 
 	nm *nmMonitor // nil si NetworkManager no está disponible
 
-	mu           sync.Mutex
-	state        State
-	subs         map[chan State]struct{}
-	forceCheckCh chan struct{}
+	mu    sync.Mutex
+	state State
+	subs  map[chan State]struct{}
+
+	// checkMu coordina las comprobaciones HTTP, que se hacen en segundo
+	// plano. seq se incrementa con cada decisión de estado: una
+	// comprobación que empezó antes de la última decisión se descarta al
+	// terminar, porque su resultado ya está obsoleto.
+	//
+	// pendingCheck marca que llegó un evento mientras había una comprobación
+	// en curso: al terminar hay que repetirla para no perder ese evento.
+	// pendingSource guarda de dónde vino ese evento, para que el registro
+	// diga la verdad.
+	checkMu      sync.Mutex
+	checking     bool
+	pendingCheck bool
+	pendingSrc   string
+	seq          uint64
 }
 
 // newTransport crea un transporte HTTP reutilizable con keep-alive.
@@ -78,13 +93,12 @@ func New(checkURL string, interval time.Duration) *Monitor {
 	}
 
 	m := &Monitor{
-		checkURL:     checkURL,
-		fallbackURL:  fallback,
-		interval:     interval,
-		client:       &http.Client{Timeout: 4 * time.Second, Transport: newTransport()},
-		state:        StateUnknown,
-		subs:         make(map[chan State]struct{}),
-		forceCheckCh: make(chan struct{}, 1),
+		checkURL:    checkURL,
+		fallbackURL: fallback,
+		interval:    interval,
+		client:      &http.Client{Timeout: 4 * time.Second, Transport: newTransport()},
+		state:       StateUnknown,
+		subs:        make(map[chan State]struct{}),
 	}
 
 	// Intentar usar NetworkManager como fuente de eventos en tiempo real.
@@ -133,8 +147,6 @@ func (m *Monitor) runNM(ctx context.Context) {
 		case <-ticker.C:
 			// Heartbeat periódico para detectar pérdidas o recuperaciones de WAN no señaladas
 			m.verifyAndSetState("heartbeat")
-		case <-m.forceCheckCh:
-			m.verifyAndSetState("manual-check")
 		}
 	}
 }
@@ -152,8 +164,6 @@ func (m *Monitor) runPolling(ctx context.Context) {
 			return
 		case <-ticker.C:
 			m.verifyAndSetState("polling")
-		case <-m.forceCheckCh:
-			m.verifyAndSetState("manual-check")
 		}
 	}
 }
@@ -166,8 +176,82 @@ func (m *Monitor) verifyAndSetState(source string) {
 		return
 	}
 
-	online := m.check()
-	m.updateState(online, source)
+	m.startCheck(source)
+}
+
+// startCheck lanza la comprobación HTTP en segundo plano.
+//
+// La comprobación NO se hace en línea con el bucle de eventos: si la red está
+// caída o el DNS no responde, puede tardar varios segundos, y bloquear el
+// bucle retrasaría la lectura de los eventos de NetworkManager justo cuando
+// más importan (la recuperación de la red debe reflejarse al instante).
+//
+// Si ya hay una comprobación en curso, no se lanza otra: se marca pendingCheck
+// para repetirla en cuanto termine la actual. Sin esto, un evento de "red
+// recuperada" que llega durante una comprobación iniciada con la red caída se
+// perdería, y el estado seguiría en "offline" hasta el siguiente heartbeat.
+func (m *Monitor) startCheck(source string) {
+	m.checkMu.Lock()
+	if m.checking {
+		// Hay una comprobación en curso. Su resultado ya está obsoleto: la
+		// decisión que acaba de llegar es más reciente, así que se invalida
+		// (subiendo seq) y se repite la comprobación al terminar la actual.
+		//
+		// Sin invalidarla, se aplicaría un "offline" viejo y el cliente
+		// vería un parpadeo offline→online al recuperar la red.
+		m.pendingCheck = true
+		m.pendingSrc = source
+		m.seq++
+		m.checkMu.Unlock()
+		return
+	}
+	m.checking = true
+	seq := m.seq
+	m.checkMu.Unlock()
+
+	safe.Go("connectivity.check", func() {
+		// Restablecer la bandera incluso si la comprobación entra en panic:
+		// si no, el monitor dejaría de comprobar la conexión para siempre.
+		defer func() {
+			m.checkMu.Lock()
+			m.checking = false
+			pending := m.pendingCheck
+			pendSrc := m.pendingSrc
+			m.pendingCheck = false
+			m.pendingSrc = ""
+			m.checkMu.Unlock()
+
+			// Ha llegado un evento mientras comprobábamos: hay que volver a
+			// comprobar para no perderlo.
+			if pending {
+				if pendSrc == "" {
+					pendSrc = source
+				}
+				m.startCheck(pendSrc)
+			}
+		}()
+
+		online := m.check()
+
+		// Solo aplicar si no se ha tomado una decisión más reciente (por
+		// ejemplo, un evento de NetworkManager o un ReportSuccess).
+		m.updateStateIfCurrent(seq, online, source)
+	})
+}
+
+// updateStateIfCurrent actualiza el estado solo si no se ha producido una
+// decisión más reciente que la dada. Devuelve false si se descartó.
+func (m *Monitor) updateStateIfCurrent(seq uint64, online bool, source string) bool {
+	m.checkMu.Lock()
+	if m.seq != seq {
+		m.checkMu.Unlock()
+		return false
+	}
+	m.seq++
+	m.checkMu.Unlock()
+
+	m.applyState(online, source)
+	return true
 }
 
 // check devuelve true si el endpoint de control responde correctamente (2xx).
@@ -199,14 +283,25 @@ func (m *Monitor) checkURLWith(u string) bool {
 
 // updateState actualiza el estado interno y notifica a los suscriptores si cambió.
 func (m *Monitor) updateState(online bool, source string) {
+	// Invalida cualquier comprobación HTTP en vuelo: esta decisión es más
+	// reciente que la que pudiera haber devuelto esa comprobación.
+	m.checkMu.Lock()
+	m.seq++
+	m.checkMu.Unlock()
+
+	m.applyState(online, source)
+}
+
+// applyState guarda el estado y avisa a los suscriptores si cambió.
+func (m *Monitor) applyState(online bool, source string) {
 	m.mu.Lock()
 	prev := m.state
+	state := StateOffline
 	if online {
-		m.state = StateOnline
-	} else {
-		m.state = StateOffline
+		state = StateOnline
 	}
-	changed := m.state != prev
+	m.state = state
+	changed := state != prev
 	subs := make([]chan State, 0, len(m.subs))
 	for ch := range m.subs {
 		subs = append(subs, ch)
@@ -214,22 +309,14 @@ func (m *Monitor) updateState(online bool, source string) {
 	m.mu.Unlock()
 
 	if changed {
-		logger.Info("conectividad", "prev", prev, "current", m.state, "fuente", source)
+		logger.Info("conectividad", "prev", prev, "current", state, "fuente", source)
 		for _, ch := range subs {
 			select {
-			case ch <- m.state:
+			case ch <- state:
 			default:
 				// Suscriptor lento: no bloquear el monitor.
 			}
 		}
-	}
-}
-
-// CheckNow solicita una verificación de conectividad inmediata.
-func (m *Monitor) CheckNow() {
-	select {
-	case m.forceCheckCh <- struct{}{}:
-	default:
 	}
 }
 
@@ -270,8 +357,18 @@ func (m *Monitor) State() State {
 }
 
 // IsOnline devuelve true si el estado actual es online.
+//
+// Si el estado todavía es desconocido (el monitor acaba de arrancar y la
+// primera comprobación sigue en curso) se asume que hay conexión: el
+// proveedor de clima tiene sus propios tiempos de espera, y tratar la
+// incertidumbre como "sin red" haría que la shell recibiera un error en la
+// primera petición de clima en lugar de un parte real.
 func (m *Monitor) IsOnline() bool {
-	return m.State() == StateOnline
+	state := m.State()
+	if state == StateUnknown {
+		return true
+	}
+	return state == StateOnline
 }
 
 // Close cierra los recursos del monitor (conexión D-Bus si se usa NM).

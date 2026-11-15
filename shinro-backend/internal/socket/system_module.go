@@ -16,7 +16,7 @@ type systemModule struct {
 func (m *systemModule) Name() string { return "system" }
 
 // HandleHello procesa el handshake del módulo system.
-func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) (bool, <-chan struct{}) {
+func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 	var payload struct {
 		Intervals struct {
 			System int `json:"system"`
@@ -26,36 +26,29 @@ func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) (b
 		_ = json.Unmarshal(intRaw, &payload.Intervals)
 	}
 
+	interval := payload.Intervals.System
+	sub := interval > 0
+
+	c.setModInterval(m.Name(), interval)
+	c.setSubscribed(m.Name(), sub)
+
 	c.mu.Lock()
-	c.intSys = payload.Intervals.System
-	sub := c.intSys > 0
-	c.subSys = sub
-	if c.subs == nil {
-		c.subs = make(map[string]bool)
-	}
-	c.subs["system"] = sub
-	if c.modIntervals == nil {
-		c.modIntervals = make(map[string]int)
-	}
-	c.modIntervals["system"] = c.intSys
 	started := c.pumpSysStarted
 	c.mu.Unlock()
 
-	logger.Debug("system handshake", "client", c.conn.RemoteAddr(), "interval", c.intSys, "subscribed", sub)
+	logger.Debug("system handshake", "client", c.conn.RemoteAddr(), "interval", interval, "subscribed", sub)
 
 	if sub && !started {
 		c.pumpSysStarted = true
-		c.setModStarted(m.Name(), true)
-		go pumpModule(m, c, c.done)
+		c.startPump(m)
 	} else if sub && started {
 		c.signalMod(m.Name())
 	}
-	return sub, nil
 }
 
 // HandleGet responde a una petición puntual de system.
-func (m *systemModule) HandleGet(c *client, raw map[string]json.RawMessage) {
-	m.SendUpdate(c)
+func (m *systemModule) HandleGet(c *client, raw map[string]json.RawMessage) error {
+	return m.SendUpdate(c)
 }
 
 // SendUpdate envía las métricas de sistema al cliente.
@@ -73,11 +66,6 @@ func (m *systemModule) SendUpdate(c *client) error {
 	c.write(writeBuf(msg))
 	logger.Debug("system update enviado", "client", c.conn.RemoteAddr(), "cpu", stats.CPUPercent, "ram", stats.RAMPercent)
 	return nil
-}
-
-// Pump ejecuta el bucle periódico de system. Se usa a través de pumpModule.
-func (m *systemModule) Pump(c *client, wake <-chan struct{}, done <-chan struct{}) {
-	pumpModule(m, c, done)
 }
 
 func (m *systemModule) sendError(c *client, message string) {

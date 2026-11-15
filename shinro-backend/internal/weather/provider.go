@@ -16,6 +16,7 @@ import (
 	"unicode"
 
 	"shinro-backend/internal/geo"
+	"shinro-backend/internal/safe"
 )
 
 // Snapshot es el payload que se envía a la shell. Replica la forma de la
@@ -86,6 +87,20 @@ type Alert struct {
 	Description string `json:"description"`
 }
 
+// TTL de las cachés del proveedor.
+//
+// Open-Meteo actualiza las condiciones actuales cada ~15 min y la calidad del
+// aire cada ~30 min: cachear más allá de eso no cuesta frescura real, pero
+// ahorra las peticiones de red en cada refresco.
+//
+// La geocodificación no cambia nunca para una ciudad: se cachea mucho más.
+const (
+	weatherGeoTTL      = 24 * time.Hour
+	weatherAQITTL      = 15 * time.Minute
+	weatherForecastTTL = 5 * time.Minute
+	weatherAlertsTTL   = 15 * time.Minute
+)
+
 // Provider consulta Open-Meteo y MeteoAlarm.
 type Provider struct {
 	client       *http.Client
@@ -96,19 +111,56 @@ type Provider struct {
 	flightsMu sync.Mutex
 	flights   map[string]*flightCall
 
+	// geoCache guarda las coordenadas ya resueltas por ciudad. Geocodificar
+	// cuesta una petición de red completa y el resultado no cambia: sin
+	// esta caché, cada refresco pagaba un RTT solo para obtener las mismas
+	// coordenadas.
+	geoMu    sync.Mutex
+	geoCache map[string]geoCacheEntry
+
+	// aqiCache guarda la última calidad del aire por coordenadas.
+	aqiMu    sync.Mutex
+	aqiCache map[string]aqiCacheEntry
+
+	// forecastCache guarda el último parte de previsión por coordenadas.
+	fcMu    sync.Mutex
+	fcCache map[string]forecastCacheEntry
+
 	// alertsFeeds cachea el feed MeteoAlarm crudo por país. El filtrado por
 	// zona e idioma se hace después, así cambiar de ciudad dentro del mismo
 	// país no vuelve a descargar ~2 MB.
-	alertsMu    sync.Mutex
-	alertsFeeds map[string]alertsFeedEntry
+	//
+	// alertsFetching marca los feeds que se están descargando ahora, para no
+	// lanzar dos descargas a la vez.
+	alertsMu       sync.Mutex
+	alertsFeeds    map[string]alertsFeedEntry
+	alertsFetching map[string]bool
 
-	// lastSnapshot guarda el último parte obtenido con éxito para servirlo
-	// mientras no haya conexión a Internet.
-	mu           sync.Mutex
-	lastSnapshot Snapshot
-	haveSnapshot bool
+	// lastSnapshots guarda el último parte válido por ubicación (ciudad +
+	// idioma) para servirlo mientras no haya conexión a Internet.
+	//
+	// Es un mapa y no un único snapshot porque la caché es por ciudad: si no,
+	// al cambiar de ciudad sin red se serviría el parte de la ciudad
+	// anterior (con su etiqueta), que es información equivocada.
+	mu            sync.Mutex
+	lastSnapshots map[string]cachedSnapshot
+
+	// timings guarda el desglose del último parte (cuánto tardó cada
+	// sub-petición), para poder ver dónde se va el tiempo.
+	timingsMu sync.Mutex
+	timings   snapshotTimings
 
 	isOnlineFn func() bool
+	onChangeFn func()
+}
+
+// snapshotTimings es el desglose temporal de un parte.
+type snapshotTimings struct {
+	Geocode  time.Duration
+	Forecast time.Duration
+	AQI      time.Duration
+	Alerts   time.Duration
+	Total    time.Duration
 }
 
 type flightCall struct {
@@ -119,6 +171,28 @@ type flightCall struct {
 
 type alertsFeedEntry struct {
 	data *meteoAlarmResponse
+	at   time.Time
+}
+
+type geoCacheEntry struct {
+	info geoInfo
+	at   time.Time
+}
+
+type aqiCacheEntry struct {
+	value int
+	at    time.Time
+}
+
+type forecastCacheEntry struct {
+	snap Snapshot
+	at   time.Time
+}
+
+// cachedSnapshot es un parte cacheado junto con el momento en que se
+// calculó, para poder descartar el más antiguo cuando la caché crece.
+type cachedSnapshot struct {
+	snap Snapshot
 	at   time.Time
 }
 
@@ -136,10 +210,82 @@ func newTransport() *http.Transport {
 // New crea un proveedor de clima.
 func New() *Provider {
 	return &Provider{
-		client:       &http.Client{Timeout: 10 * time.Second, Transport: newTransport()},
-		alertsClient: &http.Client{Timeout: 6 * time.Second, Transport: newTransport()},
-		flights:      make(map[string]*flightCall),
-		alertsFeeds:  make(map[string]alertsFeedEntry),
+		client:         &http.Client{Timeout: 10 * time.Second, Transport: newTransport()},
+		alertsClient:   &http.Client{Timeout: 6 * time.Second, Transport: newTransport()},
+		flights:        make(map[string]*flightCall),
+		geoCache:       make(map[string]geoCacheEntry),
+		aqiCache:       make(map[string]aqiCacheEntry),
+		fcCache:        make(map[string]forecastCacheEntry),
+		alertsFeeds:    make(map[string]alertsFeedEntry),
+		alertsFetching: make(map[string]bool),
+		lastSnapshots:  make(map[string]cachedSnapshot),
+	}
+}
+
+// SetOnChange registra una función que se llama cuando el proveedor obtiene
+// datos nuevos por su cuenta (por ejemplo, cuando llega el feed de avisos en
+// segundo plano).
+//
+// La shell la usa para refrescar la precipitación en cuanto hay avisos
+// nuevos, sin esperar al siguiente tick.
+func (provider *Provider) SetOnChange(fn func()) {
+	provider.mu.Lock()
+	provider.onChangeFn = fn
+	provider.mu.Unlock()
+}
+
+// notifyChanged avisa al consumidor de un cambio en los datos.
+func (provider *Provider) notifyChanged() {
+	provider.mu.Lock()
+	fn := provider.onChangeFn
+	provider.mu.Unlock()
+	if fn != nil {
+		fn()
+	}
+}
+
+// InvalidateCaches descarta los datos cacheados.
+//
+// Se llama cuando la conectividad se recupera: si el daemon estuvo un rato
+// sin red, lo cacheado puede tener horas y el usuario espera datos frescos.
+//
+// La geocodificación NO se invalida: las coordenadas de una ciudad no
+// cambian, y volver a pedirlas sería tirar una petición de red a la basura.
+func (provider *Provider) InvalidateCaches() {
+	provider.fcMu.Lock()
+	provider.fcCache = make(map[string]forecastCacheEntry)
+	provider.fcMu.Unlock()
+
+	provider.aqiMu.Lock()
+	provider.aqiCache = make(map[string]aqiCacheEntry)
+	provider.aqiMu.Unlock()
+
+	provider.alertsMu.Lock()
+	provider.alertsFeeds = make(map[string]alertsFeedEntry)
+	provider.alertsMu.Unlock()
+}
+
+// expirarCachePrevision vacía la caché de previsión (solo para tests: simula
+// que han pasado los 5 minutos de TTL).
+func (provider *Provider) expirarCachePrevision() {
+	provider.fcMu.Lock()
+	provider.fcCache = make(map[string]forecastCacheEntry)
+	provider.fcMu.Unlock()
+}
+
+// Timings devuelve el desglose del último parte: cuánto tardó cada
+// sub-petición. Lo usa el informe de salud del módulo ping para ver dónde
+// se va el tiempo.
+func (provider *Provider) Timings() map[string]float64 {
+	provider.timingsMu.Lock()
+	defer provider.timingsMu.Unlock()
+	t := provider.timings
+	return map[string]float64{
+		"geocode_ms":  float64(t.Geocode.Microseconds()) / 1000,
+		"forecast_ms": float64(t.Forecast.Microseconds()) / 1000,
+		"aqi_ms":      float64(t.AQI.Microseconds()) / 1000,
+		"alerts_ms":   float64(t.Alerts.Microseconds()) / 1000,
+		"total_ms":    float64(t.Total.Microseconds()) / 1000,
 	}
 }
 
@@ -176,19 +322,22 @@ func (provider *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 	// Si se sabe con certeza que no hay conexión, servir directamente la caché
 	// sin esperar a que expiren los timeouts de red.
 	if !provider.IsOnline() {
-		if snap, ok := provider.cachedOrOffline(errors.New("sin conexión a Internet")); ok {
+		if snap, ok := provider.cachedOrOffline(flightKey(geo.Location{Mode: geo.ModeManual, City: city}, lang)); ok {
 			return snap, nil
 		}
 		return Snapshot{}, errors.New("sin conexión a Internet (sin datos en caché)")
 	}
 
 	loc := geo.Location{Mode: geo.ModeManual, City: city}
-
-	key := fmt.Sprintf("%s|%s|%.6f|%.6f|%s", loc.Mode, loc.City, loc.Lat, loc.Lon, lang)
+	key := flightKey(loc, lang)
 
 	provider.flightsMu.Lock()
 	if call, ok := provider.flights[key]; ok {
 		provider.flightsMu.Unlock()
+		// Hay otra petición en curso para la misma ubicación: esperar a que
+		// termine en lugar de descargar el parte dos veces. El canal se
+		// cierra SIEMPRE (ver runFlight), así que este follower nunca se
+		// queda bloqueado aunque el líder entre en panic.
 		<-call.done
 		return call.snap, call.err
 	}
@@ -196,54 +345,115 @@ func (provider *Provider) Snapshot(city string, lang string) (Snapshot, error) {
 	provider.flights[key] = call
 	provider.flightsMu.Unlock()
 
-	call.snap, call.err = provider.snapshotFor(loc, lang)
-	if call.err == nil {
-		// Guardar el último parte válido para servirlo mientras falte red.
-		provider.mu.Lock()
-		provider.lastSnapshot = call.snap
-		provider.haveSnapshot = true
-		provider.mu.Unlock()
-	} else {
-		// Sin red: servir el último parte válido marcado como offline, si lo
-		// hay, para que el cliente no se quede sin datos. Si nunca hubo parte
-		// válido, se propaga el error.
-		if snap, ok := provider.cachedOrOffline(call.err); ok {
-			call.snap = snap
-			call.err = nil
-		}
-	}
+	provider.runFlight(key, call, loc, lang)
 
-	provider.flightsMu.Lock()
-	delete(provider.flights, key)
-	provider.flightsMu.Unlock()
-	close(call.done)
 	return call.snap, call.err
 }
 
-// cachedOrOffline devuelve el último parte válido marcado como offline si
-// existe; si no, devuelve false y el error original se propaga.
-func (provider *Provider) cachedOrOffline(err error) (Snapshot, bool) {
-	provider.mu.Lock()
-	defer provider.mu.Unlock()
-	if !provider.haveSnapshot {
-		return Snapshot{}, false
-	}
-	snap := provider.lastSnapshot
-	snap.Offline = true
-	return snap, true
+// flightKey identifica una petición de parte: misma ubicación e idioma.
+func flightKey(loc geo.Location, lang string) string {
+	return fmt.Sprintf("%s|%s|%.6f|%.6f|%s", loc.Mode, loc.City, loc.Lat, loc.Lon, lang)
 }
 
-// offlineOrError devuelve el último parte válido marcado como offline si
-// existe; si no, devuelve el error recibido.
-func (provider *Provider) offlineOrError(err error) (Snapshot, error) {
-	if snap, ok := provider.cachedOrOffline(err); ok {
-		return snap, nil
+// runFlight calcula el parte de una ubicación y libera a los seguidores.
+//
+// Garantías:
+//   - El canal done se cierra SIEMPRE, aunque el cálculo entre en panic:
+//     ningún follower puede quedarse colgado esperando.
+//   - La entrada de flights se elimina SIEMPRE: el mapa no crece sin
+//     control (fuga de memoria) tras días de uso.
+//   - Un panic se convierte en error, así el cliente recibe un error claro
+//     en lugar de desaparecer el daemon.
+func (provider *Provider) runFlight(key string, call *flightCall, loc geo.Location, lang string) {
+	defer func() {
+		provider.flightsMu.Lock()
+		delete(provider.flights, key)
+		provider.flightsMu.Unlock()
+		close(call.done)
+	}()
+
+	var snap Snapshot
+	err := safe.Do("weather.snapshot", func() error {
+		var err error
+		snap, err = provider.snapshotFor(loc, lang)
+		return err
+	})
+	call.snap = snap
+	call.err = err
+
+	if call.err == nil {
+		// Guardar el último parte válido para servirlo mientras falte red.
+		provider.mu.Lock()
+		provider.lastSnapshots[key] = cachedSnapshot{snap: call.snap, at: time.Now()}
+		provider.pruneSnapshotsLocked()
+		provider.mu.Unlock()
+		return
 	}
-	return Snapshot{}, err
+
+	// Sin red: servir el último parte válido marcado como offline, si lo
+	// hay, para que el cliente no se quede sin datos. Si nunca hubo parte
+	// válido, se propaga el error.
+	if cached, ok := provider.cachedOrOffline(key); ok {
+		call.snap = cached
+		call.err = nil
+	}
+}
+
+// maxWeatherCacheEntries limita el tamaño de las cachés del proveedor.
+//
+// Sin tope, buscar muchas ciudades distintas dejaría partes completos
+// (cada previsión ocupa unos 10-20 KB) acumulados en memoria para siempre:
+// el daemon es de larga vida y esa memoria nunca vuelve al sistema.
+const maxWeatherCacheEntries = 8
+
+// pruneCache descarta las entradas más antiguas de una caché hasta dejar
+// como mucho maxWeatherCacheEntries.
+//
+// at devuelve la marca temporal de una entrada. Se usa con el lock de la
+// caché cogido.
+func pruneCache[T any](m map[string]T, at func(T) time.Time) {
+	for len(m) > maxWeatherCacheEntries {
+		var victim string
+		var oldest time.Time
+		primera := true
+		for k, v := range m {
+			t := at(v)
+			if primera || t.Before(oldest) {
+				victim, oldest, primera = k, t, false
+			}
+		}
+		if victim == "" {
+			return
+		}
+		delete(m, victim)
+	}
+}
+
+// pruneSnapshotsLocked descarta la entrada más antigua de la caché de partes,
+// dejando como mucho maxWeatherCacheEntries. Se llama con el lock cogido.
+func (provider *Provider) pruneSnapshotsLocked() {
+	pruneCache(provider.lastSnapshots, func(e cachedSnapshot) time.Time { return e.at })
+}
+
+// cachedOrOffline devuelve el último parte válido de la ubicación indicada,
+// marcado como offline, si existe; si no, devuelve false.
+func (provider *Provider) cachedOrOffline(key string) (Snapshot, bool) {
+	provider.mu.Lock()
+	defer provider.mu.Unlock()
+	snap, ok := provider.lastSnapshots[key]
+	if !ok {
+		return Snapshot{}, false
+	}
+	out := snap.snap
+	out.Offline = true
+	return out, true
 }
 
 // snapshotFor hace el trabajo real del parte para una ubicación ya resuelta.
 func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, error) {
+	inicio := time.Now()
+	var t snapshotTimings
+
 	var lat, lon float64
 	var cityLabel, countryCode string
 	var tokens []string
@@ -262,7 +472,9 @@ func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, 
 			tokens = tokensFor(cityLabel)
 		}
 	case loc.City != "":
+		t0 := time.Now()
 		g, err := provider.geocode(loc.City, lang)
+		t.Geocode = time.Since(t0)
 		if err != nil {
 			return Snapshot{}, fmt.Errorf("geocodificar %q: %w", loc.City, err)
 		}
@@ -276,6 +488,11 @@ func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, 
 
 	// Previsión, AQI y avisos son independientes una vez resueltas las
 	// coordenadas: se piden en paralelo para minimizar la latencia.
+	//
+	// Cada petición va en su propia goroutine protegida: si una de ellas
+	// entra en panic (respuesta malformada del proveedor), el panic se
+	// recupera y se convierte en error. El resto del parte sigue su curso
+	// y el daemon no se cae.
 	var (
 		fc          Snapshot
 		forecastErr error
@@ -284,19 +501,36 @@ func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, 
 		wg          sync.WaitGroup
 	)
 	wg.Add(3)
-	go func() {
+	safe.Go("weather.forecast", func() {
 		defer wg.Done()
-		fc, forecastErr = provider.fetchForecast(lat, lon)
-	}()
-	go func() {
+		t0 := time.Now()
+		fc, forecastErr = safe.DoValue("weather.forecast", func() (Snapshot, error) {
+			return provider.fetchForecast(lat, lon)
+		})
+		t.Forecast = time.Since(t0)
+	})
+	safe.Go("weather.aqi", func() {
 		defer wg.Done()
-		aqi = provider.fetchAQI(lat, lon)
-	}()
-	go func() {
+		t0 := time.Now()
+		aqi, _ = safe.DoValue("weather.aqi", func() (int, error) {
+			return provider.fetchAQI(lat, lon), nil
+		})
+		t.AQI = time.Since(t0)
+	})
+	safe.Go("weather.alerts", func() {
 		defer wg.Done()
-		alerts = provider.fetchAlerts(countryCode, tokens, lang)
-	}()
+		t0 := time.Now()
+		alerts, _ = safe.DoValue("weather.alerts", func() ([]Alert, error) {
+			return provider.fetchAlerts(countryCode, tokens, lang), nil
+		})
+		t.Alerts = time.Since(t0)
+	})
 	wg.Wait()
+
+	t.Total = time.Since(inicio)
+	provider.timingsMu.Lock()
+	provider.timings = t
+	provider.timingsMu.Unlock()
 
 	if forecastErr != nil {
 		return Snapshot{}, forecastErr
@@ -318,7 +552,20 @@ func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, 
 
 // ── Open-Meteo: previsión ────────────────────────────────────────
 
+// fetchForecast obtiene la previsión, con caché.
+//
+// Open-Meteo actualiza sus datos cada ~15 minutos: con una caché de 5
+// minutos, cuatro de cada cinco refrescos se resuelven sin tocar la red.
 func (provider *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
+	key := fmt.Sprintf("%.4f,%.4f", lat, lon)
+
+	provider.fcMu.Lock()
+	entry, ok := provider.fcCache[key]
+	provider.fcMu.Unlock()
+	if ok && time.Since(entry.at) < weatherForecastTTL {
+		return entry.snap, nil
+	}
+
 	u := fmt.Sprintf(
 		"https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f"+
 			"&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,"+
@@ -339,12 +586,30 @@ func (provider *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 	if len(out.Daily.Time) == 0 || len(out.Hourly.Time) == 0 {
 		return Snapshot{}, fmt.Errorf("Open-Meteo forecast: respuesta sin daily/hourly")
 	}
+
+	provider.fcMu.Lock()
+	provider.fcCache[key] = forecastCacheEntry{snap: out, at: time.Now()}
+	pruneCache(provider.fcCache, func(e forecastCacheEntry) time.Time { return e.at })
+	provider.fcMu.Unlock()
 	return out, nil
 }
 
 // ── Open-Meteo: calidad del aire ────────────────────────────────
 
+// fetchAQI obtiene la calidad del aire, con caché.
+//
+// La calidad del aire cambia cada media hora como mucho: volver a pedirla
+// en cada refresco es gastar una petición de red para el mismo dato.
 func (provider *Provider) fetchAQI(lat, lon float64) int {
+	key := fmt.Sprintf("%.4f,%.4f", lat, lon)
+
+	provider.aqiMu.Lock()
+	entry, ok := provider.aqiCache[key]
+	provider.aqiMu.Unlock()
+	if ok && time.Since(entry.at) < weatherAQITTL {
+		return entry.value
+	}
+
 	u := fmt.Sprintf(
 		"https://air-quality-api.open-meteo.com/v1/air-quality"+
 			"?latitude=%f&longitude=%f&current=european_aqi&timezone=auto",
@@ -356,9 +621,16 @@ func (provider *Provider) fetchAQI(lat, lon float64) int {
 		} `json:"current"`
 	}
 	if err := provider.getJSON(u, &data); err != nil || data.Current.EuropeanAQI == nil {
+		// Un fallo no se cachea: se reintenta en el siguiente refresco.
 		return -1
 	}
-	return *data.Current.EuropeanAQI
+
+	value := *data.Current.EuropeanAQI
+	provider.aqiMu.Lock()
+	provider.aqiCache[key] = aqiCacheEntry{value: value, at: time.Now()}
+	pruneCache(provider.aqiCache, func(e aqiCacheEntry) time.Time { return e.at })
+	provider.aqiMu.Unlock()
+	return value
 }
 
 // ── Geocodificación ─────────────────────────────────────────────
@@ -381,7 +653,35 @@ type geocodeResult struct {
 	Admin4      string  `json:"admin4"`
 }
 
+// geocode resuelve la ciudad a coordenadas, con caché.
+//
+// Las coordenadas de una ciudad no cambian: geocodificarla en cada refresco
+// es pagar una petición de red completa (cientos de ms) para obtener
+// siempre lo mismo.
 func (provider *Provider) geocode(city, lang string) (geoInfo, error) {
+	key := strings.ToLower(city) + "|" + lang
+
+	provider.geoMu.Lock()
+	entry, ok := provider.geoCache[key]
+	provider.geoMu.Unlock()
+	if ok && time.Since(entry.at) < weatherGeoTTL {
+		return entry.info, nil
+	}
+
+	info, err := provider.geocodeRemote(city, lang)
+	if err != nil {
+		return geoInfo{}, err
+	}
+
+	provider.geoMu.Lock()
+	provider.geoCache[key] = geoCacheEntry{info: info, at: time.Now()}
+	pruneCache(provider.geoCache, func(e geoCacheEntry) time.Time { return e.at })
+	provider.geoMu.Unlock()
+	return info, nil
+}
+
+// geocodeRemote hace la petición de geocodificación a Open-Meteo.
+func (provider *Provider) geocodeRemote(city, lang string) (geoInfo, error) {
 	parts := strings.SplitN(city, ",", 2)
 	name := strings.TrimSpace(parts[0])
 	countryCode := ""
@@ -558,26 +858,83 @@ func (provider *Provider) fetchAlerts(countryCode string, tokens []string, lang 
 	return out
 }
 
-// alertsFeed devuelve el feed MeteoAlarm del país, cacheado 5 minutos.
-// Se cachea el feed crudo (no los avisos filtrados) para que cambiar de
-// ciudad dentro del mismo país no vuelva a descargar ~2 MB.
+// alertsFeed devuelve el feed MeteoAlarm del país.
+//
+// El feed son ~2,7 MB y tarda varios segundos en descargarse: es, con
+// diferencia, lo más lento del parte. Por eso NUNCA se descarga en el camino
+// crítico del refresco:
+//
+//   - Si hay copia en caché, se devuelve tal cual (aunque esté caducada) y
+//     la reposición se hace en segundo plano.
+//   - Si no hay copia, se devuelve vacío y la descarga también se hace en
+//     segundo plano: el usuario ve la temperatura al instante y los avisos
+//     llegan en la siguiente actualización.
+//
+// Cuando la descarga en segundo plano termina, se avisa con notifyChanged
+// para que la shell refresque el parte y muestre los avisos sin esperar al
+// siguiente tick.
 func (provider *Provider) alertsFeed(slug string) *meteoAlarmResponse {
 	provider.alertsMu.Lock()
-	if entry, ok := provider.alertsFeeds[slug]; ok && time.Since(entry.at) < 5*time.Minute {
-		data := entry.data
-		provider.alertsMu.Unlock()
-		return data
-	}
+	entry, ok := provider.alertsFeeds[slug]
+	fetching := provider.alertsFetching[slug]
 	provider.alertsMu.Unlock()
 
+	if ok && time.Since(entry.at) < weatherAlertsTTL {
+		return entry.data
+	}
+
+	// Caducado o inexistente: reponer en segundo plano y servir lo que haya.
+	// Nunca se espera aquí a una descarga de varios segundos.
+	if !fetching {
+		provider.startAlertsPrefetch(slug)
+	}
+	if ok {
+		return entry.data
+	}
+	return nil
+}
+
+// startAlertsPrefetch lanza la descarga del feed en segundo plano.
+//
+// Solo se admite una descarga a la vez por país: si ya hay una en curso, no
+// se lanza otra.
+func (provider *Provider) startAlertsPrefetch(slug string) {
+	provider.alertsMu.Lock()
+	if provider.alertsFetching[slug] {
+		provider.alertsMu.Unlock()
+		return
+	}
+	provider.alertsFetching[slug] = true
+	provider.alertsMu.Unlock()
+
+	safe.Go("weather.alerts.prefetch", func() {
+		defer func() {
+			provider.alertsMu.Lock()
+			delete(provider.alertsFetching, slug)
+			provider.alertsMu.Unlock()
+		}()
+
+		data := provider.downloadAlertsFeed(slug)
+		if data == nil {
+			return
+		}
+
+		provider.alertsMu.Lock()
+		provider.alertsFeeds[slug] = alertsFeedEntry{data: data, at: time.Now()}
+		provider.alertsMu.Unlock()
+
+		// Avisos nuevos: la shell puede refrescar el parte ya.
+		provider.notifyChanged()
+	})
+}
+
+// downloadAlertsFeed descarga el feed MeteoAlarm de un país.
+func (provider *Provider) downloadAlertsFeed(slug string) *meteoAlarmResponse {
 	var data meteoAlarmResponse
-	if err := provider.getJSONWith(provider.alertsClient, "https://feeds.meteoalarm.org/api/v1/warnings/feeds-"+slug, &data); err != nil {
+	if err := provider.getJSONWith(provider.alertsClient,
+		"https://feeds.meteoalarm.org/api/v1/warnings/feeds-"+slug, &data); err != nil {
 		return nil
 	}
-
-	provider.alertsMu.Lock()
-	provider.alertsFeeds[slug] = alertsFeedEntry{data: &data, at: time.Now()}
-	provider.alertsMu.Unlock()
 	return &data
 }
 

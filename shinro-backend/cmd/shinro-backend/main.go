@@ -12,6 +12,7 @@ import (
 	"shinro-backend/internal/connectivity"
 	"shinro-backend/internal/files"
 	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 	"shinro-backend/internal/socket"
 	"shinro-backend/internal/system"
 	"shinro-backend/internal/weather"
@@ -30,6 +31,11 @@ func envDuration(key string, def time.Duration) time.Duration {
 func main() {
 	logger.Init()
 
+	// Un panic en el hilo principal también debe quedar registrado con su
+	// stack antes de terminar: sin esto, el daemon muere sin dejar rastro
+	// útil en el journal.
+	defer safe.Recover("shinro-backend.main")
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -40,16 +46,16 @@ func main() {
 	// Vigila la conectividad a Internet para refrescar el clima nada más
 	// recuperar la red, sin esperar al siguiente tick programado.
 	// SHINRO_CONNECTIVITY_INTERVAL (p. ej. 30s, 1m) y SHINRO_CONNECTIVITY_URL
-	connMon := connectivity.New(
-		os.Getenv("SHINRO_CONNECTIVITY_URL"),
-		envDuration("SHINRO_CONNECTIVITY_INTERVAL", 30*time.Second),
-	)
+	//
+	// Ambas variables son opcionales: con el entorno tal cual se usan los
+	// valores por defecto.
+	connURL := os.Getenv("SHINRO_CONNECTIVITY_URL")
+	connInterval := envDuration("SHINRO_CONNECTIVITY_INTERVAL", 30*time.Second)
+	connMon := connectivity.New(connURL, connInterval)
 
 	// Conectar el monitor de conectividad con el proveedor de clima para
 	// servir caché instantáneamente cuando no hay red y refrescar al volver.
 	weatherProvider.SetConnectivityCheck(connMon.IsOnline)
-
-	logger.Info("conectividad", "interval", os.Getenv("SHINRO_CONNECTIVITY_INTERVAL"), "url", os.Getenv("SHINRO_CONNECTIVITY_URL"))
 
 	// Registro de módulos: añadir un módulo nuevo solo requiere crear una
 	// implementación de socket.Module y registrarla aquí.
@@ -62,12 +68,27 @@ func main() {
 	clipModule := socket.NewClipboardModule(clipProvider)
 	registry.Register(clipModule)
 
+	// Al apagar, detener el watcher del portapapeles: su goroutine debe
+	// terminar y el cliente Wayland debe soltar la selección, para no dejar
+	// procesos o descriptores colgando al reiniciar el servicio.
+	defer clipProvider.StopWatch()
+
 	// Archivos: búsqueda difusa y concurrente en el sistema de archivos.
-	registry.Register(socket.NewFilesModule(files.New()))
+	//
+	// El proveedor abre un descriptor de inotify para vigilar los cambios:
+	// hay que cerrarlo al apagar, o el descriptor se queda abierto.
+	filesProvider := files.New()
+	registry.Register(socket.NewFilesModule(filesProvider))
+	defer filesProvider.Close()
 
 	// Un único socket Unix llamado "shinro" para todo.
 	// SHINRO_SOCKET_PATH permite sobrescribir la ruta del socket.
 	srv := socket.NewServer(registry, connMon)
+
+	// El proveedor de clima descarga el feed de avisos (2,7 MB) en segundo
+	// plano. Cuando llega, se despierto a los clientes de clima para que
+	// muestren los avisos sin esperar al siguiente tick.
+	weatherProvider.SetOnChange(srv.WakeOnlineClients)
 
 	// El broadcast del portapapeles empuja el historial a los clientes
 	// suscritos cada vez que el historial cambia (nueva copia, borrado,

@@ -20,12 +20,18 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
+
+	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 )
 
 // Result representa un archivo encontrado. Mime y Kind los calcula el
@@ -46,6 +52,32 @@ type Provider struct {
 
 	// sem limita el número de búsquedas concurrentes para no saturar el disco.
 	sem chan struct{}
+
+	// gen se incrementa con cada cambio detectado en el sistema de archivos.
+	// Las entradas de caché guardaron la generación con la que se
+	// calcularon: si no coinciden con la actual, están obsoletas (el
+	// fichero se creó, se borró o se movió) y hay que recalcular.
+	gen atomic.Uint64
+
+	// watcher vigila el árbol de directorios para detectar cambios. Es nil
+	// si inotify no está disponible (entonces solo manda el TTL).
+	watchMu   sync.Mutex
+	watcher   *watcher
+	watchRoot string
+
+	// closed indica que el proveedor se ha cerrado: a partir de ese momento
+	// no se vuelve a arrancar el vigilante (ni a recrearlo).
+	closed bool
+
+	// onChange se invoca (fuera de los locks) cuando el sistema de archivos
+	// ha cambiado, para que quien lo use refresque lo que tenga en pantalla.
+	onChangeMu sync.RWMutex
+	onChange   func()
+
+	// changeTimer agrupa los cambios que llegan seguidos: no se notifica en
+	// cada evento, sino cuando la ráfaga se calma.
+	changeMu      sync.Mutex
+	changePending bool
 }
 
 type cachedSearch struct {
@@ -57,11 +89,15 @@ type cachedSearch struct {
 	// limit es el límite con el que se obtuvo `results`. Si una consulta
 	// posterior pide menos, el resultado cacheado sigue siendo válido.
 	limit int
+	// gen es la generación del sistema de archivos con la que se calculó.
+	gen uint64
+	// at es el momento en que se calculó (para el TTL).
+	at time.Time
 }
 
 // New crea un proveedor de archivos con concurrencia limitada.
 func New() *Provider {
-	// 8 búsquedas concurrentes por defecto: suficiente para aprovechar I/O
+	// 4 búsquedas concurrentes por defecto: suficiente para aprovechar I/O
 	// paralelo sin saturar el disco ni la CPU.
 	return &Provider{
 		cache: make(map[string]cachedSearch, 32),
@@ -75,6 +111,23 @@ const maxDepth = 5
 
 // maxCacheEntries tope de entradas en el caché de búsquedas recientes.
 const maxCacheEntries = 32
+
+// cacheTTL es el tiempo máximo que se reutiliza un resultado cacheado.
+//
+// Es la red de seguridad para cuando el vigilante de cambios no está
+// disponible (o no cubre un directorio, por estar más allá de la
+// profundidad máxima): pasado ese tiempo la búsqueda se recalcula.
+const cacheTTL = 20 * time.Second
+
+// maxWatches es el tope de directorios vigilados simultáneamente. Es un
+// límite generoso (el del kernel suele ser 524288) para no agotar los
+// recursos del sistema.
+const maxWatches = 4096
+
+// filesChangeDebounce agrupa las ráfagas de cambios: al crear o borrar un
+// fichero se disparan varios eventos seguidos, y notificar cada uno
+// provocaría un rescaneo por cada uno.
+const filesChangeDebounce = 500 * time.Millisecond
 
 // errLimitReached indica que ya se reunieron suficientes resultados.
 var errLimitReached = fmt.Errorf("límite de resultados alcanzado")
@@ -98,9 +151,9 @@ func limitForQuery(query string, requested int) int {
 }
 
 // searchEmpty recorre el disco sin filtro de nombre y devuelve los primeros
-// archivos encontrados (ordenados por ruta de WalkDir). Se usa para mostrar
-// un listado inicial al abrir el menú de archivos sin haber escrito nada.
-func (provider *Provider) searchEmpty(query, root string, limit int) ([]*Result, error) {
+// archivos encontrados (ordenados por ruta de WalkDir). Se usa para mostrar un
+// listado inicial al abrir el menú de archivos sin haber escrito nada.
+func (provider *Provider) searchEmpty(ctx context.Context, query, root string, limit int) ([]*Result, error) {
 	var results []*Result
 
 	rootDepth := strings.Count(root, string(os.PathSeparator))
@@ -108,6 +161,12 @@ func (provider *Provider) searchEmpty(query, root string, limit int) ([]*Result,
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil
+		}
+
+		// Búsqueda cancelada (el cliente ya pidió otra query o se fue):
+		// abandonar el recorrido en lugar de seguir gastando I/O.
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 
 		if d.IsDir() {
@@ -144,6 +203,9 @@ func (provider *Provider) searchEmpty(query, root string, limit int) ([]*Result,
 	})
 
 	if err != nil && err != errLimitReached {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, err
 	}
 
@@ -169,7 +231,124 @@ func isExcludedDir(name string) bool {
 	return false
 }
 
-// Search busca archivos cuyo nombre contenga query, bajo root (por defecto $HOME).
+// SetOnChange registra una función que se llama cuando el sistema de
+// archivos ha cambiado (ficheros creados, borrados o movidos). La llamada
+// se hace sin los locks del proveedor, así que puede buscar sin riesgo.
+func (provider *Provider) SetOnChange(fn func()) {
+	provider.onChangeMu.Lock()
+	provider.onChange = fn
+	provider.onChangeMu.Unlock()
+}
+
+// notifyChanged avisa al consumidor sin retener locks del proveedor.
+func (provider *Provider) notifyChanged() {
+	provider.onChangeMu.RLock()
+	fn := provider.onChange
+	provider.onChangeMu.RUnlock()
+	if fn != nil {
+		fn()
+	}
+}
+
+// Generation devuelve la generación actual del sistema de archivos. Cada
+// cambio detectado la incrementa.
+func (provider *Provider) Generation() uint64 {
+	return provider.gen.Load()
+}
+
+// handleFilesystemChange se llama cuando inotify avisa de un cambio.
+//
+// Lo primero es invalidar la caché (de inmediato: la siguiente búsqueda
+// recalcula). La notificación a los suscriptores se agrupa con un pequeño
+// debounce, para no lanzar un rescaneo por cada evento de una ráfaga de
+// cambios.
+func (provider *Provider) handleFilesystemChange() {
+	provider.gen.Add(1)
+
+	provider.changeMu.Lock()
+	if provider.changePending {
+		provider.changeMu.Unlock()
+		return
+	}
+	provider.changePending = true
+	provider.changeMu.Unlock()
+
+	safe.Go("files.change", func() {
+		time.Sleep(filesChangeDebounce)
+
+		provider.changeMu.Lock()
+		provider.changePending = false
+		provider.changeMu.Unlock()
+
+		provider.notifyChanged()
+	})
+}
+
+// ensureWatcher arranca el vigilante del sistema de archivos (una sola vez)
+// sobre el directorio donde se buscan los ficheros.
+func (provider *Provider) ensureWatcher(root string) {
+	if root == "" {
+		return
+	}
+
+	provider.watchMu.Lock()
+	defer provider.watchMu.Unlock()
+
+	// Tras un Close() el proveedor no vuelve a arrancar el vigilante.
+	if provider.closed {
+		return
+	}
+
+	if provider.watcher != nil {
+		return
+	}
+
+	w, err := newWatcher(provider.handleFilesystemChange)
+	if err != nil {
+		logger.Warn("files: vigilante de cambios no disponible", "error", err)
+		return
+	}
+
+	provider.watcher = w
+	provider.watchRoot = root
+
+	// Instalar las incentas de forma SÍNCRONA: si se hiciera en segundo
+	// plano, los cambios que ocurran entre la búsqueda y el montaje del
+	// vigilante se pasarían por alto (y la caché quedaría obsoleta sin
+	// enterarse). Los eventos que meanwhile queden encolados en el kernel
+	w.watchTree(root)
+
+	safe.Go("files.watch", func() { w.run() })
+
+	logger.Info("files: vigilante de cambios activo", "root", root)
+}
+
+// Close detiene el vigilante de cambios y deja el proveedor cerrado: no se
+// vuelve a arrancar el vigilante aunque después se busque algo.
+func (provider *Provider) Close() {
+	provider.watchMu.Lock()
+	provider.closed = true
+	w := provider.watcher
+	provider.watcher = nil
+	provider.watchMu.Unlock()
+
+	if w != nil {
+		w.close()
+	}
+}
+
+// cacheValid indica si una entrada de caché sigue siendo válida.
+//
+// Deja de serlo si el sistema de archivos ha cambiado desde que se calculó
+// (se creó, borró o movió algún fichero) o si ha pasado demasiado tiempo
+// (por si el vigilante no cubría ese directorio).
+func (provider *Provider) cacheValid(cached cachedSearch) bool {
+	if cached.gen != provider.gen.Load() {
+		return false
+	}
+	return time.Since(cached.at) < cacheTTL
+}
+
 // La búsqueda es CONCURRENTE: los directorios de nivel superior se recorren en
 // goroutines paralelas con un semáforo para controlar la carga de I/O.
 //
@@ -177,6 +356,19 @@ func isExcludedDir(name string) bool {
 // por la query cacheada, se filtran los resultados cacheados en lugar de
 // reescanear el disco (mucho más rápido al teclear letra a letra).
 func (provider *Provider) Search(query, root string, limit int) ([]*Result, error) {
+	return provider.SearchContext(context.Background(), query, root, limit)
+}
+
+// SearchContext es Search con cancelación.
+//
+// El contexto permite abortar un recorrido cuando la petición ya no interesa
+// (el usuario siguió tecleando o cerró la vista). Esto evita que se acumulen
+// búsquedas recorriendo el disco a la vez, que es el mayor consumidor de I/O
+// del backend.
+func (provider *Provider) SearchContext(ctx context.Context, query, root string, limit int) ([]*Result, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if root == "" {
 		root = os.Getenv("HOME")
 		if root == "" {
@@ -188,15 +380,20 @@ func (provider *Provider) Search(query, root string, limit int) ([]*Result, erro
 		// alfabéticamente en $HOME) para mostrar al abrir el menú de archivos.
 		// No hay filtro de nombre, solo exclusiones y límite.
 		limit = limitForQuery(query, limit)
-		return provider.searchEmpty(query, root, limit)
+		return provider.searchEmpty(ctx, query, root, limit)
 	}
 	qLower := strings.ToLower(query)
 	effectiveLimit := limitForQuery(query, limit)
 
+	// Arrancar (una sola vez) el vigilante de cambios del árbol de
+	// ficheros: a partir de aquí, cada cambio invalida la caché.
+	provider.ensureWatcher(root)
+
 	// ── 1. Caché exacto (lectura concurrente) ───────────────────────
 	provider.cacheMu.RLock()
 	if cached, ok := provider.cache[query]; ok && cached.query == query &&
-		(cached.exhaustive || cached.limit >= effectiveLimit) {
+		(cached.exhaustive || cached.limit >= effectiveLimit) &&
+		provider.cacheValid(cached) {
 		provider.cacheMu.RUnlock()
 		return truncate(cached.results, effectiveLimit), nil
 	}
@@ -212,6 +409,9 @@ func (provider *Provider) Search(query, root string, limit int) ([]*Result, erro
 	var bestCached []*Result
 	for key, cached := range provider.cache {
 		if !cached.exhaustive || key == query {
+			continue
+		}
+		if !provider.cacheValid(cached) {
 			continue
 		}
 		if strings.HasPrefix(qLower, strings.ToLower(cached.query)) && len(cached.results) > 0 {
@@ -234,7 +434,13 @@ func (provider *Provider) Search(query, root string, limit int) ([]*Result, erro
 	}
 
 	// ── 3. Escanear disco en PARALELO (WalkDir concurrente) ─────────
-	results := provider.searchParallel(root, qLower, effectiveLimit)
+	results := provider.searchParallel(ctx, root, qLower, effectiveLimit)
+
+	// Una búsqueda cancelada no debe cachear un resultado vacío: si no, la
+	// siguiente búsqueda de la misma query devolvería una lista vacía.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 
 	// Guardar en caché. Se guarda acotado al límite para no retener listas
 	// enormes; `exhaustive` se calcula antes de truncar.
@@ -248,9 +454,18 @@ func (provider *Provider) Search(query, root string, limit int) ([]*Result, erro
 // searchParallel recorre el árbol de directorios en paralelo. Los directorios
 // de nivel superior se procesan en goroutines independientes, cada una con su
 // propio filepath.WalkDir. Los resultados se recolectan a través de un canal.
-func (provider *Provider) searchParallel(root, qLower string, limit int) []*Result {
-	// Adquirir semáforo para limitar búsquedas concurrentes.
-	provider.sem <- struct{}{}
+//
+// El contexto cancela el recorrido: los workers abandonan su subárbol y el
+// recolector deja de esperar en cuanto se cancela, de modo que no quedan
+// goroutines ni lecturas de disco huérfanas.
+func (provider *Provider) searchParallel(ctx context.Context, root, qLower string, limit int) []*Result {
+	// Adquirir semáforo para limitar búsquedas concurrentes. Si se cancela
+	// mientras esperamos hueco, no se empieza la búsqueda.
+	select {
+	case provider.sem <- struct{}{}:
+	case <-ctx.Done():
+		return nil
+	}
 	defer func() { <-provider.sem }()
 
 	// Leer las entradas de nivel superior de root.
@@ -314,23 +529,33 @@ func (provider *Provider) searchParallel(root, qLower string, limit int) []*Resu
 	// Usamos un semáforo interno de workers.
 	workerSem := make(chan struct{}, 8)
 
+jobsLoop:
 	for _, job := range jobs {
-		workerSem <- struct{}{} // adquirir worker
+		// No encolar más trabajo del que se puede ejecutar: si ya hay
+		// suficientes workers ocupados, esperar a que uno se libere.
+		select {
+		case workerSem <- struct{}{}:
+		case <-ctx.Done():
+			break jobsLoop
+		}
 		waitGroup.Add(1)
-		go func(j dirJob) {
+		safe.Go("files.walk", func() {
 			defer func() { <-workerSem }() // liberar worker
 			defer waitGroup.Done()
 
-			list := provider.walkDir(j.path, rootDepth(root), qLower, limit)
-			resultsCh <- jobResult{dir: j.path, list: list, err: nil}
-		}(job)
+			list := provider.walkDir(ctx, job.path, rootDepth(root), qLower, limit)
+			select {
+			case resultsCh <- jobResult{dir: job.path, list: list, err: nil}:
+			case <-ctx.Done():
+			}
+		})
 	}
 
 	// Cerrar resultsCh cuando terminen todos los workers.
-	go func() {
+	safe.Go("files.collect", func() {
 		waitGroup.Wait()
 		close(resultsCh)
-	}()
+	})
 
 	// Recolectar resultados.
 	allResults := rootFiles
@@ -355,7 +580,9 @@ func rootDepth(root string) int {
 
 // walkDir recorre un directorio con filepath.WalkDir y devuelve los archivos
 // que coinciden con la consulta. Se ejecuta en su propia goroutine.
-func (provider *Provider) walkDir(dir string, rootDepth int, qLower string, limit int) []*Result {
+//
+// Si el contexto se cancela, el recorrido se abandona de inmediato.
+func (provider *Provider) walkDir(ctx context.Context, dir string, rootDepth int, qLower string, limit int) []*Result {
 	var results []*Result
 
 	// filepath.WalkDir es síncrono pero solo recorre este subárbol, por lo que
@@ -363,6 +590,11 @@ func (provider *Provider) walkDir(dir string, rootDepth int, qLower string, limi
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil // saltar no legibles
+		}
+
+		// Búsqueda cancelada: abandonar el subárbol.
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 
 		if d.IsDir() {
@@ -425,7 +657,13 @@ func filterByQuery(results []*Result, qLower string) []*Result {
 }
 
 // truncate limita la cantidad de resultados.
+//
+// Nunca devuelve nil: un slice nil se serializaría como "null" y el cliente
+// (QML) espera siempre un array, aunque esté vacío.
 func truncate(results []*Result, limit int) []*Result {
+	if results == nil {
+		return []*Result{}
+	}
 	if limit < 0 || len(results) <= limit {
 		return results
 	}
@@ -433,15 +671,33 @@ func truncate(results []*Result, limit int) []*Result {
 }
 
 // addToCache guarda una búsqueda en el caché, evictando la más antigua si se llena.
+// La entrada guarda la generación del sistema de archivos y el momento en que
+// se calculó, para saber si sigue siendo válida.
 func (provider *Provider) addToCache(query string, results []*Result, limit int, exhaustive bool) {
 	provider.cacheMu.Lock()
 	defer provider.cacheMu.Unlock()
 	if len(provider.cache) >= maxCacheEntries {
-		// Evictar la primera entrada (FIFO simple).
-		for k := range provider.cache {
-			delete(provider.cache, k)
-			break
+		// Evictar la entrada más antigua. No se puede usar el orden de
+		// iteración del mapa (es aleatorio en Go), así que se busca la de
+		// menor "at": evictar una arbitraria tiraría la query que el
+		// usuario acaba de teclear.
+		var victim string
+		var oldest time.Time
+		for k, entry := range provider.cache {
+			if victim == "" || entry.at.Before(oldest) {
+				victim, oldest = k, entry.at
+			}
+		}
+		if victim != "" {
+			delete(provider.cache, victim)
 		}
 	}
-	provider.cache[query] = cachedSearch{query: query, results: results, limit: limit, exhaustive: exhaustive}
+	provider.cache[query] = cachedSearch{
+		query:      query,
+		results:    results,
+		limit:      limit,
+		exhaustive: exhaustive,
+		gen:        provider.gen.Load(),
+		at:         time.Now(),
+	}
 }

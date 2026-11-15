@@ -27,6 +27,7 @@ import (
 	"unicode/utf8"
 
 	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 )
 
 const (
@@ -447,6 +448,35 @@ func isTextMime(mime string) bool {
 	return strings.HasPrefix(m, "text/") || m == "utf8_string" || m == "string"
 }
 
+// discardFiles borra los archivos de una entrada que no llegó al historial.
+//
+// Si la copia al portapapeles falla, el payload y el thumbnail ya estaban
+// escritos: sin esta limpieza se quedarían huérfanos en disco para siempre.
+//
+// Si ya había una entrada con el mismo hash, sus archivos siguen en uso y no
+// se tocan.
+func (provider *Provider) discardFiles(e *Entry) {
+	provider.mu.Lock()
+	enUso := false
+	for _, existente := range provider.entries {
+		if existente.Hash == e.Hash {
+			enUso = true
+			break
+		}
+	}
+	provider.mu.Unlock()
+	if enUso {
+		return
+	}
+
+	if e.ThumbPath != "" {
+		_ = os.Remove(e.ThumbPath)
+	}
+	if provider.dataDir != "" {
+		_ = os.Remove(provider.dataPath(e.Hash))
+	}
+}
+
 // CopyText coloca texto libre en el portapapeles Wayland y lo añade al historial.
 func (provider *Provider) CopyText(text string) (*Entry, error) {
 	if text == "" {
@@ -460,6 +490,7 @@ func (provider *Provider) CopyText(text string) (*Entry, error) {
 	provider.writeData(e.Hash, data)
 
 	if err := provider.copyClipboard(mime, data); err != nil {
+		provider.discardFiles(e)
 		return nil, err
 	}
 
@@ -502,6 +533,9 @@ func (provider *Provider) CopyImage(path string) (*Entry, error) {
 	provider.writeData(e.Hash, data)
 
 	if err := provider.copyClipboard(mime, data); err != nil {
+		// La entrada no llega al historial: sus archivos (payload y
+		// thumbnail) quedarían huérfanos en disco.
+		provider.discardFiles(e)
 		return nil, err
 	}
 
@@ -515,7 +549,13 @@ func (provider *Provider) CopyImage(path string) (*Entry, error) {
 	return e, nil
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // CopyBytes coloca bytes arbitrarios con el mime dado en el portapapeles y el historial.
+//
+// Está previsto para alimentarlo desde otras fuentes (importación de
+// herramientas externas), pero hoy ningún módulo lo invoca:CopyText y
+// CopyImage son los caminos en uso.
 func (provider *Provider) CopyBytes(mime string, data []byte) (*Entry, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("datos vacíos")
@@ -528,6 +568,9 @@ func (provider *Provider) CopyBytes(mime string, data []byte) (*Entry, error) {
 	provider.writeData(e.Hash, data)
 
 	if err := provider.copyClipboard(mime, data); err != nil {
+		// La entrada no llega al historial: sus archivos (payload y
+		// thumbnail) quedarían huérfanos en disco.
+		provider.discardFiles(e)
 		return nil, err
 	}
 
@@ -889,26 +932,40 @@ func (provider *Provider) StartWatch() {
 	provider.watchWG.Add(1)
 	provider.watchMu.Unlock()
 
-	go func() {
+	safe.Go("clipboard.watch", func() {
 		defer provider.watchWG.Done()
 		provider.watchWayland(ctx)
-	}()
+	})
 }
 
 // watchWayland conecta con el compositor y se reconecta si la conexión cae
 // (reinicio de Hyprland, suspensión...). Mientras vive, el cliente posee la
 // selección y recibe un evento por cada copia, sin polling ni procesos hijos.
+//
+// Cada iteración va protegida: un fallo puntual al leer la selección no debe
+// dejar el historial sin vigilancia, solo registrar el error y reintentar.
 func (provider *Provider) watchWayland(ctx context.Context) {
 	warned := false
 	for ctx.Err() == nil {
+		if !provider.watchIteration(ctx, &warned) {
+			return
+		}
+	}
+}
+
+// watchIteration ejecuta un ciclo de conexión al compositor. Devuelve false si
+// el contexto se canceló y hay que terminar.
+func (provider *Provider) watchIteration(ctx context.Context, warned *bool) bool {
+	continuar := false
+	ok := safe.Guard("clipboard.watch", func() {
 		client, err := dialWL()
 		if err != nil {
 			// Sin wlr-data-control (o sin compositor todavía): modo respaldo
 			// con wl-paste periódico, como antes. El aviso se emite una sola
 			// vez para no inundar el journal mientras no haya sesión.
-			if !warned {
+			if !*warned {
 				logger.Warn("clipboard: sin acceso nativo a Wayland; usando wl-clipboard", "error", err)
-				warned = true
+				*warned = true
 			}
 			// Solo intentar leer si hay un socket Wayland; si no, ahorramos
 			// lanzar wl-paste cada dos segundos durante el arranque.
@@ -918,9 +975,10 @@ func (provider *Provider) watchWayland(ctx context.Context) {
 			if !sleepCtx(ctx, 2*time.Second) {
 				return
 			}
-			continue
+			continuar = true
+			return
 		}
-		warned = false
+		*warned = false
 		provider.setWL(client)
 		logger.Info("clipboard: acceso nativo a Wayland",
 			"protocolo", "zwlr_data_control_manager_v1")
@@ -942,7 +1000,16 @@ func (provider *Provider) watchWayland(ctx context.Context) {
 		if !sleepCtx(ctx, 2*time.Second) {
 			return
 		}
+		continuar = true
+	})
+
+	if !ok {
+		// Hubo un panic: esperar antes de reintentar para no entrar en un
+		// bucle cerrado. El watcher sigue vigilando el portapapeles.
+		sleepCtx(ctx, 2*time.Second)
+		return ctx.Err() == nil
 	}
+	return continuar
 }
 
 // sleepCtx duerme d o hasta que se cancele el contexto. Devuelve false si se
@@ -1068,7 +1135,12 @@ func mimeByExtension(path string) string {
 	}
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // detectMime intenta adivinar el MIME leyendo los bytes mágicos (magic numbers).
+//
+// Solo la usa la importación de cliphist (ver ImportCliphist), que todavía no
+// está conectada a ningún módulo del socket.
 func detectMime(data []byte) string {
 	if len(data) < 4 {
 		return "text/plain;charset=utf-8"
@@ -1091,9 +1163,13 @@ func detectMime(data []byte) string {
 	}
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // importEntry agrega una entrada al historial sin copiar al portapapeles del sistema
 // (usa para importar historial externo como cliphist). Es como CopyBytes pero sin
 // llamar a wlCopy.
+//
+// Solo la usa ImportCliphist.
 func (provider *Provider) importEntry(mime string, data []byte) (*Entry, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("datos vacíos")
@@ -1114,12 +1190,23 @@ func (provider *Provider) importEntry(mime string, data []byte) (*Entry, error) 
 	return e, nil
 }
 
+// PENDIENTE: sin llamadas desde el backend.
+//
 // ImportCliphist importa el historial de cliphist al backend. Lee cada entrada
 // con `cliphist list`, decodifica su contenido con `cliphist decode <id>` y la
 // agrega al historial persistente del backend sin tocar el portapapeles del
 // sistema. Las entradas ya existentes (por hash) se deducen automáticamente.
+//
+// La integración con cliphist todavía no está expuesta por ningún módulo del
+// socket: falta el endpoint que la dispare.
+//
+// Los comandos externos tienen tiempo límite: un cliphist colgado no debe
+// dejar la petición del socket esperando para siempre.
 func (provider *Provider) ImportCliphist() error {
-	cmd := exec.Command("cliphist", "list")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "cliphist", "list")
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("cliphist list falló: %v", err)
@@ -1128,6 +1215,9 @@ func (provider *Provider) ImportCliphist() error {
 	lines := strings.Split(string(out), "\n")
 	imported := 0
 	for _, line := range lines {
+		if ctx.Err() != nil {
+			return fmt.Errorf("importación de cliphist cancelada: %w", ctx.Err())
+		}
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -1141,7 +1231,7 @@ func (provider *Provider) ImportCliphist() error {
 		idStr := parts[0]
 
 		// Decodificar el contenido completo de la entrada.
-		decodeCmd := exec.Command("cliphist", "decode", idStr)
+		decodeCmd := exec.CommandContext(ctx, "cliphist", "decode", idStr)
 		data, err := decodeCmd.Output()
 		if err != nil {
 			// Si falla el decode, saltar esta entrada

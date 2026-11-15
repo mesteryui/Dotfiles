@@ -5,6 +5,7 @@ package system
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -29,6 +30,13 @@ type Stats struct {
 	UptimeSec      uint64  `json:"uptime_seconds"`
 	TemperatureC   float64 `json:"temperature_c"`
 	Hostname       string  `json:"hostname"`
+
+	// Batería (leída de /sys/class/power_supply). En equipos sin batería
+	// BatteryPercent vale -1 y BatteryStatus está vacío.
+	BatteryPercent     float64 `json:"battery_percent"`
+	BatteryStatus      string  `json:"battery_status"`
+	BatteryCharging    bool    `json:"battery_charging"`
+	BatteryTimeToEmpty int     `json:"battery_time_to_empty_min"`
 }
 
 type cpuTimes struct {
@@ -72,6 +80,13 @@ func (provider *Provider) Stats() (Stats, error) {
 	// La temperatura no es crítica: si falla, dejamos -1.
 	if err := provider.temperature(&s); err != nil {
 		s.TemperatureC = -1
+	}
+	// La batería tampoco es crítica: si falla, dejamos los valores neutros.
+	if err := provider.battery(&s); err != nil {
+		s.BatteryPercent = -1
+		s.BatteryStatus = ""
+		s.BatteryCharging = false
+		s.BatteryTimeToEmpty = -1
 	}
 	// El disco tampoco es crítico: si falla, queda a cero.
 	_ = provider.disk(&s)
@@ -283,4 +298,85 @@ func (provider *Provider) temperature(s *Stats) error {
 		return nil
 	}
 	return os.ErrNotExist
+}
+
+// battery lee el estado de la batería desde /sys/class/power_supply.
+//
+// Todo se lee de pseudo-archivos del kernel: no hace falta lanzar procesos
+// (acpi, upower) ni consultar nada por red, así que el coste por lectura es
+// despreciable aunque el módulo se empuje cada pocos segundos.
+//
+// En equipos sin batería devuelve os.ErrNotExist y el llamante deja los
+// valores neutros.
+func (provider *Provider) battery(s *Stats) error {
+	const base = "/sys/class/power_supply"
+
+	entries, err := os.ReadDir(base)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range entries {
+		dir := filepath.Join(base, e.Name())
+
+		// type == "Battery" identifica la batería (hay también "Mains",
+		// "USB" y "Wireless" que no sirven).
+		typ, err := os.ReadFile(filepath.Join(dir, "type"))
+		if err != nil || strings.TrimSpace(string(typ)) != "Battery" {
+			continue
+		}
+
+		s.BatteryStatus = readTrimmed(filepath.Join(dir, "status"))
+		s.BatteryCharging = s.BatteryStatus == "Charging" || s.BatteryStatus == "Full"
+		s.BatteryTimeToEmpty = -1
+
+		if capacity := readInt(filepath.Join(dir, "capacity")); capacity >= 0 {
+			s.BatteryPercent = float64(capacity)
+		} else {
+			// Sin "capacity", se calcula con energía/carga actual y total.
+			now := readInt(filepath.Join(dir, "energy_now"))
+			full := readInt(filepath.Join(dir, "energy_full"))
+			if now > 0 && full > 0 {
+				s.BatteryPercent = float64(now) / float64(full) * 100
+			}
+		}
+
+		// Tiempo restante: energía/potencia (o carga/corriente).
+		now := readInt(filepath.Join(dir, "energy_now"))
+		power := readInt(filepath.Join(dir, "power_now"))
+		if now <= 0 || power <= 0 {
+			now = readInt(filepath.Join(dir, "charge_now"))
+			power = readInt(filepath.Join(dir, "current_now"))
+		}
+		if now > 0 && power > 0 {
+			// now en µWh y power en µW → segundos.
+			s.BatteryTimeToEmpty = int(float64(now) / float64(power) / 60)
+		}
+
+		return nil
+	}
+
+	return os.ErrNotExist
+}
+
+// readTrimmed lee un archivo de texto y elimina los espacios.
+func readTrimmed(path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(data))
+}
+
+// readInt lee un entero de un archivo; devuelve -1 si no se puede leer.
+func readInt(path string) int64 {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return -1
+	}
+	v, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+	if err != nil {
+		return -1
+	}
+	return v
 }

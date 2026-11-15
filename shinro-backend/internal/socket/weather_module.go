@@ -22,7 +22,7 @@ func (m *weatherModule) Name() string { return "weather" }
 
 // HandleHello procesa el handshake del módulo weather y suscribe al cliente al clima.
 // La ciudad se recibe de Quickshell (que gestiona la ubicación con PositionSource).
-func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) (bool, <-chan struct{}) {
+func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 	var payload struct {
 		Location struct {
 			City string `json:"city"`
@@ -39,48 +39,45 @@ func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) (
 		_ = json.Unmarshal(intRaw, &payload.Intervals)
 	}
 
+	interval := payload.Intervals.Weather
+	sub := interval > 0
+
 	c.mu.Lock()
-	c.city = payload.Location.City
+	// Solo se sobrescribe la ciudad si viene una nueva: un hello de
+	// reconfiguración sin "location" no debe dejar el clima sin ciudad.
+	if payload.Location.City != "" {
+		c.city = payload.Location.City
+	}
 	c.lang = payload.Lang
 	if c.lang == "" {
 		c.lang = "es"
 	}
-	c.intWth = payload.Intervals.Weather
-	sub := c.intWth > 0
-	c.subWth = sub
-	if c.subs == nil {
-		c.subs = make(map[string]bool)
-	}
-	c.subs["weather"] = sub
-	if c.modIntervals == nil {
-		c.modIntervals = make(map[string]int)
-	}
-	c.modIntervals["weather"] = c.intWth
+	city := c.city
 	started := c.pumpWthStarted
 	c.mu.Unlock()
 
+	c.setModInterval(m.Name(), interval)
+	c.setSubscribed(m.Name(), sub)
+
 	logger.Debug("weather handshake",
 		"client", c.conn.RemoteAddr(),
-		"city", c.city,
-		"interval", c.intWth,
+		"city", city,
+		"interval", interval,
 		"subscribed", sub,
 	)
 
 	if sub && !started {
 		c.pumpWthStarted = true
-		c.setModStarted(m.Name(), true)
-		go pumpModule(m, c, c.done)
+		c.startPump(m)
 	} else if sub && started {
 		// Ya iniciado: reconfiguración (nueva ciudad o intervalo) -> despertar para refresco inmediato
 		c.signalMod(m.Name())
 	}
-
-	return sub, nil
 }
 
 // HandleGet responde a una petición puntual de weather.
-func (m *weatherModule) HandleGet(c *client, raw map[string]json.RawMessage) {
-	m.SendUpdate(c)
+func (m *weatherModule) HandleGet(c *client, raw map[string]json.RawMessage) error {
+	return m.SendUpdate(c)
 }
 
 // SendUpdate envía el parte del clima al cliente.
@@ -126,13 +123,26 @@ func (m *weatherModule) SendUpdate(c *client) error {
 	return nil
 }
 
-// Pump ejecuta el bucle periódico de weather. Se usa a través de pumpModule.
-func (m *weatherModule) Pump(c *client, wake <-chan struct{}, done <-chan struct{}) {
-	pumpModule(m, c, done)
-}
-
 func (m *weatherModule) sendError(c *client, message string) {
 	sendErrorToClient(c, m.Name(), message)
+}
+
+// InvalidateCaches descarta los datos cacheados del proveedor.
+//
+// Lo llama el servidor cuando la conectividad vuelve: tras un rato sin red
+// lo cacheado puede tener horas, y hay que pedirlo todo otra vez.
+//
+// Implementa ModuleInvalidator.
+func (m *weatherModule) InvalidateCaches() {
+	m.wthProvider.InvalidateCaches()
+}
+
+// Timings devuelve el desglose del tiempo del último parte: cuánto tardó la
+// geocodificación, la previsión, la calidad del aire y los avisos.
+//
+// Es lo que dice en qué se va el tiempo cuando el módulo va lento.
+func (m *weatherModule) Timings() map[string]float64 {
+	return m.wthProvider.Timings()
 }
 
 // compilo-check de que implementa Module.

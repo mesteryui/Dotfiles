@@ -8,6 +8,7 @@ import (
 	"github.com/godbus/dbus/v5"
 
 	"shinro-backend/internal/logger"
+	"shinro-backend/internal/safe"
 )
 
 // Estados de conectividad de NetworkManager (propiedad Connectivity).
@@ -41,6 +42,12 @@ type nmMonitor struct {
 	state        uint32
 	lastOnline   bool
 	subs         map[chan bool]struct{}
+
+	// done se cierra al apagar el monitor: la goroutine que escucha las
+	// señales de D-Bus termina entonces, en vez de quedarse esperando
+	// indefinidamente (fuga de goroutine en un daemon de larga vida).
+	done      chan struct{}
+	closeOnce sync.Once
 }
 
 // newNMMonitor intenta conectar al bus de sistema y suscribirse a NetworkManager.
@@ -65,6 +72,7 @@ func newNMMonitor() *nmMonitor {
 		connectivity: nmConnectivityUnknown,
 		state:        nmStateUnknown,
 		subs:         make(map[chan bool]struct{}),
+		done:         make(chan struct{}),
 	}
 
 	// Suscribirse a las señales de NetworkManager con reglas AddMatchSignal.
@@ -93,29 +101,35 @@ func (m *nmMonitor) subscribeSignals() {
 	signalCh := make(chan *dbus.Signal, 20)
 	m.conn.Signal(signalCh)
 
-	go func() {
-		for sig := range signalCh {
-			if sig == nil {
+	safe.Go("networkmanager.signals", func() {
+		for {
+			select {
+			case <-m.done:
+				// Monitor cerrado: terminar la goroutine.
 				return
-			}
-			switch sig.Name {
-			case "org.freedesktop.NetworkManager.StateChanged":
-				if len(sig.Body) > 0 {
-					if st, ok := sig.Body[0].(uint32); ok {
-						m.handleStateChanged(st)
-					}
+			case sig, ok := <-signalCh:
+				if !ok || sig == nil {
+					return
 				}
-			case "org.freedesktop.DBus.Properties.PropertiesChanged":
-				if len(sig.Body) >= 2 {
-					if iface, ok := sig.Body[0].(string); ok && iface == "org.freedesktop.NetworkManager" {
-						if props, ok := sig.Body[1].(map[string]dbus.Variant); ok {
-							m.handlePropertiesChanged(props)
+				switch sig.Name {
+				case "org.freedesktop.NetworkManager.StateChanged":
+					if len(sig.Body) > 0 {
+						if st, ok := sig.Body[0].(uint32); ok {
+							m.handleStateChanged(st)
+						}
+					}
+				case "org.freedesktop.DBus.Properties.PropertiesChanged":
+					if len(sig.Body) >= 2 {
+						if iface, ok := sig.Body[0].(string); ok && iface == "org.freedesktop.NetworkManager" {
+							if props, ok := sig.Body[1].(map[string]dbus.Variant); ok {
+								m.handlePropertiesChanged(props)
+							}
 						}
 					}
 				}
 			}
 		}
-	}()
+	})
 }
 
 // readInitialState lee Connectivity y State síncronamente al inicio.
@@ -185,11 +199,15 @@ func (m *nmMonitor) handlePropertiesChanged(props map[string]dbus.Variant) {
 	online := m.evalOnline()
 	prev := m.lastOnline
 	m.lastOnline = online
+	// Copias bajo el lock: leerlas fuera sería una carrera con las señales
+	// de D-Bus, que llegan en otra goroutine.
+	connVal := m.connectivity
+	stateVal := m.state
 	m.mu.Unlock()
 
 	logger.Debug("networkmanager PropertiesChanged",
-		"connectivity", nmConnectivityString(m.connectivity),
-		"state", nmStateString(m.state),
+		"connectivity", nmConnectivityString(connVal),
+		"state", nmStateString(stateVal),
 		"online", online,
 	)
 	if online != prev {
@@ -207,9 +225,17 @@ func (m *nmMonitor) evalOnline() bool {
 }
 
 // isDefinitelyOffline indica si NM afirma estar desconectado o en captive portal.
+//
+// Ojo: un estado DESCONOCIDO no significa "sin conexión". Si NM todavía no ha
+// informado de su estado (o no se pudo leer la propiedad), no se puede afirmar
+// que no hay red: en ese caso se prefiere una comprobación HTTP antes que
+// declarar la conexión caída y quedarse sin clima para siempre.
 func (m *nmMonitor) isDefinitelyOffline() bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.state == nmStateUnknown {
+		return false
+	}
 	return m.state <= nmStateDisconnected || m.connectivity == nmConnectivityNone || m.connectivity == nmConnectivityPortal
 }
 
@@ -254,38 +280,13 @@ func (m *nmMonitor) Unsubscribe(ch chan bool) {
 	m.mu.Unlock()
 }
 
-// IsOnline devuelve si NetworkManager considera que hay conexión global.
-func (m *nmMonitor) IsOnline() bool {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.evalOnline()
-}
-
-// CheckConnectivity solicita a NetworkManager reevaluar la conectividad de red.
-func (m *nmMonitor) CheckConnectivity() (uint32, error) {
-	var conn uint32
-	call := m.object.Call("org.freedesktop.NetworkManager.CheckConnectivity", 0)
-	if call.Err != nil {
-		return nmConnectivityUnknown, call.Err
-	}
-	if err := call.Store(&conn); err != nil {
-		return nmConnectivityUnknown, err
-	}
-	m.mu.Lock()
-	m.connectivity = conn
-	online := m.evalOnline()
-	prev := m.lastOnline
-	m.lastOnline = online
-	m.mu.Unlock()
-
-	if online != prev {
-		m.notify(online)
-	}
-	return conn, nil
-}
-
-// Close cierra la conexión D-Bus.
+// Close cierra la conexión D-Bus y detiene la goroutine que escucha señales.
 func (m *nmMonitor) Close() error {
+	m.closeOnce.Do(func() {
+		if m.done != nil {
+			close(m.done)
+		}
+	})
 	m.mu.Lock()
 	m.subs = make(map[chan bool]struct{})
 	m.mu.Unlock()
