@@ -6,23 +6,60 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// Una ventana de fondo estático por pantalla (la crea WallpaperLayer).
-// Transición en dos fases: fundido de salida rápido + fundido de entrada
-// con zoom sutil. Ahora más rápido y con spring en el zoom para que el
-// cambio de fondo se sienta más vivo.
+// Una ventana de fondo por pantalla (la crea WallpaperLayer).
+//
+// Cambio de fondo: UN solo fundido, sin fases ni tokens.
+//
+//   1. la entrante se carga en la cara `back` (siempre la de encima);
+//   2. al estar decodificada sube a opacidad 1 sobre la visible (`front`);
+//   3. al terminar el fundido las caras se intercambian y la vieja se
+//      libera (su textura deja de ocupar VRAM).
+//
+// Un cambio a mitad de fundido sustituye la entrante en sitio: la visible
+// sigue debajo, así que nunca queda un hueco (ni un flash de superficie
+// vacía).
+//
+// La ENTRADA de la ventana la pone el compositor: la regla de layer de
+// Hyprland para el namespace "quickshell:wallpaper-layer" es
+// `animation = fade`, así que la ventana no se mapea hasta que hay
+// contenido decodificado y ese fade entra sobre una imagen ya lista. En
+// QML solo queda el fundido entre fondos.
 PanelWindow {
     id: root
 
     property string source: ""
-    property bool frontIsA: true
-    property string shownSource: ""
-    // Primera puesta: directa, sin transición de arranque.
-    property bool isInitialLoad: true
-    // Ventanas reales en la workspace activa de este monitor. Lo calcula
-    // WallpaperLayer; el control del frost decide si se enciende.
     property int windowsOnWorkspace: 0
 
-    visible: root.source !== ""
+    // Cara visible y cara entrante del doble buffer. `back` va siempre por
+    // encima (`z`): al intercambiar las caras se reordena.
+    property Image front: imgA
+    property Image back: imgB
+
+    // URL de lo que se quiere mostrar. Puede diferir de la visible
+    // mientras la entrante carga.
+    property url desiredUrl: ""
+
+    // URL de lo que hay en pantalla ahora.
+    property url shownUrl: ""
+
+    // Banderas de estado (NO se derivan de `Image.status`: al mapearse la
+    // ventana cambian `sourceSize` y la imagen vuelve a decodificar durante
+    // un instante; si la ventana dependiera del status, se cerraría y
+    // abriría en bucle).
+    //
+    // - posterReady: el póster está decodificado y se puede pintar.
+    // - mapped: la ventana ya se mostró una vez (desde entonces no se
+    //   cierra nunca: los cambios los hace QML, no el compositor).
+    // - animated: los behaviors de fundido/zoom están activos (tras el
+    //   primer pintado).
+    property bool posterReady: false
+    property bool mapped: false
+    property bool animated: false
+
+    readonly property bool videoReady: videoLoader.item?.hasVideo ?? false
+    readonly property bool contentReady: root.posterReady || root.videoReady
+
+    visible: root.source !== "" && (root.mapped || root.contentReady)
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Background
@@ -35,7 +72,19 @@ PanelWindow {
         right: true
     }
 
-    // Soltar un fichero de imagen pone ese fondo (ver handleDrop).
+    onVisibleChanged: {
+        // No escribimos `mapped` aquí: `visible` es un binding que también
+        // depende de `mapped`, así que escribirlo desde su propio change
+        // handler crea un binding loop ("Binding loop detected for property
+        // visible"). El armado del flag se hace en las transiciones de
+        // contenido (Connections / Loader), que son los puntos reales.
+        if (root.visible) {
+            root.animated = true;
+        }
+    }
+
+    // Soltar un fichero de imagen o video sobre el fondo lo pone como
+    // wallpaper (pasa por validacion + persistencia + fundido de applyBg).
     DropArea {
         anchors.fill: parent
 
@@ -55,19 +104,35 @@ PanelWindow {
         // Mipmap: el zoom 1.04→1 y el crop reescalan cada frame; sin
         // mipmaps el filtrado tiembla y rinde peor en la animación.
         mipmap: true
-        // Decodificar acotado a la pantalla EN PÍXELES FÍSICOS (lógicos ×
-        // DPR): con solo screen.width en HiDPI 200% un fondo se decodifica
-        // a 1920 y el compositor lo estira a 3840 físicos = imagen blanda.
-        // Sin esto un wallhaven de 17MB se decodifica entero (~30MB de
-        // textura por cara, x2 en fundido). Patrón igual que lockscreen.
-
-        // targetScale acota el decodado a los píxeles físicos de la pantalla.
-        // Se limita a 2 como máximo: por encima no se gana nitidez visible en
-        // escritorio y solo se inflan las texturas del wallpaper (y, durante
-        // el crossfade, hay dos de ellas simultáneas).
-        readonly property real targetScale: Math.min(2, Math.max(1, Screen.devicePixelRatio))
+        // targetScale acota el decodado a los píxeles físicos de la
+        // pantalla (lógicos × DPR). Se limita a 2 como máximo: por encima
+        // no se gana nitidez visible y solo se inflan las texturas.
+        // El DPR sale de la pantalla quefills el delegate (no de
+        // `Screen.devicePixelRatio`, que solo se resuelve al mapear la
+        // ventana: eso cambiaría el tamaño de decodado en pleno fundido).
+        readonly property real targetScale: Math.min(2, Math.max(1, root.screen
+                                                                 ? root.screen.devicePixelRatio : 1))
         sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
         sourceSize.height: Math.round((root.screen ? root.screen.height : 1080) * targetScale)
+
+        // Fundido de entrada y zoom: solo tras el primer pintado.
+        Behavior on opacity {
+            enabled: root.animated
+            NumberAnimation {
+                duration: Appearance.motion.normal
+                easing.type: Easing.Bezier
+                easing.bezierCurve: Appearance.motion.standard
+            }
+        }
+        Behavior on scale {
+            enabled: root.animated
+            SpringAnimation {
+                spring: Appearance.motion.springSnappy.spring
+                damping: Appearance.motion.springSnappy.damping
+                mass: Appearance.motion.springSnappy.mass
+                epsilon: Appearance.motion.springSnappy.epsilon
+            }
+        }
     }
 
     // Control del deck frost: vive aparte del wallpaper. Si se elimina este
@@ -97,121 +162,148 @@ PanelWindow {
             maxRadius: frost.blurMax
         }
 
+        // imgA debajo, imgB encima. `z` se reordena al intercambiar las
+        // caras para que la entrante quede siempre por encima de la visible.
         WallpaperImage {
             id: imgA
 
+            z: 0
             opacity: 1
         }
 
         WallpaperImage {
             id: imgB
 
+            z: 1
             opacity: 0
         }
     }
 
-    // NOTA: el target se asigna imperativo en start/stop, NUNCA por
-    // binding (`target: fadeX.targetImage` se reevalúa diferido y el
-    // start() corría con el target viejo: fundidos muertos al nacer).
-
-    // Fase 1: apagar lo visible — más rápido que antes (normal -> fast).
-    NumberAnimation {
-        id: fadeOut
-
-        property Image targetImage
-
-        property: "opacity"
-        to: 0
-        duration: Appearance.motion.fast
-        easing.type: Easing.Bezier
-        easing.bezierCurve: Appearance.motion.standard
-        onFinished: {
-            if (fadeOut.targetImage)
-                root.beginHiddenLoad();
-        }
-    }
-
-    // Fase 2: fundido de entrada + zoom de entrada en paralelo.
-    // Ahora con duraciones más rápidas (slowest -> normal) y spring en el
-    // zoom para que el cambio de fondo tenga un efecto más vivo.
-    ParallelAnimation {
-        id: fadeInZoom
-
-        NumberAnimation {
-            id: fadeIn
-
-            property Image targetImage
-
-            property: "opacity"
-            to: 1
-            duration: Appearance.motion.normal
-            easing.type: Easing.Bezier
-            easing.bezierCurve: Appearance.motion.standard
-            onFinished: {
-                if (!fadeIn.targetImage)
-                    return;
-                const shown = fadeIn.targetImage === imgA ? imgB : imgA;
-                shown.opacity = 0;
-                shown.scale = 1.04;
-                shown.source = "";
-                root.frontIsA = fadeIn.targetImage === imgA;
-                root.shownSource = root._fadeTargetSrc;
-            }
-        }
-
-        SpringAnimation {
-            id: zoomIn
-
-            property Image targetImage
-
-            property: "scale"
-            to: 1
-            spring: Appearance.motion.springSnappy.spring
-            damping: Appearance.motion.springSnappy.damping
-            mass: Appearance.motion.springSnappy.mass
-            epsilon: Appearance.motion.springSnappy.epsilon
-        }
-    }
-
-    // Espera de decodificado con token anti-carreras (ver beginFade).
-    // Se guarda el item para desconectar de verdad (si no, las conexiones
-    // obsoletas se acumulan en los Image, que viven siempre).
-    property int readyToken: 0
-
-    property var readyItem: null
-
-    property var readyHandler: null
-
-    function clearReadyWait() {
-        if (root.readyItem && root.readyHandler) {
-            try {
-                root.readyItem.statusChanged.disconnect(root.readyHandler);
-            } catch (e) {}
-        }
-        root.readyItem = null;
-        root.readyHandler = null;
-    }
-
-    function setHiddenSource(img, src) {
-        // El fundido siempre trabaja con imagen estatica: un video se
-        // representa por su frame (poster mientras carga el reproductor y
-        // fallback si falla). Se pide el frame aqui para que exista ASAP.
-        if (Services.WallpaperService.isVideo(src))
+    // ── Cambio de fondo ────────────────────────────────────────────────
+    // URL de la imagen estática que representa a `src`: para un vídeo, su
+    // frame extraído (el póster). Pide el frame si aún no existe.
+    function staticUrl(src) {
+        if (Services.WallpaperService.isVideo(src)) {
             Services.VideoFrameService.ensureFrame(src);
-        const eff = Services.WallpaperService.staticSourceFor(src);
-        const resolved = eff !== "" ? Qt.resolvedUrl(eff) : "";
-        // Guardia: si la imagen ya tiene esa misma fuente, no se re-asigna.
-        // Evita re-decodificar y re-subir la textura a GPU al volver a
-        // aplicar el mismo fondo (p. ej. tras restaurar o alternar fondos).
-        if (img.source === resolved)
-            return;
-        img.source = resolved;
+            return Qt.resolvedUrl(Services.WallpaperService.staticSourceFor(src));
+        }
+        return Qt.resolvedUrl(src);
     }
 
-    // Capa de video (opcional): solo existe mientras el fondo objetivo es
-    // un video con soporte. Carga aislada por URL (nunca tipo estatico):
-    // si QtMultimedia falta o el archivo falla, solo este Loader da Error
-    // y queda el poster estatico del fundido. La shell nunca rompe.
+    // Carga la entrante en la cara `back`. Si ya está visible o en camino,
+    // no hace nada (evita re-decodificar al reaplicar el mismo fondo).
+    function applyBg() {
+        const src = root.source;
+        if (src === "") {
+            root.desiredUrl = "";
+            root.shownUrl = "";
+            root.posterReady = false;
+            root.mapped = false;
+            root.front.source = "";
+            root.back.source = "";
+            root.front.opacity = 1;
+            root.front.scale = 1;
+            root.back.opacity = 0;
+            return;
+        }
+        const url = root.staticUrl(src);
+        if (String(url) === String(root.desiredUrl))
+            return;
+        root.desiredUrl = url;
+        root.posterReady = false;
+        fadeTimer.stop();
+        root.back.source = url;
+        root.back.opacity = 0;
+        root.back.scale = 1.04;
+    }
+
+    // Fin del fundido: la entrante pasa a ser la visible y la vieja se
+    // libera (su textura deja de ocupar VRAM).
+    function commit() {
+        const old = root.front;
+        root.shownUrl = root.back.source;
+        // La vieja se vacía ANTES de subirla: si no, un frame de la textura
+        // vieja tapando la nueva.
+        old.source = "";
+        root.front = root.back;
+        root.back = old;
+        // La entrante queda arriba (z) para el siguiente fundido.
+        root.front.z = 0;
+        root.back.z = 1;
+        root.back.opacity = 0;
+        root.back.scale = 1;
+    }
+
+    // El fundido dura `Appearance.motion.normal`; el margen cubre el final
+    // del Behavior antes de liberar la cara vieja.
+    Timer {
+        id: fadeTimer
+
+        interval: Appearance.motion.normal + 50
+        repeat: false
+        onTriggered: {
+            if (root.back.status === Image.Ready)
+                root.commit();
+        }
+    }
+
+    Connections {
+        target: root.back
+
+        function onStatusChanged() {
+            if (root.back.status !== Image.Ready)
+                return;
+            // Es la carga que se pidió: si no, es un frame viejo que llegó
+            // tarde (el `desiredUrl` manda).
+            if (String(root.back.source) !== String(root.desiredUrl))
+                return;
+            root.posterReady = true;
+            // El póster ya está decodificado: la condición de `visible`
+            // (`source !== "" && (mapped || contentReady)`) se cumple, así que
+            // armamos la ventana. Se escribe aquí (transición de contenido) y
+            // no en onVisibleChanged para no crear el ciclo visible<->mapped.
+            root.mapped = true;
+            // Ya está en pantalla (p. ej. la imagen se re-decodifica al
+            // cambiar de tamaño): no hay nada que fundir.
+            if (String(root.back.source) === String(root.shownUrl))
+                return;
+            root.back.opacity = 1;
+            root.back.scale = 1;
+            if (root.animated)
+                fadeTimer.restart();
+            else
+                root.commit();
+        }
+    }
+
+    onSourceChanged: root.applyBg()
+
+    Component.onCompleted: {
+        if (root.isVideoTarget)
+            Services.VideoSupport.ensureProbed();
+        root.applyBg();
+    }
+
+    // Soltar un fichero de imagen o video sobre el fondo lo pone como
+    // wallpaper (pasa por validacion + persistencia + fundido de applyBg).
+    function handleDrop(drop) {
+        let raw = "";
+        if (drop.hasUrls && drop.urls.length > 0)
+            raw = String(drop.urls[0]);
+        else if (drop.hasText && drop.text)
+            raw = String(drop.text).split("\n")[0].trim();
+        if (raw === "")
+            return;
+        const path = decodeURIComponent(raw.replace(/^file:\/\//, "")).trim();
+        if (Services.WallpaperService.validAny(path))
+            Services.WallpaperService.apply(path);
+    }
+
+    // ── Capa de vídeo (opcional) ───────────────────────────────────────
+    // Solo existe mientras el fondo objetivo es un video con soporte. Carga
+    // aislada por URL (nunca tipo estatico): si QtMultimedia falta o el
+    // archivo falla, solo este Loader da Error y queda el poster estatico
+    // del fundido. La shell nunca rompe.
     readonly property bool isVideoTarget: Services.WallpaperService.isVideo(root.source)
 
     readonly property bool videoEnabled: root.isVideoTarget && Services.VideoSupport.available
@@ -273,6 +365,11 @@ PanelWindow {
         opacity: status === Loader.Ready && (item?.hasVideo ?? false) ? 1 : 0
         source: "AnimatedWallpaperPlayer.qml"
         onStatusChanged: {
+            // Video listo y decodificado: armamos la ventana (la condición
+            // de `visible` se cumple vía contentReady). Mismo criterio con el
+            // `opacity` de arriba, así que el armado y el mostrar coinciden.
+            if (status === Loader.Ready && videoLoader.item && videoLoader.item.hasVideo)
+                root.mapped = true;
             if (status === Loader.Error)
                 console.warn("[Wallpaper] no se pudo reproducir el video, uso poster estatico: "
                              + root.source);
@@ -344,173 +441,13 @@ PanelWindow {
         // (Image no reintenta solo). Si la cara visible aun no esta lista
         // cuando el frame termina, se recarga (aqui el contexto es
         // imperativo: "" -> frame fuerza la recarga sin romper bindings).
-        // La espera de fundido pendiente (beginFade) sigue conectada y
-        // completa la transicion al llegar a Ready.
         target: Services.VideoFrameService
 
         function onFrameReady(videoPath) {
             if (videoPath !== root.source || !root.isVideoTarget)
                 return;
-            const front = root.frontIsA ? imgA : imgB;
-            if (front.status !== Image.Ready) {
-                front.source = "";
-                root.setHiddenSource(front, root.source);
-            }
+            root.back.source = "";
+            root.back.source = Qt.resolvedUrl(Services.WallpaperService.staticSourceFor(videoPath));
         }
-    }
-
-    // Soltar un fichero de imagen o video sobre el fondo lo pone como
-    // wallpaper (pasa por validacion + persistencia + crossfade de applyBg).
-    function handleDrop(drop) {
-        let raw = "";
-        if (drop.hasUrls && drop.urls.length > 0)
-            raw = String(drop.urls[0]);
-        else if (drop.hasText && drop.text)
-            raw = String(drop.text).split("\n")[0].trim();
-        if (raw === "")
-            return;
-        const path = decodeURIComponent(raw.replace(/^file:\/\//, "")).trim();
-        if (Services.WallpaperService.validAny(path))
-            Services.WallpaperService.apply(path);
-    }
-
-    // Arranca el fundido; si aún decodifica, espera al Ready (una vez).
-    function beginFade(img) {
-        const token = ++root.readyToken;
-        root.clearReadyWait();
-        if (img.status !== undefined && img.status !== Image.Ready) {
-            const handler = () => {
-                if (token !== root.readyToken)
-                    return;
-                if (img.status === Image.Ready) {
-                    root.clearReadyWait();
-                    root.startFade(img);
-                }
-            };
-            root.readyHandler = handler;
-            root.readyItem = img;
-            img.statusChanged.connect(handler);
-            if (img.status === Image.Ready) {
-                root.clearReadyWait();
-                root.startFade(img);
-            }
-            return;
-        }
-        root.startFade(img);
-    }
-
-    function startFade(img) {
-        img.opacity = 0;
-        img.scale = 1.04;
-        // Asignación imperativa (ver nota arriba): el binding diferido
-        // llegaría tarde al start().
-        fadeIn.targetImage = img;
-        zoomIn.targetImage = img;
-        fadeIn.target = img;
-        zoomIn.target = img;
-        fadeInZoom.start();
-    }
-
-    // Se guarda aquí para asignar shownSource solo al terminar el fundido
-    // y así no perder cambios rápidos de fondo a mitad de transición.
-    property string _fadeTargetSrc: ""
-
-    onSourceChanged: root.applyBg()
-
-    Component.onCompleted: {
-        if (root.isVideoTarget)
-            Services.VideoSupport.ensureProbed();
-        root.applyBg();
-    }
-
-    // Al destruir la capa (p. ej. monitor desconectado) mientras una imagen
-    // espera a decodificarse, soltar la conexión imperativa de
-    // beginFade() para que ni el closure ni el handler queden colgados
-    // referenciando al Image.
-    Component.onDestruction: root.clearReadyWait()
-
-    // Petición pendiente mientras se apaga el actual.
-    property string pendingSrc: ""
-
-    property bool hasPending: false
-
-    // Carga inicial + cambios: los handlers onXChanged no se disparan
-    // con el valor inicial del binding, sin esto quedaría vacío.
-    function applyBg() {
-        const src = root.source;
-        if (src === root.shownSource) {
-            // Ya visible (o en camino): parar un apagado heredado y
-            // reponer el frontal, sin tocar la espera de decodificado.
-            fadeOut.stop();
-            fadeInZoom.stop();
-            const front = root.frontIsA ? imgA : imgB;
-            front.opacity = 1;
-            root.hasPending = false;
-            return;
-        }
-        if (src === "") {
-            root.clearReadyWait();
-            fadeInZoom.stop();
-            fadeOut.stop();
-            root.hasPending = false;
-            imgA.source = "";
-            imgB.source = "";
-            imgA.opacity = 1;
-            imgB.opacity = 0;
-            root.frontIsA = true;
-            root.shownSource = "";
-            return;
-        }
-        // Arranque: sin transición, puesta directa.
-        if (root.isInitialLoad) {
-            root.isInitialLoad = false;
-            fadeInZoom.stop();
-            fadeOut.stop();
-            root.clearReadyWait();
-            root.hasPending = false;
-            const first = root.frontIsA ? imgB : imgA;
-            const prev = root.frontIsA ? imgA : imgB;
-            root.setHiddenSource(first, src);
-            first.opacity = 1;
-            first.scale = 1;
-            prev.opacity = 0;
-            prev.source = "";
-            root.frontIsA = !root.frontIsA;
-            root.shownSource = src;
-            return;
-        }
-        // Interrumpido a mitad de transición: degradar a fundido simple
-        // (directo a fase 2, sin apagar a medias).
-        const interrupted = fadeOut.running || fadeInZoom.running;
-        // Fase 1: apagar lo visible; al terminar, beginHiddenLoad enciende
-        // lo nuevo (si no hay nada visible o venía interrumpido: directo).
-        fadeInZoom.stop();
-        fadeOut.stop();
-        root.clearReadyWait();
-        root.pendingSrc = src;
-        root.hasPending = true;
-        if (root.shownSource !== "" && !interrupted) {
-            const front = root.frontIsA ? imgA : imgB;
-            fadeOut.targetImage = front;
-            fadeOut.target = front;
-            fadeOut.start();
-        } else {
-            root.beginHiddenLoad();
-        }
-    }
-
-    // Fase 2: cargar lo pendiente en la imagen oculta y fundirlo al estar
-    // decodificada (ver beginFade). Sin nada pendiente: no-op.
-    function beginHiddenLoad() {
-        if (!root.hasPending)
-            return;
-        const src = root.pendingSrc;
-        root.hasPending = false;
-        if (src === "")
-            return;
-        root._fadeTargetSrc = src;
-        const hidden = root.frontIsA ? imgB : imgA;
-        root.setHiddenSource(hidden, src);
-        root.beginFade(hidden);
     }
 }

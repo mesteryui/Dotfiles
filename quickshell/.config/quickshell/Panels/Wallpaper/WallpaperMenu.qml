@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import qs.Core
 import qs.Core.Modules
-import qs.Shared.Background
 import qs.Panels.Wallpaper.Content
 import QtQuick
 import Quickshell
@@ -13,9 +12,7 @@ import Quickshell.Wayland
 Scope {
     id: root
 
-    // Apertura/cierre del panel más rápido que antes (220 -> 160 ms).
-    readonly property int animDuration: 160
-    // Fuente única del monitor enfocado (con fallback a la primera pantalla).
+    readonly property int animDuration: 200
     property var focusedScreen: Screens.focusedScreen
     property bool showing: false
     property bool _isAnimatingOut: false
@@ -43,19 +40,12 @@ Scope {
         }
     }
 
-    // LazyLoader externo: la PanelWindow (surface Wayland + background +
-    // animaciones) solo existe mientras se muestra o se anima la salida.
-    // Mismo patrón que Cheatsheet (hideTimer): sin esto la ventana vivía
-    // siempre aunque visible=false. El contenido sigue siendo Loader
-    // lazy+async interno. Servicios singleton intactos.
     LazyLoader {
         loading: root.showing || root._isAnimatingOut
 
         component: PanelWindow {
             id: wallpaperMenu
 
-            implicitWidth: 1120
-            implicitHeight: 420
             color: "transparent"
             screen: root.focusedScreen
             visible: root.showing || root._isAnimatingOut
@@ -63,6 +53,13 @@ Scope {
             WlrLayershell.namespace: "quickshell:wallpaper-menu"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
             exclusionMode: ExclusionMode.Ignore
+
+            anchors {
+                top: true
+                left: true
+                right: true
+                bottom: true
+            }
 
             HyprlandFocusGrab {
                 windows: [wallpaperMenu]
@@ -77,9 +74,6 @@ Scope {
                 target: root
 
                 function onShowingChanged() {
-                    // El contenido es lazy+async: en la primera apertura el item
-                    // aún no existe aquí; onLoaded lo enfoca al completarse.
-                    // Si ya existe (reapertura rápida), diferir un frame.
                     if (root.showing)
                         Qt.callLater(() => contentLoader.item?.requestFocus?.());
                 }
@@ -88,11 +82,23 @@ Scope {
             Shortcut {
                 sequence: "Escape"
                 onActivated: {
-                    // El contenido puede consumir el Escape antes que el menú
-                    // (limpiar la búsqueda o los filtros primero).
                     const content = contentLoader.item;
                     if (!content || !content.escapePressed || !content.escapePressed())
                         root.showing = false;
+                }
+            }
+
+            // Fondo semitransparente con opacidad exacta de 0.5 fuera de la lista y la barra superior
+            Rectangle {
+                anchors.fill: parent
+                color: "#000000"
+                opacity: animatedContainer.opacity * 0.5
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.animDuration
+                        easing.type: Easing.OutCubic
+                    }
                 }
             }
 
@@ -102,8 +108,8 @@ Scope {
                 anchors.fill: parent
 
                 opacity: 0.0
-                scale: 0.92
-                transformOrigin: Item.Bottom
+                scale: 0.94
+                transformOrigin: Item.Center
 
                 ParallelAnimation {
                     id: openAnim
@@ -118,10 +124,10 @@ Scope {
                         target: animatedContainer
                         property: "scale"
                         to: 1.0
-                        spring: Appearance.motion.springBouncy.spring
-                        damping: Appearance.motion.springBouncy.damping
-                        mass: Appearance.motion.springBouncy.mass
-                        epsilon: Appearance.motion.springBouncy.epsilon
+                        spring: 2.6
+                        damping: 0.18
+                        mass: 0.8
+                        epsilon: 0.003
                     }
                 }
 
@@ -135,11 +141,14 @@ Scope {
                         easing.type: Easing.Bezier
                         easing.bezierCurve: Appearance.motion.standard
                     }
-                    ScaleAnimator {
+                    SpringAnimation {
                         target: animatedContainer
-                        to: 0.92
-                        duration: root.animDuration
-                        easing.type: Easing.OutCubic
+                        property: "scale"
+                        to: 0.94
+                        spring: 4.0
+                        damping: 0.38
+                        mass: 0.8
+                        epsilon: 0.003
                     }
 
                     onFinished: {
@@ -171,21 +180,14 @@ Scope {
                     }
                 }
 
-                PopupBackground {
-                    anchors.fill: parent
-                }
-
                 Loader {
                     id: contentLoader
 
                     anchors.fill: parent
-                    anchors.margins: 18
                     active: root.showing || root._isAnimatingOut
                     asynchronous: true
                     sourceComponent: menuComp
                     onLoaded: {
-                        // Carga asíncrona: el foco solo se puede pedir aquí,
-                        // cuando el item ya existe y la ventana está visible.
                         if (root.showing)
                             Qt.callLater(() => contentLoader.item?.requestFocus?.());
                     }

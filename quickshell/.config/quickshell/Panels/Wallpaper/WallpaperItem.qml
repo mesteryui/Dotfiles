@@ -2,99 +2,120 @@ pragma ComponentBehavior: Bound
 
 import qs.Panels.Wallpaper.Content
 import qs.Core
-import qs.Shared.Background
 import QtQuick
 
 Item {
     id: delegateRoot
 
     required property int index
-    // Rol del FolderListModel: el ListView lo inyecta solo (como `index`).
     required property string filePath
 
     signal clicked
 
-    property int surfaceRadius: Appearance.shape.windowRounding
+    property int surfaceRadius: 18
 
     readonly property bool isSelected: ListView.isCurrentItem
-    // Distancia al elemento seleccionado (0 = centro, 1 = vecino inmediato…)
     readonly property int distance: Math.abs(ListView.view.currentIndex - index)
-    // Lado respecto al centro: -1 izquierda, 0 centro, 1 derecha
     readonly property real side: index < ListView.view.currentIndex ? -1 :
                                 index > ListView.view.currentIndex ? 1 : 0
 
-    implicitWidth: 300
-    implicitHeight: 220
+    // Ancho dinámico del delegado: seleccionada se expande a 560px, laterales 200px.
+    // Altura aumentada a 310px para que las imágenes se vean más altas y prominentes.
+    implicitWidth: isSelected ? 560 : 200
+    implicitHeight: 310
 
-    // ── Transformación Coverflow ─────────────────────────────────────────
-    // Escala y transparencia según selección; los no seleccionados se
-    // ven un poco más pequeños y oscuros para que el centro resalte.
-    scale: isSelected ? 1.08 : 0.86
-    opacity: isSelected ? 1.0 : 0.60
-    z: isSelected ? 10 : (100 - distance)
+    // Orden de apilado en ListView: el delegado seleccionado se sitúa siempre al frente (z: 100)
+    // para evitar que los delegados vecinos (con opacidad reducida y espaciado negativo)
+    // se superpongan u obstruyan la tarjeta seleccionada.
+    z: isSelected ? 100 : (50 - distance)
 
-    // Desplazamiento parallax lateral: cuanto más lejos del centro, más se
-    // desplaza. Al navegar se mueve con spring para un efecto de "cola"
-    // más chulo y orgánico que un simple deslizamiento lineal.
-    property real parallaxX: side * distance * 44
-
-    transform: [
-        Translate { x: parallaxX; y: 0 }
-    ]
-
-    Behavior on scale {
+    Behavior on implicitWidth {
         SpringAnimation {
-            spring: Appearance.motion.springSoft.spring
-            damping: Appearance.motion.springSoft.damping
-            mass: Appearance.motion.springSoft.mass
-            epsilon: Appearance.motion.springSoft.epsilon
-        }
-    }
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Appearance.motion.relaxed
-            easing.type: Easing.OutCubic
-        }
-    }
-    Behavior on parallaxX {
-        SpringAnimation {
-            spring: Appearance.motion.springSnappy.spring
-            damping: Appearance.motion.springSnappy.damping
-            mass: Appearance.motion.springSnappy.mass
-            epsilon: Appearance.motion.springSnappy.epsilon
+            spring: 2.8
+            damping: 0.20
+            mass: 0.7
+            epsilon: 0.5
         }
     }
 
-    // ── Fondo y Sombra Elevada ───────────────────────────────────────────
-    SurfaceBackground {
-        id: background
+    Item {
+        id: cardContainer
 
         anchors.fill: parent
-        radius: delegateRoot.surfaceRadius
-        color: delegateRoot.isSelected ? Appearance.md3.surface_container_highest :
-                                         Appearance.md3.surface_container_low
+
+        // Escala y opacidad según distancia al elemento seleccionado
+        scale: delegateRoot.isSelected ? 1.0 : Math.max(0.74, 0.88 - delegateRoot.distance * 0.05)
+        opacity: delegateRoot.isSelected ? 1.0 : Math.max(0.20, 0.65 - delegateRoot.distance * 0.18)
+
+        // Inclinación diagonal oblicua (Shear en X de -0.28)
+        transform: [
+            Matrix4x4 {
+                matrix: Qt.matrix4x4(
+                    1, -0.28, 0, 0,
+                    0,  1.0,  0, 0,
+                    0,  0.0,  1, 0,
+                    0,  0.0,  0, 1
+                )
+            }
+        ]
+
+        Behavior on scale {
+            SpringAnimation {
+                spring: 2.6
+                damping: 0.20
+                mass: 0.7
+                epsilon: 0.003
+            }
+        }
+
+        Behavior on opacity {
+            SpringAnimation {
+                spring: 2.8
+                damping: 0.28
+                mass: 0.8
+                epsilon: 0.01
+            }
+        }
+
+        // Resplandor y sombra exterior: resalta con el color primario de Matugen
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: -4
+            radius: delegateRoot.surfaceRadius + 4
+            color: delegateRoot.isSelected ? Qt.alpha(Appearance.md3.primary, 0.22) :
+                                             Qt.rgba(0, 0, 0, 0.25)
+            z: -1
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.motion.normal
+                }
+            }
+        }
+
+        // Contenido visual de la tarjeta
+        WallpaperItemContent {
+            anchors.fill: parent
+            isSelected: delegateRoot.isSelected
+            hovered: mouse.containsMouse
+            radius: delegateRoot.surfaceRadius
+            filePath: delegateRoot.filePath
+            delegateIndex: delegateRoot.index
+            listCurrentIndex: ListView.view ? ListView.view.currentIndex : -1
+        }
     }
 
-    // ── Contenido de la Tarjeta ──────────────────────────────────────────
-    WallpaperItemContent {
-        anchors.fill: parent
-        isSelected: delegateRoot.isSelected
-        hovered: mouse.containsMouse
-        radius: delegateRoot.surfaceRadius
-        filePath: delegateRoot.filePath
-        // Ventana de cercanía para pedir frames de vídeo solo cerca del
-        // viewport (ver WallpaperItemContent.isNear).
-        delegateIndex: delegateRoot.index
-        listCurrentIndex: ListView.view ? ListView.view.currentIndex : -1
-    }
-
-    // ── Captura de Interacción ──────────────────────────────────────────
     MouseArea {
         id: mouse
 
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: delegateRoot.clicked()
+        preventStealing: false
+        onClicked: {
+            if (ListView.view && ListView.view.moving)
+                return;
+            delegateRoot.clicked();
+        }
     }
 }

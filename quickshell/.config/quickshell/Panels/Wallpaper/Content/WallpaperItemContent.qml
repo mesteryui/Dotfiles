@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import qs.Primitives
 import qs.Core
 import qs.Core.Services as Services
@@ -6,28 +8,22 @@ import QtQuick
 Item {
     id: root
 
-    property int radius: Appearance.shape.windowRounding
+    property int radius: 18
     property bool isSelected: false
     property bool hovered: false
 
-    // Decodificado acotado a ~1.35x del tamaño mostrado (300x220,
-    // 324x238 con la escala de seleccionado): nítido sin desperdiciar
-    // VRAM (antes 560x400, ~37% más por thumb).
-    property int imageWidth: 440
-    property int imageHeight: 320
+    // Decodificado dimensionado para tarjetas altas (560x310) con compensación de shear (+0.28)
+    // Acotar sourceSize acelera radicalmente el decodificado de imágenes grandes/4K
+    property int imageWidth: 660
+    property int imageHeight: 330
 
     required property string filePath
 
-    // Ventana de cercanía al viewport: el ListView instancia delegados
-    // fuera de pantalla por el cacheBuffer, y pedir el frame de todos al
-    // abrir el menú encolaba N ffmpeg de golpe. Solo piden frame los
-    // cercanos al actual (±4); al hacer scroll entran en ventana y lo
-    // piden entonces. El padre los ata a index/currentIndex.
     property int delegateIndex: -1
     property int listCurrentIndex: -1
     readonly property bool isNear: delegateIndex < 0 || listCurrentIndex < 0 || Math.abs(delegateIndex
                                                                                          - listCurrentIndex)
-                                   <= 4
+                                   <= 6
 
     readonly property bool isVideo: Services.WallpaperService.isVideo(root.filePath)
 
@@ -36,41 +32,56 @@ Item {
             Services.VideoFrameService.ensureFrame(root.filePath);
     }
 
-    // Los videos se representan por su frame (el Image no lee video). El
-    // frame se pide al entrar en ventana; la cola del servicio serializa
-    // las extracciones (un solo ffmpeg a la vez).
-    // Puerta igual que el lockscreen: el Image no reintenta un fichero
-    // ausente al primer intento, asi que la cadena solo se expone cuando
-    // el servicio confirma (binding sobre `confirmed`, sin Connections).
     Component.onCompleted: root.maybeRequestFrame()
 
-    // Los delegados se reciclan (pool del ListView): si cambia el archivo,
-    // o si el scroll lo acerca al viewport, se pide su frame. Nunca desde
-    // el binding de source (escribir durante su evaluacion dispara
-    // "Binding loop detected").
-    onFilePathChanged: root.maybeRequestFrame()
+    onFilePathChanged: {
+        root.maybeRequestFrame();
+        // Carga inmediata de la fuente al reciclar delegado
+        wallpaperPreview.source = Qt.resolvedUrl(root.thumbSource());
+    }
     onIsNearChanged: root.maybeRequestFrame()
     onIsVideoChanged: root.maybeRequestFrame()
 
+    // Para video devuelve directamente el frame estático: si ya existe en disco
+    // se carga de inmediato en 0ms sin esperar a la cola de bash.
     function thumbSource(): string {
-        if (!root.isVideo)
-            return root.filePath;
-        // LECTURA PURA: "" -> frame es un cambio real que carga.
-        const open = Services.VideoFrameService.confirmed[root.filePath] !== undefined;
-        return open ? Services.WallpaperService.staticSourceFor(root.filePath) : "";
+        return Services.WallpaperService.staticSourceFor(root.filePath);
     }
 
-    // Icono placeholder mientras se carga
+    // Si el frame se acaba de generar por ffmpeg en segundo plano, se refresca
+    Connections {
+        target: Services.VideoFrameService
+
+        function onFrameReady(videoPath: string, framePath: string) {
+            if (videoPath === root.filePath) {
+                wallpaperPreview.source = "";
+                wallpaperPreview.source = Qt.resolvedUrl(framePath);
+            }
+        }
+    }
+
+    // Icono placeholder mientras se carga (sin distorsión gracias al contra-shear)
     MaterialIcon {
         anchors.centerIn: parent
         icon: root.isVideo ? "movie" : "image"
-        size: 32
+        size: 36
         color: Appearance.md3.on_surface_variant
-        opacity: Appearance.opacity.ghost
+        opacity: 0.30
         visible: wallpaperPreview.status !== Image.Ready
+
+        transform: [
+            Matrix4x4 {
+                matrix: Qt.matrix4x4(
+                    1, 0.28, 0, 0,
+                    0,  1.0, 0, 0,
+                    0,  0.0, 1, 0,
+                    0,  0.0, 0, 1
+                )
+            }
+        ]
     }
 
-    // ── Imagen y Borde de Cristal ──────────────────────────────
+    // ── Tarjeta con borde adaptado a Matugen ───────────────────────────
     Rectangle {
         id: imageMask
 
@@ -81,9 +92,9 @@ Item {
         StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            border.color: root.isSelected ? Appearance.border.selected : Qt.alpha(Appearance.md3.on_surface,
-                                                                                  0.12)
-            border.width: root.isSelected ? Appearance.border.focusWidth : Appearance.border.width
+            border.color: root.isSelected ? Appearance.md3.primary :
+                                             Qt.alpha(Appearance.md3.outline, 0.25)
+            border.width: root.isSelected ? 2 : 1
 
             Behavior on border.color {
                 ColorAnimation {
@@ -94,17 +105,40 @@ Item {
             Image {
                 id: wallpaperPreview
 
-                anchors.fill: parent
-                source: {
-                    const eff = root.thumbSource();
-                    return eff !== "" ? Qt.resolvedUrl(eff) : "";
+                // Sangría para compensar la inclinación oblicua del contenedor (-0.28)
+                // y cubrir completamente la tarjeta con la imagen sin distorsión
+                readonly property real shearBleed: Math.ceil(parent.height * 0.28)
+
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: -shearBleed - 8
+                    rightMargin: -8
                 }
+
+                // Contra-shear en X de +0.28 para anular el shear de -0.28 del contenedor:
+                // la imagen se proyecta totalmente recta (sin distorsión), mientras que
+                // el marco/contenedor conserva su forma original de paralelogramo.
+                transform: [
+                    Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, 0.28, 0, 0,
+                            0,  1.0, 0, 0,
+                            0,  0.0, 1, 0,
+                            0,  0.0, 0, 1
+                        )
+                    }
+                ]
+
+                source: Qt.resolvedUrl(root.thumbSource())
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                // Thumbs locales: sin caché global para que el Loader al
-                // destruir libere los pixmaps. Recarga rápida desde disco
-                // con placeholder + fade ya existentes (sin parpadeo extra).
-                cache: false
+                // Caché activada para carga instantánea en memoria sin releer disco
+                cache: true
+                mipmap: true
+                smooth: true
                 sourceSize.width: root.imageWidth
                 sourceSize.height: root.imageHeight
                 opacity: status === Image.Ready ? 1 : 0
@@ -113,53 +147,119 @@ Item {
 
                 Behavior on scale {
                     SpringAnimation {
-                        spring: Appearance.motion.springSoft.spring
-                        damping: Appearance.motion.springSoft.damping
-                        mass: Appearance.motion.springSoft.mass
-                        epsilon: Appearance.motion.springSoft.epsilon
+                        spring: 2.5
+                        damping: 0.20
+                        mass: 0.7
+                        epsilon: 0.003
                     }
                 }
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Appearance.motion.normal
+                        duration: Appearance.motion.fast
                         easing.type: Easing.Bezier
-                        easing.bezierCurve: Appearance.motion.emphasized
+                        easing.bezierCurve: Appearance.motion.standard
                     }
                 }
             }
 
-            // Insignia de video (solo videos): indica fondo animado.
+            // Insignia de video (sin distorsión gracias al contra-shear)
             Rectangle {
                 anchors {
                     left: parent.left
                     top: parent.top
-                    margins: Appearance.spacing.medium
+                    margins: 12
                 }
-                width: badgeIcon.implicitWidth + 14
-                height: 24
-                radius: Appearance.shape.medium
-                color: Qt.rgba(0, 0, 0, 0.45)
-                border.color: Qt.rgba(1, 1, 1, 0.15)
-                border.width: Appearance.border.width
+                width: badgeRow.implicitWidth + 14
+                height: 22
+                radius: 6
+                color: Qt.alpha(Appearance.md3.surface_container_lowest, 0.75)
+                border.color: Qt.alpha(Appearance.md3.primary, 0.40)
+                border.width: 1
                 visible: root.isVideo && wallpaperPreview.status === Image.Ready
 
-                MaterialIcon {
-                    id: badgeIcon
+                transform: [
+                    Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, 0.28, 0, 0,
+                            0,  1.0, 0, 0,
+                            0,  0.0, 1, 0,
+                            0,  0.0, 0, 1
+                        )
+                    }
+                ]
 
+                Row {
+                    id: badgeRow
                     anchors.centerIn: parent
-                    icon: "play_arrow"
-                    size: 16
-                    color: Qt.rgba(1, 1, 1, 0.95)
+                    spacing: 4
+
+                    MaterialIcon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon: "play_arrow"
+                        size: 14
+                        color: Appearance.md3.primary
+                    }
+
+                    StyledText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "VID"
+                        font.pixelSize: 9
+                        font.weight: Font.Bold
+                        color: Appearance.md3.primary
+                    }
                 }
             }
 
-            // Capa de resaltado (State layer hover)
+            // Badge "PIC" para imágenes estáticas (sin distorsión)
+            Rectangle {
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 12
+                }
+                width: picBadgeRow.implicitWidth + 14
+                height: 22
+                radius: 6
+                color: Qt.alpha(Appearance.md3.surface_container_lowest, 0.75)
+                border.color: Qt.alpha(Appearance.md3.primary, 0.40)
+                border.width: 1
+                visible: !root.isVideo && root.isSelected && wallpaperPreview.status === Image.Ready
+
+                transform: [
+                    Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, 0.28, 0, 0,
+                            0,  1.0, 0, 0,
+                            0,  0.0, 1, 0,
+                            0,  0.0, 0, 1
+                        )
+                    }
+                ]
+
+                Row {
+                    id: picBadgeRow
+                    anchors.centerIn: parent
+                    spacing: 2
+
+                    StyledText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "PIC"
+                        font.pixelSize: 9
+                        font.weight: Font.Bold
+                        font.letterSpacing: 0.5
+                        color: Appearance.md3.primary
+                    }
+                }
+            }
+
+
+            // State layer hover
             Rectangle {
                 anchors.fill: parent
                 radius: root.radius
                 color: Appearance.md3.on_surface
-                opacity: root.hovered ? 0.06 : 0
+                opacity: root.hovered ? 0.05 : 0
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -168,8 +268,7 @@ Item {
                 }
             }
 
-            // Scrim degradado inferior (excepción intencionada: monocromo
-            // sobre foto, igual en ambos temas).
+            // Scrim degradado inferior muy sutil
             Rectangle {
                 id: nameScrim
                 anchors {
@@ -178,8 +277,8 @@ Item {
                     bottom: parent.bottom
                 }
 
-                height: parent.height * 0.38
-                visible: wallpaperPreview.status === Image.Ready
+                height: parent.height * 0.32
+                visible: root.isSelected && wallpaperPreview.status === Image.Ready
 
                 gradient: Gradient {
                     orientation: Gradient.Vertical
@@ -190,38 +289,50 @@ Item {
                     }
                     GradientStop {
                         position: 1.0
-                        color: Qt.rgba(0, 0, 0, 0.70)
+                        color: Qt.alpha(Appearance.md3.surface_container_lowest, 0.65)
                     }
                 }
             }
 
-            // Píldora con el nombre de archivo
+            // Píldora inferior izquierda con el nombre de archivo (sin distorsión)
             Rectangle {
                 anchors {
-                    horizontalCenter: parent.horizontalCenter
+                    left: parent.left
+                    leftMargin: 20
                     bottom: parent.bottom
-                    bottomMargin: 10
+                    bottomMargin: 14
                 }
-                width: Math.min(parent.width - 20, fileNameLabel.implicitWidth + 16)
+                width: Math.min(parent.width - 40, fileNameLabel.implicitWidth + 24)
                 height: 24
-                radius: Appearance.shape.medium
-                color: Qt.rgba(0, 0, 0, 0.45)
-                border.color: Qt.rgba(1, 1, 1, 0.15)
-                border.width: Appearance.border.width
-                visible: wallpaperPreview.status === Image.Ready
+                radius: 6
+                color: Qt.alpha(Appearance.md3.surface_container_lowest, 0.70)
+                border.color: Qt.alpha(Appearance.md3.outline_variant, 0.35)
+                border.width: 1
+                visible: root.isSelected && wallpaperPreview.status === Image.Ready
+
+                transform: [
+                    Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, 0.28, 0, 0,
+                            0,  1.0, 0, 0,
+                            0,  0.0, 1, 0,
+                            0,  0.0, 0, 1
+                        )
+                    }
+                ]
 
                 StyledText {
                     id: fileNameLabel
 
                     anchors.centerIn: parent
                     width: parent.width - 12
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft
                     elide: Text.ElideMiddle
                     text: {
                         const parts = root.filePath.split("/");
                         return parts.length > 0 ? parts[parts.length - 1] : "";
                     }
-                    color: Qt.rgba(1, 1, 1, 0.95)
+                    color: Appearance.md3.on_surface
                     font.pixelSize: Appearance.typeScale.labelSmall
                     font.weight: Font.Medium
                 }
