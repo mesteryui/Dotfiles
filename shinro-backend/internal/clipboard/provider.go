@@ -175,13 +175,21 @@ func truncateBytesRunes(data []byte, n int) string {
 		_, size := utf8.DecodeRune(data[end:])
 		end += size
 	}
-	if end == len(data) {
-		return string(data)
-	}
-	if utf8.Valid(data[:end]) {
+	if end >= len(data) || utf8.Valid(data) {
 		return string(data[:end])
 	}
-	return string([]rune(string(data[:end])))
+	// Fallback: validar y truncar caracteres sueltos
+	result := string(data[:end])
+	if utf8.ValidString(result) {
+		return result
+	}
+	// Buscar el último carácter válido
+	for i := end - 1; i > 0; i-- {
+		if utf8.ValidString(string(data[:i+1])) {
+			return string(data[:i+1])
+		}
+	}
+	return ""
 }
 
 // classifyClip deriva el tipo y preview de los bytes según su mime.
@@ -1254,7 +1262,6 @@ func (provider *Provider) ImportCliphist() error {
 	return nil
 }
 
-// hashUUIDToUint64 convierte un string UUID a uint64 de forma determinista.
 func hashUUIDToUint64(uuidStr string) uint64 {
 	var h uint64
 	for i := 0; i < len(uuidStr) && i < 16; i++ {
