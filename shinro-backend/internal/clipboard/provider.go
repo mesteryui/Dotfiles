@@ -1258,7 +1258,7 @@ func (provider *Provider) ImportCliphist() error {
 func hashUUIDToUint64(uuidStr string) uint64 {
 	var h uint64
 	for i := 0; i < len(uuidStr) && i < 16; i++ {
-		h ^= uint64(uuidStr[i]) << (uint(i % 8) * 8)
+		h ^= uint64(uuidStr[i]) << (uint(i%8) * 8)
 	}
 	return h
 }
