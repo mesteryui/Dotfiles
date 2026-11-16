@@ -35,6 +35,7 @@ import (
 	"shinro-backend/internal/system"
 	"shinro-backend/internal/weather"
 )
+var jsonv2Options encodingjsonv2.Options = encodingjsonv2.RejectUnknownMembers(true)
 
 // Server escucha en un socket Unix y distribuye datos por módulo.
 type Server struct {
@@ -416,13 +417,13 @@ func (s *Server) readLoop(c *client) {
 		}
 
 		var raw map[string]json.RawMessage
-		if err := encodingjsonv2.Unmarshal([]byte(line), &raw, encodingjsonv2.RejectUnknownMembers(true)); err != nil {
+		if err := encodingjsonv2.Unmarshal([]byte(line), &raw, jsonv2Options); err != nil {
 			logger.Warn("no se pudo parsear JSON", "error", err, "linea", line)
 			continue
 		}
 
 		var msgType string
-		_ = encodingjsonv2.Unmarshal(raw["type"], &msgType, encodingjsonv2.RejectUnknownMembers(true))
+		_ = encodingjsonv2.Unmarshal(raw["type"], &msgType, jsonv2Options)
 
 		switch msgType {
 		case "hello":
@@ -499,7 +500,7 @@ func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
 			Mode geo.Mode `json:"mode"`
 			City string   `json:"city"`
 		}
-		if err := encodingjsonv2.Unmarshal(locRaw, &loc, encodingjsonv2.RejectUnknownMembers(true)); err == nil {
+		if err := encodingjsonv2.Unmarshal(locRaw, &loc, jsonv2Options); err == nil {
 			c.mu.Lock()
 			if loc.Mode != "" {
 				c.mode = loc.Mode
@@ -540,7 +541,7 @@ func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
 func (s *Server) handleGet(c *client, raw map[string]json.RawMessage) {
 	var module string
 	if modRaw, ok := raw["module"]; ok {
-		_ = encodingjsonv2.Unmarshal(modRaw, &module, encodingjsonv2.RejectUnknownMembers(true))
+		_ = encodingjsonv2.Unmarshal(modRaw, &module, jsonv2Options)
 	}
 	logger.Debug("get request", "client", c.conn.RemoteAddr(), "module", module)
 
