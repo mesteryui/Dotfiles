@@ -82,7 +82,7 @@ title_error = { fg = "#ffb4ab" }
 [filetype]
 rules = [
 	{ mime = "image/*", fg = "#6a3457" },
-	{ mime = "{audio,video}/*", fg = "#854b70" },
+	{ mime = "{audio,video}/*", fg = "#864b70" },
 	{ mime = "application/{zip,gzip,x-tar,x-bzip2,x-7z-compressed,x-rar,vnd.rar,x-xz,zstd}", fg = "#f4ba9e" },
 	{ url = "*", is = "orphan", fg = "#ffb4ab" },
 	{ url = "*", is = "exec", fg = "#debece" },
