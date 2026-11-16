@@ -15,7 +15,7 @@ package socket
 import (
 	"bufio"
 	"context"
-	"encoding/json"
+	json "encoding/json"
 	encodingjsonv2 "encoding/json/v2"
 	"errors"
 	"io"
@@ -416,13 +416,13 @@ func (s *Server) readLoop(c *client) {
 		}
 
 		var raw map[string]json.RawMessage
-		if err := encodingjsonv2.Unmarshal([]byte(line), &raw); err != nil {
+		if err := encodingjsonv2.Unmarshal([]byte(line), &raw, encodingjsonv2.RejectUnknownMembers(true)); err != nil {
 			logger.Warn("no se pudo parsear JSON", "error", err, "linea", line)
 			continue
 		}
 
 		var msgType string
-		_ = encodingjsonv2.Unmarshal(raw["type"], &msgType)
+		_ = encodingjsonv2.Unmarshal(raw["type"], &msgType, encodingjsonv2.RejectUnknownMembers(true))
 
 		switch msgType {
 		case "hello":
@@ -499,7 +499,7 @@ func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
 			Mode geo.Mode `json:"mode"`
 			City string   `json:"city"`
 		}
-		if err := encodingjsonv2.Unmarshal(locRaw, &loc); err == nil {
+		if err := encodingjsonv2.Unmarshal(locRaw, &loc, encodingjsonv2.RejectUnknownMembers(true)); err == nil {
 			c.mu.Lock()
 			if loc.Mode != "" {
 				c.mode = loc.Mode
@@ -540,7 +540,7 @@ func (s *Server) handleHello(c *client, raw map[string]json.RawMessage) {
 func (s *Server) handleGet(c *client, raw map[string]json.RawMessage) {
 	var module string
 	if modRaw, ok := raw["module"]; ok {
-		_ = encodingjsonv2.Unmarshal(modRaw, &module)
+		_ = encodingjsonv2.Unmarshal(modRaw, &module, encodingjsonv2.RejectUnknownMembers(true))
 	}
 	logger.Debug("get request", "client", c.conn.RemoteAddr(), "module", module)
 
