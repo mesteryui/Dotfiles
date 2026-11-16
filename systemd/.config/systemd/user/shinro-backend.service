@@ -9,5 +9,10 @@ ExecStart=/home/oscar/.dotfiles/shinro-backend/shinro-backend
 Restart=always
 RestartSec=5
 
+# Ajuste opcional del daemon (SHINRO_LOG_LEVEL, SHINRO_CONNECTIVITY_INTERVAL,
+# SHINRO_SOCKET_PATH...). El prefijo "-" hace que systemd lo ignore si el
+# fichero no existe: sin él, el daemon arranca con los valores por defecto.
+EnvironmentFile=-%h/.config/shinro/backend.env
+
 [Install]
 WantedBy=default.target
