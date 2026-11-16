@@ -26,7 +26,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/google/uuid"
+	"uuid"
 
 	"shinro-backend/internal/logger"
 	"shinro-backend/internal/safe"
@@ -102,7 +102,7 @@ func New(stateDir string) *Provider {
 	}
 	provider := &Provider{
 		entries:  make([]*Entry, 0),
-		nextID:   hashUUIDToUint64(uuid.NewString()),
+		nextID:   hashUUIDToUint64(uuid.NewV4().String()),
 		cacheDir: cacheDir,
 		stateDir: stateDir,
 		dataDir:  dataDir,
