@@ -35,6 +35,7 @@ import (
 	"shinro-backend/internal/system"
 	"shinro-backend/internal/weather"
 )
+
 var jsonv2Options encodingjsonv2.Options = encodingjsonv2.RejectUnknownMembers(true)
 
 // Server escucha en un socket Unix y distribuye datos por módulo.
