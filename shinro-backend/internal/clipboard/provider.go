@@ -26,6 +26,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/google/uuid"
+
 	"shinro-backend/internal/logger"
 	"shinro-backend/internal/safe"
 )
@@ -100,7 +102,7 @@ func New(stateDir string) *Provider {
 	}
 	provider := &Provider{
 		entries:  make([]*Entry, 0),
-		nextID:   1,
+		nextID:   hashUUIDToUint64(uuid.NewString()),
 		cacheDir: cacheDir,
 		stateDir: stateDir,
 		dataDir:  dataDir,
@@ -1250,4 +1252,13 @@ func (provider *Provider) ImportCliphist() error {
 
 	logger.Info("cliphist importado", "entradas", imported)
 	return nil
+}
+
+// hashUUIDToUint64 convierte un string UUID a uint64 de forma determinista.
+func hashUUIDToUint64(uuidStr string) uint64 {
+	var h uint64
+	for i := 0; i < len(uuidStr) && i < 16; i++ {
+		h ^= uint64(uuidStr[i]) << (uint(i % 8) * 8)
+	}
+	return h
 }
