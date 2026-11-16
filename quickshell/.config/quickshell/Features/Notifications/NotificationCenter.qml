@@ -414,7 +414,7 @@ PanelWindow {
     }
 
     // Sombra: source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property"
+/* Fixed: Component.onCompleted assigns source */
     MultiEffect {
         id: panelShadow
 

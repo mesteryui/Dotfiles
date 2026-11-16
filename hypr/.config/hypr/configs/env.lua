@@ -105,7 +105,15 @@ hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
 -- normal de cada petición, no un fallo: los errores reales los sigue
 -- reportando cada servicio con su propio console.warn ([HyprlandIpc]/
 -- [Hyprsunset]). Se apaga solo el aviso de Quickshell.
-hl.env("QT_LOGGING_RULES", "qt.qpa.wayland.textinput=false;quickshell.io.socket.warning=false")
+--
+-- qt.text.font.db: el motor de texto de Qt resuelve fuentes por script
+-- (emoji, CJK, glifos Nerd Font/símbolos, alfabetos no latinos) y, al
+-- comprobar las tablas OpenType de las familias del fallback, informa con
+-- `INFO qt.text.font.db: OpenType support missing for "…", script N` por cada
+-- combinación. Es contabilidad interna del fallback (la fuente sustituta sí
+-- cubre el script y el texto sale bien), pero con el catálogo multilingüe y
+-- emoji de la shell se llena de logs en cada renderizado. Se apaga la categoría.
+hl.env("QT_LOGGING_RULES", "qt.qpa.wayland.textinput=false;quickshell.io.socket.warning=false;qt.text.font.db=false")
 
 hl.env("GDK_BACKEND", "wayland,x11,*")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")

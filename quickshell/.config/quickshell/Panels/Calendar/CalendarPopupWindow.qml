@@ -54,7 +54,7 @@ BarPopupWindow {
     }
 
     // Sombra: source se asigna de forma declarativa para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
+/* Fixed: Uses PopupBackground with layer.enabled */
     // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
 
     // ── Content ───────────────────────────────────────────────

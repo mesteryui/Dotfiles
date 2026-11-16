@@ -97,11 +97,11 @@ local acrylic_tint = set_opacity(base_color_hex, 0.80)
 
 hl.config({
 	decoration = {
-		rounding = 20,
+		rounding = 15,
 		rounding_power = 2,
 		active_opacity = 1.0,
 		inactive_opacity = 0.94,
-		dim_inactive = true,
+		dim_inactive = false,
 		dim_strength = 0.15,
 		wobble = {
 			enabled = true,
@@ -141,7 +141,7 @@ hl.config({
 			color = Colors.shadow,
 		},
 		glow = {
-			enabled = true,
+			enabled = enable,
 			range = 35,
 			render_power = 3,
 			color = { colors = { Colors.surface_container_highest, Colors.surface_container }, angle = 45 },

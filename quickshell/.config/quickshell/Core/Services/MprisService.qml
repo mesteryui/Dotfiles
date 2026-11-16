@@ -228,6 +228,15 @@ Singleton {
                 return;
             if (!p.positionSupported)
                 return;
+            // Evita leer Position de reproductores Firefox cuando su nombre
+            // D-Bus no está activatable, lo que causa ServiceUnknown ("The name
+            // is not activatable"). Esto complementa la guarda de
+            // isRealPlayer, que solo filtra Firefox cuando plasma-browser-integration
+            // está activo.
+            if (p.dbusName && p.dbusName.startsWith('org.mpris.MediaPlayer2.firefox') &&
+                !hasActivePlasmaIntegration) {
+                return;
+            }
             if (p.canSeek || p.canControl) {
                 try {
                     root.position = p.position;

@@ -1,7 +1,7 @@
 {
     "appearance": {
         "darkMode": true,
-        "deckFrost": true,
+        "deckFrost": false,
         "deckFrostOnBattery": true,
         "deckFrostStrength": 0.45,
         "expressive": "Google Sans Flex",
@@ -9,17 +9,17 @@
         "matugen": {
             "type": "scheme-tonal-spot"
         },
-        "monospace": "JetBrains Mono NerdFont",
+        "monospace": "JetBrainsMono Nerd Font",
         "reading": "Google Sans Flex"
     },
     "bar": {
-        "barType": "notch",
+        "barType": "partial_hug",
         "height": 40,
         "position": "top",
         "workspaceButtonType": "kanji"
     },
     "brightness": {
-        "syncAll": false
+        "syncAll": true
     },
     "language": "es_ES",
     "lockscreen": {
@@ -28,18 +28,18 @@
     },
     "nightLight": {
         "gamma": 100,
-        "temperature": 5514
+        "temperature": 5967
     },
     "notifications": {
-        "timeout": 8
+        "timeout": 10
     },
     "updates": {
-        "command": "shelly -U",
-        "countTime": 14
+        "command": "yay -Syu",
+        "countTime": 10
     },
     "weather": {
         "autoLocation": false,
         "city": "Vigo,ES",
-        "reloadTime": 10
+        "reloadTime": 30
     }
 }

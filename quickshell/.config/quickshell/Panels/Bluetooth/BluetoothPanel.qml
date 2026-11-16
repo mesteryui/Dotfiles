@@ -25,9 +25,6 @@ BarPopupWindow {
         showBorder: true
     }
 
-    // Sombra: source se asigna en onCompleted para evitar warning
-    // "ShaderEffect: 'source' does not have a matching property" del primer frame.
-
     // El contenido llena bg (con clip y radius), no el padre directo, y no
     // renderiza bordes propios.
     BluetoothPopupContent {

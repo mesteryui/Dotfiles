@@ -9,10 +9,6 @@ hl.bind("XF86MONBRIGHTNESSUP", hl.dsp.exec_cmd("qs ipc call brightness increment
     { repeating = true, description = "Multimedia: Subir brillo", locked = true })
 hl.bind("XF86MONBRIGHTNESSDOWN", hl.dsp.exec_cmd("qs ipc call brightness decrement 5"),
     { repeating = true, description = "Multimedia: Bajar brillo", locked = true })
-hl.bind("XF86KBDBRIGHTNESSUP", hl.dsp.exec_cmd("qs ipc call kbd_brightness increment"),
-    { repeating = true, description = "Multimedia: Subir brillo del teclado", locked = true })
-hl.bind("XF86KBDBRIGHTNESSDOWN", hl.dsp.exec_cmd("qs ipc call kbd_brightness decrement"),
-    { repeating = true, description = "Multimedia: Bajar brillo del teclado", locked = true })
 
 hl.bind(mainMod .. " + I", hl.dsp.submap("Multimedia"), { description = "Submapas: Entrar al submapa Multimedia" })
 
