@@ -400,11 +400,12 @@ Item {
 
     // ── Sombra de Elevación Material 3 ──
     // source se asigna en onCompleted para evitar warning
-/* Fixed: Component.onCompleted assigns source */
+    // "ShaderEffect: 'source' does not have a matching property"
     MultiEffect {
         id: cardShadow
 
         anchors.fill: card
+        Component.onCompleted: cardShadow.source = card
         shadowEnabled: true
         shadowColor: Appearance.md3.shadow
         shadowOpacity: root.isCritical ? 0.25 : 0.16
@@ -412,6 +413,5 @@ Item {
         shadowVerticalOffset: 2
         shadowHorizontalOffset: 0
         z: -1
-        Component.onCompleted: cardShadow.source = card
     }
 }

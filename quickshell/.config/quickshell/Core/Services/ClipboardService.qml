@@ -19,6 +19,15 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    // Error de la última acción del portapapeles (star/delete/recopy...):
+    // lo muestra la UI de forma temporal. Distinto de `error`, que significa
+    // "backend caído/inservible" y sigue gobernando el EmptyState.
+    property string actionError: ""
+
+    // Última respuesta de `stats` del daemon ({items, starred, bytes}) para la
+    // línea de estado del preview del modo clip. {} si nunca se pidió.
+    property var lastStats: ({})
+
     readonly property string langWatch: I18nService.language
 
     onLangWatchChanged: rebuildSnapshot()
@@ -107,6 +116,17 @@ Singleton {
         onTriggered: root._failRequest("timeout")
     }
 
+    // El error de acción se muestra un rato y se limpia solo: no es un
+    // estado persistente (a diferencia de `error`, que dura hasta que el
+    // backend vuelve).
+    Timer {
+        id: actionErrorTimer
+
+        interval: 4000
+        repeat: false
+        onTriggered: root.actionError = ""
+    }
+
     Component.onCompleted: shinroSocket.connected = true
 
     // ── Peticiones pendientes (cola FIFO) ───────────────────────
@@ -128,14 +148,27 @@ Singleton {
     // entrada de la cola. Las demás siguen vivas y sus respuestas no se
     // atribuyen a la acción equivocada.
     function _handleBackendError(message) {
+        const hadAction = root._pending.length > 0 && root._pending[0].action !== "list";
         if (root._pending.length > 0)
             root._pending.shift();
         if (root._pending.length === 0)
             requestTimeout.stop();
         root.refreshing = false;
         root.error = String(message || "backend");
+        // Solo las acciones (no los listados) se exponen como error de
+        // acción temporal: un list fallido ya queda reflejado en `error`.
+        if (hadAction)
+            root.setActionError(String(message || "backend"));
         // No spammear consola en cada error de backend: el estado `error` ya
         // se expone para la UI.
+    }
+
+    function setActionError(message) {
+        root.actionError = String(message || "");
+        if (root.actionError !== "")
+            actionErrorTimer.restart();
+        else
+            actionErrorTimer.stop();
     }
 
     function _send(action, extra) {
@@ -188,8 +221,21 @@ Singleton {
         case "copy-image":
         case "recopy":
         case "paste":
+            break;
         case "star":
+            // Ack del daemon: reflejar el cambio sin esperar el broadcast
+            // (que llegará igualmente y es idempotente). El backend responde
+            // {id, starred} para una acción star.
+            if (data && data.id !== undefined) {
+                root._applyStarred(String(data.id), data.starred === true);
+                root.setActionError("");
+            }
+            break;
         case "stats":
+            // {items, starred, bytes}: estado real del historial según el
+            // daemon, para la línea de estado del preview del modo clip.
+            if (data && typeof data === "object" && !Array.isArray(data))
+                root.lastStats = data;
             break;
         case "delete":
         case "clear":
@@ -201,6 +247,21 @@ Singleton {
                 root.textReady(String(data.id !== undefined ? data.id : req.id));
             }
             break;
+        }
+    }
+
+    // Aplica un estado starred a una entrada del modelo local (por ack o por
+    // cambio externo). No-op si la entrada ya está en ese estado.
+    function _applyStarred(cid, starred) {
+        for (let i = 0; i < entries.count; i++) {
+            const e = entries.get(i);
+            if (e.cid !== String(cid))
+                continue;
+            if ((e._starred === true) === starred)
+                return;
+            entries.setProperty(i, "_starred", starred);
+            rebuildSnapshot();
+            return;
         }
     }
 
@@ -258,6 +319,9 @@ Singleton {
         }
         root.ready = true;
         root.rebuildSnapshot();
+        // Estado del historial según el daemon (items/starred/bytes) para el
+        // preview del modo clip. Barato: una petición pequeña por listado.
+        root._send("stats", {});
     }
 
     function rebuildSnapshot() {
@@ -332,14 +396,22 @@ Singleton {
     // ── Preview imagen ──────────────────────────────────────────
     // (La miniatura vive en disco, en el thumb que manda el backend;
     // aquí no se cachea nada en /tmp propio: ver FilePreviewService.)
+    // Verificamos que el archivo exista antes de devolver la ruta, para
+    // evitar que QML intente abrir thumbnails huérfanos (ej. tras la
+    // evicción de entradas en el backend).
     function previewImage(cid) {
         const id = parseInt(cid, 10);
         if (isNaN(id))
             return "";
         for (let i = 0; i < entries.count; i++) {
             const e = entries.get(i);
-            if (e.cid === String(id) && e.isImage && e._thumbPath)
-                return e._thumbPath;
+            if (e.cid === String(id) && e.isImage && e._thumbPath) {
+                // Comprobar que el archivo sigue existiendo en disco.
+                // Qt.fsStats devuelve {exists: bool, size: number, ...}
+                if (Qt.fsStats(e._thumbPath).exists) {
+                    return e._thumbPath;
+                }
+            }
         }
         return "";
     }

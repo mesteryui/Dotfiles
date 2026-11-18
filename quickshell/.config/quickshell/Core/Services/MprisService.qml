@@ -233,8 +233,10 @@ Singleton {
             // is not activatable"). Esto complementa la guarda de
             // isRealPlayer, que solo filtra Firefox cuando plasma-browser-integration
             // está activo.
-            if (p.dbusName && p.dbusName.startsWith('org.mpris.MediaPlayer2.firefox') &&
-                !hasActivePlasmaIntegration) {
+            // Firefox instance D-Bus names (e.g. .instance_*) are not
+            // activatable: reading Position raises ServiceUnknown.
+            // Skip Position reads for Firefox regardless of plasma integration.
+            if (p.dbusName && p.dbusName.startsWith('org.mpris.MediaPlayer2.firefox')) {
                 return;
             }
             if (p.canSeek || p.canControl) {

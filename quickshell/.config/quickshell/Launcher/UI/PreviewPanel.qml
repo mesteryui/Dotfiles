@@ -34,6 +34,9 @@ Rectangle {
     // "": sin metadatos.
     property string metaText: ""
     property string fileTooLargeText: "Archivo demasiado grande para previsualizar"
+    // Línea de estado del historial ya formateada (AppLauncher la traduce
+    // con los datos de ClipboardService.lastStats). "": oculta.
+    property string statsText: ""
 
     // Truncado inteligente para el cuerpo del portapapeles:
     // - Colapsa saltos de línea excesivos (más de 2 seguidos → 2)
@@ -262,6 +265,18 @@ Rectangle {
                 font.pixelSize: Appearance.typeScale.bodySmall
                 color: Appearance.md3.on_surface
             }
+        }
+
+        // Estado real del historial según shinro-backend (solo clip):
+        // "N entradas · M destacadas · X MB". Discreto, al pie del panel.
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            visible: root.activeMode === "clip" && root.statsText !== ""
+            text: root.statsText
+            font.pixelSize: Appearance.typeScale.labelSmall
+            color: Appearance.md3.on_surface_variant
+            opacity: Appearance.opacity.hintStrong
         }
     }
 }

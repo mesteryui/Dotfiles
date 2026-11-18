@@ -933,21 +933,67 @@ Scope {
                 searchBar.field.forceActiveFocus();
             }
 
-            // Favorito sobre la selección (solo modo emoji).
-            function toggleFavCurrent() {
-                if (launcher.activeMode !== "emoji")
+            // Alterna favorito/star de un item concreto (vía Ctrl+Mayús+F
+            // sobre la selección o click en el badge). La ruta sale de la
+            // forma del item: clipboard (cid) → star del backend; emoji (ch)
+            // → favorito local.
+            function toggleFavItem(item) {
+                if (!item)
                     return;
-                const d = resultList.itemAt(resultList.currentIndex);
-                if (d && d.ch)
-                    EmojiService.toggleFavorite(d.ch);
+                if (item.cid !== undefined && item.cid !== "") {
+                    Services.ClipboardService.star(item.cid, !(item.isFavorite === true));
+                    return;
+                }
+                if (item.ch)
+                    EmojiService.toggleFavorite(item.ch);
+            }
+
+            function toggleFavCurrent() {
+                launcher.toggleFavItem(resultList.itemAt(resultList.currentIndex));
+            }
+
+            // Token `s:` / `starred:` al inicio del query: filtro de
+            // destacadas (mismo patrón que `g:` en emojis). Devuelve el query
+            // sin el token, o null si no hay filtro. Sin regex literals:
+            // el linter de convenciones los parsea mal.
+            function clipStripStarToken(q) {
+                const lower = String(q).toLowerCase();
+                if (lower.indexOf("s:") === 0)
+                    return q.slice(2).trim();
+                if (lower.indexOf("starred:") === 0)
+                    return q.slice(8).trim();
+                return null;
+            }
+
+            // ¿Query con filtro de destacadas activo?
+            function clipOnlyStarred() {
+                return clipStripStarToken(launcher.query) !== null;
+            }
+
+            // Línea de estado del portapapeles para el preview (solo clip):
+            // "N entradas · M destacadas · X MB" según el daemon.
+            readonly property string clipStatsText: {
+                const st = Services.ClipboardService.lastStats;
+                if (!st || st.items === undefined)
+                    return "";
+                return tr("launcher.clip_stats", "%1 entradas · %2 destacadas · %3 MB").arg(
+                            st.items).arg(st.starred || 0).arg((st.bytes / (1024 * 1024)).toFixed(1));
             }
 
             function clipResults(q) {
                 const cat = tr("launcher.category_clipboard", "Portapapeles");
                 const out = [];
                 const snap = Services.ClipboardService.snapshot;
+                // Token `s:` / `starred:`: mostrar solo las entradas con star
+                // y aplicar el resto del query como fuzzy encima. `s:` solo,
+                // sin texto, lista todas las destacadas.
+                const starRest = clipStripStarToken(q);
+                const onlyStarred = starRest !== null;
+                const rest = onlyStarred ? starRest : q;
                 for (let i = 0; i < snap.length; i++) {
                     const e = snap[i];
+                    if (onlyStarred && e.starred !== true)
+                        continue;
                     // El preview del backend puede traer saltos de línea o
                     // tabs (texto multilínea copiado). La fila tiene altura
                     // fija: se colapsa a una sola línea para el título. El
@@ -974,14 +1020,15 @@ Scope {
                                  cat: cat,
                                  cid: e.cid,
                                  isImage: isImg,
-                                 fullText: e.text
+                                 fullText: e.text,
+                                 isFavorite: e.starred === true
                              });
                 }
-                if (q === "")
+                if (rest === "")
                     return out;
                 // Título 1.0 + texto completo (acotado) 0.25: encuentra contenido
                 // más allá de los 90 caracteres visibles del título.
-                return Services.FuzzySearch.filterItemsMulti(q, out, it => [
+                return Services.FuzzySearch.filterItemsMulti(rest, out, it => [
                 {
                     text: it.title,
                     weight: 1
@@ -1174,7 +1221,7 @@ Scope {
                     }
                 }
                 anchors.centerIn: parent
-                color: Qt.alpha(Appearance.md3.surface, 0.90)
+                color: Appearance.md3.surface //Qt.alpha(Appearance.md3.surface, 0.90)
                 radius: Appearance.shape.huge
                 bordered: true
 
@@ -1248,6 +1295,7 @@ Scope {
                                 filterEpoch: launcher.filterEpoch
                                 isPinnedFn: appId => launcher.isPinned(appId)
                                 onActivated: item => launcher.activateItem(item)
+                                onFavoriteToggled: item => launcher.toggleFavItem(item)
                                 onHighlighted: item => {
                                     // Vecinos para el prefetch ANTES de programar:
                                     // sin item (hueco de swap) no hay vecinos.
@@ -1275,10 +1323,14 @@ Scope {
                                             || Quickshell.iconPath("edit-find-symbolic", true)
                                 iconSize: 48
                                 title: {
-                                    if (launcher.activeMode === "clip")
-                                        return Services.ClipboardService.error !== ""
-                                                ? Services.ClipboardService.error : launcher.tr(
-                                                      "launcher.clipboard_empty", "Portapapeles vacío");
+                                    if (launcher.activeMode === "clip") {
+                                        if (Services.ClipboardService.error !== "")
+                                            return Services.ClipboardService.error;
+                                        if (launcher.clipOnlyStarred())
+                                            return launcher.tr("launcher.clip_no_starred",
+                                                               "Sin entradas destacadas");
+                                        return launcher.tr("launcher.clipboard_empty", "Portapapeles vacío");
+                                    }
                                     if (launcher.activeMode === "files" && fileSearch.failed)
                                         return launcher.tr("launcher.files_backend_unavailable",
                                                            "Búsqueda no disponible (¿shinro-backend en ejecución?)");
@@ -1306,19 +1358,28 @@ Scope {
                             clipText: preview.clipText
                             previewError: preview.previewError
                             metaText: preview.metaText
+                            statsText: launcher.clipStatsText
                             fileTooLargeText: launcher.tr("launcher.file_too_large",
                                                           "Archivo demasiado grande para previsualizar")
                         }
                     }
 
-                    // Barra de ayuda
+                    // Barra de ayuda. En modo clip, un error de acción del
+                    // backend (p. ej. límite de starred) lo sustituye unos
+                    // segundos en color de error.
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
-                        text: launcher.tr("launcher.footer_hint",
-                                          "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Supr borra item clipboard · Esc limpiar/cerrar")
+                        readonly property bool showClipError: launcher.activeMode === "clip"
+                                                              && Services.ClipboardService.actionError !== ""
+                        text: {
+                            if (showClipError)
+                                return Services.ClipboardService.actionError;
+                            return launcher.tr("launcher.footer_hint",
+                                               "Enter ejecutar · Tab cambia de modo · Ctrl+Shift+P fija app · Ctrl+Mayús+F destacar · Supr borra item clipboard · Esc limpiar/cerrar");
+                        }
                         font.pixelSize: Appearance.typeScale.labelSmall
-                        color: Appearance.md3.on_surface_variant
-                        opacity: Appearance.opacity.hintStrong
+                        color: showClipError ? Appearance.md3.error : Appearance.md3.on_surface_variant
+                        opacity: showClipError ? 1.0 : Appearance.opacity.hintStrong
                     }
                 }
             }

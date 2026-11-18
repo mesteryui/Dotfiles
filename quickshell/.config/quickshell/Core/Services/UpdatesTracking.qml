@@ -19,21 +19,50 @@ Singleton {
     // y se deja de spawnear en cada ciclo: sin esto cada poll lanzaba un
     // proceso condenado al fallo.
     property bool checkerMissing: false
+    // Modo del chequeo en curso: true = con descarga de BDs de repos
+    // (lento, red), false = conteo local con --nosync (<1s, sin red).
+    // Decide el intervalo del watchdog y si un timeout es fatal.
+    property bool syncCheck: false
+    // true cuando una sync ha terminado bien en esta sesión: las BDs de
+    // /tmp/checkup-db-$UID están sembradas y los conteos --nosync ya son
+    // válidos (sin esto, tras reiniciar, un poll daría un 0 falso).
+    property bool dbSynced: false
 
     property ListModel packagesToUpdate: ListModel {}
 
-    // Watchdog: checkupdates es rápido; si se cuelga no debe wedgar el
-    // ciclo (checking eterno, icono girando). Se mata y se marca failed
-    // como cualquier otro fallo.
+    // Watchdog: el conteo --nosync es local (<1s): 2 min de gracia sobran.
+    // La sync descarga las BDs de todos los repos (~15 MB con cachyos +
+    // chaotic-aur): 15 min para tolerar espejos lentos o wifi degradado.
+    // Un timeout en --nosync sí es un fallo real (se marca failed); en la
+    // sync no (el conteo anterior sigue siendo válido).
     property Timer countWatchdog: Timer {
-        interval: 120000
+        interval: root.syncCheck ? 900000 : 120000
         onTriggered: {
             if (countUpdates.running) {
-                console.warn("[Updates] timeout chequeando, mato checkupdates");
                 countUpdates.running = false;
-                root.failed = true;
+                if (root.syncCheck) {
+                    // Red/espejo colgado a mitad de descarga: no es un fallo
+                    // del contador (el conteo anterior sigue siendo válido).
+                    // Silencio: el syncTimer reintenta en su próximo ciclo.
+                    console.info("[Updates] sync de BDs lenta, corto y reintento luego");
+                } else {
+                    console.warn("[Updates] timeout chequeando, mato checkupdates");
+                    root.failed = true;
+                }
             }
         }
+    }
+
+    // Lanza un chequeo. sync=false: conteo local contra las BDs ya
+    // descargadas (--nosync, instantáneo y sin red: no puede colgarse).
+    // sync=true: chequeo completo con descarga de BDs (lento; watchdog
+    // largo y timeout no fatal).
+    function startCheck(sync) {
+        if (root.checkerMissing)
+            return;
+        root.syncCheck = sync;
+        countUpdates.command = sync ? ["checkupdates"] : ["checkupdates", "--nosync"];
+        countUpdates.running = true;
     }
 
     function tryStartupCheck() {
@@ -51,13 +80,11 @@ Singleton {
         }
         root.startupCheckDone = true;
         startupTimer.stop();
-        countUpdates.running = true;
+        root.startCheck(true);
     }
 
     function checkNow() {
-        if (root.checkerMissing)
-            return;
-        countUpdates.running = true;
+        root.startCheck(true);
     }
 
     function update() {
@@ -139,9 +166,10 @@ Singleton {
         interval: Math.max(1, ConfigService.configs.updates.countTime) * 60000
         running: true
         repeat: true
-        // Sin internet no hay nada que comprobar: evita marcar failed
-        // en cada ciclo cuando la red está caída. Tampoco pisa un
-        // chequeo o actualización ya en curso.
+        // Conteo barato (--nosync): compara el local con las BDs ya
+        // descargadas. Sin internet la igualda no cambia, así que se salta.
+        // Tampoco pisa un chequeo o actualización ya en curso, ni corre
+        // antes de que la primera sync haya sembrado las BDs (daría 0 falso).
         onTriggered: {
             if (root.checkerMissing)
                 return;
@@ -149,7 +177,31 @@ Singleton {
                 return;
             if (countUpdates.running || root.checking || root.updating)
                 return;
-            countUpdates.running = true;
+            if (!root.dbSynced)
+                return;
+            root.startCheck(false);
+        }
+    }
+
+    // Descarga de BDs desacoplada del conteo: es la parte lenta y la única
+    // que toca la red (era la causante del timeout del watchdog con espejos
+    // lentos). Cadencia propia: mínimo 60 min aunque countTime sea menor.
+    // El arranque (startupTimer) y la recuperación de red hacen la primera
+    // sync mucho antes que este primer tick.
+    Timer {
+        id: syncTimer
+
+        interval: Math.max(60, ConfigService.configs.updates.countTime) * 60000
+        running: true
+        repeat: true
+        onTriggered: {
+            if (root.checkerMissing)
+                return;
+            if (!(NetworkService?.hasInternet ?? true))
+                return;
+            if (countUpdates.running || root.checking || root.updating)
+                return;
+            root.startCheck(true);
         }
     }
 
@@ -171,6 +223,7 @@ Singleton {
 
         function onCountTimeChanged() {
             pollTimer.restart();
+            syncTimer.restart();
         }
     }
 
@@ -186,6 +239,9 @@ Singleton {
     Process {
         id: countUpdates
 
+        // El comando lo fija startCheck() en cada arranque: sync completo
+        // o conteo local --nosync. El valor inicial (sync) es el del primer
+        // chequeo de arranque.
         command: ["checkupdates"]
 
         onRunningChanged: {
@@ -230,6 +286,9 @@ Singleton {
             if (exitCode === 0 || exitCode === 2) {
                 root.updateCount = root.packagesToUpdate.count;
                 root.failed = false;
+                // Las BDs quedaron sembradas: los polls --nosync ya son válidos.
+                if (root.syncCheck)
+                    root.dbSynced = true;
             } else {
                 root.failed = true;
             }
@@ -250,8 +309,10 @@ Singleton {
 
         // qmllint disable signal-handler-parameters
         onExited: exitCode => {
+            // Tras actualizar, la sync refresca las BDs y rellena el conteo
+            // con datos frescos (el local se lee vivo vía symlink).
             if (!countUpdates.running)
-                countUpdates.running = true;
+                root.startCheck(true);
         }
         // qmllint enable signal-handler-parameters
     }

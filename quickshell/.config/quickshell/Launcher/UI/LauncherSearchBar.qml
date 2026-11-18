@@ -106,7 +106,8 @@ Rectangle {
                 case "calc":
                     return root.controller.tr("controller.placeholder_calc", "Calculadora… ej: 45*1.21");
                 case "clip":
-                    return root.controller.tr("controller.placeholder_clipboard", "Portapapeles (cliphist)…");
+                    return root.controller.tr("launcher.placeholder_clipboard",
+                                              "Portapapeles… (s: destacados · Ctrl+Mayús+F destacar · Supr borrar)");
                 default:
                     return root.controller.tr("controller.placeholder_all", "Buscar aplicaciones…");
                 }

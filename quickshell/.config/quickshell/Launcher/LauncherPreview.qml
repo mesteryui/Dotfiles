@@ -222,7 +222,7 @@ QtObject {
             root.previewPath = Services.ClipboardService.previewImage(item.cid);
             // La miniatura ya viene generada por el backend: si existe, el
             // preview está listo sin decode adicional.
-            root.previewOk = root.previewPath !== "";
+            root.previewOk = root.previewPath !== "" && Qt.fsStats(root.previewPath).exists;
         } else if (ItemKinds.isClipText(item)) {
             // Texto completo vía decode (con fallback a la línea del listado
             // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto

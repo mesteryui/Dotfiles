@@ -95,6 +95,10 @@ Item {
 
     signal activated(var item)
 
+    // Click en el badge de favorito/star del delegado. La acción depende del
+    // modo y la decide AppLauncher (emoji → favorito, clip → star backend).
+    signal favoriteToggled(var item)
+
     signal highlighted(var item)
 
     // Generación del filtro: distingue "nueva búsqueda" (query/modo =>
@@ -400,6 +404,7 @@ Item {
             readonly property string dispCh: modelData.ch || ""
             readonly property bool dispPinned: isRawApp && (modelData.id || "") !== "" && root.isPinnedFn(
                                                    modelData.id)
+            readonly property bool dispFav: modelData.isFavorite ?? false
 
             readonly property bool effSelected: entryDelegate.ListView.isCurrentItem || (view.count === 1
                                                                                          && root._swapping)
@@ -493,6 +498,22 @@ Item {
                                                        Appearance.md3.primary
                     visible: entryDelegate.dispPinned
                 }
+
+                // Badge de star: SOLO modo clip (donde existe la
+                // funcionalidad starred). El click lo gestiona favOverlay
+                // (encima del MouseArea de la fila). El relleno (fill: 1)
+                // va ligado al estado starred real de la entrada: una star
+                // no starred se vería en contorno, nunca rellena.
+                MaterialIcon {
+                    Layout.alignment: Qt.AlignVCenter
+                    icon: "star"
+                    size: 20
+                    fill: entryDelegate.dispFav ? 1 : 0
+                    color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
+                                                       Appearance.md3.primary
+                    opacity: favOverlay.containsMouse ? 1.0 : 0.85
+                    visible: root.activeMode === "clip" && entryDelegate.dispFav
+                }
             }
 
             M3StateLayer {
@@ -523,6 +544,25 @@ Item {
                 onPressed: stateLayer.pressed = true
                 onReleased: stateLayer.pressed = false
                 onClicked: root.activated(entryDelegate.modelData)
+            }
+
+            // Hitbox del badge de star: declarado encima del MouseArea de la
+            // fila para que el click alterne el favorito en vez de activar la
+            // entrada. Mismo tamaño que el icono del RowLayout (32×32, último
+            // elemento al borde derecho). Solo modo clip: el starred no
+            // aplica al resto de listas (apps, archivos, sistema...).
+            MouseArea {
+                id: favOverlay
+
+                anchors.right: parent.right
+                anchors.rightMargin: Appearance.spacing.small
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32
+                height: 32
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                enabled: root.activeMode === "clip" && entryDelegate.dispFav
+                onClicked: root.favoriteToggled(entryDelegate.modelData)
             }
         }
     }
@@ -610,10 +650,15 @@ Item {
                 anchors.right: parent.right
                 anchors.margins: Appearance.spacing.extraSmall
                 icon: "star"
-                size: 12
+                size: 14
+                // SOLO modo emoji (favoritos, feature propia del grid): el
+                // starred de clip va en lista. Relleno ligado al estado
+                // favorito real; una no favorita iría en contorno.
+                fill: gridDelegate.dispFav ? 1 : 0
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                   Appearance.md3.primary
-                visible: gridDelegate.dispFav
+                opacity: gridFavOverlay.containsMouse ? 1.0 : 0.9
+                visible: root.activeMode === "emoji" && gridDelegate.dispFav
             }
 
             MaterialIcon {
@@ -655,6 +700,23 @@ Item {
                 onPressed: gridStateLayer.pressed = true
                 onReleased: gridStateLayer.pressed = false
                 onClicked: root.activated(gridDelegate.modelData)
+            }
+
+            // Hitbox del badge de star (favorito de emoji): encima del
+            // MouseArea de la celda para alternar sin activar el emoji.
+            // Solo modo emoji: los favoritos no aplican al resto de grids.
+            MouseArea {
+                id: gridFavOverlay
+
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: Appearance.spacing.extraSmall
+                width: 24
+                height: 24
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                enabled: root.activeMode === "emoji" && gridDelegate.dispFav
+                onClicked: root.favoriteToggled(gridDelegate.modelData)
             }
         }
     }
