@@ -54,6 +54,20 @@ func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 	}
 	city := c.city
 	started := c.pumpWthStarted
+	if sub && !started {
+		c.pumpWthStarted = true
+		c.mu.Unlock()
+		c.setModInterval(m.Name(), interval)
+		c.setSubscribed(m.Name(), sub)
+		logger.Debug("weather handshake",
+			"client", c.conn.RemoteAddr(),
+			"city", city,
+			"interval", interval,
+			"subscribed", sub,
+		)
+		c.startPump(m)
+		return
+	}
 	c.mu.Unlock()
 
 	c.setModInterval(m.Name(), interval)
@@ -66,10 +80,7 @@ func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 		"subscribed", sub,
 	)
 
-	if sub && !started {
-		c.pumpWthStarted = true
-		c.startPump(m)
-	} else if sub && started {
+	if sub && started {
 		// Ya iniciado: reconfiguración (nueva ciudad o intervalo) -> despertar para refresco inmediato
 		c.signalMod(m.Name())
 	}

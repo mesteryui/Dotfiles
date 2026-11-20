@@ -2,7 +2,8 @@
 //
 // Por defecto combina NetworkManager D-Bus del sistema como fuente de eventos
 // instantáneos en tiempo real con una verificación HTTP ligera a un endpoint de control.
-// Si NetworkManager no está disponible, realiza comprobaciones periódicas HTTP.
+// Si NetworkManager no está disponible, usa systemd-networkd para detectar el estado
+// de las interfaces y rutas, y como último recurso realiza comprobaciones HTTP periódicas.
 //
 // Cuando la conectividad cambia (offline -> online o viceversa) avisa a los
 // suscriptores por un canal, para que el backend pueda refrescar los datos
@@ -47,11 +48,16 @@ type Monitor struct {
 	interval    time.Duration
 	client      *http.Client
 
-	nm *nmMonitor // nil si NetworkManager no está disponible
+	nm  *nmMonitor   // nil si NetworkManager no está disponible
+	sdm *systemdNetworkdMonitor // nil si systemd-networkd no está disponible o se prefiere NM
 
 	mu    sync.Mutex
 	state State
 	subs  map[chan State]struct{}
+
+	// fuente indica qué mecanismo de red está activo actualmente.
+	// Valores posibles: "networkmanager", "systemd-networkd", "http-polling"
+	source string
 
 	// checkMu coordina las comprobaciones HTTP, que se hacen en segundo
 	// plano. seq se incrementa con cada decisión de estado: una
@@ -80,6 +86,10 @@ func newTransport() *http.Transport {
 
 // New crea un monitor de conectividad.
 // Intenta usar NetworkManager D-Bus para eventos en tiempo real.
+// Si NetworkManager no está disponible, usa systemd-networkd para detectar
+// el estado de las interfaces y rutas.
+// Como último recurso, realiza comprobaciones HTTP periódicas.
+//
 // Si checkURL está vacía se usa un endpoint de conectividad ligero y confiable;
 // si interval <= 0 se usan 30 segundos.
 func New(checkURL string, interval time.Duration) *Monitor {
@@ -104,9 +114,19 @@ func New(checkURL string, interval time.Duration) *Monitor {
 	// Intentar usar NetworkManager como fuente de eventos en tiempo real.
 	m.nm = newNMMonitor()
 	if m.nm != nil {
-		logger.Info("conectividad", "fuente", "networkmanager-dbus+http", "check_url", m.checkURL)
+		m.source = "networkmanager"
+		logger.Info("conectividad", "fuente", "networkmanager-dbus+http+systemd", "check_url", m.checkURL)
 	} else {
-		logger.Info("conectividad", "fuente", "polling-http", "interval", interval, "check_url", m.checkURL)
+		// NetworkManager no disponible: intentar systemd-networkd
+		m.sdm = newSystemdNetworkdMonitor()
+		if m.sdm != nil {
+			m.source = "systemd-networkd"
+			logger.Info("conectividad", "fuente", "systemd-networkd+http", "check_url", m.checkURL)
+		} else {
+			// Ningún gestor de red disponible, usar HTTP polling
+			m.source = "http-polling"
+			logger.Info("conectividad", "fuente", "polling-http", "interval", interval, "check_url", m.checkURL)
+		}
 	}
 
 	return m
@@ -114,8 +134,14 @@ func New(checkURL string, interval time.Duration) *Monitor {
 
 // Run ejecuta el bucle de monitoreo hasta que se cancele el contexto.
 func (m *Monitor) Run(ctx context.Context) {
-	if m.nm != nil {
+	// Determinar qué fuentes están disponibles
+	hasNM := m.nm != nil
+	hasSDM := m.sdm != nil
+
+	if hasNM {
 		m.runNM(ctx)
+	} else if hasSDM {
+		m.runSDM(ctx)
 	} else {
 		m.runPolling(ctx)
 	}
@@ -151,7 +177,45 @@ func (m *Monitor) runNM(ctx context.Context) {
 	}
 }
 
-// runPolling ejecuta el bucle de comprobación periódica cuando NetworkManager no está disponible.
+// runSDM ejecuta el bucle usando systemd-networkd como fuente principal,
+// con verificación HTTP de respaldo. Se suscribe a los cambios de estado del
+// monitor systemd-networkd para reaccionar en tiempo real y usa el ticker
+// solo como heartbeat periódico.
+func (m *Monitor) runSDM(ctx context.Context) {
+	// Arrancar el bucle interno de systemd-networkd (polling de interfaces y rutas).
+	go m.sdm.Run(m.interval)
+
+	// Suscribirse a los cambios de estado de systemd-networkd.
+	ch := m.sdm.Subscribe()
+	defer m.sdm.Unsubscribe(ch)
+
+	// Verificación inicial inmediata.
+	m.verifyAndSetState("sdm-init")
+
+	ticker := time.NewTicker(m.interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case sdmOnline := <-ch:
+			if !sdmOnline {
+				// systemd-networkd informa desconexión: offline inmediato.
+				m.updateState(false, "systemd-networkd-down")
+			} else {
+				// systemd-networkd informa conexión: verificar internet por HTTP.
+				m.verifyAndSetState("systemd-networkd-up")
+			}
+		case <-ticker.C:
+			// Heartbeat periódico para detectar cambios en systemd-networkd.
+			m.verifyAndSetState("heartbeat")
+		}
+	}
+}
+
+// runPolling ejecuta el bucle de comprobación periódica cuando ni NetworkManager
+// ni systemd-networkd están disponibles.
 func (m *Monitor) runPolling(ctx context.Context) {
 	m.verifyAndSetState("polling-init")
 
@@ -176,20 +240,16 @@ func (m *Monitor) verifyAndSetState(source string) {
 		return
 	}
 
+	// Si systemd-networkd afirma estar desconectado, también marcar offline
+	if m.sdm != nil && m.sdm.isDefinitelyOffline() {
+		m.updateState(false, source+"(sdm-offline)")
+		return
+	}
+
 	m.startCheck(source)
 }
 
 // startCheck lanza la comprobación HTTP en segundo plano.
-//
-// La comprobación NO se hace en línea con el bucle de eventos: si la red está
-// caída o el DNS no responde, puede tardar varios segundos, y bloquear el
-// bucle retrasaría la lectura de los eventos de NetworkManager justo cuando
-// más importan (la recuperación de la red debe reflejarse al instante).
-//
-// Si ya hay una comprobación en curso, no se lanza otra: se marca pendingCheck
-// para repetirla en cuanto termine la actual. Sin esto, un evento de "red
-// recuperada" que llega durante una comprobación iniciada con la red caída se
-// perdería, y el estado seguiría en "offline" hasta el siguiente heartbeat.
 func (m *Monitor) startCheck(source string) {
 	m.checkMu.Lock()
 	if m.checking {
@@ -252,6 +312,26 @@ func (m *Monitor) updateStateIfCurrent(seq uint64, online bool, source string) b
 
 	m.applyState(online, source)
 	return true
+}
+
+// updateStateFromSDM actualiza el estado basándose en el monitor systemd-networkd.
+// Devuelve true si el estado cambió.
+func (m *Monitor) updateStateFromSDM(online bool, source string) bool {
+	m.mu.Lock()
+	prev := m.state
+	state := StateOffline
+	if online {
+		state = StateOnline
+	}
+	m.state = state
+	changed := state != prev
+	m.mu.Unlock()
+
+	if changed {
+		logger.Info("conectividad", "prev", prev, "current", state, "fuente", source)
+	}
+
+	return changed
 }
 
 // check devuelve true si el endpoint de control responde correctamente (2xx).
@@ -356,6 +436,14 @@ func (m *Monitor) State() State {
 	return m.state
 }
 
+// Source devuelve el mecanismo de red activo actualmente.
+// Valores posibles: "networkmanager", "systemd-networkd", "http-polling"
+func (m *Monitor) Source() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.source
+}
+
 // IsOnline devuelve true si el estado actual es online.
 //
 // Si el estado todavía es desconocido (el monitor acaba de arrancar y la
@@ -371,10 +459,18 @@ func (m *Monitor) IsOnline() bool {
 	return state == StateOnline
 }
 
-// Close cierra los recursos del monitor (conexión D-Bus si se usa NM).
+// Close cierra los recursos del monitor (conexión D-Bus si se usa NM,
+ // conexión systemd-networkd si se usa).
 func (m *Monitor) Close() error {
 	if m.nm != nil {
-		return m.nm.Close()
+		if err := m.nm.Close(); err != nil {
+			return err
+		}
+	}
+	if m.sdm != nil {
+		if err := m.sdm.Close(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

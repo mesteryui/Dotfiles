@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -38,6 +41,32 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	// --- NUEVO: Comprobar si el daemon ya está en ejecución ANTES de
+	// crear los providers. Si otro shinro-backend está escuchando, evitamos
+	// crear providers innecesarios (clipboard.New que puede podar historial,
+	// files.New que abre inotify) y salimos con código 2 para que systemd
+	// con RestartPreventExitStatus=2 no reintente mientras el primero vivo.
+	//
+	// Mismo orden que usan los clientes y el propio backend:
+	// $SHINRO_SOCKET_PATH → $XDG_RUNTIME_DIR/shinro → /run/user/$UID/shinro
+	socketPath := socketPathDefaultFromMain()
+	{
+		const dialTimeout = 300 * time.Millisecond
+		conn, err := net.DialTimeout("unix", socketPath, dialTimeout)
+		if err == nil {
+			// El daemon ya está vivo: cerramos la conexión y salimos con
+			// código 2. main.go hará os.Exit(2) al detectar
+			// errors.Is(err, socket.ErrAlreadyRunning), pero como esto es
+			// una comprobación temprana usamos os.Exit(2) directamente.
+			_ = conn.Close()
+			logger.Warn("shinro-backend ya está en ejecución", "socket", socketPath)
+			os.Exit(2)
+		}
+		// Si el Dial falla (ECONNREFUSED, timeout, etc.), continuamos:
+		// el socket está libre o hay un caso transitorio.
+		_ = conn // silenciar warning "defined but not used" cuando err != nil
+	}
 
 	// Cada proveedor es independiente y no conoce a los demás.
 	sysProvider := system.New()
@@ -97,6 +126,10 @@ func main() {
 	clipModule.SetBroadcast(func() { srv.WakeClipboardClients() })
 
 	if err := srv.Start(ctx); err != nil {
+		if errors.Is(err, socket.ErrAlreadyRunning) {
+			logger.Warn("shinro-backend ya está en ejecución", "error", err)
+			os.Exit(2)
+		}
 		logger.Error("shinro-backend fatal", "error", err)
 		os.Exit(1)
 	}
@@ -113,4 +146,17 @@ func clipboardStateDir() string {
 		return ""
 	}
 	return filepath.Join(home, ".local", "state", "shinro")
+}
+
+// socketPathDefaultFromMain devuelve la ruta del socket por defecto desde
+// main.go, replicando la lógica de socketPathDefault() del paquete socket,
+// pero exportada para usarse en la comprobación temprana de este archivo.
+func socketPathDefaultFromMain() string {
+	if p := os.Getenv("SHINRO_SOCKET_PATH"); p != "" {
+		return p
+	}
+	if rt := os.Getenv("XDG_RUNTIME_DIR"); rt != "" {
+		return filepath.Join(rt, "shinro")
+	}
+	return "/run/user/" + strconv.Itoa(os.Getuid()) + "/shinro"
 }

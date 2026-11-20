@@ -468,6 +468,12 @@ func (provider *Provider) searchParallel(ctx context.Context, root, qLower strin
 	}
 	defer func() { <-provider.sem }()
 
+	// Derivar un contexto cancelable para los workers: cuando se alcanza el
+	// límite de resultados se cancela y los workers abandonan su subárbol en
+	// lugar de seguir recorriendo el disco hasta el final.
+	walkCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	// Leer las entradas de nivel superior de root.
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -535,7 +541,7 @@ jobsLoop:
 		// suficientes workers ocupados, esperar a que uno se libere.
 		select {
 		case workerSem <- struct{}{}:
-		case <-ctx.Done():
+		case <-walkCtx.Done():
 			break jobsLoop
 		}
 		waitGroup.Add(1)
@@ -543,10 +549,10 @@ jobsLoop:
 			defer func() { <-workerSem }() // liberar worker
 			defer waitGroup.Done()
 
-			list := provider.walkDir(ctx, job.path, rootDepth(root), qLower, limit)
+			list := provider.walkDir(walkCtx, job.path, rootDepth(root), qLower, limit)
 			select {
 			case resultsCh <- jobResult{dir: job.path, list: list, err: nil}:
-			case <-ctx.Done():
+			case <-walkCtx.Done():
 			}
 		})
 	}
@@ -562,10 +568,12 @@ jobsLoop:
 	for jobResult := range resultsCh {
 		allResults = append(allResults, jobResult.list...)
 		if len(allResults) >= limit {
-			// Tenemos suficiente: cancelar los workers restantes drenando
-			// el canal sin procesar más.
-			for range resultsCh {
-			}
+			// Tenemos suficiente: cancelar los workers restantes para que
+			// abandonen el recorrido del disco en lugar de seguir hasta el
+			// final. resultsCh tiene capacidad para todos los jobs, así que
+			// los envíos pendientes no se bloquean y el colector cierra el
+			// canal al terminar.
+			cancel()
 			break
 		}
 	}

@@ -34,14 +34,18 @@ func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 
 	c.mu.Lock()
 	started := c.pumpSysStarted
+	if sub && !started {
+		c.pumpSysStarted = true
+		c.mu.Unlock()
+		logger.Debug("system handshake", "client", c.conn.RemoteAddr(), "interval", interval, "subscribed", sub)
+		c.startPump(m)
+		return
+	}
 	c.mu.Unlock()
 
 	logger.Debug("system handshake", "client", c.conn.RemoteAddr(), "interval", interval, "subscribed", sub)
 
-	if sub && !started {
-		c.pumpSysStarted = true
-		c.startPump(m)
-	} else if sub && started {
+	if sub && started {
 		c.signalMod(m.Name())
 	}
 }

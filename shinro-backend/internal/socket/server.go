@@ -18,6 +18,7 @@ import (
 	json "encoding/json"
 	encodingjsonv2 "encoding/json/v2"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -26,6 +27,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"shinro-backend/internal/connectivity"
@@ -35,6 +37,11 @@ import (
 	"shinro-backend/internal/system"
 	"shinro-backend/internal/weather"
 )
+
+// ErrAlreadyRunning es el error que se devuelve cuando el daemon ya está
+// escuchando en el socket Unix. Se usa para distinguir el caso de reinicio
+// con systemd de otros fallos inicializadores.
+var ErrAlreadyRunning = errors.New("ya hay un shinro-backend escuchando")
 
 var jsonv2Options encodingjsonv2.Options = encodingjsonv2.RejectUnknownMembers(true)
 
@@ -74,6 +81,11 @@ type Server struct {
 	// peticiones puntuales.
 	statsMu sync.Mutex
 	stats   map[string]*moduleStat
+
+	// lockFile mantiene un flock exclusivo sobre el socket para evitar que
+	// dos procesos de backend se arranquen simultáneamente y uno borre el
+	// socket del otro (TOCTOU). Se adquiere en Start() y se libera al parar.
+	lockFile *os.File
 }
 
 // healthProvider es implementado por el módulo que expone el informe de
@@ -98,7 +110,7 @@ func socketPathDefault() string {
 	if rt := os.Getenv("XDG_RUNTIME_DIR"); rt != "" {
 		return filepath.Join(rt, "shinro")
 	}
-	return "/run/user/" + strconv.Itoa(os.Geteuid()) + "/shinro"
+	return "/run/user/" + strconv.Itoa(os.Getuid()) + "/shinro"
 }
 
 func NewServer(registry *Registry, connMon *connectivity.Monitor) *Server {
@@ -131,9 +143,44 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}
 
+	// Si ya hay un daemon escuchando en el socket, no arrancamos otro.
+	// Intentamos conectar con un timeout corto: si la conexión se establece,
+	// el daemon ya está vivo y devolvemos un error centinela.
+	//
+	// Esto cubre el caso de "daemon vivo": el Dial conecta, se cierra la
+	// conexión y Start devuelve error en vez de dejar al primero inalcanzable.
+	//
+	// El caso de "socket huérfano tras un crash" se cubre a continuación: si
+	// el Dial falla (ECONNREFUSED o timeout), continuamos con el flujo normal
+	// de eliminación y arranque del socket.
+	if conn, err := net.DialTimeout("unix", s.path, 300*time.Millisecond); err == nil {
+		_ = conn.Close()
+		return fmt.Errorf("%w: %s", ErrAlreadyRunning, s.path)
+	}
+
+	// Lockfile exclusivo junto al socket: evita el race TOCTOU en el que dos
+	// procesos fallaran el Dial al mismo tiempo y ambos intentaran crear el
+	// socket (el segundo borraría el del primero). Solo quien adquiere el
+	// flock continúa; el otro devuelve ErrAlreadyRunning.
+	lockFile, err := os.OpenFile(s.path+".lock", os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return err
+	}
+	if err := syscall.Flock(int(lockFile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		lockFile.Close()
+		if errors.Is(err, syscall.EAGAIN) || errors.Is(err, syscall.EACCES) {
+			return fmt.Errorf("%w: %s", ErrAlreadyRunning, s.path)
+		}
+		return err
+	}
+	s.lockFile = lockFile
+
 	_ = os.Remove(s.path)
 	ln, err := net.Listen("unix", s.path)
 	if err != nil {
+		s.lockFile.Close()
+		s.lockFile = nil
+		_ = os.Remove(s.path + ".lock")
 		return err
 	}
 	s.listener = ln
@@ -193,6 +240,11 @@ func (s *Server) Start(ctx context.Context) error {
 	}
 
 	_ = s.listener.Close()
+	if s.lockFile != nil {
+		s.lockFile.Close()
+		s.lockFile = nil
+		_ = os.Remove(s.path + ".lock")
+	}
 	_ = os.Remove(s.path)
 	logger.Info("shinro socket detenido")
 	return nil
