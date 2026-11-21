@@ -53,10 +53,6 @@ BarPopupWindow {
         showBorder: true
     }
 
-    // Sombra: source se asigna de forma declarativa para evitar warning
-/* Fixed: Uses PopupBackground with layer.enabled */
-    // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
-
     // ── Content ───────────────────────────────────────────────
     CalendarContent {
         anchors.fill: bg

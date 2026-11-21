@@ -86,6 +86,7 @@ Singleton {
 
     Socket {
         id: shinroSocket
+
         path: root.socketPath
 
         parser: SplitParser {
@@ -135,6 +136,7 @@ Singleton {
 
     Timer {
         id: reconnectTimer
+
         interval: 2000
         repeat: true
         running: root.socketPath !== "" && !shinroSocket.connected
@@ -346,6 +348,7 @@ Singleton {
 
     Timer {
         id: retryTimer
+
         repeat: false
         onTriggered: {
             if (root.isError || root.data.lastRefresh === "--:--")

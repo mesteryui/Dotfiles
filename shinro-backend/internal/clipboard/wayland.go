@@ -996,6 +996,15 @@ func parseOOB(oob []byte) ([]int, error) {
 
 // chooseMime elige el mejor tipo ofrecido: texto primero y, si no hay, imagen.
 func chooseMime(mimes []string) string {
+	// Los gestores de contraseñas marcan sus copias con este tipo: se
+	// comprueba primero, sobre la lista completa, para que el orden en que
+	// el origen ofrece los tipos no pueda saltarse el filtro.
+	for _, m := range mimes {
+		if strings.EqualFold(m, "x-kde-passwordManagerHint") {
+			return ""
+		}
+	}
+
 	textPrefs := []string{"text/plain;charset=utf-8", "text/plain", "utf8_string", "string", "text"}
 	for _, want := range textPrefs {
 		for _, m := range mimes {

@@ -110,6 +110,7 @@ PanelWindow {
         // El DPR sale de la pantalla quefills el delegate (no de
         // `Screen.devicePixelRatio`, que solo se resuelve al mapear la
         // ventana: eso cambiaría el tamaño de decodado en pleno fundido).
+
         readonly property real targetScale: Math.min(2, Math.max(1, root.screen
                                                                  ? root.screen.devicePixelRatio : 1))
         sourceSize.width: Math.round((root.screen ? root.screen.width : 1920) * targetScale)
@@ -118,6 +119,7 @@ PanelWindow {
         // Fundido de entrada y zoom: solo tras el primer pintado.
         Behavior on opacity {
             enabled: root.animated
+
             NumberAnimation {
                 duration: Appearance.motion.normal
                 easing.type: Easing.Bezier
@@ -126,6 +128,7 @@ PanelWindow {
         }
         Behavior on scale {
             enabled: root.animated
+
             SpringAnimation {
                 spring: Appearance.motion.springSnappy.spring
                 damping: Appearance.motion.springSnappy.damping

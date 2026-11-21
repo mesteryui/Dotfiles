@@ -9,9 +9,9 @@
 pragma ComponentBehavior: Bound
 
 import qs.Core.Services as Services
+import "FileMenu.js" as FileMenu
 import QtQuick
 import Quickshell
-import "FileMenu.js" as FileMenu
 
 QtObject {
     id: root

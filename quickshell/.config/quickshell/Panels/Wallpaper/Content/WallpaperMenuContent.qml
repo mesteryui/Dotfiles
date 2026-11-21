@@ -102,11 +102,11 @@ Item {
                 continue;
             const name = String(source.get(i, "fileName") ?? "");
             entries.push({
-                "filePath": path,
-                "name": name,
-                "group": group,
-                "sat": colorService.satFor(path)
-            });
+                             "filePath": path,
+                             "name": name,
+                             "group": group,
+                             "sat": colorService.satFor(path)
+                         });
         }
         if (root.query.trim() !== "")
             entries = Services.FuzzySearch.filterItems(root.query, entries, entry => entry.name);
@@ -161,6 +161,7 @@ Item {
 
     Timer {
         id: rebuildTimer
+
         interval: 120
         repeat: false
         onTriggered: root.rebuildModel()
@@ -170,6 +171,7 @@ Item {
         function onCountChanged() {
             rebuildTimer.restart();
         }
+
         target: Services.WallpaperService.wallpaperList
     }
 
@@ -177,6 +179,7 @@ Item {
         function onColorsChanged() {
             rebuildTimer.restart();
         }
+
         target: Services.WallpaperColorService
     }
 
@@ -234,6 +237,7 @@ Item {
 
                         Column {
                             id: titleCol
+
                             anchors.centerIn: parent
                             spacing: 1
 
@@ -278,7 +282,9 @@ Item {
 
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                background: Rectangle { color: "transparent" }
+                                background: Rectangle {
+                                    color: "transparent"
+                                }
                                 placeholderText: root.label("wallpaper.search", "Buscar fondos…")
                                 placeholderTextColor: Qt.alpha(Appearance.md3.on_surface_variant, 0.60)
                                 color: Appearance.md3.on_surface
@@ -300,7 +306,9 @@ Item {
                                     wallpaperList.forceActiveFocus();
                                 }
                                 Keys.onRightPressed: event => {
-                                    if (searchField.text === "" || (searchField.cursorPosition >= searchField.length && searchField.selectedText === "")) {
+                                    if (searchField.text === "" || (searchField.cursorPosition
+                                                                    >= searchField.length
+                                                                    && searchField.selectedText === "")) {
                                         wallpaperList.forceActiveFocus();
                                         if (wallpaperList.currentIndex === wallpaperList.count - 1)
                                             wallpaperList.currentIndex = 0;
@@ -310,7 +318,8 @@ Item {
                                     }
                                 }
                                 Keys.onLeftPressed: event => {
-                                    if (searchField.text === "" || (searchField.cursorPosition === 0 && searchField.selectedText === "")) {
+                                    if (searchField.text === "" || (searchField.cursorPosition === 0
+                                                                    && searchField.selectedText === "")) {
                                         wallpaperList.forceActiveFocus();
                                         if (wallpaperList.currentIndex === 0)
                                             wallpaperList.currentIndex = wallpaperList.count - 1;
@@ -418,6 +427,7 @@ Item {
 
         Timer {
             id: wheelResetTimer
+
             interval: 200
             repeat: false
             onTriggered: carouselArea._wheelDelta = 0
@@ -432,6 +442,7 @@ Item {
 
         WheelHandler {
             id: wheelHandler
+
             target: carouselArea
             orientation: Qt.Horizontal | Qt.Vertical
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -469,16 +480,17 @@ Item {
                 leftMargin: 24
                 verticalCenter: wallpaperList.verticalCenter
             }
+
             width: 44
             height: 44
             radius: 22
             z: 30
             visible: wallpaperList.count > 1
-            color: leftNavMouse.pressed ? Appearance.md3.primary :
-                   leftNavMouse.containsMouse ? Appearance.md3.surface_container_highest :
-                   Qt.alpha(Appearance.md3.surface_container_high, 0.85)
-            border.color: leftNavMouse.containsMouse ? Appearance.md3.primary :
-                          Qt.alpha(Appearance.md3.outline_variant, 0.40)
+            color: leftNavMouse.pressed ? Appearance.md3.primary : leftNavMouse.containsMouse
+                                          ? Appearance.md3.surface_container_highest : Qt.alpha(
+                                                Appearance.md3.surface_container_high, 0.85)
+            border.color: leftNavMouse.containsMouse ? Appearance.md3.primary : Qt.alpha(
+                                                           Appearance.md3.outline_variant, 0.40)
             border.width: 1
             scale: leftNavMouse.pressed ? 0.94 : (leftNavMouse.containsMouse ? 1.08 : 1.0)
 
@@ -500,13 +512,13 @@ Item {
                 anchors.centerIn: parent
                 icon: "chevron_left"
                 size: 26
-                color: leftNavMouse.pressed ? Appearance.md3.on_primary :
-                       leftNavMouse.containsMouse ? Appearance.md3.primary :
-                       Appearance.md3.on_surface
+                color: leftNavMouse.pressed ? Appearance.md3.on_primary : leftNavMouse.containsMouse
+                                              ? Appearance.md3.primary : Appearance.md3.on_surface
             }
 
             MouseArea {
                 id: leftNavMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -528,16 +540,17 @@ Item {
                 rightMargin: 24
                 verticalCenter: wallpaperList.verticalCenter
             }
+
             width: 44
             height: 44
             radius: 22
             z: 30
             visible: wallpaperList.count > 1
-            color: rightNavMouse.pressed ? Appearance.md3.primary :
-                   rightNavMouse.containsMouse ? Appearance.md3.surface_container_highest :
-                   Qt.alpha(Appearance.md3.surface_container_high, 0.85)
-            border.color: rightNavMouse.containsMouse ? Appearance.md3.primary :
-                          Qt.alpha(Appearance.md3.outline_variant, 0.40)
+            color: rightNavMouse.pressed ? Appearance.md3.primary : rightNavMouse.containsMouse
+                                           ? Appearance.md3.surface_container_highest : Qt.alpha(
+                                                 Appearance.md3.surface_container_high, 0.85)
+            border.color: rightNavMouse.containsMouse ? Appearance.md3.primary : Qt.alpha(
+                                                            Appearance.md3.outline_variant, 0.40)
             border.width: 1
             scale: rightNavMouse.pressed ? 0.94 : (rightNavMouse.containsMouse ? 1.08 : 1.0)
 
@@ -559,13 +572,13 @@ Item {
                 anchors.centerIn: parent
                 icon: "chevron_right"
                 size: 26
-                color: rightNavMouse.pressed ? Appearance.md3.on_primary :
-                       rightNavMouse.containsMouse ? Appearance.md3.primary :
-                       Appearance.md3.on_surface
+                color: rightNavMouse.pressed ? Appearance.md3.on_primary : rightNavMouse.containsMouse
+                                               ? Appearance.md3.primary : Appearance.md3.on_surface
             }
 
             MouseArea {
                 id: rightNavMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -675,17 +688,18 @@ Item {
 
             // Botón interactivo de navegación
             Rectangle {
-                color: navPillMouse.containsMouse ? Appearance.md3.surface_container_high :
-                                                    Qt.alpha(Appearance.md3.surface_container_low, 0.85)
+                color: navPillMouse.containsMouse ? Appearance.md3.surface_container_high : Qt.alpha(
+                                                        Appearance.md3.surface_container_low, 0.85)
                 radius: 6
                 implicitWidth: hint1.implicitWidth + 14
                 implicitHeight: 26
-                border.color: navPillMouse.containsMouse ? Appearance.md3.primary :
-                                                          Qt.alpha(Appearance.md3.outline_variant, 0.35)
+                border.color: navPillMouse.containsMouse ? Appearance.md3.primary : Qt.alpha(
+                                                               Appearance.md3.outline_variant, 0.35)
                 border.width: 1
 
                 StyledText {
                     id: hint1
+
                     anchors.centerIn: parent
                     text: root.label("wallpaper.hint_navigate", "← → Navegar")
                     font.pixelSize: 11
@@ -695,6 +709,7 @@ Item {
 
                 MouseArea {
                     id: navPillMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -710,14 +725,14 @@ Item {
 
             // Botón interactivo de aplicar fondo seleccionado con ratón
             Rectangle {
-                color: applyMouse.pressed ? Qt.darker(Appearance.md3.primary, 1.1) :
-                       applyMouse.containsMouse ? Appearance.md3.primary :
-                       Qt.alpha(Appearance.md3.surface_container_low, 0.85)
+                color: applyMouse.pressed ? Qt.darker(Appearance.md3.primary, 1.1) : applyMouse.containsMouse
+                                            ? Appearance.md3.primary : Qt.alpha(
+                                                  Appearance.md3.surface_container_low, 0.85)
                 radius: 6
                 implicitWidth: applyPillRow.implicitWidth + 16
                 implicitHeight: 26
-                border.color: applyMouse.containsMouse ? Appearance.md3.primary :
-                              Qt.alpha(Appearance.md3.outline_variant, 0.35)
+                border.color: applyMouse.containsMouse ? Appearance.md3.primary : Qt.alpha(
+                                                             Appearance.md3.outline_variant, 0.35)
                 border.width: 1
 
                 Behavior on color {
@@ -728,6 +743,7 @@ Item {
 
                 Row {
                     id: applyPillRow
+
                     anchors.centerIn: parent
                     spacing: 4
 
@@ -740,16 +756,19 @@ Item {
 
                     StyledText {
                         id: hint2
+
                         anchors.verticalCenter: parent.verticalCenter
                         text: root.label("wallpaper.hint_apply", "↵ Aplicar")
                         font.pixelSize: 11
                         font.weight: applyMouse.containsMouse ? Font.Bold : Font.Normal
-                        color: applyMouse.containsMouse ? Appearance.md3.on_primary : Appearance.md3.on_surface_variant
+                        color: applyMouse.containsMouse ? Appearance.md3.on_primary :
+                                                          Appearance.md3.on_surface_variant
                     }
                 }
 
                 MouseArea {
                     id: applyMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -771,6 +790,7 @@ Item {
 
                 StyledText {
                     id: countText
+
                     anchors.centerIn: parent
                     text: (wallpaperList.count > 0 ? wallpaperList.currentIndex + 1 : 0) + " / "
                           + wallpaperList.count
@@ -786,8 +806,8 @@ Item {
             anchors.centerIn: parent
             visible: root.filtered.length === 0
             icon: "image_not_supported"
-            title: root.filtersActive ? root.label("wallpaper.no_match", "Ningún fondo coincide") :
-                                        root.label("wallpaper.no_results", "No se encontraron fondos")
+            title: root.filtersActive ? root.label("wallpaper.no_match", "Ningún fondo coincide") : root.label(
+                                            "wallpaper.no_results", "No se encontraron fondos")
             subtitle: root.filtersActive ? root.label("wallpaper.no_match_hint",
                                                       "Prueba a quitar algún filtro") : ""
             actionVisible: root.filtersActive

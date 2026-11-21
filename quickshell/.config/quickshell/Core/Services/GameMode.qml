@@ -82,7 +82,7 @@ Singleton {
         } else {
             // --- DESACTIVAR MODO JUEGO ---
 
-            // 'reload' vuelve a aplicar tu hyprland.conf predeterminado al instante
+            // 'reload' vuelve a aplicar tu hyprland.lua predeterminado al instante
             HyprlandIpc.send("reload");
 
             console.info("[GameMode] Modo Juego DESACTIVADO: Configuración habitual restaurada.");

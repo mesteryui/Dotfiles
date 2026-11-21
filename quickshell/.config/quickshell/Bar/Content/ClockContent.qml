@@ -14,11 +14,14 @@ Item {
     // Qt entrega ticks incluso durante el bloqueo de pantalla.
     SystemClock {
         id: clockBar
+
         precision: SystemClock.Minutes
     }
 
     readonly property int hours: clockBar.date.getHours()
+
     readonly property int minutes: clockBar.date.getMinutes()
+
     readonly property string weekdayText: clockBar.date.toLocaleDateString(Qt.locale(), "ddd")
 
     function pad(n) {

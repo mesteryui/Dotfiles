@@ -976,8 +976,8 @@ Scope {
                 const st = Services.ClipboardService.lastStats;
                 if (!st || st.items === undefined)
                     return "";
-                return tr("launcher.clip_stats", "%1 entradas · %2 destacadas · %3 MB").arg(
-                            st.items).arg(st.starred || 0).arg((st.bytes / (1024 * 1024)).toFixed(1));
+                return tr("launcher.clip_stats", "%1 entradas · %2 destacadas · %3 MB").arg(st.items).arg(
+                            st.starred || 0).arg((st.bytes / (1024 * 1024)).toFixed(1));
             }
 
             function clipResults(q) {

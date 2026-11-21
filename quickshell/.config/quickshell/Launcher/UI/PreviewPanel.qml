@@ -78,6 +78,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 340
             Layout.preferredHeight: 300
+
             fillMode: Image.PreserveAspectFit
             asynchronous: true
             // Las rutas llevan el cid/pid (únicas por contenido): cachear

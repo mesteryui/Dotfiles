@@ -122,12 +122,13 @@ Singleton {
     // OSD sale como tarde 1 s, pero sale. Es mucho más barato que el
     // sondeo continuo que había antes (60 ms + 220 ms en bucle): con un
     // atajo que casi nunca falla no compensa preguntar más a menudo.
+    // Con la pantalla bloqueada se pausa para no consumir ciclos IPC.
     Timer {
         id: pollTimer
 
         interval: 1000
         repeat: true
-        running: true
+        running: !LockState.locked
         onTriggered: root.queryDevices()
     }
 

@@ -20,10 +20,12 @@ ColumnLayout {
     // Entrega ticks incluso mientras la pantalla está bloqueada.
     SystemClock {
         id: clockLock
+
         precision: SystemClock.Minutes
     }
 
     readonly property int hours: clockLock.date.getHours()
+
     readonly property int minutes: clockLock.date.getMinutes()
 
     function pad(n) {

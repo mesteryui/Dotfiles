@@ -1,4 +1,5 @@
 import qs.Core.Modules
+import qs.Core.Services as Services
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -20,6 +21,13 @@ Variants {
         readonly property var monitor: modelData ? Hyprland.monitors.values.find(m => m.name === modelData.name) :
                                                    null
         readonly property int windowsHere: {
+            // Deck frost apagado (valor por defecto): WallpaperFrostController
+            // descarta el recuento de todas formas (`enabledByUser`), así que
+            // no se recorre `Hyprland.toplevels` en cada cambio de ventana o
+            // workspace, una vez por pantalla. Al activar el ajuste el binding
+            // se reevalúa y el recuento vuelve a ser exacto.
+            if (Services.ConfigService.configs.appearance.deckFrost === false)
+                return 0;
             const mon = delegateScope.monitor;
             if (!mon || !mon.activeWorkspace)
                 return 0;

@@ -131,12 +131,20 @@ if [ -n "$VFS_QS" ]; then
     # Copia el árbol generado (tiene qmldir por módulo) y rellena los qmldir
     # que solo existen en el repo (Services, Brightness) junto a sus ficheros.
     cp -a "$VFS_QS" "$TMPDIR_MERGE/qs" 2>/dev/null
-    for qmldir in $(cd "$ROOT" && find . -name qmldir); do
-        dest="$TMPDIR_MERGE/qs/${qmldir#./}"
-        if [ ! -f "$dest" ]; then
-            mkdir -p "$(dirname "$dest")"
-            cp "$ROOT/$qmldir" "$dest"
+    # Reparar symlinks que apunten a rutas inexistentes de ~/.config/quickshell
+    for sym in $(find "$TMPDIR_MERGE/qs" -type l); do
+        target="$(readlink "$sym")"
+        if [ ! -e "$sym" ] && [[ "$target" =~ /quickshell/(.*) ]]; then
+            rel="${BASH_REMATCH[1]}"
+            if [ -e "$ROOT/$rel" ]; then
+                ln -sfn "$ROOT/$rel" "$sym"
+            fi
         fi
+    done
+    for qmldir in $(cd "$ROOT" && find . -name qmldir); do
+        dir="$(dirname "${qmldir#./}")"
+        mkdir -p "$TMPDIR_MERGE/qs/$dir"
+        cp -a "$ROOT/$dir"/* "$TMPDIR_MERGE/qs/$dir/" 2>/dev/null || true
     done
     LINT_IMPORTDIR="$TMPDIR_MERGE"
     echo "  imports: VFS $VFS_ROOT"
@@ -172,12 +180,16 @@ fi
 # siempre con el id de ese ancestro (`idRaiz.miembro`), nunca sin cualificar,
 # para que se vea de qué elemento viene. qmllint lo emite como
 # `Unqualified access [unqualified]`; cualquier aparición rompe el check.
-UNQUAL="$(grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | wc -l)"
-if [ "$UNQUAL" -gt 0 ]; then
-    fail "$UNQUAL accesos sin cualificar (usa el id del ancestro: idRaiz.miembro)"
-    grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | sed 's|.*quickshell/||' | head -n 20
+if [ -n "$LINT_IMPORTDIR" ]; then
+    UNQUAL="$(grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | wc -l)"
+    if [ "$UNQUAL" -gt 0 ]; then
+        fail "$UNQUAL accesos sin cualificar (usa el id del ancestro: idRaiz.miembro)"
+        grep -h 'Unqualified access' "$LINT_TMP"/*.log 2>/dev/null | sed 's|.*quickshell/||' | head -n 20
+    else
+        ok "convención idRaiz.miembro (sin accesos sin cualificar)"
+    fi
 else
-    ok "convención idRaiz.miembro (sin accesos sin cualificar)"
+    warn "convención idRaiz.miembro omitida (sin VFS de quickshell; requiere imports resueltos)"
 fi
 rm -rf "$LINT_TMP"
 [ -n "$TMPDIR_MERGE" ] && rm -rf "$TMPDIR_MERGE"

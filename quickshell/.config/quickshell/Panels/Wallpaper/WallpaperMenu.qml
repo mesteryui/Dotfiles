@@ -91,7 +91,7 @@ Scope {
             // Fondo semitransparente con opacidad exacta de 0.5 fuera de la lista y la barra superior
             Rectangle {
                 anchors.fill: parent
-                color: "#000000"
+                color: Appearance.md3.scrim
                 opacity: animatedContainer.opacity * 0.5
 
                 Behavior on opacity {

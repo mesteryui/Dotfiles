@@ -35,7 +35,7 @@ Item {
     Timer {
         id: expireTimer
 
-        running: !cardHover.hovered
+        running: !cardHover.hovered && !root.isCritical
         interval: (Services.ConfigService.configs.notifications.timeout || 5) * 1000
         onTriggered: root.notification.expire()
     }

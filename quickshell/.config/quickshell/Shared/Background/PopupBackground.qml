@@ -22,10 +22,11 @@ Rectangle {
         }
     }
 
-    // layer.enabled es necesario para que MultiEffect (sombra) pueda leer
-    // la textura de este elemento como source. Sin él, el primer frame
-/* Fixed: layer.enabled: true */
-    layer.enabled: true
+    // Sin `layer.enabled`: las sombras MultiEffect que leían esta textura
+    // como source ya no existen en ningún consumidor. Mantener la capa
+    // obligaba a renderizar cada popup a un FBO de su tamaño (y a
+    // re-renderizarlo en cada cambio interno) sin que nadie leyera esa
+    // textura.
 
     // Borde encima de todo el contenido clippeado
     Rectangle {

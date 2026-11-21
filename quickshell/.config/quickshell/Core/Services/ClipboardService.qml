@@ -33,12 +33,15 @@ Singleton {
     onLangWatchChanged: rebuildSnapshot()
 
     property ListModel entries: ListModel {}
+
     property var snapshot: []
 
     property bool ready: false
+
     readonly property int maxEntries: 100
 
     property string error: ""
+
     property bool refreshing: false
 
     // ── Socket ──────────────────────────────────────────────────
@@ -52,6 +55,7 @@ Singleton {
 
     Socket {
         id: shinroSocket
+
         path: root.socketPath
 
         parser: SplitParser {
@@ -101,6 +105,7 @@ Singleton {
     // Reconexión
     Timer {
         id: reconnectTimer
+
         interval: 2000
         repeat: true
         running: root.socketPath !== "" && !shinroSocket.connected
@@ -111,6 +116,7 @@ Singleton {
     // "refrescando" para siempre.
     Timer {
         id: requestTimeout
+
         interval: 10000
         repeat: false
         onTriggered: root._failRequest("timeout")
@@ -133,6 +139,7 @@ Singleton {
     // El backend responde en orden sobre la misma conexión. Una cola evita
     // que dos peticiones solapadas se pisen (p. ej. refresh + get-text).
     property var _pending: []
+
     property int pendingId: 0
 
     function _failRequest(reason) {
@@ -396,9 +403,10 @@ Singleton {
     // ── Preview imagen ──────────────────────────────────────────
     // (La miniatura vive en disco, en el thumb que manda el backend;
     // aquí no se cachea nada en /tmp propio: ver FilePreviewService.)
-    // Verificamos que el archivo exista antes de devolver la ruta, para
-    // evitar que QML intente abrir thumbnails huérfanos (ej. tras la
-    // evicción de entradas en el backend).
+    // Solo se devuelven rutas de entradas presentes en el snapshot actual.
+    // El backend sanea su cache antes de publicar cada listado (no anuncia
+    // miniaturas borradas) y LauncherPreview revalida el preview cuando el
+    // snapshot cambia, así que QML no intenta abrir thumbs huérfanos.
     function previewImage(cid) {
         const id = parseInt(cid, 10);
         if (isNaN(id))
@@ -406,11 +414,7 @@ Singleton {
         for (let i = 0; i < entries.count; i++) {
             const e = entries.get(i);
             if (e.cid === String(id) && e.isImage && e._thumbPath) {
-                // Comprobar que el archivo sigue existiendo en disco.
-                // Qt.fsStats devuelve {exists: bool, size: number, ...}
-                if (Qt.fsStats(e._thumbPath).exists) {
-                    return e._thumbPath;
-                }
+                return e._thumbPath;
             }
         }
         return "";
@@ -418,8 +422,11 @@ Singleton {
 
     // ── Texto completo ──────────────────────────────────────────
     property string textCid: ""
+
     property string textContent: ""
+
     property string textAcc: ""
+
     property string pendingTextId: ""
 
     signal textReady(string cid)

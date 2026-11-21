@@ -76,12 +76,12 @@ RowLayout {
 
                 StyledText {
                     id: typeLabel
+
                     anchors.centerIn: parent
                     text: root.label(typePill.modelData.labelKey, typePill.modelData.fallback)
                     font.pixelSize: 12
                     font.weight: typePill.active ? Font.Bold : Font.Normal
-                    color: typePill.active ? Appearance.md3.primary :
-                                             Appearance.md3.on_surface_variant
+                    color: typePill.active ? Appearance.md3.primary : Appearance.md3.on_surface_variant
                     opacity: typePill.unavailable ? Appearance.state.disabled : 1.0
 
                     Behavior on color {
@@ -110,6 +110,7 @@ RowLayout {
 
                 MouseArea {
                     id: typeMouse
+
                     anchors.fill: parent
                     enabled: !typePill.unavailable
                     hoverEnabled: true
@@ -165,6 +166,7 @@ RowLayout {
         // Tira de swatches de color (colores calculados de los wallpapers)
         Row {
             id: swatchRow
+
             anchors.verticalCenter: parent.verticalCenter
             spacing: 3
 
@@ -208,6 +210,7 @@ RowLayout {
 
                     MouseArea {
                         id: swatchMouse
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -248,6 +251,7 @@ RowLayout {
 
             Row {
                 id: clearRow
+
                 anchors.centerIn: parent
                 spacing: 4
 
@@ -268,6 +272,7 @@ RowLayout {
 
             MouseArea {
                 id: clearMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor

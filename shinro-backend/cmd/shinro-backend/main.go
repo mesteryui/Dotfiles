@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -42,31 +41,22 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// --- NUEVO: Comprobar si el daemon ya está en ejecución ANTES de
-	// crear los providers. Si otro shinro-backend está escuchando, evitamos
-	// crear providers innecesarios (clipboard.New que puede podar historial,
-	// files.New que abre inotify) y salimos con código 2 para que systemd
-	// con RestartPreventExitStatus=2 no reintente mientras el primero vivo.
-	//
-	// Mismo orden que usan los clientes y el propio backend:
-	// $SHINRO_SOCKET_PATH → $XDG_RUNTIME_DIR/shinro → /run/user/$UID/shinro
+	// Bloqueo exclusivo del daemon: si ya hay otro shinro-backend en ejecución,
+	// salimos inmediatamente (0 ms) con código 2 para que systemd
+	// (con RestartPreventExitStatus=2) no lo reintente. Al bloquear antes de
+	// inicializar los proveedores, evitamos abrir inotify o manipular la
+	// base de datos del portapapeles si no somos la instancia dueña.
 	socketPath := socketPathDefaultFromMain()
-	{
-		const dialTimeout = 300 * time.Millisecond
-		conn, err := net.DialTimeout("unix", socketPath, dialTimeout)
-		if err == nil {
-			// El daemon ya está vivo: cerramos la conexión y salimos con
-			// código 2. main.go hará os.Exit(2) al detectar
-			// errors.Is(err, socket.ErrAlreadyRunning), pero como esto es
-			// una comprobación temprana usamos os.Exit(2) directamente.
-			_ = conn.Close()
+	lockFile, err := socket.AcquireLock(socketPath)
+	if err != nil {
+		if errors.Is(err, socket.ErrAlreadyRunning) {
 			logger.Warn("shinro-backend ya está en ejecución", "socket", socketPath)
 			os.Exit(2)
 		}
-		// Si el Dial falla (ECONNREFUSED, timeout, etc.), continuamos:
-		// el socket está libre o hay un caso transitorio.
-		_ = conn // silenciar warning "defined but not used" cuando err != nil
+		logger.Error("no se pudo adquirir el bloqueo del socket", "socket", socketPath, "error", err)
+		os.Exit(1)
 	}
+	defer lockFile.Close()
 
 	// Cada proveedor es independiente y no conoce a los demás.
 	sysProvider := system.New()
@@ -113,6 +103,7 @@ func main() {
 	// Un único socket Unix llamado "shinro" para todo.
 	// SHINRO_SOCKET_PATH permite sobrescribir la ruta del socket.
 	srv := socket.NewServer(registry, connMon)
+	srv.SetLockFile(lockFile)
 
 	// El proveedor de clima descarga el feed de avisos (2,7 MB) en segundo
 	// plano. Cuando llega, se despierto a los clientes de clima para que

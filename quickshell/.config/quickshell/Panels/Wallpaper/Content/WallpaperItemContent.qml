@@ -71,12 +71,7 @@ Item {
 
         transform: [
             Matrix4x4 {
-                matrix: Qt.matrix4x4(
-                    1, 0.28, 0, 0,
-                    0,  1.0, 0, 0,
-                    0,  0.0, 1, 0,
-                    0,  0.0, 0, 1
-                )
+                matrix: Qt.matrix4x4(1, 0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
             }
         ]
     }
@@ -92,8 +87,7 @@ Item {
         StyledClippingRectangle {
             anchors.fill: parent
             radius: root.radius
-            border.color: root.isSelected ? Appearance.md3.primary :
-                                             Qt.alpha(Appearance.md3.outline, 0.25)
+            border.color: root.isSelected ? Appearance.md3.primary : Qt.alpha(Appearance.md3.outline, 0.25)
             border.width: root.isSelected ? 2 : 1
 
             Behavior on border.color {
@@ -123,12 +117,7 @@ Item {
                 // el marco/contenedor conserva su forma original de paralelogramo.
                 transform: [
                     Matrix4x4 {
-                        matrix: Qt.matrix4x4(
-                            1, 0.28, 0, 0,
-                            0,  1.0, 0, 0,
-                            0,  0.0, 1, 0,
-                            0,  0.0, 0, 1
-                        )
+                        matrix: Qt.matrix4x4(1, 0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
                     }
                 ]
 
@@ -180,17 +169,13 @@ Item {
 
                 transform: [
                     Matrix4x4 {
-                        matrix: Qt.matrix4x4(
-                            1, 0.28, 0, 0,
-                            0,  1.0, 0, 0,
-                            0,  0.0, 1, 0,
-                            0,  0.0, 0, 1
-                        )
+                        matrix: Qt.matrix4x4(1, 0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
                     }
                 ]
 
                 Row {
                     id: badgeRow
+
                     anchors.centerIn: parent
                     spacing: 4
 
@@ -228,17 +213,13 @@ Item {
 
                 transform: [
                     Matrix4x4 {
-                        matrix: Qt.matrix4x4(
-                            1, 0.28, 0, 0,
-                            0,  1.0, 0, 0,
-                            0,  0.0, 1, 0,
-                            0,  0.0, 0, 1
-                        )
+                        matrix: Qt.matrix4x4(1, 0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
                     }
                 ]
 
                 Row {
                     id: picBadgeRow
+
                     anchors.centerIn: parent
                     spacing: 2
 
@@ -252,7 +233,6 @@ Item {
                     }
                 }
             }
-
 
             // State layer hover
             Rectangle {
@@ -312,12 +292,7 @@ Item {
 
                 transform: [
                     Matrix4x4 {
-                        matrix: Qt.matrix4x4(
-                            1, 0.28, 0, 0,
-                            0,  1.0, 0, 0,
-                            0,  0.0, 1, 0,
-                            0,  0.0, 0, 1
-                        )
+                        matrix: Qt.matrix4x4(1, 0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
                     }
                 ]
 

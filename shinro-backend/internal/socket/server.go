@@ -113,6 +113,29 @@ func socketPathDefault() string {
 	return "/run/user/" + strconv.Itoa(os.Getuid()) + "/shinro"
 }
 
+// AcquireLock intenta adquirir un bloqueo exclusivo (flock) sobre socketPath+".lock".
+// Si otro daemon ya está en ejecución, devuelve ErrAlreadyRunning de inmediato en 0 ms.
+// El llamador debe mantener el archivo abierto durante la vida del daemon y cerrarlo al salir.
+func AcquireLock(socketPath string) (*os.File, error) {
+	if dir := filepath.Dir(socketPath); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return nil, err
+		}
+	}
+	f, err := os.OpenFile(socketPath+".lock", os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return nil, err
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		_ = f.Close()
+		if errors.Is(err, syscall.EAGAIN) || errors.Is(err, syscall.EWOULDBLOCK) || errors.Is(err, syscall.EACCES) {
+			return nil, fmt.Errorf("%w: %s", ErrAlreadyRunning, socketPath)
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
 func NewServer(registry *Registry, connMon *connectivity.Monitor) *Server {
 	s := &Server{
 		path:      socketPathDefault(),
@@ -131,6 +154,11 @@ func NewServer(registry *Registry, connMon *connectivity.Monitor) *Server {
 	return s
 }
 
+// SetLockFile permite inyectar un bloqueo adquirido previamente (por ejemplo en main).
+func (s *Server) SetLockFile(f *os.File) {
+	s.lockFile = f
+}
+
 // Start arranca el servidor y bloquea hasta que el contexto se cancele.
 // Al cancelarse (SIGTERM/SIGINT), cierra todos los clientes activos y espera
 // a que terminen los pumps antes de salir (graceful shutdown).
@@ -143,44 +171,22 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}
 
-	// Si ya hay un daemon escuchando en el socket, no arrancamos otro.
-	// Intentamos conectar con un timeout corto: si la conexión se establece,
-	// el daemon ya está vivo y devolvemos un error centinela.
-	//
-	// Esto cubre el caso de "daemon vivo": el Dial conecta, se cierra la
-	// conexión y Start devuelve error en vez de dejar al primero inalcanzable.
-	//
-	// El caso de "socket huérfano tras un crash" se cubre a continuación: si
-	// el Dial falla (ECONNREFUSED o timeout), continuamos con el flujo normal
-	// de eliminación y arranque del socket.
-	if conn, err := net.DialTimeout("unix", s.path, 300*time.Millisecond); err == nil {
-		_ = conn.Close()
-		return fmt.Errorf("%w: %s", ErrAlreadyRunning, s.path)
-	}
-
-	// Lockfile exclusivo junto al socket: evita el race TOCTOU en el que dos
-	// procesos fallaran el Dial al mismo tiempo y ambos intentaran crear el
-	// socket (el segundo borraría el del primero). Solo quien adquiere el
-	// flock continúa; el otro devuelve ErrAlreadyRunning.
-	lockFile, err := os.OpenFile(s.path+".lock", os.O_CREATE|os.O_RDWR, 0o600)
-	if err != nil {
-		return err
-	}
-	if err := syscall.Flock(int(lockFile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		lockFile.Close()
-		if errors.Is(err, syscall.EAGAIN) || errors.Is(err, syscall.EACCES) {
-			return fmt.Errorf("%w: %s", ErrAlreadyRunning, s.path)
+	// Adquirir el lockfile exclusivo si no fue inyectado previamente desde main.
+	// Esto previene condiciones de carrera TOCTOU en caso de inicios simultáneos
+	// y valida atómicamente si otro proceso ya posee el socket en 0 ms.
+	if s.lockFile == nil {
+		lock, err := AcquireLock(s.path)
+		if err != nil {
+			return err
 		}
-		return err
+		s.lockFile = lock
 	}
-	s.lockFile = lockFile
 
 	_ = os.Remove(s.path)
 	ln, err := net.Listen("unix", s.path)
 	if err != nil {
 		s.lockFile.Close()
 		s.lockFile = nil
-		_ = os.Remove(s.path + ".lock")
 		return err
 	}
 	s.listener = ln
@@ -243,7 +249,6 @@ func (s *Server) Start(ctx context.Context) error {
 	if s.lockFile != nil {
 		s.lockFile.Close()
 		s.lockFile = nil
-		_ = os.Remove(s.path + ".lock")
 	}
 	_ = os.Remove(s.path)
 	logger.Info("shinro socket detenido")

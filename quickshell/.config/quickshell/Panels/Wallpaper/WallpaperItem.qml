@@ -15,9 +15,11 @@ Item {
     property int surfaceRadius: 18
 
     readonly property bool isSelected: ListView.isCurrentItem
+
     readonly property int distance: Math.abs(ListView.view.currentIndex - index)
-    readonly property real side: index < ListView.view.currentIndex ? -1 :
-                                index > ListView.view.currentIndex ? 1 : 0
+
+    readonly property real side: index < ListView.view.currentIndex ? -1 : index > ListView.view.currentIndex
+                                                                      ? 1 : 0
 
     // Ancho dinámico del delegado: seleccionada se expande a 560px, laterales 200px.
     // Altura aumentada a 310px para que las imágenes se vean más altas y prominentes.
@@ -50,12 +52,7 @@ Item {
         // Inclinación diagonal oblicua (Shear en X de -0.28)
         transform: [
             Matrix4x4 {
-                matrix: Qt.matrix4x4(
-                    1, -0.28, 0, 0,
-                    0,  1.0,  0, 0,
-                    0,  0.0,  1, 0,
-                    0,  0.0,  0, 1
-                )
+                matrix: Qt.matrix4x4(1, -0.28, 0, 0, 0, 1.0, 0, 0, 0, 0.0, 1, 0, 0, 0.0, 0, 1)
             }
         ]
 
@@ -82,8 +79,7 @@ Item {
             anchors.fill: parent
             anchors.margins: -4
             radius: delegateRoot.surfaceRadius + 4
-            color: delegateRoot.isSelected ? Qt.alpha(Appearance.md3.primary, 0.22) :
-                                             Qt.rgba(0, 0, 0, 0.25)
+            color: delegateRoot.isSelected ? Qt.alpha(Appearance.md3.primary, 0.22) : Qt.rgba(0, 0, 0, 0.25)
             z: -1
 
             Behavior on color {

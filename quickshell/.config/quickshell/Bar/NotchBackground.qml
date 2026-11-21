@@ -40,6 +40,7 @@ Shape {
     // item (una ventana de 0px de ancho en el primer frame, por ejemplo).
     readonly property real outerRadius: Math.max(0, Math.min(root.cornerRadius, Math.min(root.width / 2,
                                                                                          root.height)))
+
     readonly property real innerRadius: Math.max(0, Math.min(root.bodyRadius, root.height - root.outerRadius))
 
     ShapePath {

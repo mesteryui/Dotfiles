@@ -61,6 +61,7 @@ Singleton {
 
         Connections {
             required property MprisPlayer modelData
+            ignoreUnknownSignals: true
 
             target: modelData
 

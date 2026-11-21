@@ -10,6 +10,7 @@ BarPopupWindow {
 
     PopupBackground {
         id: bg
+
         anchors.fill: parent
     }
 

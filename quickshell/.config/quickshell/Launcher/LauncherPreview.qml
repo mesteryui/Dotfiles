@@ -222,7 +222,7 @@ QtObject {
             root.previewPath = Services.ClipboardService.previewImage(item.cid);
             // La miniatura ya viene generada por el backend: si existe, el
             // preview está listo sin decode adicional.
-            root.previewOk = root.previewPath !== "" && Qt.fsStats(root.previewPath).exists;
+            root.previewOk = root.previewPath !== "";
         } else if (ItemKinds.isClipText(item)) {
             // Texto completo vía decode (con fallback a la línea del listado
             // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto
@@ -237,6 +237,30 @@ QtObject {
             root.previewFile = item.path;
             FilePreviewService.requestText(item.path);
         }
+    }
+
+    // El historial del backend puede cambiar mientras el panel está abierto
+    // (evicción por límite, borrado, clear o reconexión). Si la miniatura del
+    // clip seleccionado desaparece, hay que soltar la ruta antes de que
+    // QQuickImage intente abrirla: si no, Qt registra "Cannot open" y deja el
+    // hueco roto. El backend ya no publica rutas muertas; esto cubre la
+    // ventana entre el cambio y la llegada del nuevo listado.
+    function revalidateClipPreview() {
+        if (root.previewCid === "")
+            return;
+        const path = Services.ClipboardService.previewImage(root.previewCid);
+        if (path === "") {
+            root.previewOk = false;
+            root.previewPath = "";
+            if (root.currentItem && root.currentItem.kind === "clip" && root.currentItem.isImage && String(
+                        root.currentItem.cid) === root.previewCid)
+                root.previewError = root.previewFailedMessage();
+            return;
+        }
+        if (path !== root.previewPath)
+            root.previewPath = path;
+        root.previewOk = true;
+        root.previewError = "";
     }
 
     property Connections filePreviewConn: Connections {
@@ -269,6 +293,12 @@ QtObject {
             if (cid === root.clipTextCid) {
                 root.clipText = Services.ClipboardService.textContent || "";
             }
+        }
+
+        // El snapshot cambia con cada listado del backend: revalidar la
+        // miniatura del clip seleccionado contra las entradas actuales.
+        function onSnapshotChanged() {
+            root.revalidateClipPreview();
         }
     }
 

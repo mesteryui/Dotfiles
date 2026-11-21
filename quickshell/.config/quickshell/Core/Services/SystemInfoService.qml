@@ -77,6 +77,7 @@ Singleton {
 
     Socket {
         id: shinroSocket
+
         path: root.socketPath
 
         parser: SplitParser {
@@ -148,6 +149,7 @@ Singleton {
     // Reconexión: solo corre mientras no haya conexión.
     Timer {
         id: reconnectTimer
+
         interval: 2000
         repeat: true
         running: root.socketPath !== "" && !shinroSocket.connected
@@ -204,17 +206,20 @@ Singleton {
 
     QtObject {
         id: _cpu
+
         property real usage: 0.0
         property int coreCount: 0
     }
 
     QtObject {
         id: _temp
+
         property int value: 0
     }
 
     QtObject {
         id: _mem
+
         property int totalMiB: 0
         property int usedMiB: 0
         property int availableMiB: 0
@@ -226,17 +231,20 @@ Singleton {
 
     QtObject {
         id: _host
+
         property string name: ""
     }
 
     QtObject {
         id: _uptime
+
         property real seconds: 0
         property string formatted: ""
     }
 
     QtObject {
         id: _disk
+
         property string total: "0G"
         property string used: "0G"
         property string usagePct: "0%"

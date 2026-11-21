@@ -108,9 +108,41 @@ func New(stateDir string) *Provider {
 		dataDir:  dataDir,
 	}
 	if stateDir != "" {
-		provider.load()
+		// Si el índice se pudo leer (o no existía), el historial en memoria
+		// es la fuente de verdad: cualquier fichero de cache/ o data/ que no
+		// referencie es un huérfano (cierre abrupto, índice perdido...).
+		// Si el índice estaba corrupto no se barre nada para no destruir
+		// datos que aún podrían recuperarse a mano.
+		if provider.load() {
+			provider.reconcileOrphansLocked()
+		}
 	}
 	return provider
+}
+
+// isInsideDir indica si path cae dentro de dir (comparación léxica, sin
+// resolver symlinks). Se usa para no borrar rutas ajenas si un índice
+// corrupto trae una miniatura fuera del cache propio.
+func isInsideDir(dir, path string) bool {
+	if dir == "" || path == "" {
+		return false
+	}
+	rel, err := filepath.Rel(dir, path)
+	if err != nil {
+		return false
+	}
+	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+// removeEntryFilesLocked borra el payload y la miniatura de una entrada.
+// Se llama con provider.mu tomado (o durante el arranque, sin concurrencia).
+func (provider *Provider) removeEntryFilesLocked(e *Entry) {
+	if isInsideDir(provider.cacheDir, e.ThumbPath) {
+		_ = os.Remove(e.ThumbPath)
+	}
+	if provider.dataDir != "" {
+		_ = os.Remove(provider.dataPath(e.Hash))
+	}
 }
 
 // SetOnChange registra una función que se llama tras cada mutación del
@@ -305,27 +337,35 @@ func (provider *Provider) pushLocked(entry *Entry) {
 	entry.ID = provider.nextID
 	provider.nextID++
 	provider.entries = append([]*Entry{entry}, provider.entries...)
-	if len(provider.entries) > clipMaxEntries {
-		provider.dropOldestUnstarredLocked()
-	}
+	provider.trimLocked()
 }
 
-// dropOldestUnstarredLocked evicta la más antigua sin star.
-func (provider *Provider) dropOldestUnstarredLocked() {
-	for i := len(provider.entries) - 1; i >= 0; i-- {
+// trimLocked aplica el límite del historial sin tocar la entrada más nueva:
+// una copia recién hecha debe verse siempre, aunque todas las demás estén
+// starred (protegidas de la evicción). Las starred no se descartan nunca por
+// límite de cantidad; su tope es de bytes (clipMaxStarredBytes).
+func (provider *Provider) trimLocked() bool {
+	changed := false
+	for len(provider.entries) > clipMaxEntries && provider.dropOldestUnstarredLocked() {
+		changed = true
+	}
+	return changed
+}
+
+// dropOldestUnstarredLocked evicta la entrada sin star más antigua, sin
+// tocar la primera (la más nueva). Devuelve false si no hay ninguna que
+// evictar (p. ej. todas las demás están starred).
+func (provider *Provider) dropOldestUnstarredLocked() bool {
+	for i := len(provider.entries) - 1; i >= 1; i-- {
 		if provider.entries[i].Starred {
 			continue
 		}
 		old := provider.entries[i]
 		provider.entries = append(provider.entries[:i], provider.entries[i+1:]...)
-		if old.ThumbPath != "" {
-			_ = os.Remove(old.ThumbPath)
-		}
-		if provider.dataDir != "" {
-			_ = os.Remove(provider.dataPath(old.Hash))
-		}
-		return
+		provider.removeEntryFilesLocked(old)
+		return true
 	}
+	return false
 }
 
 // waylandDisplay resuelve WAYLAND_DISPLAY. El backend puede arrancar antes que
@@ -649,11 +689,108 @@ func cloneEntry(e *Entry) *Entry {
 	return &c
 }
 
+// healLocked reconcilia el historial en memoria con los ficheros de disco.
+//
+//   - Entrada sin payload: se descarta (no se podría recopiar ni leer).
+//   - Miniatura perdida: se limpia la ruta y la entrada deja de anunciarse
+//     como imagen para que el cliente no reciba una ruta muerta.
+//   - Con regenerate=true (solo al arrancar) se intenta recrear la miniatura
+//     desde el payload en vez de degradar la entrada.
+//
+// Devuelve true si cambió algo, para persistir el índice.
+func (provider *Provider) healLocked(regenerate bool) bool {
+	changed := false
+	kept := provider.entries[:0]
+	for _, e := range provider.entries {
+		if provider.dataDir != "" {
+			if _, err := os.Stat(provider.dataPath(e.Hash)); err != nil {
+				// Solo se descarta si el fichero ya no existe. Un error
+				// transitorio (permisos, I/O) no debe borrar el historial.
+				if os.IsNotExist(err) {
+					provider.removeEntryFilesLocked(e)
+					changed = true
+					continue
+				}
+			}
+		}
+		if e.ThumbPath != "" {
+			if fi, err := os.Stat(e.ThumbPath); err == nil {
+				e.thumbBytes = int(fi.Size())
+			} else if os.IsNotExist(err) {
+				e.ThumbPath = ""
+				e.ThumbW = 0
+				e.ThumbH = 0
+				e.thumbBytes = 0
+				if e.Kind == "image" {
+					e.Kind = "binary"
+				}
+				changed = true
+			}
+		}
+		if regenerate && e.ThumbPath == "" && strings.HasPrefix(strings.ToLower(e.Mime), "image/") {
+			if provider.regenerateThumbLocked(e) {
+				changed = true
+			}
+		}
+		kept = append(kept, e)
+	}
+	provider.entries = kept
+	return changed
+}
+
+// regenerateThumbLocked vuelve a generar la miniatura de una entrada de imagen
+// a partir de su payload persistido. Si no se puede decodificar (o no hay
+// cache), la entrada se degrada a binaria: es preferible a anunciar una imagen
+// sin preview. Devuelve true si cambió la entrada.
+func (provider *Provider) regenerateThumbLocked(e *Entry) bool {
+	if provider.cacheDir == "" || provider.dataDir == "" {
+		if e.Kind == "image" {
+			e.Kind = "binary"
+			return true
+		}
+		return false
+	}
+	data, err := os.ReadFile(provider.dataPath(e.Hash))
+	if err != nil {
+		return false
+	}
+	thumb, tw, th, _, _, ok := thumbnailPNG(data, clipThumbnailSize)
+	if !ok {
+		if e.Kind == "image" {
+			e.Kind = "binary"
+			return true
+		}
+		return false
+	}
+	path := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", e.Hash))
+	if err := os.WriteFile(path, thumb, 0o600); err != nil {
+		if e.Kind == "image" {
+			e.Kind = "binary"
+			return true
+		}
+		return false
+	}
+	e.ThumbPath = path
+	e.ThumbW = tw
+	e.ThumbH = th
+	e.thumbBytes = len(thumb)
+	e.Kind = "image"
+	return true
+}
+
 // List devuelve el historial actual (nuevo primero). Los elementos son copias;
 // modificarlos no afecta al estado interno.
+//
+// Antes de entregarlo se reconcilia con el disco: nunca se publica la ruta de
+// una miniatura que ya no existe (el cliente QML la intentaría abrir y
+// ensuciaría el log) ni una entrada cuyo payload desapareció (no se podría
+// recopiar). El saneado es barato y solo toca entradas con ficheros.
 func (provider *Provider) List() []*Entry {
 	provider.mu.Lock()
 	defer provider.mu.Unlock()
+	if provider.healLocked(false) {
+		provider.persistLocked()
+	}
 	out := make([]*Entry, len(provider.entries))
 	for i, e := range provider.entries {
 		out[i] = cloneEntry(e)
@@ -689,12 +826,7 @@ func (provider *Provider) Delete(id uint64) error {
 	provider.mu.Lock()
 	for i, e := range provider.entries {
 		if e.ID == id {
-			if e.ThumbPath != "" {
-				_ = os.Remove(e.ThumbPath)
-			}
-			if provider.dataDir != "" {
-				_ = os.Remove(provider.dataPath(e.Hash))
-			}
+			provider.removeEntryFilesLocked(e)
 			provider.entries = append(provider.entries[:i], provider.entries[i+1:]...)
 			provider.persistLocked()
 			provider.mu.Unlock()
@@ -715,12 +847,7 @@ func (provider *Provider) Clear() {
 			kept = append(kept, e)
 			continue
 		}
-		if e.ThumbPath != "" {
-			_ = os.Remove(e.ThumbPath)
-		}
-		if provider.dataDir != "" {
-			_ = os.Remove(provider.dataPath(e.Hash))
-		}
+		provider.removeEntryFilesLocked(e)
 	}
 	provider.entries = kept
 	provider.persistLocked()
@@ -837,15 +964,20 @@ func (provider *Provider) persistLocked() {
 	}
 }
 
-// load restaura el historial persistido desde index.json. Para cada entrada
-// verifica que su payload exista en data/; las entradas huérfanas se descartan.
-func (provider *Provider) load() {
+// load restaura el historial persistido desde index.json y devuelve true si el
+// índice se pudo leer (o no existía). Con false (índice corrupto o ilegible) el
+// llamador no debe barrer huérfanos: los datos aún podrían recuperarse a mano.
+func (provider *Provider) load() bool {
 	if provider.stateDir == "" {
-		return
+		return true
 	}
 	raw, err := os.ReadFile(provider.indexPath())
 	if err != nil {
-		return
+		if os.IsNotExist(err) {
+			return true
+		}
+		logger.Warn("clipboard: no se pudo leer el índice", "error", err)
+		return false
 	}
 	type persistedEntry struct {
 		ID        uint64 `json:"id"`
@@ -868,31 +1000,26 @@ func (provider *Provider) load() {
 	}
 	var pi persistedIndex
 	if err := json.Unmarshal(raw, &pi); err != nil {
-		return
+		logger.Warn("clipboard: índice corrupto; no se barre la caché", "error", err)
+		return false
 	}
 	provider.nextID = pi.NextID
 	if provider.nextID == 0 {
 		provider.nextID = 1
 	}
 	for _, pe := range pi.Entries {
-		// Solo restaurar si el payload aún existe en disco
+		// Solo restaurar si el payload aún existe en disco: sin él la entrada
+		// no se puede recopiar ni leer.
 		if provider.dataDir != "" {
 			if _, err := os.Stat(provider.dataPath(pe.Hash)); err != nil {
-				// Payload perdido: descartar entrada
-				if pe.ThumbPath != "" {
-					_ = os.Remove(pe.ThumbPath)
-				}
-				continue
-			}
-		}
-		// Verificar que el thumbnail siga existiendo (si lo tenía)
-		if pe.ThumbPath != "" {
-			if _, err := os.Stat(pe.ThumbPath); err != nil {
-				pe.ThumbPath = ""
-				pe.ThumbW = 0
-				pe.ThumbH = 0
-				if pe.Kind == "image" {
-					pe.Kind = "binary"
+				// Solo descartar si el payload ya no existe; un error
+				// transitorio no debe perder el historial persistido.
+				if os.IsNotExist(err) {
+					// Payload perdido: su miniatura (si existe) queda huérfana.
+					if isInsideDir(provider.cacheDir, pe.ThumbPath) {
+						_ = os.Remove(pe.ThumbPath)
+					}
+					continue
 				}
 			}
 		}
@@ -911,17 +1038,60 @@ func (provider *Provider) load() {
 			Hash:      pe.Hash,
 			TS:        pe.TS,
 		}
-		// Calcular thumbBytes desde el archivo real
-		if pe.ThumbPath != "" {
-			if fi, err := os.Stat(pe.ThumbPath); err == nil {
-				e.thumbBytes = int(fi.Size())
-			}
-		}
 		provider.entries = append(provider.entries, e)
 		if e.ID >= provider.nextID {
 			provider.nextID = e.ID + 1
 		}
 	}
+	// Reconcilia miniaturas (regenera las perdidas desde el payload) y aplica
+	// el límite del historial, por si el índice viene de una versión anterior.
+	healed := provider.healLocked(true)
+	trimmed := provider.trimLocked()
+	if healed || trimmed {
+		provider.persistLocked()
+	}
+	return true
+}
+
+// reconcileOrphansLocked elimina ficheros de cache/ y data/ que no referencia
+// ninguna entrada. Cubre restos de un cierre abrupto entre escribir un fichero
+// y persistir el índice, y de índices perdidos. Solo corre al arrancar, con el
+// bloqueo exclusivo del daemon ya tomado (no hay otra instancia escribiendo).
+func (provider *Provider) reconcileOrphansLocked() {
+	referenced := make(map[string]struct{}, len(provider.entries)*2)
+	for _, e := range provider.entries {
+		if e.ThumbPath != "" {
+			referenced[e.ThumbPath] = struct{}{}
+		}
+		if provider.dataDir != "" {
+			referenced[provider.dataPath(e.Hash)] = struct{}{}
+		}
+	}
+	sweep := func(dir, suffix string) {
+		if dir == "" {
+			return
+		}
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return
+		}
+		for _, de := range entries {
+			if de.IsDir() || !strings.HasSuffix(de.Name(), suffix) {
+				continue
+			}
+			path := filepath.Join(dir, de.Name())
+			if _, ok := referenced[path]; ok {
+				continue
+			}
+			if err := os.Remove(path); err == nil {
+				logger.Debug("clipboard: fichero huérfano eliminado", "path", path)
+			}
+		}
+	}
+	sweep(provider.cacheDir, ".png")
+	sweep(provider.cacheDir, ".tmp")
+	sweep(provider.dataDir, ".bin")
+	sweep(provider.dataDir, ".tmp")
 }
 
 // StartWatch abre el acceso nativo al portapapeles Wayland y queda escuchando

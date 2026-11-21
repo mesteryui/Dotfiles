@@ -19,8 +19,6 @@ Scope {
     // ── IPC ─────────────────────────────────────────────────────────
     // qs ipc call ui.settings toggle
     IpcHandler {
-        target: "ui.settings"
-
         function toggle() {
             scope.shown = !scope.shown;
         }
@@ -32,6 +30,8 @@ Scope {
         function close() {
             scope.shown = false;
         }
+
+        target: "ui.settings"
     }
 
     LazyLoader {
@@ -70,10 +70,6 @@ Scope {
                 surfaceRadius: Appearance.shape.huge
                 baseColor: Appearance.md3.surface
             }
-
-            // ── Sombra: source se asigna de forma declarativa para evitar warning
-/* Fixed: Uses PopupBackground with layer.enabled */
-            // bg es PopupBackground (tiene layer.enabled), así que su textura está lista.
 
             // ── Content (lazy) ────────────────────────────────────────
             // SettingsPanelContent es pesado y el panel pasa el 99% del tiempo

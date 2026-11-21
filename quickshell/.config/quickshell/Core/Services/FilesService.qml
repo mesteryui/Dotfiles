@@ -44,6 +44,7 @@ Singleton {
 
     Socket {
         id: shinroSocket
+
         path: root.socketPath
 
         parser: SplitParser {
@@ -100,6 +101,7 @@ Singleton {
 
     Timer {
         id: reconnectTimer
+
         interval: 2000
         repeat: true
         running: root.socketPath !== "" && !shinroSocket.connected
@@ -110,6 +112,7 @@ Singleton {
     // 250 ms tras dejar de teclear.
     Timer {
         id: debounceTimer
+
         interval: 250
         repeat: false
         onTriggered: root._doSearch()
@@ -119,6 +122,7 @@ Singleton {
     // estado de búsqueda en vez de dejarlo bloqueado para siempre.
     Timer {
         id: requestTimeout
+
         interval: 8000
         repeat: false
         onTriggered: {
@@ -135,9 +139,12 @@ Singleton {
 
     // ── Petición ────────────────────────────────────────────────
     property string pendingQuery: ""
+
     property string lastSentQuery:
         ""   // última query enviada al backend (para descartar respuestas obsoletas)
+
     property int pendingLimit: 20
+
     property bool _pendingSearch: false
 
     function _send(action, extra) {

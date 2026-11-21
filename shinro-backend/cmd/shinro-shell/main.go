@@ -26,7 +26,7 @@ func sockPath() string {
 	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
 		return filepath.Join(dir, defaultSockName)
 	}
-	return filepath.Join("/run/user", strconv.Itoa(os.Getuid()), defaultSockName)
+	return filepath.Join("/run/user", strconv.Itoa(os.Geteuid()), defaultSockName)
 }
 
 // sendCommand envía una línea al backend y devuelve la respuesta.

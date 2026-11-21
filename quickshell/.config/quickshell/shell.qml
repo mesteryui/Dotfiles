@@ -44,6 +44,7 @@ ShellRoot {
         // script los copia al VFS (idempotente, one-shot, no bloquea el arranque).
         Quickshell.execDetached(["bash", Quickshell.shellDir + "/scripts/qmlls-sync.sh"]);
     }
+
     ReloadPopup {}
 
     // Cada componente pesado es un Scope ligero con LazyLoader interno:

@@ -21,7 +21,7 @@ Rectangle {
     property alias area: mouseArea
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool pressed: mouseArea.pressed
-    default property alias data: contentLoader.data
+    default property alias contentData: contentLoader.data
 
     signal clicked(variant mouse)
 

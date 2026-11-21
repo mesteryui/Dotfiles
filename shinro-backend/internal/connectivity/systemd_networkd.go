@@ -1,6 +1,7 @@
 package connectivity
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -28,6 +29,16 @@ type systemdNetworkdMonitor struct {
 // ese caso el Monitor de conectividad cae a comprobación HTTP en lugar de
 // declarar al sistema offline para siempre.
 func newSystemdNetworkdMonitor() *systemdNetworkdMonitor {
+	if os.Getenv("SHINRO_CONNECTIVITY_DISABLE_SDM") == "1" {
+		return nil
+	}
+
+	// Comprobar si systemd-networkd está realmente activo en el sistema.
+	// systemd-networkd crea /run/systemd/netif/ al iniciarse.
+	if _, err := os.Stat("/run/systemd/netif"); err != nil {
+		return nil
+	}
+
 	m := &systemdNetworkdMonitor{
 		done: make(chan struct{}),
 		subs: make(map[chan bool]struct{}),

@@ -169,7 +169,7 @@ Item {
                 // Fuente de la máscara: misma silueta que artShapeBg, no se pinta directamente.
                 // Declarada ANTES de artImage para que maskSource nunca apunte
                 // a un item sin textura en el primer frame (warning
-/* Fixed: layer.enabled: true on mask shape */
+                /* Fixed: layer.enabled: true on mask shape */
                 // layer.enabled es obligatorio aquí: sin él, un item con visible:false
                 // no genera textura y la máscara queda en blanco (imagen invisible).
                 MaterialShape {

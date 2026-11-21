@@ -298,10 +298,12 @@ Item {
 
     // Mueve la selección con cycle.
     property bool wrapFlash: false
+
     property int wrapDir: 0
 
     Timer {
         id: wrapTimer
+
         interval: 220
         onTriggered: root.wrapFlash = false
     }
@@ -512,12 +514,15 @@ Item {
                     color: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                        Appearance.md3.primary
                     opacity: favOverlay.containsMouse ? 1.0 : 0.85
-                    visible: root.activeMode === "clip" && entryDelegate.dispFav
+                    visible: root.activeMode === "clip" && (entryDelegate.dispFav
+                                                            || entryDelegate.effSelected
+                                                            || stateLayer.hovered)
                 }
             }
 
             M3StateLayer {
                 id: stateLayer
+
                 anchors.fill: parent
                 radius: parent.radius
                 tint: entryDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -561,7 +566,8 @@ Item {
                 height: 32
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                enabled: root.activeMode === "clip" && entryDelegate.dispFav
+                enabled: root.activeMode === "clip" && (entryDelegate.dispFav || entryDelegate.effSelected
+                                                        || stateLayer.hovered)
                 onClicked: root.favoriteToggled(entryDelegate.modelData)
             }
         }
@@ -658,7 +664,8 @@ Item {
                 color: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
                                                   Appearance.md3.primary
                 opacity: gridFavOverlay.containsMouse ? 1.0 : 0.9
-                visible: root.activeMode === "emoji" && gridDelegate.dispFav
+                visible: root.activeMode === "emoji" && (gridDelegate.dispFav || gridDelegate.effSelected
+                                                         || gridStateLayer.hovered)
             }
 
             MaterialIcon {
@@ -674,6 +681,7 @@ Item {
 
             M3StateLayer {
                 id: gridStateLayer
+
                 anchors.fill: parent
                 radius: parent.radius
                 tint: gridDelegate.effSelected ? Appearance.md3.on_secondary_container :
@@ -715,7 +723,8 @@ Item {
                 height: 24
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                enabled: root.activeMode === "emoji" && gridDelegate.dispFav
+                enabled: root.activeMode === "emoji" && (gridDelegate.dispFav || gridDelegate.effSelected
+                                                         || gridStateLayer.hovered)
                 onClicked: root.favoriteToggled(gridDelegate.modelData)
             }
         }
