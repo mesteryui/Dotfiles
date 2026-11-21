@@ -123,6 +123,10 @@ hl.config({
 			vibrancy_darkness = 0.35,
 			special = false,
 			new_optimizations = true,
+			-- Nuevo en Hyprland 0.57.0: blur proporcional.
+			-- Ajusta el desenfoque de forma proporcional al área, se ve más
+			-- natural y es algo más eficiente que un blur fijo.
+			proportional = true,
 			variant = "kawase",
 			acrylic = {
 				aberration = 0.038,
@@ -149,7 +153,12 @@ hl.config({
 		},
 	},
 })
-
+hl.config({
+	render = {
+		-- Fullscreen browsers can trigger an HDR mode switch that blanks some panels.
+		cm_auto_hdr = 0,
+	},
+})
 hl.config({
 	master = {
 		new_status = "master",
