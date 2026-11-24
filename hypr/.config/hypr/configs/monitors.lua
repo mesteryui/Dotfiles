@@ -9,6 +9,7 @@ hl.monitor({
 })
 
 --hl.config({ experimental = { hdr = true, wide_color_gamut = true }, render = { explicit_sync = 1 } })
+hl.monitor({ output = "", mode = "highrr", position = "auto", scale = 1, supports_hdr = -1 })
 
 hl.monitor({
 	output = "HDMI-A-1",
