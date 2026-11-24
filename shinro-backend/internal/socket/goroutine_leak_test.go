@@ -48,13 +48,13 @@ func TestServerNoDejaGoroutinesColgadas(t *testing.T) {
 
 	// Conectar y desconectar varios clientes, cada uno con un módulo
 	// periódico activo (para arrancar pumps que deben terminar al irse).
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		conn, err := net.Dial("unix", socketPath)
 		if err != nil {
 			t.Fatalf("no se pudo conectar al socket: %v", err)
 		}
 
-		hello := map[string]interface{}{
+		hello := map[string]any{
 			"type": "hello",
 			"intervals": map[string]int{
 				"system": 1,

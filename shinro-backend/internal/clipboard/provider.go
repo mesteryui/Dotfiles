@@ -10,7 +10,9 @@ package clipboard
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -18,11 +20,13 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode/utf8"
 
@@ -100,9 +104,16 @@ func New(stateDir string) *Provider {
 		_ = os.MkdirAll(stateDir, 0o700)
 		_ = os.MkdirAll(dataDir, 0o700)
 	}
+	// Usar los bytes del UUID directamente (en vez de hashear su representación
+	// textual) para obtener un valor inicial con toda la entropía disponible.
+	u := uuid.New()
+	initialID := binary.BigEndian.Uint64(u[:])
+	if initialID == 0 {
+		initialID = 1
+	}
 	provider := &Provider{
 		entries:  make([]*Entry, 0),
-		nextID:   hashUUIDToUint64(uuid.NewV4().String()),
+		nextID:   initialID,
 		cacheDir: cacheDir,
 		stateDir: stateDir,
 		dataDir:  dataDir,
@@ -241,7 +252,18 @@ func classifyClip(mime string, data []byte) (kind, preview string, thumb []byte,
 
 // thumbnailPNG decodifica una imagen y escala (aspect preservado, sin upscale)
 // a un PNG que cabe en max*max.
+const clipMaxImagePixels = 40_000_000 // 40 MP
+const clipMaxImageDim = 20_000
+
 func thumbnailPNG(data []byte, max int) (encoded []byte, thumbWidth, thumbHeight, sourceWidth, sourceHeight int, ok bool) {
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return nil, 0, 0, 0, 0, false
+	}
+	if cfg.Width <= 0 || cfg.Height <= 0 || cfg.Width > clipMaxImageDim ||
+		cfg.Height > clipMaxImageDim || int64(cfg.Width)*int64(cfg.Height) > clipMaxImagePixels {
+		return nil, 0, 0, 0, 0, false
+	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, 0, 0, 0, 0, false
@@ -440,17 +462,37 @@ func wlPaste(mime string) ([]byte, error) {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "wl-paste", "--no-newline", "--type", mime)
 	cmd.Env = wlEnv()
-	var out bytes.Buffer
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
 	var stderr bytes.Buffer
-	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	data, readErr := io.ReadAll(io.LimitReader(stdout, clipMaxEntryBytes+1))
+	_ = stdout.Close()
+
+	if readErr != nil {
+		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		_ = cmd.Wait()
+		return nil, readErr
+	}
+	if len(data) > clipMaxEntryBytes {
+		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		_ = cmd.Wait()
+		return nil, fmt.Errorf("contenido del portapapeles demasiado grande (%d MiB máximo)", clipMaxEntryBytes>>20)
+	}
+	if err := cmd.Wait(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return nil, fmt.Errorf("wl-paste agotó el tiempo de espera")
 		}
 		return nil, fmt.Errorf("wl-paste falló: %v (%s)", err, stderr.String())
 	}
-	return out.Bytes(), nil
+	return data, nil
 }
 
 // copyClipboard pone datos en el portapapeles del sistema. Usa el protocolo
@@ -492,7 +534,7 @@ func (provider *Provider) getWL() *wlClient {
 	return provider.wl
 }
 
-// isTextMime reconoce los alias de texto que puede ofrecer un cliente X11/Wayland.
+// isTextMime reconoce los alias de texto que puede ofrecer un cliente Wayland.
 func isTextMime(mime string) bool {
 	m := strings.ToLower(mime)
 	return strings.HasPrefix(m, "text/") || m == "utf8_string" || m == "string"
@@ -507,23 +549,64 @@ func isTextMime(mime string) bool {
 // se tocan.
 func (provider *Provider) discardFiles(e *Entry) {
 	provider.mu.Lock()
-	enUso := false
+	defer provider.mu.Unlock()
 	for _, existente := range provider.entries {
 		if existente.Hash == e.Hash {
-			enUso = true
-			break
+			return
 		}
 	}
-	provider.mu.Unlock()
-	if enUso {
-		return
-	}
 
-	if e.ThumbPath != "" {
+	if isInsideDir(provider.cacheDir, e.ThumbPath) {
 		_ = os.Remove(e.ThumbPath)
 	}
 	if provider.dataDir != "" {
 		_ = os.Remove(provider.dataPath(e.Hash))
+	}
+}
+
+// isImageFile valida si una ruta tiene una extensión de imagen permitida.
+func isImageFile(path string) bool {
+	ext := strings.ToLower(filepath.Ext(path))
+	switch ext {
+	case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico", ".svg":
+		return true
+	default:
+		return false
+	}
+}
+
+// isImageContent valida mediante la detección de tipo de contenido (magic
+// bytes) que los datos correspondan realmente a una imagen, evitando que un
+// atacante lea archivos arbitrarios (claves SSH, etc.) renombrándolos.
+func isImageContent(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
+	ct := http.DetectContentType(data)
+	if strings.HasPrefix(ct, "image/") {
+		return true
+	}
+	// SVG es texto; aceptarlo solo si es XML bien formado con raíz <svg>.
+	if strings.Contains(ct, "xml") {
+		return isSVG(data)
+	}
+	if len(data) <= 64*1024 && bytes.Contains(data, []byte("<svg")) {
+		return isSVG(data)
+	}
+	return false
+}
+
+func isSVG(data []byte) bool {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	dec.Entity = xml.HTMLEntity
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return false
+		}
+		if se, ok := tok.(xml.StartElement); ok {
+			return strings.EqualFold(se.Name.Local, "svg")
+		}
 	}
 }
 
@@ -534,10 +617,28 @@ func (provider *Provider) CopyText(text string) (*Entry, error) {
 	}
 
 	data := []byte(text)
+	if len(data) > clipMaxEntryBytes {
+		return nil, fmt.Errorf("texto demasiado grande (%d MiB máximo)", clipMaxEntryBytes>>20)
+	}
 	mime := "text/plain;charset=utf-8"
 
 	e := provider.buildEntry(mime, data)
-	provider.writeData(e.Hash, data)
+	origHash := e.Hash
+	finalHash, err := provider.writeData(origHash, data)
+	if err != nil {
+		provider.discardFiles(e)
+		return nil, err
+	}
+	if finalHash != origHash && e.ThumbPath != "" && provider.cacheDir != "" {
+		newThumb := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", finalHash))
+		if err := os.Rename(e.ThumbPath, newThumb); err == nil {
+			e.ThumbPath = newThumb
+		} else {
+			e.ThumbPath = ""
+			e.ThumbW, e.ThumbH, e.thumbBytes = 0, 0, 0
+		}
+	}
+	e.Hash = finalHash
 
 	if err := provider.copyClipboard(mime, data); err != nil {
 		provider.discardFiles(e)
@@ -556,6 +657,9 @@ func (provider *Provider) CopyText(text string) (*Entry, error) {
 
 // CopyImage coloca una imagen (ruta de archivo) en el portapapeles y la añade al historial.
 func (provider *Provider) CopyImage(path string) (*Entry, error) {
+	if !isImageFile(path) {
+		return nil, fmt.Errorf("el archivo no tiene una extensión de imagen permitida: %s", path)
+	}
 	info, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -572,15 +676,44 @@ func (provider *Provider) CopyImage(path string) (*Entry, error) {
 		return nil, fmt.Errorf("imagen demasiado grande (%d MiB máximo)", clipMaxEntryBytes>>20)
 	}
 
-	data, err := os.ReadFile(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
+	}
+	data, err := io.ReadAll(io.LimitReader(f, clipMaxEntryBytes+1))
+	f.Close()
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > clipMaxEntryBytes {
+		return nil, fmt.Errorf("imagen demasiado grande (%d MiB máximo)", clipMaxEntryBytes>>20)
+	}
+
+	// Validar que el contenido sea realmente una imagen (evita leer
+	// archivos arbitrarios renombrados con extensión de imagen).
+	if !isImageContent(data) {
+		return nil, fmt.Errorf("el archivo no contiene una imagen válida: %s", path)
 	}
 
 	mime := mimeByExtension(path)
 
 	e := provider.buildEntry(mime, data)
-	provider.writeData(e.Hash, data)
+	origHash := e.Hash
+	finalHash, err := provider.writeData(origHash, data)
+	if err != nil {
+		provider.discardFiles(e)
+		return nil, err
+	}
+	if finalHash != origHash && e.ThumbPath != "" && provider.cacheDir != "" {
+		newThumb := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", finalHash))
+		if err := os.Rename(e.ThumbPath, newThumb); err == nil {
+			e.ThumbPath = newThumb
+		} else {
+			e.ThumbPath = ""
+			e.ThumbW, e.ThumbH, e.thumbBytes = 0, 0, 0
+		}
+	}
+	e.Hash = finalHash
 
 	if err := provider.copyClipboard(mime, data); err != nil {
 		// La entrada no llega al historial: sus archivos (payload y
@@ -615,7 +748,22 @@ func (provider *Provider) CopyBytes(mime string, data []byte) (*Entry, error) {
 	}
 
 	e := provider.buildEntry(mime, data)
-	provider.writeData(e.Hash, data)
+	origHash := e.Hash
+	finalHash, err := provider.writeData(origHash, data)
+	if err != nil {
+		provider.discardFiles(e)
+		return nil, err
+	}
+	if finalHash != origHash && e.ThumbPath != "" && provider.cacheDir != "" {
+		newThumb := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", finalHash))
+		if err := os.Rename(e.ThumbPath, newThumb); err == nil {
+			e.ThumbPath = newThumb
+		} else {
+			e.ThumbPath = ""
+			e.ThumbW, e.ThumbH, e.thumbBytes = 0, 0, 0
+		}
+	}
+	e.Hash = finalHash
 
 	if err := provider.copyClipboard(mime, data); err != nil {
 		// La entrada no llega al historial: sus archivos (payload y
@@ -667,7 +815,24 @@ func (provider *Provider) ingestExternal() error {
 	}
 
 	e := provider.buildEntry(mime, data)
-	provider.writeData(e.Hash, data)
+	origHash := e.Hash
+	finalHash, err := provider.writeData(origHash, data)
+	if err != nil {
+		provider.discardFiles(e)
+		return err
+	}
+	if finalHash != origHash && e.ThumbPath != "" && provider.cacheDir != "" {
+		newThumb := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", finalHash))
+		if err := os.Rename(e.ThumbPath, newThumb); err == nil {
+			e.ThumbPath = newThumb
+		} else {
+			// Si no se puede renombrar, regenerar no es crítico; mantener ruta vieja
+			// solo si no colisiona. En caso raro, quitar referencia.
+			e.ThumbPath = ""
+			e.ThumbW, e.ThumbH, e.thumbBytes = 0, 0, 0
+		}
+	}
+	e.Hash = finalHash
 
 	provider.mu.Lock()
 	provider.pushLocked(e)
@@ -906,19 +1071,39 @@ func (provider *Provider) Stats() map[string]any {
 	return st
 }
 
-// writeData persiste los bytes de una entrada una vez, keyados por hash.
-func (provider *Provider) writeData(hash uint64, data []byte) {
+// writeData persiste los bytes de una entrada, keyados por hash. Si el hash de
+// 64 bits colisiona con contenido distinto ya persistido, desambigua el hash
+// para no corromper el payload existente. Devuelve el hash final usado.
+func (provider *Provider) writeData(hash uint64, data []byte) (uint64, error) {
 	if provider.dataDir == "" {
-		return
+		return hash, nil
 	}
-	path := provider.dataPath(hash)
-	if _, err := os.Stat(path); err == nil {
-		return
+	h := hash
+	for i := 0; i < 256; i++ {
+		path := provider.dataPath(h)
+		existing, err := os.ReadFile(path)
+		if err == nil {
+			if bytes.Equal(existing, data) {
+				return h, nil
+			}
+			// Colisión de hash: mismo valor de 64 bits, contenido distinto.
+			h ^= uint64(i+1)*0x9e3779b185ebca6d + 0x632be59bd9b4e019
+			continue
+		}
+		if !os.IsNotExist(err) {
+			return 0, err
+		}
+		tmp := path + ".tmp"
+		if err := os.WriteFile(tmp, data, 0o600); err != nil {
+			return 0, err
+		}
+		if err := os.Rename(tmp, path); err != nil {
+			_ = os.Remove(tmp)
+			return 0, err
+		}
+		return h, nil
 	}
-	tmp := path + ".tmp"
-	if os.WriteFile(tmp, data, 0o600) == nil {
-		_ = os.Rename(tmp, path)
-	}
+	return 0, fmt.Errorf("demasiadas colisiones de hash para %016x", hash)
 }
 
 // persistLocked guarda el índice atómicamente (llamada con mu hold).
@@ -1022,6 +1207,12 @@ func (provider *Provider) load() bool {
 					continue
 				}
 			}
+		}
+		// Saneamiento: el ThumbPath viene del disco y puede haber sido
+		// manipulado. Solo se admite una ruta dentro del cacheDir.
+		if pe.ThumbPath != "" && !isInsideDir(provider.cacheDir, pe.ThumbPath) {
+			logger.Warn("clipboard: ThumbPath fuera del cacheDir, descartado", "path", pe.ThumbPath)
+			pe.ThumbPath = ""
 		}
 		e := &Entry{
 			ID:        pe.ID,
@@ -1359,7 +1550,24 @@ func (provider *Provider) importEntry(mime string, data []byte) (*Entry, error) 
 	}
 
 	e := provider.buildEntry(mime, data)
-	provider.writeData(e.Hash, data)
+	origHash := e.Hash
+	finalHash, err := provider.writeData(origHash, data)
+	if err != nil {
+		provider.discardFiles(e)
+		return nil, err
+	}
+	if finalHash != origHash && e.ThumbPath != "" && provider.cacheDir != "" {
+		newThumb := filepath.Join(provider.cacheDir, fmt.Sprintf("thumb-%016x.png", finalHash))
+		if err := os.Rename(e.ThumbPath, newThumb); err == nil {
+			e.ThumbPath = newThumb
+		} else {
+			// Si no se puede renombrar, regenerar no es crítico; mantener ruta vieja
+			// solo si no colisiona. En caso raro, quitar referencia.
+			e.ThumbPath = ""
+			e.ThumbW, e.ThumbH, e.thumbBytes = 0, 0, 0
+		}
+	}
+	e.Hash = finalHash
 
 	provider.mu.Lock()
 	provider.pushLocked(e)
@@ -1432,10 +1640,4 @@ func (provider *Provider) ImportCliphist() error {
 	return nil
 }
 
-func hashUUIDToUint64(uuidStr string) uint64 {
-	var h uint64
-	for i := 0; i < len(uuidStr) && i < 16; i++ {
-		h ^= uint64(uuidStr[i]) << (uint(i%8) * 8)
-	}
-	return h
-}
+

@@ -15,12 +15,12 @@ import (
 // lee la configuración de systemd-networkd cuando NetworkManager no está
 // disponible.
 type systemdNetworkdMonitor struct {
-	mu          sync.Mutex
-	online      bool
-	subs        map[chan bool]struct{}
-	done        chan struct{}
-	closeOnce   sync.Once
-	checked     bool // ya realizamos la primera comprobación de estado
+	mu        sync.Mutex
+	online    bool
+	subs      map[chan bool]struct{}
+	done      chan struct{}
+	closeOnce sync.Once
+	checked   bool // ya realizamos la primera comprobación de estado
 }
 
 // newSystemdNetworkdMonitor crea un nuevo monitor que usa systemd-networkd.
@@ -86,11 +86,22 @@ func (m *systemdNetworkdMonitor) readInitialState() bool {
 	return false
 }
 
+var ipBinary = func() string {
+	for _, p := range []string{"/usr/bin/ip", "/usr/sbin/ip", "/bin/ip", "/sbin/ip"} {
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+			return p
+		}
+	}
+	if p, err := exec.LookPath("ip"); err == nil {
+		return p
+	}
+	return "ip"
+}()
+
 // hasDefaultRoute comprueba si hay una ruta por defecto activa (IPv4 o IPv6).
 // Usa una sola ejecución de `ip` en lugar de una por familia de direcciones.
 func hasDefaultRoute() bool {
-	// ip route show default muestra las rutas por defecto de todas las familias.
-	out, err := exec.Command("ip", "route", "show", "default").Output()
+	out, err := exec.Command(ipBinary, "route", "show", "default").Output()
 	if err != nil {
 		return false
 	}
@@ -99,14 +110,14 @@ func hasDefaultRoute() bool {
 
 // InterfaceUp comprueba si al menos una interfaz de red principal está arriba.
 func InterfaceUp() bool {
-	out, err := exec.Command("ip", "-brief", "link", "show").Output()
+	out, err := exec.Command(ipBinary, "-brief", "link", "show").Output()
 	if err != nil {
 		return false
 	}
 	outStr := string(out)
 	// Buscar interfaces que no sean LOOPBACK y que estén UP
-	lines := strings.Split(outStr, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(outStr, "\n")
+	for line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) < 2 {
 			continue

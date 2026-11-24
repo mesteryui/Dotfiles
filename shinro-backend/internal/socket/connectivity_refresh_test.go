@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"context"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -100,8 +99,7 @@ func TestWeatherImmediateUpdateOnHelloAndRefreshOnOnline(t *testing.T) {
 	registry := NewDefaultRegistry(sysProvider, weatherProvider)
 	srv := NewServer(registry, connMon)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go func() { _ = srv.Start(ctx) }()
 
@@ -121,7 +119,7 @@ func TestWeatherImmediateUpdateOnHelloAndRefreshOnOnline(t *testing.T) {
 	defer conn.Close()
 
 	// 1. Suscribirse a weather con un intervalo largo (600s = 10 minutos)
-	hello := map[string]interface{}{
+	hello := map[string]any{
 		"type": "hello",
 		"location": map[string]string{
 			"mode": "manual",
@@ -143,7 +141,7 @@ func TestWeatherImmediateUpdateOnHelloAndRefreshOnOnline(t *testing.T) {
 	if err != nil {
 		t.Fatalf("timeout esperando respuesta hello: %v", err)
 	}
-	var helloResp map[string]interface{}
+	var helloResp map[string]any
 	if err := json.Unmarshal([]byte(line), &helloResp); err != nil {
 		t.Fatalf("error parseando hello: %v", err)
 	}
@@ -156,15 +154,15 @@ func TestWeatherImmediateUpdateOnHelloAndRefreshOnOnline(t *testing.T) {
 	if err != nil {
 		t.Fatalf("timeout esperando primer update de weather al suscribirse: %v", err)
 	}
-	var updateMsg map[string]interface{}
+	var updateMsg map[string]any
 	if err := json.Unmarshal([]byte(updateLine), &updateMsg); err != nil {
 		t.Fatalf("error parseando primer update: %v", err)
 	}
 	if updateMsg["module"] != "weather" {
 		t.Fatalf("esperaba update de weather, got %v", updateMsg["module"])
 	}
-	data := updateMsg["data"].(map[string]interface{})
-	current := data["current"].(map[string]interface{})
+	data := updateMsg["data"].(map[string]any)
+	current := data["current"].(map[string]any)
 	if temp := current["temperature_2m"].(float64); temp != 20 {
 		t.Fatalf("esperaba temperatura 20, got %v", temp)
 	}
@@ -185,15 +183,15 @@ func TestWeatherImmediateUpdateOnHelloAndRefreshOnOnline(t *testing.T) {
 	if err != nil {
 		t.Fatalf("timeout esperando refresco automático de weather tras volver online: %v", err)
 	}
-	var refreshMsg map[string]interface{}
+	var refreshMsg map[string]any
 	if err := json.Unmarshal([]byte(refreshLine), &refreshMsg); err != nil {
 		t.Fatalf("error parseando update de refresco: %v", err)
 	}
 	if refreshMsg["module"] != "weather" {
 		t.Fatalf("esperaba update de weather tras reconexión, got %v", refreshMsg["module"])
 	}
-	refreshedData := refreshMsg["data"].(map[string]interface{})
-	refreshedCurrent := refreshedData["current"].(map[string]interface{})
+	refreshedData := refreshMsg["data"].(map[string]any)
+	refreshedCurrent := refreshedData["current"].(map[string]any)
 	if temp := refreshedCurrent["temperature_2m"].(float64); temp != 28 {
 		t.Fatalf("esperaba temperatura actualizada 28, got %v", temp)
 	}

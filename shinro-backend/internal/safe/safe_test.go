@@ -81,7 +81,7 @@ func TestGuardSurvivesPanic(t *testing.T) {
 	attempts := 0
 	var mu sync.Mutex
 
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		ok := Guard("test.guard", func() {
 			mu.Lock()
 			attempts++

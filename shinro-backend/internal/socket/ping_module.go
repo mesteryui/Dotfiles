@@ -52,7 +52,7 @@ func (m *pingModule) SendUpdate(c *client) error {
 		data = fn(c)
 	}
 
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "ping",
 		"data":   data,

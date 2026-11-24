@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"shinro-backend/internal/clipboard"
@@ -84,6 +85,24 @@ func (module *ClipboardModule) HandleGet(cliente *client, raw map[string]json.Ra
 		_ = json.Unmarshal(a, &action)
 	}
 
+	// Las acciones que mutan el historial o el portapapeles requieren
+	// confirmación explícita del cliente (confirm:true). Evita que una
+	// conexión ajena del mismo UID borre, copie o reemplace contenido sin
+	// que el usuario lo pida. No es una barrera criptográfica (mismo UID),
+	// pero obliga a que la petición sea intencional y se audita.
+	var confirm bool
+	if c, ok := raw["confirm"]; ok {
+		_ = json.Unmarshal(c, &confirm)
+	}
+	if isMutatingClipboardAction(action) && !confirm {
+		err := fmt.Errorf("la acción %s requiere confirmación explícita (confirm:true)", action)
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
+	}
+	if isMutatingClipboardAction(action) {
+		logger.Info("clipboard mutación", "client", cliente.conn.RemoteAddr(), "action", action)
+	}
+
 	switch action {
 	case "list":
 		return module.handleList(cliente)
@@ -121,7 +140,7 @@ func (module *ClipboardModule) HandleGet(cliente *client, raw map[string]json.Ra
 // al cliente con un historial obsoleto.
 func (module *ClipboardModule) handleList(cliente *client) error {
 	entries := module.provider.List()
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   entries,
@@ -151,7 +170,7 @@ func (module *ClipboardModule) handleCopyText(cliente *client, raw map[string]js
 		return err
 	}
 
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   entry,
@@ -178,7 +197,7 @@ func (module *ClipboardModule) handleCopyImage(cliente *client, raw map[string]j
 		return err
 	}
 
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   entry,
@@ -195,7 +214,7 @@ func (module *ClipboardModule) handlePaste(cliente *client) error {
 		return err
 	}
 
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data": map[string]any{
@@ -213,7 +232,17 @@ func (module *ClipboardModule) handlePaste(cliente *client) error {
 func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
-		_ = json.Unmarshal(idRaw, &id)
+		trimmed := strings.TrimSpace(string(idRaw))
+		if trimmed == "null" {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		if err := json.Unmarshal(idRaw, &id); err != nil {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
 	}
 	if id == 0 {
 		err := errors.New("id requerido para delete")
@@ -224,7 +253,7 @@ func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json
 		sendErrorToClient(cliente, module.Name(), err.Error())
 		return err
 	}
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   map[string]any{"deleted": id},
@@ -236,7 +265,7 @@ func (module *ClipboardModule) handleDelete(cliente *client, raw map[string]json
 
 func (module *ClipboardModule) handleClear(cliente *client) error {
 	module.provider.Clear()
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   map[string]any{"cleared": true},
@@ -248,12 +277,33 @@ func (module *ClipboardModule) handleClear(cliente *client) error {
 
 func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
-	var starred bool
 	if idRaw, ok := raw["id"]; ok {
-		_ = json.Unmarshal(idRaw, &id)
+		trimmed := strings.TrimSpace(string(idRaw))
+		if trimmed == "null" {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		if err := json.Unmarshal(idRaw, &id); err != nil {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
 	}
+
+	var starred bool
 	if s, ok := raw["starred"]; ok {
-		_ = json.Unmarshal(s, &starred)
+		trimmed := strings.TrimSpace(string(s))
+		if trimmed == "null" {
+			err := errors.New("starred inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		if err := json.Unmarshal(s, &starred); err != nil {
+			err := errors.New("starred inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
 	}
 	if id == 0 {
 		err := errors.New("id requerido para star")
@@ -264,7 +314,7 @@ func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.R
 		sendErrorToClient(cliente, module.Name(), err.Error())
 		return err
 	}
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   map[string]any{"id": id, "starred": starred},
@@ -276,7 +326,7 @@ func (module *ClipboardModule) handleStar(cliente *client, raw map[string]json.R
 
 func (module *ClipboardModule) handleStats(cliente *client) error {
 	stats := module.provider.Stats()
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   stats,
@@ -289,7 +339,17 @@ func (module *ClipboardModule) handleStats(cliente *client) error {
 func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
-		_ = json.Unmarshal(idRaw, &id)
+		trimmed := strings.TrimSpace(string(idRaw))
+		if trimmed == "null" {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		if err := json.Unmarshal(idRaw, &id); err != nil {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
 	}
 	if id == 0 {
 		err := errors.New("id requerido para get-text")
@@ -310,7 +370,7 @@ func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]jso
 			sendErrorToClient(cliente, module.Name(), "no se pudo leer el contenido de la entrada")
 			return err
 		}
-		msg, _ := json.Marshal(map[string]interface{}{
+		msg, _ := json.Marshal(map[string]any{
 			"type":   "update",
 			"module": "clipboard",
 			"data": map[string]any{
@@ -323,7 +383,7 @@ func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]jso
 		})
 		cliente.write(writeBuf(msg))
 	} else {
-		msg, _ := json.Marshal(map[string]interface{}{
+		msg, _ := json.Marshal(map[string]any{
 			"type":   "update",
 			"module": "clipboard",
 			"data": map[string]any{
@@ -343,7 +403,17 @@ func (module *ClipboardModule) handleGetText(cliente *client, raw map[string]jso
 func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json.RawMessage) error {
 	var id uint64
 	if idRaw, ok := raw["id"]; ok {
-		_ = json.Unmarshal(idRaw, &id)
+		trimmed := strings.TrimSpace(string(idRaw))
+		if trimmed == "null" {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		if err := json.Unmarshal(idRaw, &id); err != nil {
+			err := errors.New("id inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
 	}
 	if id == 0 {
 		err := errors.New("id requerido para recopy")
@@ -355,7 +425,7 @@ func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json
 		return err
 	}
 	found := module.provider.GetEntry(id)
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "clipboard",
 		"data":   found,
@@ -366,13 +436,31 @@ func (module *ClipboardModule) handleRecopy(cliente *client, raw map[string]json
 }
 
 func (module *ClipboardModule) handleWatch(cliente *client, raw map[string]json.RawMessage) error {
-	var enable bool
+	var enable *bool
 	if e, ok := raw["enable"]; ok {
-		_ = json.Unmarshal(e, &enable)
+		trimmed := strings.TrimSpace(string(e))
+		if trimmed == "null" {
+			err := errors.New("enable inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		var b bool
+		if err := json.Unmarshal(e, &b); err != nil {
+			err := errors.New("enable inválido")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		enable = &b
 	}
-	if enable {
+	if enable == nil {
+		err := errors.New("enable requerido")
+		sendErrorToClient(cliente, module.Name(), err.Error())
+		return err
+	}
+
+	if *enable {
 		module.provider.StartWatch()
-		msg, _ := json.Marshal(map[string]interface{}{
+		msg, _ := json.Marshal(map[string]any{
 			"type":   "update",
 			"module": "clipboard",
 			"data":   map[string]any{"watch": true},
@@ -381,7 +469,7 @@ func (module *ClipboardModule) handleWatch(cliente *client, raw map[string]json.
 		logger.Debug("clipboard watch activado", "client", cliente.conn.RemoteAddr())
 	} else {
 		module.provider.StopWatch()
-		msg, _ := json.Marshal(map[string]interface{}{
+		msg, _ := json.Marshal(map[string]any{
 			"type":   "update",
 			"module": "clipboard",
 			"data":   map[string]any{"watch": false},
@@ -400,5 +488,10 @@ func (module *ClipboardModule) SendUpdate(cliente *client) error {
 	return module.handleList(cliente)
 }
 
-// compilo-check de que implementa Module.
-var _ Module = (*ClipboardModule)(nil)
+func isMutatingClipboardAction(action string) bool {
+	switch action {
+	case "copy-text", "copy-image", "recopy", "delete", "clear", "star", "watch":
+		return true
+	}
+	return false
+}

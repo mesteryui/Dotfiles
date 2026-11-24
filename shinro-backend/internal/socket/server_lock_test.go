@@ -75,8 +75,7 @@ func TestServerRejectsDuplicateInstance(t *testing.T) {
 	srv2 := NewServer(reg2, nil)
 	srv2.path = sockPath
 
-	ctx2, cancel2 := context.WithCancel(context.Background())
-	defer cancel2()
+	ctx2 := t.Context()
 
 	err2 := srv2.Start(ctx2)
 	if err2 == nil {

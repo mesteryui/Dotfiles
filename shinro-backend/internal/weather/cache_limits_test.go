@@ -16,7 +16,7 @@ func TestLasCachesNoCrecenSinLimite(t *testing.T) {
 	w := New()
 
 	// Llenar la caché de previsión con muchas coordenadas distintas.
-	for i := 0; i < maxWeatherCacheEntries*3; i++ {
+	for i := range maxWeatherCacheEntries * 3 {
 		lat := float64(i) * 0.01
 		key := fmt.Sprintf("%.4f,%.4f", lat, lat)
 		w.fcMu.Lock()
@@ -45,7 +45,7 @@ func TestPruneCacheDescartaLaMasAntigua(t *testing.T) {
 	m := map[string]cachedSnapshot{}
 	base := time.Now()
 	total := maxWeatherCacheEntries + 2
-	for i := 0; i < total; i++ {
+	for i := range total {
 		m[fmt.Sprintf("q%d", i)] = cachedSnapshot{
 			at: base.Add(time.Duration(i) * time.Second),
 		}
@@ -56,7 +56,7 @@ func TestPruneCacheDescartaLaMasAntigua(t *testing.T) {
 		t.Fatalf("esperaba %d entradas, got %d", maxWeatherCacheEntries, len(m))
 	}
 	// Las dos más antiguas deben ser las descartadas.
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		if _, ok := m[fmt.Sprintf("q%d", i)]; ok {
 			t.Fatalf("la entrada q%d (de las más antiguas) no se descartó", i)
 		}

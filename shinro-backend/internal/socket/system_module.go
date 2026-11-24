@@ -27,6 +27,12 @@ func (m *systemModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 	}
 
 	interval := payload.Intervals.System
+	if interval < 0 {
+		interval = 0
+	}
+	if interval > 86400 {
+		interval = 86400
+	}
 	sub := interval > 0
 
 	c.setModInterval(m.Name(), interval)
@@ -62,7 +68,7 @@ func (m *systemModule) SendUpdate(c *client) error {
 		m.sendError(c, "error leyendo system: "+err.Error())
 		return err
 	}
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "system",
 		"data":   stats,

@@ -21,14 +21,14 @@ func TestEventoNoSePierdeDuranteUnaComprobacion(t *testing.T) {
 	os.Setenv("SHINRO_CONNECTIVITY_DISABLE_NM", "1")
 	defer os.Unsetenv("SHINRO_CONNECTIVITY_DISABLE_NM")
 
-	var online int32
+	var online atomic.Int32
 	var comprobaciones int32
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// El estado se decide al empezar la petición: así una comprobación
 		// que arrancó con la red caída devuelve "offline" aunque la red
 		// vuelva mientras espera.
-		estado := atomic.LoadInt32(&online)
+		estado := online.Load()
 		atomic.AddInt32(&comprobaciones, 1)
 		// Tardar lo suficiente para que el evento llegue durante el vuelo.
 		time.Sleep(300 * time.Millisecond)
@@ -50,7 +50,7 @@ func TestEventoNoSePierdeDuranteUnaComprobacion(t *testing.T) {
 
 	// La comprobación inicial está en vuelo cuando llega la recuperación.
 	time.Sleep(50 * time.Millisecond)
-	atomic.StoreInt32(&online, 1)
+	online.Store(1)
 	m.verifyAndSetState("test-recuperacion")
 
 	// Debe terminar online: el evento no puede perderse aunque la

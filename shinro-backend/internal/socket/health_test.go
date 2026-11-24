@@ -152,7 +152,7 @@ func pedirPing(t *testing.T, socketPath string) Health {
 		n, err := conn.Read(tmp)
 		if n > 0 {
 			buf = append(buf, tmp[:n]...)
-			for _, line := range strings.Split(string(buf), "\n") {
+			for line := range strings.SplitSeq(string(buf), "\n") {
 				if !strings.Contains(line, "\"ping\"") {
 					continue
 				}

@@ -16,7 +16,7 @@ func TestCacheEvictaLaEntradaMasAntigua(t *testing.T) {
 	provider := New()
 
 	// Llenar el caché con una entrada más que el tope.
-	for i := 0; i < maxCacheEntries+1; i++ {
+	for i := range maxCacheEntries + 1 {
 		query := fmt.Sprintf("q%03d", i)
 		provider.addToCache(query, []*Result{{Name: query}}, 10, true)
 		// Separar las inserciones para que "at" sea distinto: si no, dos

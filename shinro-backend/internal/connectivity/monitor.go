@@ -48,7 +48,7 @@ type Monitor struct {
 	interval    time.Duration
 	client      *http.Client
 
-	nm  *nmMonitor   // nil si NetworkManager no está disponible
+	nm  *nmMonitor              // nil si NetworkManager no está disponible
 	sdm *systemdNetworkdMonitor // nil si systemd-networkd no está disponible o se prefiere NM
 
 	mu    sync.Mutex
@@ -95,8 +95,8 @@ func newTransport() *http.Transport {
 func New(checkURL string, interval time.Duration) *Monitor {
 	fallback := ""
 	if checkURL == "" {
-		checkURL = "http://www.google.com/generate_204"
-		fallback = "http://ping.archlinux.org/nm-check.txt"
+		checkURL = "https://www.google.com/generate_204"
+		fallback = "https://ping.archlinux.org/nm-check.txt"
 	}
 	if interval <= 0 {
 		interval = 30 * time.Second
@@ -183,7 +183,7 @@ func (m *Monitor) runNM(ctx context.Context) {
 // solo como heartbeat periódico.
 func (m *Monitor) runSDM(ctx context.Context) {
 	// Arrancar el bucle interno de systemd-networkd (polling de interfaces y rutas).
-	go m.sdm.Run(m.interval)
+	safe.Go("connectivity.systemd-networkd", func() { m.sdm.Run(m.interval) })
 
 	// Suscribirse a los cambios de estado de systemd-networkd.
 	ch := m.sdm.Subscribe()
@@ -460,7 +460,7 @@ func (m *Monitor) IsOnline() bool {
 }
 
 // Close cierra los recursos del monitor (conexión D-Bus si se usa NM,
- // conexión systemd-networkd si se usa).
+// conexión systemd-networkd si se usa).
 func (m *Monitor) Close() error {
 	if m.nm != nil {
 		if err := m.nm.Close(); err != nil {

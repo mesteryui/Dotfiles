@@ -55,13 +55,11 @@ func TestSnapshotFollowersDoNotHang(t *testing.T) {
 	var wg sync.WaitGroup
 	errs := make(chan error, clients)
 
-	for i := 0; i < clients; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range clients {
+		wg.Go(func() {
 			_, err := w.Snapshot("Vigo", "es")
 			errs <- err
-		}()
+		})
 	}
 
 	finished := make(chan struct{})

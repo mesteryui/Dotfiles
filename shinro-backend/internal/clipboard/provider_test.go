@@ -16,8 +16,8 @@ import (
 func testPNG(t *testing.T) []byte {
 	t.Helper()
 	img := image.NewRGBA(image.Rect(0, 0, 8, 8))
-	for y := 0; y < 8; y++ {
-		for x := 0; x < 8; x++ {
+	for y := range 8 {
+		for x := range 8 {
 			img.Set(x, y, color.RGBA{R: uint8(x * 30), G: uint8(y * 30), B: 128, A: 255})
 		}
 	}
@@ -209,7 +209,7 @@ func TestLoadTrimsHistoryKeepingNewest(t *testing.T) {
 	dir := t.TempDir()
 	total := clipMaxEntries + 5
 	entries := make([]testIndexEntry, 0, total)
-	for i := 0; i < total; i++ {
+	for i := range total {
 		data := []byte(fmt.Sprintf("item-%d", i))
 		hash := clipHash(data)
 		writeTestPayload(t, dir, hash, data)
@@ -236,7 +236,7 @@ func TestLoadTrimsHistoryKeepingNewest(t *testing.T) {
 // más nueva nunca se evicta); la anterior sin star se descarta.
 func TestPushWithAllStarredKeepsNewest(t *testing.T) {
 	provider := New("")
-	for i := 0; i < clipMaxEntries; i++ {
+	for i := range clipMaxEntries {
 		provider.entries = append(provider.entries, &Entry{
 			ID: uint64(i + 1), Kind: "text", Starred: true, Hash: uint64(i + 1),
 		})
@@ -263,5 +263,24 @@ func TestPushWithAllStarredKeepsNewest(t *testing.T) {
 		if e == first {
 			t.Fatal("la copia anterior debía evictarse al no estar starred")
 		}
+	}
+}
+
+func TestCopyTextRejectsTooLarge(t *testing.T) {
+	provider := New(t.TempDir())
+	largeText := string(make([]byte, clipMaxEntryBytes+1))
+	if _, err := provider.CopyText(largeText); err == nil {
+		t.Fatal("esperaba error al copiar texto superior al límite máximo")
+	}
+}
+
+func TestCopyImageRejectsNonImage(t *testing.T) {
+	provider := New(t.TempDir())
+	tmpFile := filepath.Join(t.TempDir(), "id_rsa")
+	if err := os.WriteFile(tmpFile, []byte("clave-privada"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.CopyImage(tmpFile); err == nil {
+		t.Fatal("esperaba error al intentar copiar un archivo que no es imagen")
 	}
 }

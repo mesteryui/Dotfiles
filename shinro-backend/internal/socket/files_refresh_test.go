@@ -58,7 +58,7 @@ func TestFilesSeRefrescaAlCambiarElSistemaDeArchivos(t *testing.T) {
 	}
 	defer conn.Close()
 
-	hello := map[string]interface{}{
+	hello := map[string]any{
 		"type":      "hello",
 		"intervals": map[string]int{"files": 0},
 	}
@@ -68,7 +68,7 @@ func TestFilesSeRefrescaAlCambiarElSistemaDeArchivos(t *testing.T) {
 	}
 
 	// Pedir la búsqueda.
-	search := map[string]interface{}{
+	search := map[string]any{
 		"type":   "get",
 		"module": "files",
 		"action": "search",
@@ -111,7 +111,7 @@ func TestFilesSeRefrescaAlCambiarElSistemaDeArchivos(t *testing.T) {
 
 // readFilesResults lee mensajes hasta encontrar una actualización del módulo
 // files y devuelve sus resultados.
-func readFilesResults(t *testing.T, conn net.Conn, timeout time.Duration) []interface{} {
+func readFilesResults(t *testing.T, conn net.Conn, timeout time.Duration) []any {
 	t.Helper()
 
 	deadline := time.Now().Add(timeout)
@@ -120,18 +120,18 @@ func readFilesResults(t *testing.T, conn net.Conn, timeout time.Duration) []inte
 		if err != nil {
 			return nil
 		}
-		var msg map[string]interface{}
+		var msg map[string]any
 		if err := json.Unmarshal([]byte(line), &msg); err != nil {
 			continue
 		}
 		if msg["module"] != "files" {
 			continue
 		}
-		data, ok := msg["data"].(map[string]interface{})
+		data, ok := msg["data"].(map[string]any)
 		if !ok {
 			continue
 		}
-		results, _ := data["results"].([]interface{})
+		results, _ := data["results"].([]any)
 		return results
 	}
 	return nil

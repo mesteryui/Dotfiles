@@ -13,7 +13,7 @@ import (
 // panicModule entra en panic al enviar actualizaciones. Simula un módulo con
 // un fallo interno (por ejemplo, el proveedor de clima devolviendo basura).
 type panicModule struct {
-	sends int32
+	sends atomic.Int32
 }
 
 func (m *panicModule) Name() string { return "panico" }
@@ -36,7 +36,7 @@ func (m *panicModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 func (m *panicModule) HandleGet(c *client, raw map[string]json.RawMessage) error { return nil }
 
 func (m *panicModule) SendUpdate(c *client) error {
-	atomic.AddInt32(&m.sends, 1)
+	m.sends.Add(1)
 	panic("fallo interno del módulo")
 }
 
@@ -78,7 +78,7 @@ func TestPumpSobreviveAPanic(t *testing.T) {
 	defer conn.Close()
 
 	// Suscribirse al módulo que entra en panic.
-	hello := map[string]interface{}{
+	hello := map[string]any{
 		"type": "hello",
 		"intervals": map[string]int{
 			"panico": 1,
@@ -93,12 +93,12 @@ func TestPumpSobreviveAPanic(t *testing.T) {
 	// primer fallo, sino que siguevivo.
 	deadline = time.Now().Add(10 * time.Second)
 	for time.Now().Before(deadline) {
-		if atomic.LoadInt32(&mod.sends) >= 3 {
+		if mod.sends.Load() >= 3 {
 			break
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
-	if sends := atomic.LoadInt32(&mod.sends); sends < 3 {
+	if sends := mod.sends.Load(); sends < 3 {
 		t.Fatalf("esperaba varios envíos del módulo tras el panic, got %d", sends)
 	}
 
@@ -106,7 +106,7 @@ func TestPumpSobreviveAPanic(t *testing.T) {
 	// que entra en panic.
 	deadline = time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
-		get := map[string]interface{}{"type": "get", "module": "ping"}
+		get := map[string]any{"type": "get", "module": "ping"}
 		getBytes, _ := json.Marshal(get)
 		if _, err := conn.Write(append(getBytes, '\n')); err != nil {
 			t.Fatalf("error enviando get ping: %v", err)
@@ -115,7 +115,7 @@ func TestPumpSobreviveAPanic(t *testing.T) {
 		if err != nil {
 			continue
 		}
-		var msg map[string]interface{}
+		var msg map[string]any
 		if err := json.Unmarshal([]byte(line), &msg); err != nil {
 			continue
 		}

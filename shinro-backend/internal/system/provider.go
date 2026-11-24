@@ -349,8 +349,8 @@ func (provider *Provider) battery(s *Stats) error {
 			power = readInt(filepath.Join(dir, "current_now"))
 		}
 		if now > 0 && power > 0 {
-			// now en µWh y power en µW → segundos.
-			s.BatteryTimeToEmpty = int(float64(now) / float64(power) / 60)
+			// now en µWh y power en µW (o µAh y µA) → horas. Horas * 60 = minutos.
+			s.BatteryTimeToEmpty = int((float64(now) / float64(power)) * 60)
 		}
 
 		return nil

@@ -101,7 +101,7 @@ marcado con `"_offline": true`.
 ## Protocolo (socket Unix)
 
 El socket se crea en `/run/user/$UID/shinro` (o en `$XDG_RUNTIME_DIR/shinro`,
-que es la misma ruta en una sesión systemd de usuario) con permisos `0660`.
+que es la misma ruta en una sesión systemd de usuario) con permisos `0600`.
 Los mensajes son JSON, una línea por mensaje.
 
 ### Handshake inicial (`hello`)

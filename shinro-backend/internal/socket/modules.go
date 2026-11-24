@@ -6,6 +6,7 @@ package socket
 
 import (
 	"encoding/json"
+	"errors"
 	"sync"
 
 	"shinro-backend/internal/logger"
@@ -198,6 +199,11 @@ func putBuf(buf []byte) {
 		ModPool.Put(buf)
 	}
 }
+
+// errSkipHealthRecord indica que el módulo ya registró (o registrará) su
+// resultado de salud por su cuenta, normalmente porque la operación es
+// asíncrona. El servidor no debe contabilizarla otra vez.
+var errSkipHealthRecord = errors.New("skip health record")
 
 // sendErrorToClient envía un mensaje de error al cliente y lo registra.
 // Se usa desde todos los módulos para evitar duplicar la misma lógica.

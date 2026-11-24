@@ -33,13 +33,21 @@ func (m *weatherModule) HandleHello(c *client, raw map[string]json.RawMessage) {
 		Lang string `json:"lang"`
 	}
 	if locRaw, ok := raw["location"]; ok {
-		_ = json.Unmarshal(locRaw, &payload.Location)
+		if err := json.Unmarshal(locRaw, &payload.Location); err != nil {
+			logger.Debug("weather: ubicación inválida", "error", err)
+		}
 	}
 	if intRaw, ok := raw["intervals"]; ok {
 		_ = json.Unmarshal(intRaw, &payload.Intervals)
 	}
 
 	interval := payload.Intervals.Weather
+	if interval < 0 {
+		interval = 0
+	}
+	if interval > 86400 {
+		interval = 86400
+	}
 	sub := interval > 0
 
 	c.mu.Lock()
@@ -116,7 +124,7 @@ func (m *weatherModule) SendUpdate(c *client) error {
 		}
 	}
 
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "weather",
 		"data":   w,

@@ -34,13 +34,15 @@ const watcherMask = syscall.IN_CREATE | syscall.IN_DELETE |
 // /proc y /sys, habla D-Bus con NetworkManager y habla el protocolo Wayland
 // directamente): no hay variante para otras plataformas.
 type watcher struct {
-	fd int
+	fd   int
+	epfd int
 
-	mu      sync.Mutex
-	watches map[int]string // wd → ruta
-	paths   map[string]int // ruta → wd
-	closed  bool
-	started bool
+	mu        sync.Mutex
+	watches   map[int]string // wd → ruta
+	paths     map[string]int // ruta → wd
+	closed    bool
+	started   bool
+	rootDepth int
 
 	// fdClosed evita cerrar dos veces el descriptor de inotify.
 	fdClosed bool
@@ -48,14 +50,29 @@ type watcher struct {
 	notify func()
 }
 
-// newWatcher crea un watcher de inotify.
+// newWatcher crea un watcher de inotify y lo registra en una instancia de epoll.
 func newWatcher(notify func()) (*watcher, error) {
 	fd, err := syscall.InotifyInit1(syscall.IN_NONBLOCK | syscall.IN_CLOEXEC)
 	if err != nil {
 		return nil, err
 	}
+	epfd, err := syscall.EpollCreate1(syscall.EPOLL_CLOEXEC)
+	if err != nil {
+		_ = syscall.Close(fd)
+		return nil, err
+	}
+	ev := syscall.EpollEvent{
+		Events: syscall.EPOLLIN,
+		Fd:     int32(fd),
+	}
+	if err := syscall.EpollCtl(epfd, syscall.EPOLL_CTL_ADD, fd, &ev); err != nil {
+		_ = syscall.Close(epfd)
+		_ = syscall.Close(fd)
+		return nil, err
+	}
 	return &watcher{
 		fd:      fd,
+		epfd:    epfd,
 		watches: make(map[int]string),
 		paths:   make(map[string]int),
 		notify:  notify,
@@ -66,6 +83,9 @@ func newWatcher(notify func()) (*watcher, error) {
 // de exclusión y profundidad que la búsqueda).
 func (w *watcher) watchTree(root string) {
 	rootDepth := strings.Count(root, string(filepath.Separator))
+	w.mu.Lock()
+	w.rootDepth = rootDepth
+	w.mu.Unlock()
 	vistos := 0
 
 	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
@@ -140,12 +160,21 @@ func (w *watcher) addSubtree(parent, name string) {
 		return
 	}
 	path := filepath.Join(parent, name)
+
+	w.mu.Lock()
+	rootDepth := w.rootDepth
+	w.mu.Unlock()
+
+	pathDepth := strings.Count(path, string(filepath.Separator)) - rootDepth
+	if pathDepth > maxDepth {
+		return
+	}
+
 	info, err := os.Stat(path)
 	if err != nil || !info.IsDir() {
 		return
 	}
 	w.addWatch(path)
-	rootDepth := strings.Count(path, string(filepath.Separator))
 	_ = filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil
@@ -198,27 +227,15 @@ func (w *watcher) run() {
 	w.mu.Unlock()
 	defer w.closeFD()
 
-	if w.fd < 0 || w.fd/64 >= len(syscall.FdSet{}.Bits) {
-		return
-	}
+	events := make([]syscall.EpollEvent, 1)
 
 	for {
 		if w.isClosed() {
 			return
 		}
 
-		// El FdSet se rehace en cada iteración a propósito: pselect6 (y por
-		// tanto syscall.Select) MODIFICA el conjunto que recibe, dejando a
-		// cero los descriptores que no estaban listos. Si se reutilizara el
-		// mismo FdSet, tras el primer timeout el descriptor se quedaría
-		// fuera del conjunto y el vigilante se quedaría ciego para siempre.
-		var fds syscall.FdSet
-		fds.Bits[w.fd/64] |= 1 << (uint(w.fd) % 64)
-
-		// Select con timeout: permite comprobar periódicamente si el
-		// watcher se ha cerrado, sin necesidad de otrodescriptor.
-		timeout := syscall.Timeval{Sec: 1}
-		n, err := syscall.Select(w.fd+1, &fds, nil, nil, &timeout)
+		// Esperar eventos con epoll: no tiene el límite histórico de 1024 descriptores de select.
+		n, err := syscall.EpollWait(w.epfd, events, 1000)
 		if err != nil {
 			if err == syscall.EINTR {
 				continue
@@ -226,7 +243,7 @@ func (w *watcher) run() {
 			return
 		}
 		if n <= 0 {
-			continue // timeout: volver a la cabecera del bucle
+			continue // timeout: volver a la cabecera del bucle para comprobar w.isClosed()
 		}
 
 		for {
@@ -278,6 +295,10 @@ func (w *watcher) handleEvents(buf []byte) {
 		wd := int(raw.Wd)
 
 		switch {
+		case mask&syscall.IN_Q_OVERFLOW != 0:
+			// Se perdieron eventos: forzar invalidación de caché.
+			changed = true
+
 		case mask&syscall.IN_IGNORED != 0:
 			// El directorio vigilado ya no existe.
 			w.removeWatch(wd)
@@ -285,8 +306,9 @@ func (w *watcher) handleEvents(buf []byte) {
 		case mask&(syscall.IN_CREATE|syscall.IN_DELETE|syscall.IN_MOVED_FROM|syscall.IN_MOVED_TO) != 0:
 			changed = true
 			// Un directorio nuevo hay que vigilarlo (y a su subárbol),
-			// o sus cambios pasarían inadvertidos.
-			if mask&syscall.IN_CREATE != 0 && mask&syscall.IN_ISDIR != 0 {
+			// o sus cambios pasarían inadvertidos. Un moved-in (IN_MOVED_TO)
+			// también necesita watch recursivo.
+			if mask&(syscall.IN_CREATE|syscall.IN_MOVED_TO) != 0 && mask&syscall.IN_ISDIR != 0 {
 				w.addSubtree(w.pathOf(wd), name)
 			}
 
@@ -350,5 +372,8 @@ func (w *watcher) closeFDLocked() {
 		return
 	}
 	w.fdClosed = true
+	if w.epfd >= 0 {
+		_ = syscall.Close(w.epfd)
+	}
 	_ = syscall.Close(w.fd)
 }

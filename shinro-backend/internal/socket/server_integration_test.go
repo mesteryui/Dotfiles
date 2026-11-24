@@ -54,7 +54,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	defer conn.Close()
 
 	// Enviar hello con system activado, weather desactivado.
-	hello := map[string]interface{}{
+	hello := map[string]any{
 		"type": "hello",
 		"location": map[string]string{
 			"mode": "manual",
@@ -76,7 +76,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error leyendo respuesta hello: %v", err)
 	}
-	var helloResp map[string]interface{}
+	var helloResp map[string]any
 	if err := json.Unmarshal([]byte(response), &helloResp); err != nil {
 		t.Fatalf("no se pudo parsear respuesta hello: %v", err)
 	}
@@ -92,7 +92,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error leyendo update de system: %v", err)
 	}
-	var updateMsg map[string]interface{}
+	var updateMsg map[string]any
 	if err := json.Unmarshal([]byte(update), &updateMsg); err != nil {
 		t.Fatalf("no se pudo parsear update: %v", err)
 	}
@@ -102,7 +102,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	if updateMsg["module"] != "system" {
 		t.Fatalf("esperaba module system, got %v", updateMsg["module"])
 	}
-	data, ok := updateMsg["data"].(map[string]interface{})
+	data, ok := updateMsg["data"].(map[string]any)
 	if !ok {
 		t.Fatalf("esperaba data como objeto, got %T", updateMsg["data"])
 	}
@@ -114,7 +114,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	}
 
 	// Probar health check (ping) mediante get.
-	getPing := map[string]interface{}{
+	getPing := map[string]any{
 		"type":   "get",
 		"module": "ping",
 	}
@@ -126,14 +126,14 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error leyendo respuesta ping: %v", err)
 	}
-	var pingMsg map[string]interface{}
+	var pingMsg map[string]any
 	if err := json.Unmarshal([]byte(pingResp), &pingMsg); err != nil {
 		t.Fatalf("no se pudo parsear respuesta ping: %v", err)
 	}
 	if pingMsg["module"] != "ping" {
 		t.Fatalf("esperaba module ping, got %v", pingMsg["module"])
 	}
-	pingData, ok := pingMsg["data"].(map[string]interface{})
+	pingData, ok := pingMsg["data"].(map[string]any)
 	if !ok {
 		t.Fatalf("esperaba data como objeto en ping, got %T", pingMsg["data"])
 	}
@@ -142,7 +142,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	}
 
 	// Probar módulo desconocido.
-	getUnknown := map[string]interface{}{
+	getUnknown := map[string]any{
 		"type":   "get",
 		"module": "noexist",
 	}
@@ -154,7 +154,7 @@ func TestIntegrationSocketHelloAndUpdates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error leyendo respuesta error: %v", err)
 	}
-	var errMsg map[string]interface{}
+	var errMsg map[string]any
 	if err := json.Unmarshal([]byte(errResp), &errMsg); err != nil {
 		t.Fatalf("no se pudo parsear respuesta error: %v", err)
 	}

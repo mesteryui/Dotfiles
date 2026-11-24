@@ -79,8 +79,7 @@ func (module *FilesModule) HandleGet(cliente *client, raw map[string]json.RawMes
 
 	switch action {
 	case "search":
-		module.handleSearch(cliente, raw)
-		return nil
+		return module.handleSearch(cliente, raw)
 	default:
 		sendErrorToClient(cliente, module.Name(), "acción desconocida: se espera search")
 		return fmt.Errorf("acción desconocida: se espera search")
@@ -94,10 +93,26 @@ func (module *FilesModule) HandleGet(cliente *client, raw map[string]json.RawMes
 //
 // Cada búsqueda cancela la anterior del mismo cliente: teclear rápido no
 // deja búsquedas recorriendo el disco a la vez (ni goroutines acumuladas).
-func (module *FilesModule) handleSearch(cliente *client, raw map[string]json.RawMessage) {
+func (module *FilesModule) handleSearch(cliente *client, raw map[string]json.RawMessage) error {
 	var query string
 	if queryRaw, ok := raw["query"]; ok {
-		_ = json.Unmarshal(queryRaw, &query)
+		var v any
+		if err := json.Unmarshal(queryRaw, &v); err != nil {
+			err := errors.New("query debe ser texto")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		s, ok := v.(string)
+		if !ok {
+			err := errors.New("query debe ser texto")
+			sendErrorToClient(cliente, module.Name(), err.Error())
+			return err
+		}
+		query = s
+	}
+	// Acotar la consulta para evitar claves de caché y recorridos enormes.
+	if len(query) > 256 {
+		query = query[:256]
 	}
 	var limit int
 	if limitRaw, ok := raw["limit"]; ok {
@@ -105,6 +120,8 @@ func (module *FilesModule) handleSearch(cliente *client, raw map[string]json.Raw
 	}
 	if limit <= 0 {
 		limit = 20
+	} else if limit > 100 {
+		limit = 100
 	}
 
 	// Recordar la búsqueda para poder refrescarla sola si el sistema de
@@ -112,6 +129,7 @@ func (module *FilesModule) handleSearch(cliente *client, raw map[string]json.Raw
 	module.rememberQuery(cliente, query, limit)
 
 	module.runSearch(cliente, query, limit)
+	return errSkipHealthRecord
 }
 
 // rememberQuery guarda la última búsqueda del cliente.
@@ -183,7 +201,7 @@ func (module *FilesModule) runSearch(cliente *client, query string, limit int) {
 			return
 		}
 
-		msg, _ := json.Marshal(map[string]interface{}{
+		msg, _ := json.Marshal(map[string]any{
 			"type":   "update",
 			"module": "files",
 			"data": map[string]any{
@@ -276,7 +294,7 @@ func (module *FilesModule) refresh(cliente *client) {
 
 // SendUpdate devuelve una lista vacía (no hay estado persistente).
 func (module *FilesModule) SendUpdate(cliente *client) error {
-	msg, _ := json.Marshal(map[string]interface{}{
+	msg, _ := json.Marshal(map[string]any{
 		"type":   "update",
 		"module": "files",
 		"data":   map[string]any{"results": []*files.Result{}},

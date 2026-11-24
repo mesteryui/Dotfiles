@@ -4,34 +4,36 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net"
 	"os"
-	"path/filepath"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"shinro-backend/internal/ipc"
 )
 
-const defaultSockName = "shinro"
 
 // sockPath devuelve la ruta del socket Unix del backend.
-//
-// El orden es el mismo que usa el backend y la shell (QML):
-//
-//	$SHINRO_SOCKET_PATH  →  $XDG_RUNTIME_DIR/shinro  →  /run/user/$UID/shinro
 func sockPath() string {
-	if p := os.Getenv("SHINRO_SOCKET_PATH"); p != "" {
-		return p
+	p, err := ipc.DefaultSocketPath()
+	if err != nil {
+		// No hay directorio runtime de confianza. Se devuelve "" y el
+		// llamador reportará el error.
+		return ""
 	}
-	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
-		return filepath.Join(dir, defaultSockName)
-	}
-	return filepath.Join("/run/user", strconv.Itoa(os.Geteuid()), defaultSockName)
+	return p
 }
 
 // sendCommand envía una línea al backend y devuelve la respuesta.
 func sendCommand(line string) (string, error) {
-	connection, err := net.DialTimeout("unix", sockPath(), 3*time.Second)
+	path := sockPath()
+	if path == "" {
+		return "", fmt.Errorf("no se pudo resolver el socket del backend (XDG_RUNTIME_DIR no disponible)")
+	}
+	connection, err := net.DialTimeout("unix", path, 3*time.Second)
 	if err != nil {
 		return "", fmt.Errorf("daemon no alcanzable en %s (¿está shinro-backend ejecutándose?)", sockPath())
 	}
@@ -53,9 +55,7 @@ func sendCommand(line string) (string, error) {
 // callModule construye un mensaje JSON para un módulo y lo envía al backend.
 func callModule(module string, extra map[string]any) (string, error) {
 	payload := map[string]any{"type": "get", "module": module}
-	for key, value := range extra {
-		payload[key] = value
-	}
+	maps.Copy(payload, extra)
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
@@ -81,11 +81,14 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "Comandos disponibles:")
 	fmt.Fprintln(os.Stderr, "  status                 resumen del sistema (CPU, RAM, disco, batería)")
 	fmt.Fprintln(os.Stderr, "  ping                   comprueba que el backend responde")
+	fmt.Fprintln(os.Stderr, "  updates [check]        lista o comprueba actualizaciones")
 	fmt.Fprintln(os.Stderr, "  files <texto>          búsqueda difusa de archivos en $HOME")
 	fmt.Fprintln(os.Stderr, "  clipboard <acción>     gestiona el historial del portapapeles")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Ejemplos:")
 	fmt.Fprintln(os.Stderr, "  shinro-shell status")
+	fmt.Fprintln(os.Stderr, "  shinro-shell updates")
+	fmt.Fprintln(os.Stderr, "  shinro-shell updates check")
 	fmt.Fprintln(os.Stderr, "  shinro-shell files documento")
 	fmt.Fprintln(os.Stderr, "  shinro-shell clipboard list")
 	fmt.Fprintln(os.Stderr, "")
@@ -122,6 +125,29 @@ func usagePing() {
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Ejemplo:")
 	fmt.Fprintln(os.Stderr, "  shinro-shell ping")
+}
+
+// usageUpdates imprime la ayuda del comando updates.
+func usageUpdates() {
+	fmt.Fprintln(os.Stderr, "uso: shinro-shell updates [check|update] [--json]")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Descripción:")
+	fmt.Fprintln(os.Stderr, "  Muestra el estado de actualizaciones del backend. Sin argumentos")
+	fmt.Fprintln(os.Stderr, "  devuelve el último resultado en RAM; con 'check' fuerza una")
+	fmt.Fprintln(os.Stderr, "  comprobación y con 'update' lanza la actualización unificada.")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "  El resumen no lista los paquetes (la UI los muestra); con --json")
+	fmt.Fprintln(os.Stderr, "  se imprime el mensaje completo del protocolo.")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Opciones:")
+	fmt.Fprintln(os.Stderr, "  check     comprueba ahora (puede tardar: descarga bases de datos)")
+	fmt.Fprintln(os.Stderr, "  update    actualiza con los backends activos")
+	fmt.Fprintln(os.Stderr, "  --json    muestra el JSON en crudo, incluidos los paquetes")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Ejemplos:")
+	fmt.Fprintln(os.Stderr, "  shinro-shell updates")
+	fmt.Fprintln(os.Stderr, "  shinro-shell updates check")
+	fmt.Fprintln(os.Stderr, "  shinro-shell updates --json")
 }
 
 // usageFiles imprime la ayuda del comando files/search.
@@ -186,6 +212,264 @@ func runStatus() error {
 	}
 	printJSON(raw)
 	return nil
+}
+
+// updatesReport es el mensaje `update` del módulo updates.
+type updatesReport struct {
+	Type   string `json:"type"`
+	Module string `json:"module"`
+	Data   struct {
+		Count    int `json:"count"`
+		Packages []struct {
+			Name    string `json:"name"`
+			Old     string `json:"old"`
+			New     string `json:"new"`
+			Backend string `json:"backend"`
+		} `json:"packages"`
+		Checking        bool     `json:"checking"`
+		CheckedAt       int64    `json:"checked_at"`
+		Updating        bool     `json:"updating"`
+		UpdatingBackend string   `json:"updating_backend"`
+		LastUpdateAt    int64    `json:"last_update_at"`
+		CanUpdate       bool     `json:"can_update"`
+		Backends        []string `json:"backends"`
+		UpdateScript    string   `json:"update_script"`
+		Errors          []struct {
+			Backend string `json:"backend"`
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"errors"`
+	} `json:"data"`
+}
+
+// sendAndWait envía una línea al backend y espera a que done() acepte una
+// respuesta. Se usa para las operaciones lentas de updates: check y update
+// pueden tardar minutos y no caben en el deadline corto de sendCommand.
+func sendAndWait(line string, timeout time.Duration, done func(map[string]any) bool) (string, error) {
+	connection, err := net.DialTimeout("unix", sockPath(), 3*time.Second)
+	if err != nil {
+		return "", fmt.Errorf("daemon no alcanzable en %s (¿está shinro-backend ejecutándose?)", sockPath())
+	}
+	defer connection.Close()
+
+	_ = connection.SetDeadline(time.Now().Add(timeout))
+	if _, err := fmt.Fprintln(connection, line); err != nil {
+		return "", err
+	}
+
+	reader := bufio.NewReader(connection)
+	for {
+		resp, err := reader.ReadString('\n')
+		if err != nil {
+			return "", fmt.Errorf("sin respuesta del daemon: %v", err)
+		}
+		resp = strings.TrimSpace(resp)
+		if resp == "" {
+			continue
+		}
+
+		var msg map[string]any
+		if err := json.Unmarshal([]byte(resp), &msg); err != nil {
+			return resp, nil
+		}
+		if msg["type"] == "error" {
+			return "", fmt.Errorf("%v", msg["message"])
+		}
+		if msg["type"] == "update" && msg["module"] == "updates" {
+			if done == nil || done(msg) {
+				return resp, nil
+			}
+		}
+	}
+}
+
+// runUpdates ejecuta el comando updates.
+func runUpdates(args []string) error {
+	asJSON := false
+	action := "get"
+	yes := false
+
+	for _, arg := range args {
+		switch arg {
+		case "--json":
+			asJSON = true
+		case "--yes", "-y":
+			yes = true
+		case "check":
+			action = "check"
+		case "update":
+			action = "update"
+		case "-h", "--help", "help":
+			usageUpdates()
+			os.Exit(0)
+		default:
+			return fmt.Errorf("opción desconocida: %s", arg)
+		}
+	}
+
+	if action == "update" {
+		return runUpdatesUpdate(asJSON, yes)
+	}
+
+	payload := map[string]any{"type": "get", "module": "updates"}
+	if action != "get" {
+		payload["action"] = action
+	}
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	timeout := 15 * time.Minute
+	if action == "update" {
+		timeout = 60 * time.Minute
+	}
+
+	done := func(msg map[string]any) bool {
+		data, ok := msg["data"].(map[string]any)
+		if !ok {
+			return true
+		}
+		checking, _ := data["checking"].(bool)
+		updating, _ := data["updating"].(bool)
+		switch action {
+		case "check":
+			return !checking
+		case "update":
+			return !checking && !updating
+		default:
+			return true
+		}
+	}
+
+	raw, err := sendAndWait(string(b), timeout, done)
+	if err != nil {
+		return err
+	}
+
+	if asJSON {
+		printJSON(raw)
+		return nil
+	}
+
+	var report updatesReport
+	if err := json.Unmarshal([]byte(raw), &report); err != nil {
+		printJSON(raw)
+		return nil
+	}
+	printUpdatesSummary(&report)
+	return nil
+}
+
+// runUpdatesUpdate obtiene el script de actualización del backend, pide
+// confirmación explícita al usuario y lo ejecuta en el terminal actual.
+// No se delega la ejecución al daemon: así el usuario autoriza cada
+// actualización de forma interactiva (polkit/sudo en el propio terminal).
+func runUpdatesUpdate(asJSON, yes bool) error {
+	raw, err := callModule("updates", nil)
+	if err != nil {
+		return err
+	}
+	var report updatesReport
+	if err := json.Unmarshal([]byte(raw), &report); err != nil {
+		printJSON(raw)
+		return err
+	}
+	script := report.Data.UpdateScript
+	if script == "" {
+		return fmt.Errorf("el backend no expone un script de actualización (can_update=%v)", report.Data.CanUpdate)
+	}
+
+	fmt.Println("Comandos a ejecutar:")
+	fmt.Println("  " + script)
+	fmt.Println()
+
+	if !yes {
+		// Confirmación explícita. Si no hay TTY, exigir --yes.
+		fi, _ := os.Stdin.Stat()
+		if (fi.Mode() & os.ModeCharDevice) == 0 {
+			return fmt.Errorf("sin terminal interactivo: use --yes para confirmar")
+		}
+		fmt.Print("¿Ejecutar la actualización? [y/N] ")
+		reader := bufio.NewReader(os.Stdin)
+		answer, _ := reader.ReadString('\n')
+		answer = strings.TrimSpace(strings.ToLower(answer))
+		if answer != "y" && answer != "s" && answer != "si" && answer != "sí" && answer != "yes" {
+			fmt.Println("cancelado")
+			return nil
+		}
+	}
+
+	if asJSON {
+		// No ejecutar en modo JSON: solo mostrar el script.
+		printJSON(raw)
+		return nil
+	}
+
+	cmd := exec.Command("/bin/sh", "-c", script)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("la actualización terminó con error: %w", err)
+	}
+
+	// Refrescar el contador tras la actualización.
+	_, _ = callModule("updates", map[string]any{"action": "check"})
+	fmt.Println()
+	fmt.Println("actualización finalizada")
+	return nil
+}
+
+// printUpdatesSummary imprime un resumen legible sin listar los paquetes.
+func printUpdatesSummary(r *updatesReport) {
+	d := r.Data
+
+	if d.CheckedAt == 0 {
+		fmt.Println("última comprobación: nunca")
+	} else {
+		age := time.Since(time.Unix(d.CheckedAt, 0))
+		fmt.Printf("última comprobación: hace %s (%s)\n",
+			humanAge(age), time.Unix(d.CheckedAt, 0).Format("15:04:05"))
+	}
+
+	fmt.Printf("actualizaciones: %d\n", d.Count)
+	if len(d.Backends) > 0 {
+		fmt.Printf("backends: %s\n", strings.Join(d.Backends, ", "))
+	}
+	if d.Count == 0 {
+		fmt.Println("sin actualizaciones pendientes")
+	}
+	if d.Updating {
+		if d.UpdatingBackend != "" {
+			fmt.Printf("actualizando: %s\n", d.UpdatingBackend)
+		} else {
+			fmt.Println("actualizando…")
+		}
+	}
+
+	if len(d.Errors) > 0 {
+		fmt.Println()
+		fmt.Println("errores:")
+		for _, e := range d.Errors {
+			fmt.Printf("  - %s (código %d): %s\n", e.Backend, e.Code, e.Message)
+		}
+	}
+}
+
+// humanAge formatea una duración de forma breve.
+func humanAge(d time.Duration) string {
+	seconds := int64(d.Seconds())
+	switch {
+	case seconds < 60:
+		return fmt.Sprintf("%d s", seconds)
+	case seconds < 3600:
+		return fmt.Sprintf("%d min", seconds/60)
+	case seconds < 86400:
+		return fmt.Sprintf("%d h", seconds/3600)
+	default:
+		return fmt.Sprintf("%d días", seconds/86400)
+	}
 }
 
 // pingReport es el informe de salud que devuelve el módulo ping.
@@ -441,6 +725,7 @@ func runClipboard(args []string) error {
 		}
 		raw, err := callModule("clipboard", map[string]any{
 			"action": "delete",
+			"confirm": true,
 			"id":     id,
 		})
 		if err != nil {
@@ -453,7 +738,8 @@ func runClipboard(args []string) error {
 		if len(rest) > 0 {
 			return fmt.Errorf("acción 'clear' no acepta argumentos: shinro-shell clipboard clear")
 		}
-		raw, err := callModule("clipboard", map[string]any{"action": "clear"})
+		raw, err := callModule("clipboard", map[string]any{"action": "clear",
+			"confirm": true})
 		if err != nil {
 			return err
 		}
@@ -471,6 +757,7 @@ func runClipboard(args []string) error {
 		starred := rest[1] == "true" || rest[1] == "1" || rest[1] == "sí"
 		raw, err := callModule("clipboard", map[string]any{
 			"action":  "star",
+			"confirm": true,
 			"id":      id,
 			"starred": starred,
 		})
@@ -519,6 +806,7 @@ func runClipboard(args []string) error {
 		}
 		raw, err := callModule("clipboard", map[string]any{
 			"action": "recopy",
+			"confirm": true,
 			"id":     id,
 		})
 		if err != nil {
@@ -534,6 +822,7 @@ func runClipboard(args []string) error {
 		enable := rest[0] == "true" || rest[0] == "1" || rest[0] == "sí"
 		raw, err := callModule("clipboard", map[string]any{
 			"action": "watch",
+			"confirm": true,
 			"enable": enable,
 		})
 		if err != nil {
@@ -591,6 +880,16 @@ func main() {
 			os.Exit(0)
 		}
 		if err := runPing(args); err != nil {
+			fatal(err)
+		}
+		return
+
+	case "updates", "update":
+		if len(args) > 0 && (args[0] == "-h" || args[0] == "--help" || args[0] == "help") {
+			usageUpdates()
+			os.Exit(0)
+		}
+		if err := runUpdates(args); err != nil {
 			fatal(err)
 		}
 		return

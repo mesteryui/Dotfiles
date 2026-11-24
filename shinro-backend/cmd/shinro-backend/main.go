@@ -6,17 +6,18 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"syscall"
 	"time"
 
 	"shinro-backend/internal/clipboard"
 	"shinro-backend/internal/connectivity"
 	"shinro-backend/internal/files"
+	"shinro-backend/internal/ipc"
 	"shinro-backend/internal/logger"
 	"shinro-backend/internal/safe"
 	"shinro-backend/internal/socket"
 	"shinro-backend/internal/system"
+	"shinro-backend/internal/updates"
 	"shinro-backend/internal/weather"
 )
 
@@ -46,7 +47,11 @@ func main() {
 	// (con RestartPreventExitStatus=2) no lo reintente. Al bloquear antes de
 	// inicializar los proveedores, evitamos abrir inotify o manipular la
 	// base de datos del portapapeles si no somos la instancia dueña.
-	socketPath := socketPathDefaultFromMain()
+	socketPath, err := ipc.DefaultSocketPath()
+	if err != nil {
+		logger.Error("no se pudo resolver la ruta del socket", "error", err)
+		os.Exit(1)
+	}
 	lockFile, err := socket.AcquireLock(socketPath)
 	if err != nil {
 		if errors.Is(err, socket.ErrAlreadyRunning) {
@@ -79,6 +84,16 @@ func main() {
 	// Registro de módulos: añadir un módulo nuevo solo requiere crear una
 	// implementación de socket.Module y registrarla aquí.
 	registry := socket.NewDefaultRegistry(sysProvider, weatherProvider)
+
+	// Actualizaciones: detecta el gestor de sistema según la distro base
+	// (leyendo /etc/os-release) y añade AUR/Flatpak si están disponibles.
+	// El estado vive solo en RAM y la comprobación se comparte entre clientes.
+	updatesProvider := updates.New(
+		updates.NewDetector().Detect(),
+		updates.NewRunner(),
+		connMon.IsOnline,
+	)
+	registry.Register(socket.NewUpdatesModule(updatesProvider))
 
 	// Portapapeles: persiste el historial en XDG_STATE_HOME/shinro (o
 	// ~/.local/state/shinro), que ya usaba el estado previo del módulo.
@@ -116,6 +131,10 @@ func main() {
 	// acceso a wakeClipboardClients.
 	clipModule.SetBroadcast(func() { srv.WakeClipboardClients() })
 
+	// El módulo de actualizaciones avisa del progreso (comprobando,
+	// actualizando) a los clientes suscritos.
+	updatesProvider.SetBroadcast(srv.WakeUpdateClients)
+
 	if err := srv.Start(ctx); err != nil {
 		if errors.Is(err, socket.ErrAlreadyRunning) {
 			logger.Warn("shinro-backend ya está en ejecución", "error", err)
@@ -139,15 +158,3 @@ func clipboardStateDir() string {
 	return filepath.Join(home, ".local", "state", "shinro")
 }
 
-// socketPathDefaultFromMain devuelve la ruta del socket por defecto desde
-// main.go, replicando la lógica de socketPathDefault() del paquete socket,
-// pero exportada para usarse en la comprobación temprana de este archivo.
-func socketPathDefaultFromMain() string {
-	if p := os.Getenv("SHINRO_SOCKET_PATH"); p != "" {
-		return p
-	}
-	if rt := os.Getenv("XDG_RUNTIME_DIR"); rt != "" {
-		return filepath.Join(rt, "shinro")
-	}
-	return "/run/user/" + strconv.Itoa(os.Getuid()) + "/shinro"
-}

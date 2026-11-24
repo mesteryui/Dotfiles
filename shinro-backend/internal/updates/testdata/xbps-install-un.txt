@@ -1,0 +1,3 @@
+Name Action Version New version Download size
+libxbps update 0.59.2_4 0.60.2_1 140KB
+xbps update 0.59.2_4 0.60.2_1 118KB

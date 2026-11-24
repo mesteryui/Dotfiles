@@ -154,9 +154,16 @@ func limitForQuery(query string, requested int) int {
 // archivos encontrados (ordenados por ruta de WalkDir). Se usa para mostrar un
 // listado inicial al abrir el menú de archivos sin haber escrito nada.
 func (provider *Provider) searchEmpty(ctx context.Context, query, root string, limit int) ([]*Result, error) {
+	select {
+	case provider.sem <- struct{}{}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	defer func() { <-provider.sem }()
+
 	var results []*Result
 
-	rootDepth := strings.Count(root, string(os.PathSeparator))
+	rootDepth := rootDepth(root)
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -292,31 +299,36 @@ func (provider *Provider) ensureWatcher(root string) {
 	}
 
 	provider.watchMu.Lock()
-	defer provider.watchMu.Unlock()
-
 	// Tras un Close() el proveedor no vuelve a arrancar el vigilante.
-	if provider.closed {
-		return
-	}
-
-	if provider.watcher != nil {
+	if provider.closed || provider.watcher != nil {
+		provider.watchMu.Unlock()
 		return
 	}
 
 	w, err := newWatcher(provider.handleFilesystemChange)
 	if err != nil {
+		provider.watchMu.Unlock()
 		logger.Warn("files: vigilante de cambios no disponible", "error", err)
 		return
 	}
 
 	provider.watcher = w
 	provider.watchRoot = root
+	provider.watchMu.Unlock()
 
-	// Instalar las incentas de forma SÍNCRONA: si se hiciera en segundo
-	// plano, los cambios que ocurran entre la búsqueda y el montaje del
-	// vigilante se pasarían por alto (y la caché quedaría obsoleta sin
-	// enterarse). Los eventos que meanwhile queden encolados en el kernel
+	// Instalar las watches de forma síncrona respecto a la búsqueda: si se
+	// hiciera en segundo plano, los cambios que ocurran entre la búsqueda y el
+	// montaje del vigilante se pasarían por alto. El lock no se retiene durante
+	// el recorrido para no bloquear otras búsquedas ni el cierre.
 	w.watchTree(root)
+
+	provider.watchMu.Lock()
+	if provider.closed || provider.watcher != w {
+		provider.watchMu.Unlock()
+		w.close()
+		return
+	}
+	provider.watchMu.Unlock()
 
 	safe.Go("files.watch", func() { w.run() })
 
@@ -375,12 +387,40 @@ func (provider *Provider) SearchContext(ctx context.Context, query, root string,
 			return nil, fmt.Errorf("HOME no definido")
 		}
 	}
+	root = filepath.Clean(root)
+	// Acotar el límite para evitar agotamiento de memoria por peticiones
+	// maliciosas (DoS). El módulo de socket ya acota a 100; aquí se replica
+	// por si se llama directamente al proveedor.
+	if limit > 100 {
+		limit = 100
+	}
 	if query == "" {
 		// Query vacía: devolver un listado inicial (primeros archivos
 		// alfabéticamente en $HOME) para mostrar al abrir el menú de archivos.
 		// No hay filtro de nombre, solo exclusiones y límite.
+		//
+		// Se cachea igual que el resto para evitar recorrer $HOME una y
+		// otra vez ante cada apertura o evento del vigilante. El vigilante
+		// invalida la caché al cambiar el sistema de archivos.
 		limit = limitForQuery(query, limit)
-		return provider.searchEmpty(ctx, query, root, limit)
+		provider.ensureWatcher(root)
+		provider.cacheMu.RLock()
+		if cached, ok := provider.cache[""]; ok && cached.query == "" &&
+			(cached.exhaustive || cached.limit >= limit) &&
+			provider.cacheValid(cached) {
+			provider.cacheMu.RUnlock()
+			return truncate(cached.results, limit), nil
+		}
+		provider.cacheMu.RUnlock()
+
+		results, err := provider.searchEmpty(ctx, query, root, limit)
+		if err != nil {
+			return nil, err
+		}
+		exhaustive := len(results) < limit
+		out := truncate(results, limit)
+		provider.addToCache("", out, limit, exhaustive)
+		return out, nil
 	}
 	qLower := strings.ToLower(query)
 	effectiveLimit := limitForQuery(query, limit)
@@ -583,7 +623,8 @@ jobsLoop:
 
 // rootDepth devuelve la profundidad de separadores de ruta de root.
 func rootDepth(root string) int {
-	return strings.Count(root, string(os.PathSeparator))
+	cleaned := filepath.Clean(root)
+	return strings.Count(cleaned, string(os.PathSeparator))
 }
 
 // walkDir recorre un directorio con filepath.WalkDir y devuelve los archivos

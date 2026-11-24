@@ -196,6 +196,63 @@ type cachedSnapshot struct {
 	at   time.Time
 }
 
+func cloneStrings(in []string) []string {
+	if in == nil {
+		return nil
+	}
+	out := make([]string, len(in))
+	copy(out, in)
+	return out
+}
+
+func cloneInts(in []int) []int {
+	if in == nil {
+		return nil
+	}
+	out := make([]int, len(in))
+	copy(out, in)
+	return out
+}
+
+func cloneFloats(in []float64) []float64 {
+	if in == nil {
+		return nil
+	}
+	out := make([]float64, len(in))
+	copy(out, in)
+	return out
+}
+
+func cloneAlerts(in []Alert) []Alert {
+	if in == nil {
+		return nil
+	}
+	out := make([]Alert, len(in))
+	copy(out, in)
+	return out
+}
+
+func cloneSnapshot(in Snapshot) Snapshot {
+	out := in
+	out.Daily.Time = cloneStrings(in.Daily.Time)
+	out.Daily.WeatherCode = cloneInts(in.Daily.WeatherCode)
+	out.Daily.Temperature2MMax = cloneFloats(in.Daily.Temperature2MMax)
+	out.Daily.Temperature2MMin = cloneFloats(in.Daily.Temperature2MMin)
+	out.Daily.Sunrise = cloneStrings(in.Daily.Sunrise)
+	out.Daily.Sunset = cloneStrings(in.Daily.Sunset)
+	out.Daily.UVIndexMax = cloneFloats(in.Daily.UVIndexMax)
+	out.Daily.PrecipitationProbabilityMax = cloneInts(in.Daily.PrecipitationProbabilityMax)
+	out.Hourly.Time = cloneStrings(in.Hourly.Time)
+	out.Hourly.Temperature2M = cloneFloats(in.Hourly.Temperature2M)
+	out.Hourly.RelativeHumidity2M = cloneInts(in.Hourly.RelativeHumidity2M)
+	out.Hourly.PrecipitationProbability = cloneInts(in.Hourly.PrecipitationProbability)
+	out.Hourly.WeatherCode = cloneInts(in.Hourly.WeatherCode)
+	out.Hourly.Visibility = cloneFloats(in.Hourly.Visibility)
+	out.Hourly.IsDay = cloneInts(in.Hourly.IsDay)
+	out.Alerts = cloneAlerts(in.Alerts)
+	return out
+}
+
 // newTransport crea un transporte HTTP reutilizable con keep-alive y pooling
 // de conexiones, clave cuando el clima hace varias peticiones en paralelo.
 func newTransport() *http.Transport {
@@ -315,6 +372,9 @@ func (provider *Provider) IsOnline() bool {
 
 // Snapshot devuelve todos los datos del parte para la ciudad dada.
 func (provider *Provider) Snapshot(city string, lang string) (Snapshot, error) {
+	if strings.TrimSpace(city) == "" {
+		return Snapshot{}, errors.New("ciudad no especificada")
+	}
 	if lang == "" {
 		lang = "es"
 	}
@@ -384,7 +444,7 @@ func (provider *Provider) runFlight(key string, call *flightCall, loc geo.Locati
 	if call.err == nil {
 		// Guardar el último parte válido para servirlo mientras falte red.
 		provider.mu.Lock()
-		provider.lastSnapshots[key] = cachedSnapshot{snap: call.snap, at: time.Now()}
+		provider.lastSnapshots[key] = cachedSnapshot{snap: cloneSnapshot(call.snap), at: time.Now()}
 		provider.pruneSnapshotsLocked()
 		provider.mu.Unlock()
 		return
@@ -444,7 +504,7 @@ func (provider *Provider) cachedOrOffline(key string) (Snapshot, bool) {
 	if !ok {
 		return Snapshot{}, false
 	}
-	out := snap.snap
+	out := cloneSnapshot(snap.snap)
 	out.Offline = true
 	return out, true
 }
@@ -483,7 +543,7 @@ func (provider *Provider) snapshotFor(loc geo.Location, lang string) (Snapshot, 
 		countryCode = g.countryCode
 		tokens = g.tokens
 	default:
-		return Snapshot{}, fmt.Errorf("sin ubicación válida para clima")
+		return Snapshot{}, errors.New("ciudad no especificada")
 	}
 
 	// Previsión, AQI y avisos son independientes una vez resueltas las
@@ -563,7 +623,7 @@ func (provider *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 	entry, ok := provider.fcCache[key]
 	provider.fcMu.Unlock()
 	if ok && time.Since(entry.at) < weatherForecastTTL {
-		return entry.snap, nil
+		return cloneSnapshot(entry.snap), nil
 	}
 
 	u := fmt.Sprintf(
@@ -587,11 +647,12 @@ func (provider *Provider) fetchForecast(lat, lon float64) (Snapshot, error) {
 		return Snapshot{}, fmt.Errorf("Open-Meteo forecast: respuesta sin daily/hourly")
 	}
 
+	snap := cloneSnapshot(out)
 	provider.fcMu.Lock()
-	provider.fcCache[key] = forecastCacheEntry{snap: out, at: time.Now()}
+	provider.fcCache[key] = forecastCacheEntry{snap: snap, at: time.Now()}
 	pruneCache(provider.fcCache, func(e forecastCacheEntry) time.Time { return e.at })
 	provider.fcMu.Unlock()
-	return out, nil
+	return cloneSnapshot(snap), nil
 }
 
 // ── Open-Meteo: calidad del aire ────────────────────────────────
