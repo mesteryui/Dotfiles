@@ -9,6 +9,7 @@ import qs.Core
 import qs.Primitives
 import "../Base/MenuModes.js" as MenuModes
 import "../Base/ItemKinds.js" as ItemKinds
+import "../Base/ShellUtils.js" as ShellUtils
 import QtQuick
 import QtQuick.Layouts
 
@@ -17,25 +18,37 @@ Rectangle {
 
     property string activeMode: ""
     property var cur
+
+    onCurChanged: imageDecodeFailed = false
+
     property bool previewOk: false
+
     property string previewPath: ""
+    onPreviewPathChanged: imageDecodeFailed = false
+
     property string previewText: ""
+
     property string clipText: ""
     // Error del preview actual (decode de imagen imposible, etc.).
     // "": sin error (comportamiento de siempre).
+
     property string previewError: ""
     // El preview de imagen actual falló al decodificarse (archivo
     // borrado, ilegible o corrupto): se oculta la imagen rota y se avisa
     // con un mensaje fijo — Qt6 no expone `Image.errorString` en
     // QQuickImage, así que leerlo daba undefined y reventaba el assign.
     // Es interna (previewError viene de LauncherPreview y no se toca).
+
     property bool imageDecodeFailed: false
     // Metadatos del tema de audio actual ("artista — título\nálbum · 3:24").
     // "": sin metadatos.
+
     property string metaText: ""
+
     property string fileTooLargeText: "Archivo demasiado grande para previsualizar"
     // Línea de estado del historial ya formateada (AppLauncher la traduce
     // con los datos de ClipboardService.lastStats). "": oculta.
+
     property string statsText: ""
 
     // Truncado inteligente para el cuerpo del portapapeles:
@@ -96,7 +109,7 @@ Rectangle {
                 if ((root.cur.imagePath || "") !== "")
                     return root.cur.imagePath;
                 if (root.previewOk)
-                    return "file://" + root.previewPath;
+                    return ShellUtils.fileUrl(root.previewPath);
                 return "";
             }
             // Si el fichero de preview desaparece o no se puede decodificar

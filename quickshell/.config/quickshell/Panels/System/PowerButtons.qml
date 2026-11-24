@@ -19,6 +19,13 @@ Scope {
     property bool show: false
     property bool animating: false
 
+    onShowChanged: {
+        if (root.show) {
+            root.animating = false;
+            animatingTimer.stop();
+        }
+    }
+
     IpcHandler {
         target: "ui.powermenu"
 
@@ -30,16 +37,16 @@ Scope {
     Timer {
         id: animatingTimer
 
-        interval: 200
+        interval: 220
         onTriggered: root.animating = false
         running: false
     }
-    // LazyLoader: el overlay se carga en background al abrir. Al cerrar,
-    // loading pasa a false y el item se destruye; el visible va atado a show.
+    // LazyLoader: el overlay se mantiene cargado durante la animación de
+    // salida para que el cierre no sea abrupto.
     LazyLoader {
         id: loader
 
-        loading: root.show
+        loading: root.show || root.animating
         component: PanelWindow {
             id: powerButtons
 

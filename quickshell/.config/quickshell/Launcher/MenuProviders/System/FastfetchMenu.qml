@@ -44,7 +44,10 @@ MenuDefinition {
     }
 
     function shellFor(value) {
-        const v = ShellUtils.shellEscape(value);
+        const raw = String(value || "");
+        if (!/^[A-Za-z0-9._-]+$/.test(raw))
+            return "true";
+        const v = ShellUtils.shellEscape(raw);
         const cfg = ShellUtils.shellEscape(root.configHome);
         return "ln -sf '" + cfg + "/fastfetch/layouts/" + v + "' '" + cfg
                 + "/fastfetch/layouts/../config.jsonc' && "
@@ -88,7 +91,8 @@ MenuDefinition {
                     const parts = line.slice(6).split("\t");
                     const file = parts[0] || "";
                     const prev = parts[1] || "";
-                    if (file !== "")
+                    // Ignora nombres con caracteres fuera de [A-Za-z0-9._-].
+                    if (file !== "" && /^[A-Za-z0-9._-]+$/.test(file))
                         root._found.push({
                                              file: file,
                                              preview: prev

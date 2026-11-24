@@ -31,12 +31,21 @@ Item {
 
     visible: !Services.NotificationData.dnd || isCritical
 
+    Component.onDestruction: {
+        if (replyInput.activeFocus)
+            replyInput.focus = false;
+    }
+
     // ── Temporizador de Expiración (se pausa al hacer hover) ──
+    // Las críticas también expiran con TTL largo para evitar acumulación
+    // ilimitada; siguen siendo descartables manualmente.
     Timer {
         id: expireTimer
 
-        running: !cardHover.hovered && !root.isCritical
-        interval: (Services.ConfigService.configs.notifications.timeout || 5) * 1000
+        running: !cardHover.hovered
+        interval: root.isCritical ? 300000 : (Services.ConfigService.configs.notifications.timeout || 5)
+                                    * 1000
+
         onTriggered: root.notification.expire()
     }
 

@@ -25,8 +25,8 @@ Singleton {
         return deviceList.find(e => e.state === ConnectionState.Connected) ?? deviceList[0];
     }
 
-    readonly property var currentNetwork: currentDevice?.networks.values.find(e => e.state
-                                                                                   === ConnectionState.Connected)
+    readonly property var currentNetwork: currentDevice?.networks?.values?.find(e => e.state
+                                                                                     === ConnectionState.Connected)
                                           ?? null
 
     // Nombre de la red activa (SSID en WiFi, "Ethernet" en cable, "" si desconectado)

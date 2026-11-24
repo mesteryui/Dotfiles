@@ -364,14 +364,11 @@ Singleton {
         temperatureDebounce.restart();
     }
 
-    // Ajuste relativo (usa el comando nativo `temperature +N`/`-N` en vez de
-    // calcular el clamp client-side, así el server es la fuente de verdad).
+    // Ajuste relativo convertido a absoluto para evitar journalizar deltas
+    // relativos offline (al reconectar se reaplicarían).
     function adjustTemperature(deltaKelvin) {
-        identity = false;
-        const cmd = deltaKelvin >= 0 ? `temperature +${deltaKelvin}` : `temperature -${Math.abs(deltaKelvin)
-                                       }`;
-        send(cmd); // set, sin key -> reply "ok" se ignora
-        send("temperature", "temperature"); // confirma el valor real post-clamp
+        const base = isFinite(root.temperature) ? root.temperature : 6500;
+        root.setTemperature(base + Number(deltaKelvin || 0));
     }
 
     // Gamma en % (0-100 típico, hasta `gamma_max` si el daemon fue lanzado
@@ -386,9 +383,8 @@ Singleton {
     }
 
     function adjustGamma(deltaPercent) {
-        const cmd = deltaPercent >= 0 ? `gamma +${deltaPercent}` : `gamma -${Math.abs(deltaPercent)}`;
-        send(cmd); // set, sin key -> reply "ok" se ignora
-        send("gamma", "gamma"); // confirma el valor real post-clamp
+        const base = isFinite(root.gammaPct) ? root.gammaPct : 100;
+        root.setGamma(base + Number(deltaPercent || 0));
     }
 
     // --- Activación / desactivación / toggle coherentes con hyprsunset ---

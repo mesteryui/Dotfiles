@@ -124,8 +124,8 @@ Item {
                 source: Qt.resolvedUrl(root.thumbSource())
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                // Caché activada para carga instantánea en memoria sin releer disco
-                cache: true
+                // Sin caché global: evita retener pixmaps de muchas miniaturas.
+                cache: false
                 mipmap: true
                 smooth: true
                 sourceSize.width: root.imageWidth

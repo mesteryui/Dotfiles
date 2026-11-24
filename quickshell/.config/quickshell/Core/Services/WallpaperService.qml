@@ -55,10 +55,61 @@ Singleton {
     // Ruta confirmada al instante: validar, persistir y notificar es
     // síncrono.
     function apply(file: string): void {
-        // Acepta nombre (relativo a wallpaperDir) o ruta absoluta (IPC).
-        const fullPath = String(file || "").startsWith("/") ? String(file) : wallpaperDir + (
-                                                                  wallpaperDir.endsWith("/") ? "" : "/")
-                                                              + file;
+        const raw = String(file || "").trim();
+        if (raw === "" || /[\r\n\0]/.test(raw)) {
+            root.failed = true;
+            root.error = "ruta no válida";
+            return;
+        }
+
+        // Acepta nombre (relativo a wallpaperDir) o ruta absoluta (IPC/drag).
+        const baseDir = wallpaperDir + (wallpaperDir.endsWith("/") ? "" : "/");
+        let fullPath = raw.startsWith("/") ? raw : baseDir + raw;
+
+        // Normaliza separadores y rechaza traversal por segmento.
+        fullPath = fullPath.replace(/\/+/g, "/");
+        const segments = fullPath.split("/");
+        if (segments.indexOf("..") >= 0) {
+            root.failed = true;
+            root.error = "ruta no válida";
+            console.warn("[Wallpaper] ruta rechazada: " + raw);
+            return;
+        }
+
+        // Para rutas relativas, exige basename simple (sin subdirectorios).
+        if (!raw.startsWith("/")) {
+            const base = raw.replace(/\\/g, "/");
+            if (base.indexOf("/") >= 0) {
+                root.failed = true;
+                root.error = "ruta no válida";
+                console.warn("[Wallpaper] ruta relativa no válida: " + raw);
+                return;
+            }
+        } else {
+            // Confinamiento básico para rutas absolutas: evita procesar archivos
+            // arbitrarios del sistema fuera de ubicaciones típicas de usuario.
+            const home = String(Quickshell.env("HOME") || "");
+            const allowed = [wallpaperDir, home, "/usr/share/backgrounds", "/usr/share/wallpapers",
+                             "/usr/share/pixmaps", "/usr/local/share/backgrounds",
+                             "/usr/local/share/wallpapers", "/media", "/run/media", "/mnt"].filter(p => String(
+                                                                                                            p || "").length
+                                                                                                        > 0);
+            let okRoot = false;
+            for (let i = 0; i < allowed.length; i++) {
+                const r = String(allowed[i]).replace(/\/+$/, "");
+                if (r !== "" && (fullPath === r || fullPath.indexOf(r + "/") === 0)) {
+                    okRoot = true;
+                    break;
+                }
+            }
+            if (!okRoot) {
+                root.failed = true;
+                root.error = "ruta fuera de ubicaciones permitidas";
+                console.warn("[Wallpaper] ruta fuera de raíces permitidas: " + raw);
+                return;
+            }
+        }
+
         if (root.isVideo(fullPath))
             root.applyVideo(fullPath, true);
         else

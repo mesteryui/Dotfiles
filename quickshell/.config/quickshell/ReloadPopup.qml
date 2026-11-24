@@ -2,8 +2,8 @@ pragma ComponentBehavior: Bound
 
 import qs.Core
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
 
@@ -44,8 +44,8 @@ Scope {
             anchors.top: true
             margins.top: 0
 
-            implicitWidth: rect.width + shadow.radius * 2
-            implicitHeight: rect.height + shadow.radius * 2
+            implicitWidth: rect.width + 12
+            implicitHeight: rect.height + 12
 
             WlrLayershell.namespace: "quickshell:reloadPopup"
 
@@ -87,6 +87,7 @@ Scope {
 
                     Text {
                         renderType: Text.NativeRendering
+                        textFormat: Text.PlainText
                         font.family: "Google Sans Flex"
                         font.pointSize: 14
                         text: root.failed ? "Quickshell: Reload failed" : "Quickshell reloaded"
@@ -96,6 +97,7 @@ Scope {
 
                     Text {
                         renderType: Text.NativeRendering
+                        textFormat: Text.PlainText
                         font.family: "JetBrainsMono Nerd Font"
                         font.pointSize: 11
                         text: root.errorString
@@ -158,16 +160,15 @@ Scope {
                 Component.onCompleted: anim.start()
             }
 
-            DropShadow {
-                id: shadow
-
+            MultiEffect {
                 anchors.fill: rect
-                horizontalOffset: 0
-                verticalOffset: 2
-                radius: 6
-                samples: radius * 2 + 1 // Idealmente 2 * radius + 1, ver docs de Qt
-                color: Qt.alpha("#000000", 0.27)
                 source: rect
+                shadowEnabled: true
+                shadowOpacity: 0.27
+                shadowColor: "#000000"
+                shadowBlur: 0.5
+                shadowVerticalOffset: 2
+                shadowHorizontalOffset: 0
             }
         }
     }

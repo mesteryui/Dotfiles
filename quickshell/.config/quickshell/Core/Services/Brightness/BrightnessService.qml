@@ -176,7 +176,12 @@ Singleton {
 
     property bool _detecting: false
 
+    property int _detectCycle: 0
+
+    property int _ddcProcCycle: 0
+
     function redetect() {
+        root._detectCycle += 1;
         root.detectReady = false;
         root._detecting = true;
         backlightProc.running = true;
@@ -211,8 +216,24 @@ Singleton {
             }
         }
         // qmllint disable signal-handler-parameters
-        onExited: ddcProc.running = true
+        onExited: {
+            root._ddcProcCycle = root._detectCycle;
+            ddcProc.running = true;
+            root.ddcDetectWatchdog.restart();
+        }
         // qmllint enable signal-handler-parameters
+    }
+
+    // Timeout de detección DDC: ddcutil puede colgarse en buses I2C lentos.
+    property Timer ddcDetectWatchdog: Timer {
+        interval: 12000
+        repeat: false
+        onTriggered: {
+            if (ddcProc.running) {
+                console.warn("[Brightness] timeout detectando DDC, mato ddcutil detect");
+                ddcProc.running = false;
+            }
+        }
     }
 
     Process {
@@ -229,6 +250,9 @@ Singleton {
         }
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            if (root._ddcProcCycle !== root._detectCycle)
+                return;
+            root.ddcDetectWatchdog.stop();
             // 127 = ddcutil no instalado: HDMI sin soporte, interno intacto.
             if (code === 127 && !root._ddcWarned) {
                 root._ddcWarned = true;

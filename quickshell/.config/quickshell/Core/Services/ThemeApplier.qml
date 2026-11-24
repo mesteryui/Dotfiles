@@ -146,6 +146,9 @@ Singleton {
     }
 
     function startGenerate(wallpaperPath: string) {
+        // Nueva petición: reinicia presupuesto de watchdog para evitar que
+        // timeouts antiguos degraden permanentemente la generación de tema.
+        root.watchdogKills = 0;
         root.currentWallpaperReq = wallpaperPath;
         root.currentMode = root.matugenMode;
         root.currentType = root.matugenType;

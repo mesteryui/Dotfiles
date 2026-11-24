@@ -71,6 +71,10 @@ Singleton {
     // uso en onPamMessage y se limpia en onCompleted/abort: nunca queda
     // reutilizable para un segundo prompt de la misma transacción.
     property string pendingResponse: ""
+    // Evita que el resultado async de un abort intencional (fingerprint->password)
+    // se interprete como fallo de autenticación del intento nuevo.
+
+    property bool _switchingToPassword: false
 
     PamContext {
         id: pam
@@ -105,6 +109,11 @@ Singleton {
         }
 
         onCompleted: result => {
+            if (root._switchingToPassword) {
+                // Resultado del abort intencional al pasar de huella a password.
+                root._switchingToPassword = false;
+                return;
+            }
             // Limpieza primero: la credencial no sobrevive a la transacción.
             root.pendingResponse = "";
             if (result === PamResult.Success) {
@@ -119,6 +128,10 @@ Singleton {
         // Distinto de completed(PamResult.Error): fallo anormal de PAM
         // (config inexistente, módulo faltante, etc.)
         onError: pamError => {
+            if (root._switchingToPassword) {
+                root._switchingToPassword = false;
+                return;
+            }
             root.pendingResponse = "";
             root.promptMessage("Error de PAM: " + pamError);
             root.failedUnlocking();
@@ -160,13 +173,15 @@ Singleton {
 
             // Sigue escuchando huella (bloqueante) — no queremos que el
             // usuario espere a que fprintd se rinda. Abortamos ese intento
-            // (silencioso: no dispara failedUnlocking) y re-arrancamos con
-            // el stack de solo-contraseña para autenticar ya mismo.
+            // y re-arrancamos con el stack de solo-contraseña. El resultado
+            // async del abort se ignora para no romper el nuevo intento.
+            root._switchingToPassword = true;
             pam.abort();
         }
 
         pam.config = root.passwordConfig;
         if (!pam.start()) {
+            root._switchingToPassword = false;
             root.pendingResponse = "";
             root.failedUnlocking();
         }

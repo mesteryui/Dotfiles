@@ -26,6 +26,10 @@ QtObject {
     property double _qalcRetryAt: 0
     // Query con la que se lanzó el proceso en vuelo (pareja con onExited).
     property string _launchQuery: ""
+    // Generación de petición: evita que un onExited viejo (proceso matado
+    // al teclear rápido) pise el estado de la petición activa.
+    property int requestId: 0
+    property int _pendingStaleExits: 0
     // Watchdog: qalc colgado no debe dejar busy=true para siempre.
     property Timer watchdog: Timer {
         interval: 5000
@@ -83,8 +87,11 @@ QtObject {
             // Coma decimal → punto + locale C: igual que antes, punto decimal.
             const expr = root.decimalExpr(q);
             // Mata el cálculo anterior: si no, su stdout se mezcla con este.
-            if (root.calcProc.running)
+            if (root.calcProc.running) {
+                root._pendingStaleExits += 1;
                 root.calcProc.running = false;
+            }
+            root.requestId += 1;
             root.busy = true;
             root.failed = false;
             root.acc = "";
@@ -103,6 +110,12 @@ QtObject {
         }
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            // Salida de un proceso viejo matado por cambio de query: ignorar
+            // para no pisar el estado de la requestId activa.
+            if (root._pendingStaleExits > 0) {
+                root._pendingStaleExits--;
+                return;
+            }
             root.watchdog.stop();
             root.busy = false;
             // 127 = binario no encontrado: cache negativa + backoff.

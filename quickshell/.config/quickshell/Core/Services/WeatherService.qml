@@ -96,6 +96,7 @@ Singleton {
                     const msg = JSON.parse(data);
                     if (msg.type === "error") {
                         root._socketPending = false;
+                        requestTimeout.stop();
                         console.warn("[WeatherService] " + msg.message);
                         return;
                     }
@@ -103,6 +104,7 @@ Singleton {
                         return;
 
                     root._socketPending = false;
+                    requestTimeout.stop();
                     const d = msg.data;
                     if (!d || !d.current || !d.daily || !d.hourly) {
                         console.warn("[WeatherService] payload de socket incompleto");
@@ -122,8 +124,11 @@ Singleton {
         }
 
         onConnectionStateChanged: {
-            if (!shinroSocket.connected)
+            if (!shinroSocket.connected) {
+                root._socketPending = false;
+                requestTimeout.stop();
                 return;
+            }
             root._sendHello();
         }
 
@@ -141,6 +146,22 @@ Singleton {
         repeat: true
         running: root.socketPath !== "" && !shinroSocket.connected
         onTriggered: shinroSocket.connected = true
+    }
+
+    Timer {
+        id: requestTimeout
+
+        interval: 15000
+        repeat: false
+        onTriggered: {
+            if (!root._socketPending)
+                return;
+            root._socketPending = false;
+            root.isError = true;
+            root.errorMessage = "timeout";
+            console.warn("[WeatherService] timeout esperando respuesta del backend");
+            root._scheduleRetry();
+        }
     }
 
     onConfigGpsEnabledChanged: {
@@ -363,6 +384,7 @@ Singleton {
         if (!shinroSocket.connected)
             return false;
         root._socketPending = true;
+        requestTimeout.restart();
         shinroSocket.write(JSON.stringify({
             type: "hello",
             location: {

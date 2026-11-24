@@ -29,15 +29,22 @@ Item {
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             text: {
-                if (Services.UpdatesTracking.failed)
-                    return Services.I18nService.getTranslation("updates.error");
                 if (Services.UpdatesTracking.checking)
                     return Services.I18nService.getTranslation("updates.checking");
-                if (Services.UpdatesTracking.updateCount === 0)
-                    return Services.I18nService.getTranslation("updates.up_to_date");
-                const key = Services.UpdatesTracking.updateCount === 1 ? "updates.count_singular" :
-                                                                         "updates.count_plural";
-                return Services.UpdatesTracking.updateCount + " " + Services.I18nService.getTranslation(key);
+                if (!Services.UpdatesTracking.checked) {
+                    if (Services.UpdatesTracking.failed)
+                        return Services.I18nService.getTranslation("updates.error");
+                    return Services.I18nService.getTranslation("updates.unknown");
+                }
+                if (Services.UpdatesTracking.updateCount > 0) {
+                    const key = Services.UpdatesTracking.updateCount === 1 ? "updates.count_singular" :
+                                                                             "updates.count_plural";
+                    return Services.UpdatesTracking.updateCount + " " + Services.I18nService.getTranslation(
+                                key);
+                }
+                if (Services.UpdatesTracking.failed)
+                    return Services.I18nService.getTranslation("updates.error");
+                return Services.I18nService.getTranslation("updates.up_to_date");
             }
             font.pixelSize: Appearance.typeScale.bodyMedium
             font.variableAxes: Appearance.font.variableAxes.title

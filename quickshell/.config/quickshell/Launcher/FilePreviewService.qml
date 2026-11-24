@@ -128,10 +128,17 @@ Singleton {
 
     function trimSnippet() {
         return "; d='" + ShellUtils.shellEscape(root.cacheDir)
-                + "'; n=$(ls -t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -t \"$d\" | tail -n +61 | (cd \"$d\" && xargs -r rm -f); fi";
+                + "'; if [ -L \"$d\" ] || [ ! -d \"$d\" ]; then exit 0; fi; n=$(ls -1t \"$d\" 2>/dev/null | wc -l); if [ \"$n\" -gt 60 ]; then ls -1t \"$d\" | tail -n +61 | while IFS= read -r f; do case \"$f\" in */*|'') continue ;; esac; rm -f -- \"$d/$f\"; done; fi";
     }
 
     function extractShell(path, kind) {
+        // cacheDir/out se interpolan en comillas dobles para permitir la
+        // expansión $(...) del key; rechaza metacaracteres que romperían ese
+        // contexto.
+        if (/["`$\\]/.test(String(root.cacheDir || ""))) {
+            console.warn("[FilePreviewService] cacheDir inseguro, se omite preview");
+            return "echo QSERR:badcache";
+        }
         const p = ShellUtils.shellEscape(path);
         const key = "$(echo -n '" + p + "|'$(stat -c '%Y %s' '" + p
               + "' 2>/dev/null) | sha256sum | cut -c1-16)";
@@ -144,11 +151,14 @@ Singleton {
             extract = "ffmpeg -y -v error -i '" + p + "' -an -vf scale=512:-1 -vcodec mjpeg \"" + out
                     + "\" 2>/dev/null";
         else if (kind === "pdf")
-            extract = "pdftoppm -png -f 1 -l 1 -singlefile -r 72 '" + p + "' \"" + base + "\" 2>/dev/null";
+            extract = "pdftoppm -png -f 1 -l 1 -singlefile -r 72 '" + p + "' \"" + base
+                    + "\" 2>/dev/null && { [ -s \"" + out + "\" ] && magick \"" + out + "\" -strip \"" + out
+                    + "\" 2>/dev/null || true; }";
         else
             extract = "ffmpegthumbnailer -i '" + p + "' -o \"" + out + "\" -s 384 2>/dev/null";
-        return "mkdir -p '" + ShellUtils.shellEscape(root.cacheDir) + "' && OUT=" + out
-                + " && ([ -s \"$OUT\" ] || " + extract + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
+        return "mkdir -p '" + ShellUtils.shellEscape(root.cacheDir) + "' && [ ! -L '" + ShellUtils.shellEscape(
+                    root.cacheDir) + "' ] && OUT=\"" + out + "\" && ([ -s \"$OUT\" ] || " + extract
+                + ") && echo \"QSOUT:$OUT\"" + trimSnippet();
     }
 
     property string textReqPath: ""

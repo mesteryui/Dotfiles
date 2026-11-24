@@ -50,7 +50,8 @@ Item {
     LazyLoader {
         id: loader
 
-        loading: mouseManagement.pressed || itemContainer.menuOpen
+        loading: itemContainer.menuOpen || (mouseManagement.pressed && (itemContainer.modelData?.hasMenu
+                                                                        ?? false))
         component: TrayMenu {
             id: trayMenu
 

@@ -59,8 +59,8 @@ Item {
     function unpairedDevices() {
         const all = Services.BluetoothService.devices;
         const out = [];
-        for (let i = 0; i < all.length; i++)
-            if (!all[i].paired)
+        for (let i = 0; i < (all?.length ?? 0); i++)
+            if (all[i] && !all[i].paired)
                 out.push(all[i]);
         return out;
     }
@@ -74,6 +74,12 @@ Item {
             if (Services.BluetoothService.currentAdapter)
                 Services.BluetoothService.currentAdapter.discovering = false;
         }
+    }
+
+    Component.onDestruction: {
+        scanTimer.stop();
+        if (Services.BluetoothService.currentAdapter)
+            Services.BluetoothService.currentAdapter.discovering = false;
     }
 
     implicitWidth: 300

@@ -37,23 +37,37 @@ Item {
                 id: powerDelegate
 
                 required property var modelData
+                property bool confirming: false
 
                 implicitWidth: 44
                 implicitHeight: 44
                 radius: Appearance.shape.full
-                color: powerMouse.containsMouse ? Qt.alpha(Appearance.md3.error_container, 0.5) : Qt.alpha(
-                                                      Appearance.md3.surface_container_high, 0.72)
+                color: powerDelegate.confirming ? Qt.alpha(Appearance.md3.error_container, 0.75) : (
+                                                      powerMouse.containsMouse ? Qt.alpha(
+                                                                                     Appearance.md3.error_container,
+                                                                                     0.5) : Qt.alpha(
+                                                                                     Appearance.md3.surface_container_high,
+                                                                                     0.72))
                 border.width: Appearance.border.width
                 border.color: Appearance.border.subtleOn(color)
 
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.name
 
+                Timer {
+                    id: confirmReset
+
+                    interval: 2500
+                    repeat: false
+                    onTriggered: powerDelegate.confirming = false
+                }
+
                 MaterialIcon {
                     anchors.centerIn: parent
-                    icon: powerDelegate.modelData.icon
+                    icon: powerDelegate.confirming ? "check_circle" : powerDelegate.modelData.icon
                     size: 24
-                    color: powerMouse.containsMouse ? Appearance.md3.error : Appearance.md3.on_surface_variant
+                    color: (powerMouse.containsMouse || powerDelegate.confirming) ? Appearance.md3.error :
+                                                                                    Appearance.md3.on_surface_variant
                 }
 
                 MouseArea {
@@ -62,7 +76,16 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: powerProc.start(powerDelegate.modelData.cmd)
+                    onClicked: {
+                        if (!powerDelegate.confirming) {
+                            powerDelegate.confirming = true;
+                            confirmReset.restart();
+                            return;
+                        }
+                        confirmReset.stop();
+                        powerDelegate.confirming = false;
+                        powerProc.start(powerDelegate.modelData.cmd);
+                    }
                 }
 
                 Process {

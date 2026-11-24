@@ -49,9 +49,13 @@ QtObject {
     function initBrightness() {
         monitor.ready = false;
         monitor.supported = false;
+        monitor.initWatchdog.stop();
+        if (monitor.initProc.running)
+            monitor.initProc.running = false;
         if (monitor.isDdc) {
             initProc.command = ["ddcutil", "-b", monitor.busNum, "getvcp", "10", "--brief"];
             initProc.running = true;
+            monitor.initWatchdog.restart();
         } else if (monitor.backlightDevice !== "") {
             // Sin proceso: FileView lee sysfs al instante. OJO: sysfs no
             // emite inotify fiable, el watchChanges no basta para cambios
@@ -107,6 +111,20 @@ QtObject {
         monitor.initBrightness();
     }
 
+    readonly property Timer initWatchdog: Timer {
+        interval: 8000
+        repeat: false
+        onTriggered: {
+            if (monitor.initProc.running) {
+                console.warn("[Brightness] timeout leyendo VCP en " + monitor.screenName + " (bus "
+                             + monitor.busNum + ")");
+                monitor.initProc.running = false;
+                if (!monitor.ready)
+                    monitor.supported = false;
+            }
+        }
+    }
+
     readonly property Process initProc: Process {
         stdout: StdioCollector {
             onStreamFinished: {
@@ -125,6 +143,7 @@ QtObject {
         }
         // qmllint disable signal-handler-parameters
         onExited: code => {
+            monitor.initWatchdog.stop();
             // ddcutil ausente (127) o bus caído: degradado, no spam.
             if (code !== 0 && !monitor.ready) {
                 console.warn("[Brightness] DDC no disponible en " + monitor.screenName + " (exit " + code

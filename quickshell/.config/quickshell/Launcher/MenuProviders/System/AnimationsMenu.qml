@@ -44,14 +44,17 @@ MenuDefinition {
     }
 
     function shellFor(value) {
-        const v = ShellUtils.shellEscape(value);
+        const raw = String(value || "");
+        if (!/^[A-Za-z0-9._-]+$/.test(raw))
+            return "true";
+        const v = ShellUtils.shellEscape(raw);
         const cfg = ShellUtils.shellEscape(root.configHome);
         // El valor también cae dentro de un `s|...|...|` de sed: `|`/`&`/`\`
         // en el nombre romperían/alterarían la expresión, así que llevan
         // escape propio de reemplazo sed ADEMÁS del escape shell. El resto
         // de usos (rutas, notify) sigue con el escape shell normal.
-        const vSed = ShellUtils.shellEscape(String(value).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/&/g,
-                                                                                                               "\\&"));
+        const vSed = ShellUtils.shellEscape(raw.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/&/g,
+                                                                                                     "\\&"));
         return "sed -i 's|\\(require(\".*\\.\\)[^\".]*|\\1" + vSed + "|' '" + cfg
                 + "/hypr/configs/animations/../animation.lua' && "
                 + "hyprctl reload && notify-send 'Hyprland Animations' 'Animacion cambiada a " + v + "'";
@@ -88,7 +91,7 @@ MenuDefinition {
                         return;
                     }
                     const name = line.replace(/\.[^.]+$/, "");
-                    if (name !== "")
+                    if (name !== "" && /^[A-Za-z0-9._-]+$/.test(name))
                         root._found.push(name);
                 }
             }

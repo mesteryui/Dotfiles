@@ -66,14 +66,32 @@ Scope {
             root.pending = true;
             return;
         }
+        root.scanAborted = false;
         if (!root.initialized)
             root.firstHadEntries = DesktopEntries.applications.values.length > 0;
+        root.scanWatchdog.restart();
         scanProc.running = true;
     }
 
     function nudge() {
         Quickshell.execDetached(["bash", "-c", root.nudgeScript, "qs-desktop-rescan", root.triggerDir,
                                  root.rescanMarker]);
+    }
+
+    // Timeout: un find colgado en FS lento no debe bloquear refrescos.
+    property bool scanAborted: false
+
+    property Timer scanWatchdog: Timer {
+        interval: 10000
+        repeat: false
+        onTriggered: {
+            if (scanProc.running) {
+                console.warn("[DesktopEntryRefresh] timeout escaneando .desktop, mato find");
+                root.scanAborted = true;
+                scanProc.running = false;
+                root.pending = false;
+            }
+        }
     }
 
     Process {
@@ -85,6 +103,15 @@ Scope {
 
         stdout: StdioCollector {
             onStreamFinished: {
+                root.scanWatchdog.stop();
+                if (root.scanAborted) {
+                    root.scanAborted = false;
+                    if (root.pending) {
+                        root.pending = false;
+                        Qt.callLater(root.check);
+                    }
+                    return;
+                }
                 const snapshot = String(text);
                 if (!root.initialized) {
                     root.initialized = true;
@@ -103,6 +130,9 @@ Scope {
                     Qt.callLater(root.check);
                 }
             }
+        }
+        onExited: {
+            root.scanWatchdog.stop();
         }
     }
 }

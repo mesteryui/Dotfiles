@@ -517,13 +517,6 @@ Item {
                         onMoved: val => Services.ConfigService.configs.updates.countTime = root.fromSlider(val,
                                                                                                            5, 180)
                     }
-
-                    SettingsTextRow {
-                        label: Services.I18nService.getTranslation("settings.system.updates.command",
-                                                                   "Comando")
-                        value: Services.ConfigService.configs.updates.command
-                        onEdited: text => Services.ConfigService.configs.updates.command = text
-                    }
                 }
                 Item {
                     Layout.preferredHeight: 8

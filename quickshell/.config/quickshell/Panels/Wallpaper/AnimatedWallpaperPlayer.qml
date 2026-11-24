@@ -101,4 +101,10 @@ Item {
         else
             player.pause();
     }
+
+    Component.onDestruction: {
+        root._seekDone = false;
+        player.stop();
+        player.source = "";
+    }
 }

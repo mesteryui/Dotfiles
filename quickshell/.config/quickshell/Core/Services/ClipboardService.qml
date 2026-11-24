@@ -161,13 +161,14 @@ Singleton {
         if (root._pending.length === 0)
             requestTimeout.stop();
         root.refreshing = false;
-        root.error = String(message || "backend");
-        // Solo las acciones (no los listados) se exponen como error de
-        // acción temporal: un list fallido ya queda reflejado en `error`.
-        if (hadAction)
-            root.setActionError(String(message || "backend"));
-        // No spammear consola en cada error de backend: el estado `error` ya
-        // se expone para la UI.
+        const msg = String(message || "backend");
+        // `error` = backend caído/inservible. Errores de acción puntual se
+        // reportan por `actionError` para no degradar toda la UI.
+        if (hadAction) {
+            root.setActionError(msg);
+        } else {
+            root.error = msg;
+        }
     }
 
     function setActionError(message) {
@@ -186,7 +187,8 @@ Singleton {
         const payload = {
             type: "get",
             module: "clipboard",
-            action: action
+            action: action,
+            confirm: true
         };
         for (const k in extra)
             payload[k] = extra[k];

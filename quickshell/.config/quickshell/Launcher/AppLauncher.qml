@@ -560,8 +560,11 @@ Scope {
                 }
                 // Entrada de búsqueda web (inyectada cuando no hay resultados de apps).
                 if (it.isWebSearch === true) {
-                    launcher.runCmd(["xdg-open", "https://duckduckgo.com/?q=" + encodeURIComponent(
-                                         launcher.query) + "&ia=web"]);
+                    const q = String(launcher.query || "").trim();
+                    if (q === "")
+                        return;
+                    launcher.runCmd(["xdg-open", "https://duckduckgo.com/?q=" + encodeURIComponent(q)
+                                     + "&ia=web"]);
                     scope.shown = false;
                     return;
                 }
@@ -602,6 +605,10 @@ Scope {
                 case "web":
                     // Placeholder ("Escribe para buscar"): no-op.
                     if (!it.url)
+                        return;
+                    // Solo permite esquemas http(s) para evitar abrir file:// u
+                    // otros manejadores locales desde una entrada de menú.
+                    if (!/^https?:\/\//i.test(String(it.url)))
                         return;
                     launcher.runCmd(["xdg-open", it.url]);
                     break;
@@ -1014,7 +1021,7 @@ Scope {
                                                   "launcher.clip_text_subtitle",
                                                   "Texto · Enter copia · Supr borra"),
                                  icon: isImg ? "image" : "content_paste",
-                                 appIcon: isImg && e.thumb ? ("file://" + e.thumb) : "",
+                                 appIcon: isImg && e.thumb ? ("file://" + encodeURI(e.thumb)) : "",
                                  ch: "",
                                  imagePath: "",
                                  cat: cat,

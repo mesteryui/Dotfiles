@@ -176,6 +176,7 @@ FocusScope {
             root.authFailed = false;
             root.promptText = "";
             root.isAuthenticating = false;
+            root.isPasswordVisible = false;
             if (root.isPrimary)
                 AuthService.abort();
             if (content && content.passwordField)

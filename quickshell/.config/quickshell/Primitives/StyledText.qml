@@ -8,7 +8,7 @@ Text {
     property bool shouldUseNumberFont: /^\d+$/.test(root.text)
 
     renderType: Text.NativeRendering
-    //textFormat: Text.PlainText
+    textFormat: Text.PlainText
     verticalAlignment: Text.AlignVCenter
 
     font {

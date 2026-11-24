@@ -107,6 +107,23 @@ QtObject {
             update(item);
             return;
         }
+        // Si cambió la clave del preview, limpiar estado viejo para no mostrarlo durante el debounce
+        if (item) {
+            const sameClip = root.previewCid !== "" && item.kind === "clip" && item.isImage && root.previewCid
+                  === String(item.cid);
+            const sameFile = root.previewFile !== "" && item.kind === "file" && (item.media === "audio"
+                                                                                 || item.media === "video"
+                                                                                 || item.media === "pdf"
+                                                                                 || item.media === "text")
+                  && root.previewFile === String(item.path || "");
+            if (!sameClip && !sameFile && (root.previewOk || root.previewPath !== "" || root.previewText
+                                           !== "" || root.previewError !== "")) {
+                root.previewOk = false;
+                root.previewPath = "";
+                root.previewText = "";
+                root.previewError = "";
+            }
+        }
         root.pendingIndex = root.currentIndex;
         root.pendingItem = item;
         debounce.restart();
@@ -164,19 +181,6 @@ QtObject {
             root.metaText = "";
             return;
         }
-        // Ya falló en esta sesión: fallback directo, sin reintentar el
-        // decode (cada highlight lo reintentaba y spameaba procesos).
-        if (item && item.kind === "clip" && item.isImage && root.failedCids.indexOf(item.cid) >= 0) {
-            root.previewOk = false;
-            root.previewCid = item.cid;
-            root.previewPath = "";
-            root.previewFile = "";
-            root.previewText = "";
-            root.clipTextCid = "";
-            root.clipText = "";
-            root.previewError = root.previewFailedMessage();
-            return;
-        }
         // Ya visible para este mismo item: no recargar (evita parpadeo).
         if (item && root.previewOk) {
             if ((item.kind === "clip" && item.isImage && item.cid === root.previewCid) || (item.kind
@@ -191,7 +195,9 @@ QtObject {
                                                                                            === root.previewFile))
                 return;
         }
-        if (item && item.kind === "file" && item.media === "text" && item.path === root.previewFile && root.previewText
+        // Para texto, no hacer early-return agresivo para permitir refresco si cambió el archivo
+        // (si se quiere optimizar, se podría comparar mtime; por ahora siempre re-pedir es más correcto)
+        if (false && item && item.kind === "file" && item.media === "text" && item.path === root.previewFile && root.previewText
                 !== "")
             return;
         root.previewOk = false;
@@ -220,9 +226,12 @@ QtObject {
         if (item.kind === "clip" && item.isImage) {
             root.previewCid = item.cid;
             root.previewPath = Services.ClipboardService.previewImage(item.cid);
-            // La miniatura ya viene generada por el backend: si existe, el
-            // preview está listo sin decode adicional.
             root.previewOk = root.previewPath !== "";
+            if (!root.previewOk) {
+                root.previewError = ""; // no asumir fallo permanente; puede estar generándose
+            } else {
+                root.previewError = "";
+            }
         } else if (ItemKinds.isClipText(item)) {
             // Texto completo vía decode (con fallback a la línea del listado
             // mientras llega). Sin previewOk: el cuerpo se muestra en cuanto
@@ -248,13 +257,17 @@ QtObject {
     function revalidateClipPreview() {
         if (root.previewCid === "")
             return;
+        // Solo revalidar si sigue siendo el ítem clip-imagen actual
+        if (!root.currentItem || root.currentItem.kind !== "clip" || !root.currentItem.isImage || String(
+                    root.currentItem.cid) !== root.previewCid) {
+            return;
+        }
         const path = Services.ClipboardService.previewImage(root.previewCid);
         if (path === "") {
             root.previewOk = false;
             root.previewPath = "";
-            if (root.currentItem && root.currentItem.kind === "clip" && root.currentItem.isImage && String(
-                        root.currentItem.cid) === root.previewCid)
-                root.previewError = root.previewFailedMessage();
+            // No marcar error transitorio: puede que aún se esté generando
+            root.previewError = "";
             return;
         }
         if (path !== root.previewPath)
@@ -267,9 +280,16 @@ QtObject {
         target: FilePreviewService
 
         function onReady(path, image) {
-            if (path === root.previewFile && image !== "") {
+            if (path !== root.previewFile)
+                return;
+            if (image !== "") {
                 root.previewPath = image;
                 root.previewOk = true;
+                root.previewError = "";
+            } else {
+                root.previewOk = false;
+                root.previewPath = "";
+                root.previewError = root.previewFailedMessage();
             }
         }
 
@@ -303,14 +323,8 @@ QtObject {
     }
 
     property Timer debounce: Timer {
-        interval: 120
+        interval: 220
         onTriggered: {
-            // Sin guard de índice: con swaps/restores el índice se mueve
-            // entre schedule y trigger y el update se perdía siempre.
-            // update() es idempotente (early-returns + señales con match
-            // por id) y supersedea lo obsoleto: disparar de más es
-            // inofensivo, perder el update deja el panel muerto.
-            // Se lee el item fresco (el objeto puede haberse reconstruido).
             root.update(root.currentItem);
             root.pendingIndex = -1;
             root.pendingItem = null;

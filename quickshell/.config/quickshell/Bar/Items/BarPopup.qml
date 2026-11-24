@@ -54,7 +54,7 @@ LazyLoader {
 
     // Única escritura de `visible`; nunca toca .item antes de estar cargado.
     function syncVisible(): void {
-        if (!root.active)
+        if (!root.active || !root.item)
             return;
         // qmllint disable missing-property
         root.item.visible = root.opened;
@@ -104,7 +104,7 @@ LazyLoader {
     }
 
     onItemChanged: {
-        if (!root.active)
+        if (!root.active || !root.item)
             return;
         // qmllint disable missing-property
         if (root.anchorItem)

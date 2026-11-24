@@ -49,7 +49,7 @@ Item {
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             visible: !root.service.checking && !root.service.updating
-            text: root.service.updateCount
+            text: root.service.displayCount
             renderType: Text.QtRendering
             color: root.service.failed ? Appearance.md3.error : Appearance.md3.on_surface
             font.pixelSize: Appearance.typeScale.bodyLarge

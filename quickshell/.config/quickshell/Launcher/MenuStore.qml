@@ -130,7 +130,10 @@ Singleton {
         return (tag === "S" || tag === "U") && /^[A-Za-z0-9_-]+\.qml$/.test(name);
     }
 
-    Component.onCompleted: discoverProc.running = true
+    Component.onCompleted: {
+        root.discoverWatchdog.restart();
+        discoverProc.running = true;
+    }
 
     // --- Recarga en vivo sin polling fijo ---
     // Antes había un Timer que firmaba los directorios cada 2 s. Ahora no
@@ -145,17 +148,34 @@ Singleton {
     // Comprueba ahora (sin esperar a nada). Se llama al abrir el
     // launcher vía SystemMenuRegistry.refreshAll().
     function checkNow() {
-        if (root.autoReload && !watchProc.running && !discoverProc.running)
+        if (root.autoReload && !watchProc.running && !discoverProc.running) {
+            root.watchWatchdog.restart();
             watchProc.running = true;
+        }
+    }
+
+    property Timer watchWatchdog: Timer {
+        interval: 8000
+        repeat: false
+        onTriggered: {
+            if (watchProc.running) {
+                console.warn("[MenuStore] timeout comprobando menús, mato watchProc");
+                watchProc.running = false;
+            }
+        }
     }
 
     Process {
         id: watchProc
 
         command: ["sh", "-c", "for d in '" + root.shEscape(root.systemDir) + "' '" + root.shEscape(
-                root.providersDir) + "'; do " + "for f in \"$d\"/*.qml; do [ -f \"$f\" ] || continue; "
-            + "stat -c '%n|%Y|%s' \"$f\"; done; done; " + "stat -c '%n|%Y|%s' '" + root.shEscape(
-                root.providersDir + "/../MenuDefinition.qml") + "' " + "2>/dev/null | sort"]
+                root.providersDir) + "'; do "
+            + "for f in \"$d\"/*.qml; do [ -f \"$f\" ] && [ ! -L \"$f\" ] || continue; "
+            + "stat -c '%n|%Y|%s' \"$f\"; done; done; " + "if [ -f '" + root.shEscape(root.providersDir
+                                                                                      + "/../MenuDefinition.qml")
+            + "' ] && [ ! -L '" + root.shEscape(root.providersDir + "/../MenuDefinition.qml")
+            + "' ]; then stat -c '%n|%Y|%s' '" + root.shEscape(root.providersDir + "/../MenuDefinition.qml")
+            + "'; fi " + "2>/dev/null | sort"]
         stdout: SplitParser {
             onRead: data => {
                 root.watchAcc += data + "\n";
@@ -167,6 +187,7 @@ Singleton {
         }
         // qmllint disable signal-handler-parameters
         onExited: {
+            root.watchWatchdog.stop();
             const sig = root.watchAcc;
             if (root.dirSignature === "") {
                 root.dirSignature = sig;
@@ -189,6 +210,7 @@ Singleton {
         if (discoverProc.running)
             return false;
         loadEpoch += 1;
+        root.discoverWatchdog.restart();
         discoverProc.running = true;
         return true;
     }
@@ -196,13 +218,24 @@ Singleton {
     // "S:nombre.qml" = MenuProviders/System/, "U:nombre.qml" = MenuProviders/
     property var foundFiles: []
 
+    property Timer discoverWatchdog: Timer {
+        interval: 10000
+        repeat: false
+        onTriggered: {
+            if (discoverProc.running) {
+                console.warn("[MenuStore] timeout descubriendo menús, mato discoverProc");
+                discoverProc.running = false;
+            }
+        }
+    }
+
     Process {
         id: discoverProc
 
         command: ["sh", "-c", "for f in '" + root.shEscape(root.systemDir)
-            + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"S:$n\"; done;" + "for f in '"
-            + root.shEscape(root.providersDir)
-            + "'/*.qml; do [ -f \"$f\" ] || continue; n=${f##*/}; echo \"U:$n\"; done"]
+            + "'/*.qml; do [ -f \"$f\" ] && [ ! -L \"$f\" ] || continue; n=${f##*/}; echo \"S:$n\"; done;"
+            + "for f in '" + root.shEscape(root.providersDir)
+            + "'/*.qml; do [ -f \"$f\" ] && [ ! -L \"$f\" ] || continue; n=${f##*/}; echo \"U:$n\"; done"]
         stdout: SplitParser {
             onRead: data => {
                 const line = data.trim();
@@ -215,7 +248,10 @@ Singleton {
                 root.foundFiles = [];
         }
         // qmllint disable signal-handler-parameters
-        onExited: code => root.instantiate()
+        onExited: code => {
+            root.discoverWatchdog.stop();
+            root.instantiate();
+        }
         // qmllint enable signal-handler-parameters
     }
 
@@ -234,6 +270,7 @@ Singleton {
         if (comp.status !== Component.Ready) {
             root.lastError = base + name + ": " + comp.errorString();
             console.warn("MenuStore: no se pudo cargar " + root.lastError);
+            comp.destroy();
             return null;
         }
         const obj = comp.createObject(root, {});
@@ -242,8 +279,10 @@ Singleton {
             console.warn("MenuStore: " + root.lastError);
             if (obj)
                 obj.destroy();
+            comp.destroy();
             return null;
         }
+        comp.destroy();
         return obj;
     }
 

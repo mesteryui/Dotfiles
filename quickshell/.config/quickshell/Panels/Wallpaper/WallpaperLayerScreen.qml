@@ -254,8 +254,22 @@ PanelWindow {
         target: root.back
 
         function onStatusChanged() {
-            if (root.back.status !== Image.Ready)
+            const st = root.back.status;
+            if (st !== Image.Ready) {
+                // Un fallo no debe bloquear reintentos de la misma ruta: si no,
+                // applyBg() vería desiredUrl ya solicitado y no recargaría.
+                if ((st === Image.Error || st === Image.Null) && String(root.back.source) !== "" && String(
+                            root.back.source) === String(root.desiredUrl)) {
+                    console.warn("[Wallpaper] no se pudo cargar: " + root.back.source);
+                    fadeTimer.stop();
+                    root.back.opacity = 0;
+                    root.posterReady = false;
+                    // Libera la petición para permitir reintentar el mismo archivo.
+                    root.desiredUrl = "";
+                    root.back.source = "";
+                }
                 return;
+            }
             // Es la carga que se pidió: si no, es un frame viejo que llegó
             // tarde (el `desiredUrl` manda).
             if (String(root.back.source) !== String(root.desiredUrl))
@@ -449,8 +463,16 @@ PanelWindow {
         function onFrameReady(videoPath) {
             if (videoPath !== root.source || !root.isVideoTarget)
                 return;
+            const frameUrl = Qt.resolvedUrl(Services.WallpaperService.staticSourceFor(videoPath));
+            // Evita recodificar/retener una textura extra si el póster ya está
+            // visible o ya es la carga deseada en la cara trasera.
+            if (String(root.shownUrl) === String(frameUrl))
+                return;
+            if (String(root.desiredUrl) === String(frameUrl) && (root.back.status === Image.Ready
+                                                                 || root.back.status === Image.Loading))
+                return;
             root.back.source = "";
-            root.back.source = Qt.resolvedUrl(Services.WallpaperService.staticSourceFor(videoPath));
+            root.back.source = frameUrl;
         }
     }
 }

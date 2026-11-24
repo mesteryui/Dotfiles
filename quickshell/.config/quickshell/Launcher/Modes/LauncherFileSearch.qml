@@ -33,10 +33,16 @@ QtObject {
         Services.FilesService.errorChanged.connect(root._onServiceError);
     }
 
+    Component.onDestruction: {
+        Services.FilesService.resultsReady.disconnect(root._onResultsReady);
+        Services.FilesService.errorChanged.disconnect(root._onServiceError);
+    }
+
     function _onResultsReady(query) {
         if (root.active && query === root.query) {
             root.failed = false;
             root.failReason = "";
+            watchdogTimer.stop();
             root._buildSnapshot();
         }
     }
@@ -52,6 +58,7 @@ QtObject {
         }
         root.failed = true;
         root.failReason = String(err);
+        watchdogTimer.stop();
         if (err === "disconnected" || err === "socket")
             root.snapshot = [];
     }
@@ -62,25 +69,52 @@ QtObject {
             root.failed = true;
             root.failReason = "home";
             root.snapshot = [];
+            watchdogTimer.stop();
             return;
         }
         // Resetear fallo previo: cada nueva búsqueda parte limpia.
         root.failed = false;
         root.failReason = "";
+        watchdogTimer.restart();
         // Envolver en variable para que QML no interprete la llamada como
         // asignación de propiedad.
         var _ = Services.FilesService.search(root.query, 200);
     }
 
+    property Timer debounceTimer: Timer {
+        interval: 250
+        repeat: false
+        onTriggered: {
+            if (root.active)
+                root.refresh();
+        }
+    }
+
+    property Timer watchdogTimer: Timer {
+        interval: 15000
+        repeat: false
+        onTriggered: {
+            if (root.active) {
+                root.failed = true;
+                root.failReason = "timeout";
+            }
+        }
+    }
+
     onQueryChanged: {
         if (root.active)
-            refresh();
+            debounceTimer.restart();
+        else
+            debounceTimer.stop();
     }
     onActiveChanged: {
-        if (root.active)
-            refresh();
-        else
+        if (root.active) {
+            debounceTimer.restart();
+        } else {
+            debounceTimer.stop();
+            watchdogTimer.stop();
             root.snapshot = [];
+        }
     }
 
     // Construir snapshot filtrado desde FilesService.results.

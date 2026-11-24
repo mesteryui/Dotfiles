@@ -255,7 +255,7 @@ ColumnLayout {
                     loops: Animation.Infinite
                     // paused (no running) conserva la fase al pausar o
                     // arrastrar: al reanudar no salta al inicio del ciclo.
-                    paused: !root.playing || seekArea.pressed
+                    paused: !root.playing || seekArea.pressed || !root.wavy || trackContainer.totalLength <= 0
 
                     NumberAnimation {
                         from: 0

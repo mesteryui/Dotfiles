@@ -10,7 +10,7 @@ import Quickshell.Hyprland
 PopupWindow {
     id: root
 
-    required property QsMenuHandle menu
+    property QsMenuHandle menu: null
 
     signal dismissed
 

@@ -120,7 +120,10 @@ Singleton {
     }
     component Updates: JsonObject {
         property int countTime: 60
-        property string command: "topgrade"
+        // Backends que pide la shell al daemon: "all" (todos los detectados,
+        // incluido Flatpak) o una lista separada por comas ("pacman,aur").
+        // El comando de actualización lo decide el backend y llega como update_script.
+        property string backends: "all"
     }
     component Matugen: JsonObject {
         property string type: "scheme-tonal-spot"
