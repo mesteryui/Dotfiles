@@ -5,7 +5,7 @@ Wants=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/home/oscar/.dotfiles/shinro-backend/shinro-backend
+ExecStart=%h/.dotfiles/shinro-backend/shinro-backend
 Restart=always
 RestartSec=5
 
